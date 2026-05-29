@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { ManifestEntity } from '@/omega-ui-core/types/manifest';
 import { wasmRuntime } from '@/services/wasmRuntime';
+import { dryRunLfoRegistry, dryRunActiveSimulations } from '@/features/manifest-editor/hooks/useDryRunSimulation';
 
 /**
  * useRackSimulation (v7.2.3)
@@ -39,13 +40,35 @@ export const useRackSimulation = (
   useEffect(() => {
     let rafId: number;
     const updateLoop = () => {
-      if (isLiveMode) {
-        setRuntimeValues(prev => {
-          const next = { ...prev };
+      // Calculate and update LFO values for active dry-run simulations
+      const now = Date.now();
+      Object.keys(dryRunActiveSimulations).forEach(id => {
+        if (dryRunActiveSimulations[id]) {
+          const val = 0.5 + 0.5 * Math.sin((now / 1000) * 2 * Math.PI);
+          dryRunLfoRegistry[id] = val;
+        }
+      });
+
+      setRuntimeValues(prev => {
+        const next = { ...prev };
+        let changed = false;
+
+        // Apply dry run LFO values
+        Object.keys(dryRunLfoRegistry).forEach(id => {
+          if (next[id] !== dryRunLfoRegistry[id]) {
+            next[id] = dryRunLfoRegistry[id];
+            changed = true;
+          }
+        });
+
+        if (isLiveMode) {
           allElements.forEach(entity => {
             if (entity.role === 'telemetry' || entity.role === 'stream') {
               const val = wasmRuntime.getTelemetry(entity.id);
-              next[entity.id] = val;
+              if (next[entity.id] !== val) {
+                next[entity.id] = val;
+                changed = true;
+              }
               
               const containerId = entity.presentation?.container;
               if (containerId && val > 0.1) {
@@ -56,9 +79,10 @@ export const useRackSimulation = (
               }
             }
           });
-          return next;
-        });
-      }
+        }
+        return changed ? next : prev;
+      });
+
       rafId = requestAnimationFrame(updateLoop);
     };
     rafId = requestAnimationFrame(updateLoop);

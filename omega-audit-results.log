@@ -1,11 +1,11 @@
-﻿OMEGA SYSTEM AUDIT REPORT - 05/29/2026 11:00:47
+﻿OMEGA SYSTEM AUDIT REPORT - 05/29/2026 23:59:10
 
-[PHASE:SUCCESS] [1/6 Structural Integrity]: Passed successfully with 0 errors and 126 warnings.
+[PHASE:SUCCESS] [1/6 Structural Integrity]: Passed successfully with 0 errors and 127 warnings.
 --- WARNING DETAILS START ---
 
 [OMEGA ARCH-GUARD] Auditing architectural precedence (ADR-014)...
 
-=== ÔÜá´©Å MEDIUM RISK HALLUCINATIONS (34) ===
+=== ÔÜá´©Å MEDIUM RISK HALLUCINATIONS (35) ===
 [throw new Error] src\components\ui\contact\useContactForm.ts:55 -> throw new Error(result.error || t("error"));
 [ElementCatalog] src\features\manifest-editor\components\inspector\aesthetic\styles\library\GuildNavigator.tsx:4 -> import type { ElementCategory } from '@/omega-ui-core/governance/ElementCatalog'...
 [ElementCatalog] src\features\manifest-editor\components\inspector\aesthetic\styles\ModuleStyleLibrary.tsx:6 -> import { OMEGA_ELEMENT_CATALOG, type ElementCategory, getElementDefinition } fro...
@@ -21,7 +21,7 @@
 [reject] src\features\manifest-editor\components\inspector\shared\aesthetic\SequenceIngestionLab.tsx:42 -> return new Promise<HTMLImageElement>((resolve, reject) => {
 [reject] src\features\manifest-editor\components\inspector\shared\aesthetic\SequenceIngestionLab.tsx:45 -> img.onerror = reject;
 [ElementCatalog] src\features\manifest-editor\components\inspector\shared\aesthetic\UnifiedGraphicGovernance.tsx:5 -> import { getElementDefinition } from '@/omega-ui-core/governance/ElementCatalog'...
-... and 19 more in this category.
+... and 20 more in this category.
 
 === Ô£à LOW RISK HALLUCINATIONS (92) ===
 [validate] src\data\map.md:45 -> - **Schema Parity**: Any changes to instrument data structures MUST be reflected...
@@ -43,7 +43,7 @@
 
 [SUMMARY] Audit complete.
 - High-risk:   0
-- Medium-risk: 34
+- Medium-risk: 35
 - Low-risk:    92
 - JSON Report: docs/arch-audit-report.json
 - CSV Report:  docs/arch-audit-report.csv

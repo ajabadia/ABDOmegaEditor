@@ -136,7 +136,8 @@ export default function VirtualRack({
               multiSelectedIds: multiSelectedIds,
               onSelect: onSelectItem,
               onSelectMultiple: onSelectMultiple,
-              onUpdateNode: onUpdateItem
+              onUpdateNode: onUpdateItem,
+              runtimeValues: runtimeValues
             }}
           />
         </div>

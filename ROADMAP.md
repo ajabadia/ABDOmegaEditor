@@ -136,4 +136,13 @@ Este documento detalla el estado actual de industrialización y los próximos pa
     *   **Type Safety & Linting Hardening**: Solved TypeScript strict compiler errors across all renderers and components.
 
 ---
+## 🚀 Fase 25: Ergonomía & Refactor de Layout (Usabilidad)
+*   **Status**: PENDIENTE
+*   **Target**: Optimizar el espacio visual de la suite de ingeniería y reducir la carga cognitiva.
+*   **Scope**:
+    *   **Paneles Colapsables**: Implementar lógica de ocultación y colapso de inspector lateral, logs y menú de navegación.
+    *   **Ajustes de Tipografía**: Rediseñar la escala tipográfica en los labels y controles técnicos para alta legibilidad.
+    *   **Modo de Enfoque (Zen)**: Crear una vista simplificada sin paneles secundarios enfocada únicamente en el Rack.
+
+---
 *OMEGA — Engineering Standard V8.2 — Industrial Governance ERA 7.3.0 — Roadmap Updated 2026-05-29*

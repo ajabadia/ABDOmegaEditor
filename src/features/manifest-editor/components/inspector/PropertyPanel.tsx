@@ -58,7 +58,8 @@ export interface PropertyPanelProps {
 
 import TieredSection from './TieredSection';
 import DiagnosticBlock from './DiagnosticBlock';
-import { Info, Layout, Palette, Settings, Zap } from 'lucide-react';
+import { Info, Layout, Palette, Settings, Zap, Play, Square, Activity } from 'lucide-react';
+import { useDryRunSimulation } from '@/features/manifest-editor/hooks/useDryRunSimulation';
 
 export default function PropertyPanel(props: PropertyPanelProps) {
   const item = props.item;
@@ -82,8 +83,10 @@ export default function PropertyPanel(props: PropertyPanelProps) {
  
   const isModule = item && !('kind' in item);
 
+  const itemId = (item && 'id' in item ? item.id : 'MANIFEST') || 'MANIFEST';
+  const { isPlaying, toggleSimulation } = useDryRunSimulation(isModule || props.mode === 'bulk' ? null : itemId);
+
   if (!item || !liveItem) return null;
-  const itemId = 'id' in item ? item.id : 'MANIFEST';
  
   // Unified manifest with injected resources for selectors
   const assetsFromResources = props.extraResources?.map(r => ({ 
@@ -151,6 +154,42 @@ export default function PropertyPanel(props: PropertyPanelProps) {
                   resolveAsset={props.resolveAsset}
                 />
              </div>
+          </TieredSection>
+        )}
+
+        {/* SIMULATION LEVEL - DRY-RUN CLIENT LFO */}
+        {!isModule && !isBulk && (
+          <TieredSection title="Simulation (Dry-Run)" level="essential" icon={Activity} defaultOpen={true}>
+            <div className="space-y-3 p-3 bg-black/40 border wb-outline rounded-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-[9px] font-black uppercase tracking-wider text-white">Client LFO Simulation</div>
+                  <div className="text-[7px] text-white/50 uppercase">Modulates value at 1Hz (0.0 to 1.0) without WASM</div>
+                </div>
+                <button
+                  onClick={toggleSimulation}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xs text-[8px] font-bold uppercase transition-all duration-300 ${isPlaying ? 'bg-primary text-black shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)] border border-primary animate-pulse' : 'bg-black/60 border wb-outline text-white/70 hover:border-primary/40 hover:text-white'}`}
+                >
+                  {isPlaying ? (
+                    <>
+                      <Square className="w-2.5 h-2.5 fill-current" />
+                      <span>Stop LFO</span>
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-2.5 h-2.5 fill-current" />
+                      <span>Start LFO</span>
+                    </>
+                  )}
+                </button>
+              </div>
+              {isPlaying && (
+                <div className="flex items-center gap-2 bg-primary/5 border border-primary/20 p-2 rounded-xs">
+                  <div className="w-1.5 h-1.5 bg-primary rounded-full animate-ping" />
+                  <span className="text-[7px] text-primary font-bold uppercase tracking-wider">LFO Active: Modulating control angle/intensity...</span>
+                </div>
+              )}
+            </div>
           </TieredSection>
         )}
 

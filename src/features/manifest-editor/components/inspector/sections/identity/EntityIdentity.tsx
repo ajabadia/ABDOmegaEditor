@@ -3,6 +3,7 @@
 import React from 'react';
 import type { ManifestEntity, OMEGA_Manifest, OmegaNode } from '@/omega-ui-core/types/manifest';
 import { getInspectorModel, buildInspectorPatch } from '@/features/manifest-editor/hooks/entities/ucaInspectorModel';
+import { AlertTriangle } from 'lucide-react';
  
 interface EntityIdentityProps {
   entity: ManifestEntity | OmegaNode;
@@ -14,7 +15,7 @@ interface EntityIdentityProps {
 }
  
 import PropertyField from '../../PropertyField';
-
+ 
 export default function EntityIdentity({ entity, rootManifest, rootTree, onUpdate, isHighlighted }: EntityIdentityProps) {
   const model = getInspectorModel(entity, rootTree, rootManifest?.moduleTemplates);
  
@@ -27,6 +28,24 @@ export default function EntityIdentity({ entity, rootManifest, rootTree, onUpdat
     return null;
   };
   const auth = getAuthority();
+
+  const isDuplicateId = React.useMemo(() => {
+    if (!rootManifest || !model.id) return false;
+    const controls = rootManifest.ui?.controls || [];
+    const jacks = rootManifest.ui?.jacks || [];
+
+    const isCurrentEntity = (item: ManifestEntity) => {
+      if (item === entity) return true;
+      const entityId = 'id' in entity ? entity.id : undefined;
+      if (entityId && item.id === entityId) return true;
+      return false;
+    };
+
+    const duplicateInControls = controls.some(c => c.id === model.id && !isCurrentEntity(c));
+    const duplicateInJacks = jacks.some(j => j.id === model.id && !isCurrentEntity(j));
+
+    return duplicateInControls || duplicateInJacks;
+  }, [rootManifest, model.id, entity]);
  
   return (
     <div className="space-y-4">
@@ -36,16 +55,28 @@ export default function EntityIdentity({ entity, rootManifest, rootTree, onUpdat
            <span className="text-[6px] text-primary font-mono font-bold">#{auth.value}</span>
          </div>
        )}
-
+ 
       <div className="grid grid-cols-2 gap-3">
-        <PropertyField label="Canonical ID">
-          <input 
-            type="text" 
-            value={model.id} 
-            onChange={(e) => onUpdate(buildInspectorPatch(entity, { id: e.target.value }))}
-            disabled={model.governance?.['id'] === 'locked'}
-            className={`w-full bg-black/60 border ${isHighlighted?.('id') ? 'border-amber-500 ring-1 ring-amber-500 animate-pulse' : 'wb-outline'} rounded-xs px-2 py-1 text-[10px] font-mono wb-text outline-none focus:border-primary/40 transition-all font-mono [color-scheme:dark] ${model.governance?.['id'] === 'locked' ? 'opacity-60 cursor-not-allowed bg-black/80' : ''}`}
-          />
+        <PropertyField label="Canonical ID" {...(isDuplicateId ? { status: 'error' as const } : {})}>
+          <div className="relative flex items-center">
+            <input 
+              type="text" 
+              value={model.id} 
+              onChange={(e) => onUpdate(buildInspectorPatch(entity, { id: e.target.value }))}
+              disabled={model.governance?.['id'] === 'locked'}
+              className={`w-full bg-black/60 border ${isDuplicateId ? 'border-red-500 ring-1 ring-red-500 pr-7' : isHighlighted?.('id') ? 'border-amber-500 ring-1 ring-amber-500 animate-pulse' : 'wb-outline'} rounded-xs px-2 py-1 text-[10px] font-mono wb-text outline-none focus:border-primary/40 transition-all font-mono [color-scheme:dark] ${model.governance?.['id'] === 'locked' ? 'opacity-60 cursor-not-allowed bg-black/80' : ''}`}
+            />
+            {isDuplicateId && (
+              <div className="absolute right-2 text-red-500 flex items-center pointer-events-none">
+                <AlertTriangle className="w-3.5 h-3.5" />
+              </div>
+            )}
+          </div>
+          {isDuplicateId && (
+            <div className="text-[7px] text-red-500 font-bold mt-1 flex items-center gap-1 animate-pulse uppercase">
+              <span>Conflicto de ID: Este identificador ya está en uso en el módulo</span>
+            </div>
+          )}
         </PropertyField>
         
         <PropertyField label="Display Label">

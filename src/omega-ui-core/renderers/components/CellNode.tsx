@@ -54,10 +54,12 @@ export function CellNode({
     parentNode
   });
 
+  const runtimeValue = debugContext?.runtimeValues?.[node.id] ?? 0;
+
   const cellHTML = CellRenderer.renderCellHTML(node, {
     skin: manifest.ui?.skin || 'industrial',
     zoom: 1.0,
-    runtimeValue: 0, 
+    runtimeValue, 
     steps: 100,
     manifest,
     resolveAsset

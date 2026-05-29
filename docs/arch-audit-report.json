@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-05-29T09:00:47.809Z",
+  "timestamp": "2026-05-29T21:59:10.977Z",
   "counts": {
     "high": 0,
-    "medium": 34,
+    "medium": 35,
     "low": 92,
-    "total": 126
+    "total": 127
   },
   "details": {
     "HIGH": [],
@@ -143,8 +143,14 @@
       },
       {
         "file": "src\\features\\manifest-editor\\hooks\\io\\useManifestTransfer.ts",
-        "line": 23,
+        "line": 25,
         "content": "if (!parsed || typeof parsed !== 'object') throw new Error(\"Invalid manifest format.\");",
+        "pattern": "throw new Error"
+      },
+      {
+        "file": "src\\features\\manifest-editor\\hooks\\io\\useManifestTransfer.ts",
+        "line": 172,
+        "content": "if (req !== 'granted') throw new Error('File system write permission denied.');",
         "pattern": "throw new Error"
       },
       {
@@ -173,7 +179,7 @@
       },
       {
         "file": "src\\features\\manifest-editor\\hooks\\useDocumentOrchestrator.ts",
-        "line": 459,
+        "line": 478,
         "content": "BlueprintValidator.validate(doc.manifest.ui.tree, doc.manifest);",
         "pattern": "validate"
       },

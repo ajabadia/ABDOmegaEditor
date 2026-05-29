@@ -10,6 +10,7 @@ export interface UCADebugContext {
   showLabels: boolean;
   hideDecorative: boolean;
   showCADOverlay?: boolean | undefined;
+  runtimeValues?: Record<string, number> | undefined;
 }
 
 export interface UniversalRendererProps {
