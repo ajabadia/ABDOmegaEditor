@@ -161,7 +161,7 @@ export default function MenuBar(props: MenuBarProps) {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 5 }}
                 transition={{ duration: 0.1 }}
-                className="absolute left-0 mt-0 w-56 bg-[#0a0a0b] border border-outline shadow-2xl z-[100] py-1"
+                className="absolute left-0 mt-0 w-56 bg-[#0a0a0b] border border-outline shadow-2xl z-[110] py-1"
               >
                 {menu.items.map((item, idx) => (
                   <MenuItem key={idx} item={item} closeMenu={() => setActiveMenu(null)} />
@@ -217,7 +217,7 @@ function MenuItem({ item, closeMenu }: { item: any, closeMenu: () => void }) {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -5 }}
             transition={{ duration: 0.1 }}
-            className="absolute left-full top-0 mt-[-1px] w-56 bg-[#0a0a0b] border border-outline shadow-2xl py-1"
+            className="absolute left-full top-0 mt-[-1px] w-56 bg-[#0a0a0b] border border-outline shadow-2xl z-[120] py-1"
           >
             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             {item.submenu.map((sub: any, idx: number) => (
