@@ -1,8 +1,8 @@
 @echo off
-SET PORT=3100
+SET PORT=3035
 echo.
 echo ==========================================
-echo    ABDSYNTHS WEB - INICIO LOCAL
+echo    OMEGA MANIFEST EDITOR - INICIO LOCAL
 echo ==========================================
 echo.
 
