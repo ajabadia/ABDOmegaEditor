@@ -381,6 +381,25 @@ export const useDocumentOrchestrator = () => {
       const stored = localStorage.getItem(STORAGE_KEYS.SESSION_DOCS);
       if (stored) {
         const parsed = JSON.parse(stored) as OrchestratorState;
+        
+        // Sanitize hydrated state to ensure critical properties stripped during serialization are restored
+        if (parsed && parsed.documentsById) {
+          Object.keys(parsed.documentsById).forEach(id => {
+            const doc = parsed.documentsById[id];
+            if (doc) {
+              if (!doc.history) {
+                doc.history = { past: [], future: [], lastSavedIndex: -1 };
+              }
+              if (!doc.extraResources) {
+                doc.extraResources = [];
+              }
+              if (doc.isInitializing === undefined) {
+                doc.isInitializing = false;
+              }
+            }
+          });
+        }
+        
         dispatch({ type: 'HYDRATE_SESSION', state: parsed });
       }
     } catch (err: unknown) {
