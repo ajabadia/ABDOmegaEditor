@@ -14,6 +14,7 @@ import { WorkbenchInspector } from './inspector/WorkbenchInspector';
 import WorkbenchPane from './workspace/WorkbenchPane';
 import { SplitDivider } from './workspace/SplitDivider';
 import CellStudioContainer from './lab/CellStudioContainer';
+import Toolbar from './layout/Toolbar';
 
 // Hooks
 import { useWorkbenchShortcuts } from '@/features/manifest-editor/hooks/useWorkbenchShortcuts';
@@ -424,6 +425,17 @@ export default function WorkbenchContainer({
           <>
             {/* LEFT WORKSPACE: PANES */}
             <div className="flex-1 flex overflow-hidden relative">
+              <Toolbar 
+                isLiveMode={state.isLiveMode}
+                onToggleLive={() => actions.toggleUIState('isLiveMode')}
+                onOpenGallery={() => actions.toggleUIState('mockupOpen')}
+                onOpenAudit={() => actions.toggleUIState('isAuditModalOpen')}
+                onOpenConfig={() => actions.toggleUIState('isConfigModalOpen')}
+                onOpenCellStudio={() => {
+                  actions.setStudioMode(true, selectedItemId || undefined);
+                }}
+                onAddEntity={handleAddEntity}
+              />
               {/* PRIMARY PANE */}
               <div 
                 className="flex flex-col overflow-hidden" 

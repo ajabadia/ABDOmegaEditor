@@ -1,9 +1,8 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import NodeCanvas from './NodeCanvas';
 import VirtualRack from './VirtualRack';
-import SourceViewer from './SourceViewer';
 import ViewportControls from './ViewportControls';
-import type { OMEGA_Manifest, ManifestEntity, LayoutContainer, OMEGA_Contract, HybridEntityUpdate } from '@/omega-ui-core/types/manifest';
+import type { OMEGA_Manifest, LayoutContainer, OMEGA_Contract, HybridEntityUpdate } from '@/omega-ui-core/types/manifest';
 import type { OmegaContract } from '@/services/wasmLoader';
 import type { AuditResult } from '@/services/auditService';
 
@@ -137,16 +136,6 @@ export function WorkbenchViewport({
           </ViewWrapper>
         )}
  
-        {viewMode === 'source' && (
-          <ViewWrapper id="source" applyTransform={false} zoom={zoom} pan={pan}>
-            <SourceViewer 
-              manifest={manifest} 
-              selectedItemId={selectedItemId} 
-              onUpdate={updateManifest} 
-            />
-          </ViewWrapper>
-        )}
-
         {viewMode === 'history' && (
           <ViewWrapper id="history" applyTransform={false} zoom={zoom} pan={pan}>
             <div className="h-full p-8 bg-black/40">

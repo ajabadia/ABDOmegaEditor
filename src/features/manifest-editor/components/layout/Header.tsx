@@ -80,7 +80,9 @@ export default function Header(props: HeaderProps) {
 
       {/* RIGHT: SYSTEM CONTROLS */}
       <div className="flex-1 flex items-center justify-end gap-4">
-        <ComplianceBadge audit={props.audit} onClick={props.onOpenAudit} />
+        <div className="opacity-75 border border-red-500/30 rounded bg-red-500/5 line-through decoration-red-500/40" title="[Quitar] Reemplazado por barra lateral">
+          <ComplianceBadge audit={props.audit} onClick={props.onOpenAudit} />
+        </div>
         <div className="h-6 w-px wb-outline opacity-20 mx-1" />
         <div className="h-6 w-px wb-outline opacity-20 mx-1" />
         <div className="flex items-center gap-1">
@@ -100,10 +102,11 @@ export default function Header(props: HeaderProps) {
         
         <button 
           onClick={props.onOpenConfig}
-          className="w-8 h-8 rounded-full border wb-outline bg-black/40 flex items-center justify-center hover:bg-primary/10 hover:border-primary/40 hover:text-primary transition-all group"
-          title="Global Configuration"
+          className="w-8 h-8 rounded-full border border-red-500/40 bg-red-500/5 flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-black transition-all group relative"
+          title="[Quitar] Reemplazado por barra lateral"
         >
           <Settings className="w-3.5 h-3.5 transition-transform group-hover:rotate-90" />
+          <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-red-500 rounded-full" />
         </button>
 
         <button 

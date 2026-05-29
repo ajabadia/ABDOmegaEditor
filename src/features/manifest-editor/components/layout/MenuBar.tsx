@@ -52,7 +52,7 @@ export default function MenuBar(props: MenuBarProps) {
           label: props.isDirectoryLinked ? 'Linked Workspace ✓' : 'Link Workspace Folder',
           icon: FolderOpen,
           onClick: props.onLinkDirectory || (() => {}),
-          highlight: props.isDirectoryLinked ? undefined : 'accent'
+          highlight: 'deprecated'
         },
         { 
           label: 'Load', 
@@ -69,7 +69,7 @@ export default function MenuBar(props: MenuBarProps) {
           label: 'Blueprints', 
           icon: Layout, 
           onClick: props.onOpenGallery || (() => {}),
-          highlight: 'accent'
+          highlight: 'deprecated'
         },
         { 
           label: 'Save', 
@@ -89,7 +89,7 @@ export default function MenuBar(props: MenuBarProps) {
           ]
         },
         { type: 'divider' },
-        { label: 'Deploy to Engine', icon: Zap, onClick: props.onDeploy, highlight: 'accent' },
+        { label: 'Deploy to Engine', icon: Zap, onClick: props.onDeploy, highlight: 'deprecated' },
         { type: 'divider' },
         { label: 'Exit', icon: LogOut, onClick: () => window.location.href = '/' },
       ]
@@ -103,8 +103,8 @@ export default function MenuBar(props: MenuBarProps) {
         { type: 'divider' },
         { label: 'Document Timeline', icon: History, onClick: () => props.onTabFocus('history') },
         { type: 'divider' },
-        { label: 'Universal Cell Laboratory', icon: Cpu, onClick: props.onOpenCellEditor || (() => {}), highlight: 'accent' },
-        { label: 'Module Global Configuration', icon: Settings, onClick: props.onOpenConfig },
+        { label: 'Universal Cell Laboratory', icon: Cpu, onClick: props.onOpenCellEditor || (() => {}), highlight: 'deprecated' },
+        { label: 'Module Global Configuration', icon: Settings, onClick: props.onOpenConfig, highlight: 'deprecated' },
         { type: 'divider' },
         {
           label: 'Generate',
@@ -133,7 +133,7 @@ export default function MenuBar(props: MenuBarProps) {
       label: 'Help',
       items: [
         { label: 'Engineering Manual', icon: HelpCircle, onClick: props.onHelp },
-        { label: 'Compliance Report', icon: Shield, onClick: props.onOpenAudit },
+        { label: 'Compliance Report', icon: Shield, onClick: props.onOpenAudit, highlight: 'deprecated' },
         { type: 'divider' },
         { label: 'About OMEGA', icon: Shield, onClick: props.onOpenAbout },
       ]
@@ -201,7 +201,7 @@ function MenuItem({ item, closeMenu }: { item: any, closeMenu: () => void }) {
         }}
         className={`w-full flex items-center justify-between px-3 py-1.5 text-[8px] font-black uppercase tracking-widest transition-all ${
           item.disabled ? 'opacity-20 cursor-not-allowed' : 'hover:bg-primary hover:text-black'
-        } ${item.highlight === 'accent' ? 'text-accent hover:bg-accent hover:text-black' : 'wb-text'}`}
+        } ${item.highlight === 'accent' ? 'text-accent hover:bg-accent hover:text-black' : item.highlight === 'deprecated' ? 'text-red-500/70 hover:bg-red-500 hover:text-black bg-red-500/5 line-through decoration-red-500/40' : 'wb-text'}`}
       >
         <div className="flex items-center gap-2">
           {Icon && <Icon className="w-3 h-3" />}
