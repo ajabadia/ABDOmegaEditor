@@ -1,0 +1,199 @@
+@import "tailwindcss";
+@import "../src/omega-ui-core/index.css";
+@import "../src/omega-ui-core/typography/fonts.css";
+
+@theme {
+  --font-headline: "Outfit", sans-serif;
+  --font-mono: "Space Mono", monospace;
+  
+  --color-background: #0a0a0b;
+  --color-foreground: #e0e0e0;
+  --color-primary: #00f0ff;
+  --color-accent: #ff8c00;
+  --color-surface: #141416;
+  --color-outline: #2a2a2d;
+
+  /* OMEGA ERA 7.2.3 — SYSTEM THEME (Shared) */
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground font-sans antialiased selection:bg-primary/30 selection:text-primary;
+    background: linear-gradient(135deg, #1a1a1c 0%, #0e0e0f 100%);
+  }
+
+  /* Global scrollbar override */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0a0a0a;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #222;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #00f0ff44;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply bg-surface/60 backdrop-blur-xl border border-outline shadow-2xl;
+  }
+
+  .cyan-bloom {
+    @apply shadow-[0_0_15px_rgba(0,240,255,0.3)];
+  }
+
+  .orange-bloom {
+    @apply shadow-[0_0_15px_rgba(255,140,0,0.3)];
+  }
+
+  /* CRT Effect System */
+  .crt-screen {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .crt-screen::after {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: rgba(18, 16, 16, 0.1);
+    opacity: 0;
+    z-index: 2;
+    pointer-events: none;
+    animation: flicker 0.15s infinite;
+  }
+
+  .scanline {
+    width: 100%;
+    height: 2px;
+    z-index: 3;
+    background: rgba(0, 240, 255, 0.05);
+    opacity: 0.1;
+    position: absolute;
+    bottom: 100%;
+    animation: scanline-anim 8s linear infinite;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(0, 240, 255, 0.1);
+  }
+}
+
+@keyframes flicker {
+  0% { opacity: 0.27; }
+  50% { opacity: 0.32; }
+  100% { opacity: 0.27; }
+}
+
+@keyframes scanline-anim {
+  0% { bottom: 100%; }
+  100% { bottom: 0%; }
+}
+
+/* ═══════════════════════════════════════════════
+   OMEGA ERA 7.2 — LAYOUT CONTAINER TOKENS
+   ═══════════════════════════════════════════════ */
+:root {
+  --omega-container-border: rgba(255, 255, 255, 0.06);
+  --omega-container-bg: rgba(255, 255, 255, 0.015);
+  --omega-container-radius: 2px;
+  
+  --omega-container-selected-border: rgba(0, 240, 255, 0.4);
+  --omega-container-selected-bg: rgba(0, 240, 255, 0.03);
+  --omega-container-selected-glow: 0 0 30px rgba(0, 240, 255, 0.1);
+}
+
+.omega-container {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.omega-container-selected {
+  box-shadow: var(--omega-container-selected-glow);
+  z-index: 10;
+}
+
+/* ═══════════════════════════════════════════════
+   WORKBENCH UI THEME ENGINE
+   ═══════════════════════════════════════════════ */
+:root {
+  --wb-bg: #050505;
+  --wb-surface: #0a0a0b;
+  --wb-surface-hover: #141416;
+  --wb-surface-subtle: rgba(255, 255, 255, 0.03);
+  --wb-surface-strong: rgba(255, 255, 255, 0.08);
+  --wb-surface-inset: #1a1a1c;
+  --wb-outline: rgba(255, 255, 255, 0.08);
+  --wb-text: #e0e0e0;
+  --wb-text-muted: rgba(255, 255, 255, 0.4);
+  --wb-bloom: rgba(0, 240, 255, 0.3);
+  --wb-primary: #00f0ff;
+  --wb-accent: #ff8c00;
+
+  /* SIGNAL COLOR TOKENS (ERA 7.2.3) */
+  --signal-audio: #00f0ff;
+  --signal-cv: #ffaa00;
+  --signal-gate: #ffffff;
+  --signal-midi: #ff5500;
+}
+
+[data-ui-theme="light"] {
+  --wb-bg: #fcfcfd;
+  --wb-surface: #ffffff;
+  --wb-surface-hover: #f1f5f9;
+  --wb-surface-subtle: #f1f5f9;
+  --wb-surface-strong: #e2e8f0;
+  --wb-surface-inset: #f1f5f9; 
+  --wb-outline: #cbd5e1;
+  --wb-text: #020617;
+  --wb-text-muted: #475569; 
+  --wb-bloom: rgba(0, 0, 0, 0.05);
+  --wb-primary: #334155; 
+  --wb-accent: #d97706;
+
+  /* SIGNAL COLOR TOKENS (LIGHT ADAPTATION) */
+  --signal-audio: #3b82f6;
+  --signal-cv: #d97706;
+  --signal-gate: #475569;
+  --signal-midi: #ea580c;
+
+  /* Tailwind Variable Overrides */
+  --color-primary: #5c7089;
+  --color-accent: #f59e0b;
+}
+
+.wb-bg { background-color: var(--wb-bg) !important; }
+.wb-surface { background-color: var(--wb-surface) !important; }
+.wb-surface-subtle { background-color: var(--wb-surface-subtle) !important; }
+.wb-surface-strong { background-color: var(--wb-surface-strong) !important; }
+.wb-surface-inset { background-color: var(--wb-surface-inset) !important; }
+.wb-outline { border-color: var(--wb-outline) !important; }
+.wb-text { color: var(--wb-text) !important; }
+.wb-text-muted { color: var(--wb-text-muted) !important; }
+
+/* ═══════════════════════════════════════════════
+   MONACO SOURCE HIGHLIGHT (PHASE 6.2)
+   ═══════════════════════════════════════════════ */
+.omega-source-selection-highlight {
+  background: rgba(0, 240, 255, 0.08) !important;
+  border-left: 2px solid #00f0ff;
+  transition: all 0.3s ease;
+}
+
+.omega-source-selection-gutter {
+  background: #00f0ff !important;
+  width: 4px !important;
+  margin-left: 2px;
+}

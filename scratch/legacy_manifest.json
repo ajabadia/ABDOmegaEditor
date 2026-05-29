@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "6.0.0",
+  "id": "synthetic_legacy_osc",
+  "metadata": {
+    "name": "Synthetic Legacy Osc",
+    "version": "1.0.0",
+    "family": "oscillator"
+  },
+  "ui": {
+    "dimensions": { "width": 140, "height": 420 },
+    "useUCA": false,
+    "layout": {
+      "containers": [
+        {
+          "id": "MAIN_OSC_GROUP",
+          "pos": { "x": 10, "y": 10 },
+          "size": { "width": 120, "height": 100 },
+          "color": "#333333"
+        }
+      ]
+    },
+    "controls": [
+      {
+        "id": "freq_knob",
+        "type": "knob",
+        "bind": "osc1.freq",
+        "pos": { "x": 20, "y": 20 },
+        "presentation": {
+          "container": "MAIN_OSC_GROUP",
+          "style": { "color": "#00ff9d" }
+        }
+      }
+    ],
+    "jacks": [
+      {
+        "id": "out_jack",
+        "type": "port",
+        "bind": "osc1.out",
+        "pos": { "x": 10, "y": 300 },
+        "presentation": {
+          "style": { "color": "#ffffff" }
+        }
+      }
+    ]
+  }
+}

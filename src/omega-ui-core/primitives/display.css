@@ -1,0 +1,122 @@
+/* OMEGA INDUSTRIAL DISPLAYS (Era 7.2.3 — High Fidelity) */
+
+.mini-display {
+    background: var(--omega-glass-color, var(--primitive-bg-dark));
+    border: var(--omega-border-width, 1px) solid var(--omega-color-override, var(--primitive-border-color));
+    box-shadow: var(--primitive-shadow);
+    display: flex;
+    align-items: stretch;
+    overflow: hidden;
+    border-radius: var(--omega-rounding, var(--primitive-radius-flat));
+    position: relative;
+    opacity: var(--omega-opacity, 1);
+    padding: var(--omega-padding, 0);
+}
+
+.display-glass-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 50%, rgba(0,0,0,0.1) 100%);
+    pointer-events: none;
+    z-index: 10;
+    mix-blend-mode: overlay;
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: inherit;
+}
+
+.display-internal-glow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, var(--omega-glow-color, var(--glow-color, rgba(0,240,255,0.2))) 0%, transparent 80%);
+    pointer-events: none;
+    z-index: 1;
+    opacity: calc(var(--omega-intensity, 1.0) * 0.3);
+}
+
+.display-scanlines {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent 0px,
+        transparent 1px,
+        rgba(0, 0, 0, 0.2) 1px,
+        rgba(0, 0, 0, 0.2) 2px
+    );
+    pointer-events: none;
+    z-index: 6;
+    opacity: 0.5;
+    border-radius: inherit;
+}
+
+.display-btn {
+    background: transparent;
+    border: none;
+    color: #444;
+    cursor: pointer;
+    flex-none: 1;
+    width: 20%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s, color 0.2s;
+    z-index: 11;
+}
+
+.display-btn:hover {
+    background: rgba(255,255,255,0.05);
+    color: #666;
+}
+
+.display-btn:active {
+    background: rgba(0,242,255,0.2);
+    color: #fff;
+}
+
+.display-value {
+    flex: 1;
+    text-align: center;
+    font-family: var(--omega-font, 'Seven Segment'), monospace;
+    font-size: var(--omega-font-size, inherit);
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.4);
+    color: var(--omega-font-color, var(--omega-color-override, inherit));
+    text-align: var(--omega-alignment, center);
+}
+
+/* SIZES */
+.mini-display.size-A { width: 100px; height: 33px; }
+.mini-display.size-A .display-value { font-size: 14px; }
+
+.mini-display.size-B { width: 80px; height: 26px; }
+.mini-display.size-B .display-value { font-size: 11px; }
+
+.mini-display.size-C { width: 60px; height: 20px; }
+.mini-display.size-C .display-value { font-size: 8px; }
+
+.mini-display.size-D { width: 40px; height: 14px; }
+.mini-display.size-D .display-value { font-size: 6px; }
+
+/* VARIANTS / COLORS (Legacy compat) */
+.mini-display.color-cyan { --glow-color: rgba(0,240,255,0.4); }
+.mini-display.color-cyan:not([style*="--omega-color-override"]) .display-value { color: var(--wb-primary); text-shadow: 0 0 10px rgba(0,240,255,0.3); }
+
+.mini-display.color-red { --glow-color: rgba(255,68,68,0.4); }
+.mini-display.color-red:not([style*="--omega-color-override"]) .display-value { color: #ff4444; text-shadow: 0 0 10px rgba(255,68,68,0.3); }
+
+.mini-display.color-orange { --glow-color: rgba(255,140,0,0.4); }
+.mini-display.color-orange:not([style*="--omega-color-override"]) .display-value { color: var(--wb-accent); text-shadow: 0 0 10px rgba(255,140,0,0.3); }
+
+.mini-display.color-green { --glow-color: rgba(0,255,136,0.4); }
+.mini-display.color-green:not([style*="--omega-color-override"]) .display-value { color: #00ff88; text-shadow: 0 0 10px rgba(0,255,136,0.3); }
+
+.mini-display.color-white { --glow-color: rgba(255,255,255,0.2); }
+.mini-display.color-white:not([style*="--omega-color-override"]) .display-value { color: #ffffff; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
+
+/* OLED / LCD / LED specific overrides */
+.mini-display.variant-oled { background: #0a0a0a; }
+.mini-display.variant-lcd { background: #111811; }
+.mini-display.variant-lcd.color-green:not([style*="--omega-color-override"]) .display-value { color: #113311; text-shadow: none; font-weight: bold; } /* Inverted style LCD */

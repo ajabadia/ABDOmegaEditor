@@ -1,0 +1,55 @@
+'use client';
+
+import { useManifestTransfer } from './io/useManifestTransfer';
+import { useWasmTransfer } from './io/useWasmTransfer';
+import { useBundleTransfer } from './io/useBundleTransfer';
+import type { OMEGA_Manifest, OMEGA_Contract } from '@/omega-ui-core/types/manifest';
+import type { OmegaContract } from '@/services/wasmLoader';
+import type { ValidationIssue } from '@/types/validation';
+
+/**
+ * OMEGA File Operations (v7.2.3)
+ * Orchestrator hook that composes manifest, WASM, and bundle I/O operations.
+ */
+export const useFileOps = (
+  manifest: OMEGA_Manifest,
+  setManifest: (u: OMEGA_Manifest | ((prev: OMEGA_Manifest) => OMEGA_Manifest)) => void,
+  setContract: (u: (OmegaContract | OMEGA_Contract) | null | ((prev: (OmegaContract | OMEGA_Contract) | null) => (OmegaContract | OMEGA_Contract) | null)) => void,
+  setWasmBuffer: (u: ArrayBuffer | null | ((prev: ArrayBuffer | null) => ArrayBuffer | null)) => void,
+  wasmBuffer: ArrayBuffer | null,
+  setExtraResources: (u: { name: string, data: ArrayBuffer, type: string }[] | ((prev: { name: string, data: ArrayBuffer, type: string }[]) => { name: string, data: ArrayBuffer, type: string }[])) => void,
+  extraResources: { name: string, data: ArrayBuffer, type: string }[],
+  addLog: (msg: string) => void,
+  issues: ValidationIssue[],
+  captureStableSnapshot: () => void,
+  directoryHandle?: FileSystemDirectoryHandle | null
+) => {
+
+  // 1. Manifest Operations (Import/Export/CAD)
+  const manifestIO = useManifestTransfer(manifest, setManifest, addLog, issues, captureStableSnapshot, directoryHandle);
+
+  // 2. WASM Operations (Binary/Contract)
+  const wasmIO = useWasmTransfer(manifest, setManifest, setContract, setWasmBuffer, addLog);
+
+  // 3. Bundle Operations (OmegaPack/Bulk/Resources)
+  const bundleIO = useBundleTransfer(
+    manifest, 
+    setManifest,
+    wasmBuffer, 
+    extraResources, 
+    setExtraResources, 
+    addLog, 
+    issues,
+    wasmIO.handleWasmUpload,
+    wasmIO.handleContractUpload,
+    manifestIO.handleManifestUpload,
+    captureStableSnapshot
+  );
+
+  return {
+    ...manifestIO,
+    ...wasmIO,
+    ...bundleIO,
+    exportContract: wasmIO.exportContract
+  };
+};

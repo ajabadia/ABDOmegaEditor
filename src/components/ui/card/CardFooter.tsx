@@ -1,0 +1,30 @@
+import * as React from "react";
+import { ArrowUpRight } from "lucide-react";
+import { Link } from "@/i18n/routing";
+import { Button } from "../Button";
+
+interface CardFooterProps {
+  href: string;
+  label: string;
+  instrumentName: string;
+}
+
+export function CardFooter({ href, label, instrumentName }: CardFooterProps) {
+  return (
+    <div className="mt-10 pt-6 border-t border-white/5 flex items-center justify-end">
+      <Link 
+        href={href}
+        aria-label={`${label} ${instrumentName}`}
+      >
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="gap-3 px-6 py-5 text-[10px] uppercase tracking-widest font-bold border-white/10 hover:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary group/btn"
+        >
+          {label}
+          <ArrowUpRight size={14} className="transition-transform group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 text-primary" />
+        </Button>
+      </Link>
+    </div>
+  );
+}

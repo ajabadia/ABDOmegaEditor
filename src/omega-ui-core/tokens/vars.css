@@ -1,0 +1,82 @@
+/* ═══════════════════════════════════════════════
+   OMEGA ERA 7.2.3 — UNIFIED WORKBENCH TOKENS
+   (Synchronized with ABDSynthsWeb Standards)
+   ═══════════════════════════════════════════════ */
+
+:root {
+    --wb-bg: #050505;
+    --wb-surface: #0a0a0b;
+    --wb-surface-hover: #141416;
+    --wb-surface-subtle: rgba(255, 255, 255, 0.03);
+    --wb-surface-strong: rgba(255, 255, 255, 0.08);
+    --wb-surface-inset: #1a1a1c;
+    --wb-outline: rgba(255, 255, 255, 0.08);
+    --wb-text: #e0e0e0;
+    --wb-text-muted: rgba(255, 255, 255, 0.4);
+    --wb-bloom: rgba(0, 240, 255, 0.3);
+    --wb-primary: #00f0ff;
+    --wb-accent: #ff8c00;
+
+    /* LAYOUT CONSTANTS (Era 7.2.3 Unified Scaling) */
+    --rack-height: 680px;
+    --knob-size: 42px;
+    --render-scale: 1.5;
+
+    /* COMPONENT TOKENS (Base Industrial) */
+    --primitive-bg: #111;
+    --primitive-bg-dark: #000;
+    --primitive-border-color: #333;
+    --primitive-border: 2px solid var(--primitive-border-color);
+    --primitive-shadow: 0 4px 10px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.05);
+    --primitive-radius-round: 50%;
+    --primitive-radius-pill: 20px;
+    --primitive-radius-flat: 2px;
+    --primitive-marker-glow: 0 0 8px rgba(0, 240, 255, 0.6);
+    --primitive-accent: var(--wb-primary);
+
+    /* OMEGA ATMOSPHERIC PHYSICS (Era 7.2.3)
+       These are injected by the Design Token engine but have safe defaults here. */
+    --omega-shadow-angle: 135deg;
+    --omega-shadow-color: rgba(0, 0, 0, 0.5);
+    --omega-shadow-x: 4px;
+    --omega-shadow-y: 4px;
+    --omega-shadow-blur: 4px;
+    --omega-height: 1.0;
+
+    /* Resolved Component Physics (Scale by height) */
+    --resolved-shadow-x: var(--omega-global-shadow-x, var(--omega-shadow-x));
+    --resolved-shadow-y: var(--omega-global-shadow-y, var(--omega-shadow-y));
+    --resolved-shadow-blur: var(--omega-global-shadow-blur, var(--omega-shadow-blur));
+    --resolved-shadow-color: var(--omega-global-shadow-color, var(--omega-shadow-color));
+
+    --omega-comp-shadow-x: calc(var(--resolved-shadow-x) * var(--omega-height));
+    --omega-comp-shadow-y: calc(var(--resolved-shadow-y) * var(--omega-height));
+    --omega-comp-shadow-blur: calc(var(--resolved-shadow-blur) * var(--omega-height));
+
+    --primitive-shadow: drop-shadow(var(--omega-comp-shadow-x) var(--omega-comp-shadow-y) var(--omega-comp-shadow-blur) var(--resolved-shadow-color));
+    
+    /* MASTER PALETTE REDIRECTION */
+    --omega-accent: var(--wb-primary);
+    --omega-surface: #1a1c1e;
+    --omega-weak: #555555;
+    --omega-text: #ffffff;
+}
+
+/* ═══════════════════════════════════════════════
+   WORKBENCH UI THEME ENGINE (Era 7.2.3)
+   Synchronized with ABDSynthsWeb standards
+   ═══════════════════════════════════════════════ */
+[data-ui-theme="light"] {
+    --wb-bg: #f8fafc;
+    --wb-surface: #ffffff;
+    --wb-surface-hover: #f1f5f9;
+    --wb-surface-subtle: #f1f5f9;
+    --wb-surface-strong: #e2e8f0;
+    --wb-surface-inset: #e2e8f0; 
+    --wb-outline: #cbd5e1;
+    --wb-text: #020617;
+    --wb-text-muted: #475569; 
+    --wb-bloom: rgba(100, 116, 139, 0.1);
+    --wb-primary: #5c7089; 
+    --wb-accent: #f59e0b;
+}

@@ -1,0 +1,46 @@
+/* OMEGA VISUALIZERS: TERMINAL (Log / Console) */
+/* Era 7.2.3 — Scrolling Text Monitor */
+
+.terminal-display {
+    background: #000 !important;
+    border: var(--primitive-border) !important;
+    border-radius: var(--primitive-radius-flat) !important;
+    overflow: hidden;
+    position: relative;
+    box-shadow: var(--primitive-shadow) !important;
+    font-family: 'Fragment Mono', 'Courier New', monospace;
+}
+
+.terminal-container {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+/* Custom scrollbar for terminal */
+.terminal-container::-webkit-scrollbar { width: 4px; }
+.terminal-container::-webkit-scrollbar-track { background: transparent; }
+.terminal-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+.terminal-line {
+    font-size: 8px;
+    line-height: 1.2;
+    white-space: pre-wrap;
+    word-break: break-all;
+    color: var(--wb-text-muted);
+}
+
+/* VARIANTS */
+.terminal-display.variant-green .terminal-line { color: #00ff88; text-shadow: 0 0 4px rgba(0, 255, 136, 0.4); }
+.terminal-display.variant-amber .terminal-line { color: #ffaa00; text-shadow: 0 0 4px rgba(255, 170, 0, 0.4); }
+.terminal-display.variant-cyan .terminal-line { color: var(--wb-primary); text-shadow: 0 0 4px rgba(0, 240, 255, 0.4); }
+
+/* SIZES (Now dynamic via manifest/inline style) */
+.terminal-display {
+    width: var(--terminal-width, 100%);
+    height: var(--terminal-height, 100%);
+}

@@ -1,0 +1,73 @@
+/* OMEGA INDUSTRIAL STEPPERS / BUTTONS (Era 7.2.3) */
+
+.stepper-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primitive-bg);
+    border: var(--primitive-border);
+    border-radius: var(--primitive-radius-flat);
+    cursor: pointer;
+    transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--primitive-shadow);
+    user-select: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.stepper-container.type-button,
+.stepper-container.type-push {
+    border-radius: var(--primitive-radius-round) !important; /* Industrial Round Buttons */
+}
+
+/* SIZES (Era 7 industrial scale) */
+.stepper-container.size-A { width: 48px; height: 48px; }
+.stepper-container.size-B { width: 36px; height: 36px; }
+.stepper-container.size-C { width: 28px; height: 28px; }
+.stepper-container.size-D { width: 22px; height: 22px; }
+
+/* COLORS & STATES */
+.stepper-container.color-orange_push,
+.stepper-container.color-orange {
+    border-color: rgba(255, 140, 0, 0.3);
+}
+
+.stepper-container.pressed {
+    transform: scale(0.95);
+    background: #080808;
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+    border-color: rgba(255,255,255,0.2);
+}
+
+.stepper-container.pressed.color-orange_push,
+.stepper-container.pressed.color-orange {
+    border-color: #ff8c00;
+    box-shadow: inset 0 0 15px rgba(255, 140, 0, 0.3), 0 0 10px rgba(255, 140, 0, 0.2);
+}
+
+/* CONTENT */
+.stepper-text {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 900;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.4);
+    pointer-events: none;
+}
+
+.stepper-container.pressed .stepper-text {
+    color: #fff;
+    text-shadow: 0 0 8px rgba(255,255,255,0.5);
+}
+
+.stepper-dot {
+    width: 6px;
+    height: 6px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+}
+
+.stepper-container.pressed .stepper-dot {
+    background: #ff8c00;
+    box-shadow: 0 0 8px #ff8c00;
+}

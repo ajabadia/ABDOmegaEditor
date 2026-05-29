@@ -1,0 +1,47 @@
+/* OMEGA VISUALIZERS: SCOPE (Oscilloscope) */
+/* Era 7.2.3 — High Performance Canvas Container */
+
+.scope-display {
+    background: var(--primitive-bg-dark) !important;
+    border: var(--primitive-border) !important;
+    border-radius: var(--primitive-radius-flat) !important;
+    overflow: hidden;
+    position: relative;
+    box-shadow: var(--primitive-shadow) !important;
+}
+
+.scope-canvas {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+    filter: blur(0.5px) brightness(1.2); /* Subtle glow */
+}
+
+.scope-grid {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: 
+        linear-gradient(rgba(0, 240, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 240, 255, 0.05) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+/* VARIANTS */
+.scope-display.variant-phosphor .scope-canvas {
+    filter: drop-shadow(0 0 4px #00ff88);
+}
+
+.scope-display.variant-cyan .scope-canvas {
+    filter: drop-shadow(0 0 4px var(--wb-primary));
+}
+
+.scope-display.variant-amber .scope-canvas {
+    filter: drop-shadow(0 0 4px #ffaa00);
+}
+
+/* SIZES (Now dynamic via manifest/inline style) */
+.scope-display {
+    width: var(--scope-width, 100%);
+    height: var(--scope-height, 100%);
+}

@@ -1,0 +1,59 @@
+/**
+ * ⚠️ OMEGA UI CORE — DO NOT EDIT (READ-ONLY REPLICA NOTICE)
+ * ---------------------------------------------------------------------------
+ * This file is part of the central OMEGA UI Core (abd-ia_synths).
+ * Any changes made directly in ABDOmega/ui/omega-ui-core WILL BE OVERWRITTEN.
+ * 
+ * Master Source: d:/desarrollos/ABDSynthsWeb/abd-ia_synths/src/omega-ui-core/
+ * ---------------------------------------------------------------------------
+ */
+ 
+export interface OmegaFont {
+  id: string;
+  name: string;
+  category: 'ui' | 'branding' | 'digital' | 'technical';
+  description: string;
+  isProtected: boolean;
+}
+ 
+export const OMEGA_OFFICIAL_FONTS: OmegaFont[] = [
+  {
+    id: 'inter',
+    name: 'Inter',
+    category: 'ui',
+    description: 'Standard Industrial UI & Labeling',
+    isProtected: true
+  },
+  {
+    id: 'outfit',
+    name: 'Outfit',
+    category: 'branding',
+    description: 'Headlines, Branding & High-Density Titles',
+    isProtected: true
+  },
+  {
+    id: 'seven-segment',
+    name: 'Seven Segment',
+    category: 'digital',
+    description: 'LCD / LED Digital Displays',
+    isProtected: true
+  },
+  {
+    id: 'microgramma',
+    name: 'Microgramma',
+    category: 'technical',
+    description: 'Technical Specs & Vintage Aero-Industrial Labels',
+    isProtected: true
+  }
+];
+ 
+export const PROTECTED_FONT_NAMES = OMEGA_OFFICIAL_FONTS.map(f => f.name);
+ 
+export type TypographyCategory = 'headings' | 'labels' | 'displays' | 'technical';
+ 
+export const TYPOGRAPHY_CATEGORIES: { id: TypographyCategory; label: string; defaultFont: string; defaultSize: number }[] = [
+  { id: 'headings', label: 'Module Headings', defaultFont: 'Outfit', defaultSize: 12 },
+  { id: 'labels', label: 'Component Labels', defaultFont: 'Inter', defaultSize: 8 },
+  { id: 'displays', label: 'Digital Displays', defaultFont: 'Seven Segment', defaultSize: 14 },
+  { id: 'technical', label: 'Technical Specs', defaultFont: 'Microgramma', defaultSize: 7 }
+];
