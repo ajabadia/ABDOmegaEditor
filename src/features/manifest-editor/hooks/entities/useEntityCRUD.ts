@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
-import type { OMEGA_Manifest, ManifestEntity, OmegaNode, LayoutContainer } from '@/omega-ui-core/types/manifest';
+import type { OMEGA_Manifest, ManifestEntity, OmegaNode, LayoutContainer, ComponentType } from '@/omega-ui-core/types/manifest';
 import { findNodeInTree, updateNodeInTree, findLegacyItem, applyUpdatesToNode, insertNodeInTree } from './ucaInspectorAdapter';
 import { treeToManifest, manifestToTree } from '@/omega-ui-core/uca/ucaBridge';
 import { regenerateEntityId, cloneAndRegenerateNodeIds } from '../../utils/idManagement';
@@ -120,7 +120,32 @@ export const useEntityCRUD = (
   }, [manifest, updateManifest, addLog]);
 
   const addEntity = useCallback((type: 'control' | 'jack', template?: Partial<ManifestEntity>, node?: OmegaNode, container?: LayoutContainer) => {
-    const id = `new_${type}_${Date.now().toString().slice(-4)}`;
+    const hasWasm = !!(manifest.resources?.wasm || (manifest.resources as Record<string, unknown> | undefined)?.contract);
+    
+    let generatedId = `new_${type}_${Date.now().toString().slice(-4)}`;
+    let generatedLabel = type === 'control' ? 'New Control' : 'New Jack';
+
+    if (!hasWasm) {
+      const moduleId = manifest.id || 'omega';
+      const componentType = template?.type || (type === 'control' ? 'knob' : 'port');
+      
+      const existingEntities = [
+        ...(manifest.ui?.controls || []),
+        ...(manifest.ui?.jacks || [])
+      ];
+      
+      let index = 1;
+      let checkId = `${moduleId}_${componentType}_${String(index).padStart(3, '0')}`;
+      while (existingEntities.some(e => e.id === checkId)) {
+        index++;
+        checkId = `${moduleId}_${componentType}_${String(index).padStart(3, '0')}`;
+      }
+      generatedId = checkId;
+      const capitalizedType = componentType.charAt(0).toUpperCase() + componentType.slice(1);
+      generatedLabel = `${capitalizedType} ${index}`;
+    }
+
+    const id = generatedId;
     
     // Default base structure
     const baseEntity: ManifestEntity = node ? {
@@ -141,15 +166,15 @@ export const useEntityCRUD = (
       }
     } : {
       id,
-      type: type === 'control' ? 'knob' : 'port',
+      type: type === 'control' ? (template?.type || 'knob') : (template?.type || 'port'),
       role: type === 'control' ? 'control' : 'stream',
       bind: '',
-      label: type === 'control' ? 'New Control' : 'New Jack',
+      label: generatedLabel,
       pos: type === 'control' ? { x: 50, y: 50 } : { x: 50, y: 350 },
       size: { width: 48, height: 48 },
       presentation: {
         tab: 'MAIN',
-        component: type === 'control' ? 'knob' : 'port',
+        component: type === 'control' ? (template?.type || 'knob') as ComponentType : (template?.type || 'port') as ComponentType,
         variant: 'B_cyan',
         offsetX: 0,
         offsetY: 0,

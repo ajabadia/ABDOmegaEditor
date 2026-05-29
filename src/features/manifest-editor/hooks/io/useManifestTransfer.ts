@@ -5,6 +5,7 @@ import yaml from 'js-yaml';
 import type { OMEGA_Manifest, ManifestEntity, ComponentType, AttachmentType, Attachment, Dimensions, Position } from '@/omega-ui-core/types/manifest';
 import type { ValidationIssue } from '@/types/validation';
 import { purgeUnusedStyles } from '@/features/manifest-editor/utils/governanceUtils';
+import { ContractService } from '@/services/contractService';
 
 export const useManifestTransfer = (
   manifest: OMEGA_Manifest,
@@ -157,55 +158,74 @@ export const useManifestTransfer = (
       schema: yaml.JSON_SCHEMA 
     });
 
+    const cppContent = ContractService.generateCppContract(asepticManifest);
+    const tsContent = ContractService.generateTypeScriptContract(asepticManifest);
+
     let saved = false;
 
     // 1. Try browser-native File System Access API (Linked Directory)
     if (directoryHandle) {
       try {
-        const perm = await (directoryHandle as any).queryPermission({ mode: 'readwrite' });
+        const perm = await (directoryHandle as unknown as { queryPermission: (opt: { mode: string }) => Promise<PermissionState> }).queryPermission({ mode: 'readwrite' });
         if (perm !== 'granted') {
-          const req = await (directoryHandle as any).requestPermission({ mode: 'readwrite' });
+          const req = await (directoryHandle as unknown as { requestPermission: (opt: { mode: string }) => Promise<PermissionState> }).requestPermission({ mode: 'readwrite' });
           if (req !== 'granted') throw new Error('File system write permission denied.');
         }
 
         let targetDir = directoryHandle;
         try {
           if (manifest.id) {
-            // If a subdirectory exists with the module ID (e.g. modules/midi_in), save inside it
             targetDir = await directoryHandle.getDirectoryHandle(manifest.id, { create: false });
           }
         } catch (e) {
           // Fallback to saving in the root directory selected by the user
         }
 
+        // Save .acemm
         const fileHandle = await targetDir.getFileHandle(`${manifest.id}.acemm`, { create: true });
         const writable = await fileHandle.createWritable();
         await writable.write(yamlContent);
         await writable.close();
+
+        // Save C++ contract
+        const cppFileHandle = await targetDir.getFileHandle(`${manifest.id}_contract.h`, { create: true });
+        const cppWritable = await cppFileHandle.createWritable();
+        await cppWritable.write(cppContent);
+        await cppWritable.close();
+
+        // Save TS contract
+        const tsFileHandle = await targetDir.getFileHandle(`${manifest.id}_contract.ts`, { create: true });
+        const tsWritable = await tsFileHandle.createWritable();
+        await tsWritable.write(tsContent);
+        await tsWritable.close();
         
         saved = true;
-        addLog(`[OK] Manifest saved directly to linked workspace: ${manifest.id}.acemm`);
-      } catch (err: any) {
-        addLog(`[WARNING] FS API Save failed: ${err.message}. Falling back to watchdog/download.`);
+        addLog(`[OK] Manifest and contracts saved directly to linked workspace: ${manifest.id}`);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        addLog(`[WARNING] FS API Save failed: ${message}. Falling back to watchdog/download.`);
       }
     }
 
     // 2. Try Local Watchdog Server
     if (!saved) {
       try {
-        const response = await fetch('http://127.0.0.1:3001/save', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            filename: `${manifest.id}.acemm`,
-            content: yamlContent
-          }),
-          signal: AbortSignal.timeout(1500) // Don't hang if watchdog is unresponsive
-        });
-        const data = await response.json();
-        if (data.success) {
+        const saveFile = async (name: string, data: string) => {
+          const res = await fetch('http://127.0.0.1:3001/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ filename: name, content: data }),
+            signal: AbortSignal.timeout(1500)
+          });
+          return res.ok;
+        };
+
+        const manifestSaved = await saveFile(`${manifest.id}.acemm`, yamlContent);
+        if (manifestSaved) {
+          await saveFile(`${manifest.id}_contract.h`, cppContent);
+          await saveFile(`${manifest.id}_contract.ts`, tsContent);
           saved = true;
-          addLog(`[OK] Manifest saved directly to watchdog workspace: ${manifest.id}.acemm`);
+          addLog(`[OK] Manifest and contracts saved directly to watchdog workspace: ${manifest.id}`);
         }
       } catch (err) {
         // Watchdog offline/unresponsive
@@ -214,14 +234,20 @@ export const useManifestTransfer = (
 
     // 3. Fallback: Browser Download
     if (!saved) {
-      const blob = new Blob([yamlContent], { type: 'text/yaml' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${manifest.id}.acemm`;
-      a.click();
-      URL.revokeObjectURL(url);
-      addLog(`[OK] Exported manifest: ${manifest.id}.acemm (Browser download)`);
+      const downloadFile = (name: string, content: string, type: string) => {
+        const blob = new Blob([content], { type });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = name;
+        a.click();
+        URL.revokeObjectURL(url);
+      };
+
+      downloadFile(`${manifest.id}.acemm`, yamlContent, 'text/yaml');
+      downloadFile(`${manifest.id}_contract.h`, cppContent, 'text/plain');
+      downloadFile(`${manifest.id}_contract.ts`, tsContent, 'text/plain');
+      addLog(`[OK] Exported manifest and contracts: ${manifest.id} (Browser downloads)`);
     }
     captureStableSnapshot();
   }, [manifest, issues, addLog, captureStableSnapshot, directoryHandle]);

@@ -89,15 +89,16 @@ export const useManifestEditor = (
 
   const linkDirectory = useCallback(async () => {
     try {
-      // @ts-ignore
+      // @ts-expect-error: showDirectoryPicker is experimental and not in standard DOM types
       const handle = await window.showDirectoryPicker({
         mode: 'readwrite'
       });
       setDirectoryHandle(handle);
       addLog(`[OK] Workspace directory linked: ${handle.name}`);
-    } catch (err: any) {
-      if (err.name !== 'AbortError') {
-        addLog(`[ERROR] Failed to link directory: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      if (err instanceof Error && err.name !== 'AbortError') {
+        addLog(`[ERROR] Failed to link directory: ${message}`);
       }
     }
   }, [addLog]);
