@@ -2,6 +2,19 @@
 
 All notable changes to the OMEGA Manifest Editor will be documented in this file.
 
+## [7.2.0] - 2026-05-30
+### Added
+- **Floating Draggable Toolbar**: Added vertical left toolbar using `framer-motion` for CAD-like workspace layout.
+- **Draggable Handle**: Photoshop-like textured handle allowing free drag placement within workspace bounds.
+- **Centralized Tools**: Integrated Select Tool, Add Primitive flyout (Knob, Signal Port), Isolated Cell Studio launcher, Diagnostics modal launcher, blueprints gallery launcher, global configuration dialog, and HIL (Hardware-In-the-Loop) connection toggle.
+- **Visual Deprecation Cues**: Stylized duplicated menu entries in `MenuBar.tsx` and `Header.tsx` with strikethroughs, red/orange warning tints, and warning indicators for progressive validation.
+
+### Removed
+- **Aseptic Code Cleanup**: Fully decommissioned 9 legacy files:
+  - Custom YAML Viewport: `SourceViewer.tsx`, `SourceHeader.tsx`, `SourceCodeBlock.tsx`, `useSourceEditor.ts`.
+  - Obsolete Left Sidebar: `WorkbenchSidebar.tsx`, `ModuleHub.tsx`.
+  - Redundant Hooks: `usePropertyPanel.ts`, `useTransaction.ts`.
+
 ## [7.1.0] - 2026-05-11
 ### Added
 - **Multi-Document Support**: Real simultaneous editing of multiple `.acemm` files.

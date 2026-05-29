@@ -4,7 +4,8 @@ import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   MousePointer2, Plus, Cpu, Sparkles, 
-  Shield, Settings, Zap, Sliders, Radio
+  Shield, Settings, Zap, Sliders, Radio,
+  Maximize2, Minimize2
 } from 'lucide-react';
 
 interface ToolbarProps {
@@ -15,6 +16,8 @@ interface ToolbarProps {
   onOpenConfig: () => void;
   onOpenCellStudio: () => void;
   onAddEntity: (type: 'control' | 'jack') => void;
+  isZenMode: boolean;
+  onToggleZen: () => void;
 }
 
 export default function Toolbar({
@@ -24,7 +27,9 @@ export default function Toolbar({
   onOpenAudit,
   onOpenConfig,
   onOpenCellStudio,
-  onAddEntity
+  onAddEntity,
+  isZenMode,
+  onToggleZen
 }: ToolbarProps) {
   const [activeTool, setActiveTool] = useState<'select' | 'add' | 'studio' | null>('select');
   const [showAddMenu, setShowAddMenu] = useState(false);
@@ -180,6 +185,25 @@ export default function Toolbar({
           title={isLiveMode ? "HIL Engine: Live (Click to disconnect)" : "HIL Engine: Connect to WASM"}
         >
           <Zap className="w-3.5 h-3.5 fill-current" />
+        </button>
+
+        <div className="w-6 h-[1px] bg-outline/20 my-1 shrink-0" />
+
+        {/* 8. ZEN MODE */}
+        <button
+          onClick={onToggleZen}
+          className={`w-7 h-7 rounded-xs flex items-center justify-center transition-all ${
+            isZenMode 
+              ? 'bg-primary text-black shadow-[0_0_10px_rgba(var(--primary-rgb),0.3)]' 
+              : 'text-foreground/60 hover:text-foreground hover:bg-white/5'
+          }`}
+          title={isZenMode ? "Exit Zen Mode" : "Enter Zen Mode"}
+        >
+          {isZenMode ? (
+            <Minimize2 className="w-3.5 h-3.5" />
+          ) : (
+            <Maximize2 className="w-3.5 h-3.5" />
+          )}
         </button>
       </motion.div>
     </>

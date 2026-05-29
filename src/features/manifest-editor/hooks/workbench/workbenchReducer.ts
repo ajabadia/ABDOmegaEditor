@@ -38,6 +38,8 @@ export const createInitialState = (): WorkbenchState => ({
   isConfigModalOpen: false,
   isCellEditorOpen: false,
   studioMode: { isOpen: false },
+  isRightPanelCollapsed: false,
+  isZenMode: false,
   uiTheme: "dark",
   pendingFiles: [],
   isDiffModalOpen: false,
@@ -346,6 +348,22 @@ export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction)
       return {
         ...state,
         [key]: value !== undefined ? value : !state[key]
+      };
+    }
+
+    case "TOGGLE_RIGHT_PANEL":
+      return {
+        ...state,
+        isRightPanelCollapsed: !state.isRightPanelCollapsed
+      };
+
+    case "TOGGLE_ZEN_MODE": {
+      const nextZen = !state.isZenMode;
+      return {
+        ...state,
+        isZenMode: nextZen,
+        // When entering Zen Mode, collapse the right panel by default to maximize canvas
+        isRightPanelCollapsed: nextZen ? true : state.isRightPanelCollapsed
       };
     }
 

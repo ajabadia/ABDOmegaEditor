@@ -122,6 +122,12 @@ export function useWorkbenchState() {
       setStudioMode: (isOpen: boolean, cellId?: string) =>
         dispatch({ type: "SET_STUDIO_MODE", payload: { isOpen, cellId } }),
 
+      toggleRightPanel: () =>
+        dispatch({ type: "TOGGLE_RIGHT_PANEL" }),
+
+      toggleZenMode: () =>
+        dispatch({ type: "TOGGLE_ZEN_MODE" }),
+
       // PHASE 17.4 - RPC ORCHESTRATION ACTIONS
       rpc: {
         applyDelta: (patch: DeltaPatch) => {

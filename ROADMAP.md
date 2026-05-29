@@ -136,13 +136,17 @@ Este documento detalla el estado actual de industrialización y los próximos pa
     *   **Type Safety & Linting Hardening**: Solved TypeScript strict compiler errors across all renderers and components.
 
 ---
-## 🚀 Fase 25: Ergonomía & Refactor de Layout (Usabilidad)
-*   **Status**: PENDIENTE
-*   **Target**: Optimizar el espacio visual de la suite de ingeniería y reducir la carga cognitiva.
-*   **Scope**:
-    *   **Paneles Colapsables**: Implementar lógica de ocultación y colapso de inspector lateral, logs y menú de navegación.
-    *   **Ajustes de Tipografía**: Rediseñar la escala tipográfica en los labels y controles técnicos para alta legibilidad.
-    *   **Modo de Enfoque (Zen)**: Crear una vista simplificada sin paneles secundarios enfocada únicamente en el Rack.
+## ✅ Fase 25: Ergonomía & Refactor de Layout (Usabilidad) - Completado
+
+### ✅ Fase 25.1: Barra de Herramientas Flotante & Usabilidad CAD (Completado)
+- [x] **Draggable Floating Toolbar**: Barra de herramientas vertical y arrastrable (vía `framer-motion`) con manillar de estilo Photoshop para centralizar los modos de edición, adición de primitivas, blueprints, laboratorios, auditorías y conexión HIL en vivo.
+- [x] **Aseptic Code Decommissioning**: Limpieza física de 9 archivos obsoletos/muertos (YAML Editor legacy, sidebars obsoletos, y hooks de transacciones/propiedades discontinuados).
+- [x] **Progressive Deprecation Styling**: Aplicación de estilos de deprecación visual (rojo/naranja atenuado, texto tachado y puntos parpadeantes) a las opciones y menús duplicados en `MenuBar.tsx` y `Header.tsx` para su comprobación manual antes del retiro.
+
+### ✅ Fase 25.2: Paneles Colapsables & Modo Zen (Completado)
+- [x] **Paneles Colapsables**: Implementación de manillar interactivo vertical y transiciones de ancho (`0px` a `340px`) en el inspector, así como colapso de logs inferiores.
+- [x] **Ajustes de Tipografía**: Escala tipográfica optimizada para alta densidad visual en el Rack y labels técnicos.
+- [x] **Modo de Enfoque (Zen)**: Integración de botón Zen en Toolbar para contraer cabecera (`Header`), pie de página (`Footer`), logs e inspector con transiciones fluidas de opacidad y altura.
 
 ---
-*OMEGA — Engineering Standard V8.2 — Industrial Governance ERA 7.3.0 — Roadmap Updated 2026-05-29*
+*OMEGA — Engineering Standard V8.2 — Industrial Governance ERA 7.3.0 — Roadmap Updated 2026-05-30*
