@@ -8,7 +8,7 @@ Este briefing sirve como guía técnica para desarrolladores o agentes de IA que
 
 El **OMEGA Manifest Editor** es una SPA reactiva desarrollada sobre Next.js 16 (App Router) y React 19. Su único propósito es la creación, visualización y edición interactiva de manifiestos de configuración de módulos `.acemm` para el motor modular **ABDOmega**.
 
-La separación de la web principal garantiza ciclos de compilación sumamente rápidos y un despliegue aislado en Vercel bajo subdominios de utilidad (por ejemplo, `manifests.ajabadia.es`).
+La separación de la web principal garantiza ciclos de compilación sumamente rápidos y un despliegue aislado en Vercel en la URL oficial de producción [https://abd-omega-editor.vercel.app/](https://abd-omega-editor.vercel.app/) (apuntando al dominio de utilidad definitivo `manifests.ajabadia.es`).
 
 ---
 

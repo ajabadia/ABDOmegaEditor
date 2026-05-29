@@ -8,7 +8,7 @@ Este documento registra los hitos alcanzados y el estado actual de la migración
 
 | Hito / Característica | Estado | Notas |
 | :--- | :---: | :--- |
-| **Aislamiento de Repositorio** | ✅ Completado | Aislado de `ABDSynthsWeb` comercial. Estructura SPA autónoma lista para Vercel. |
+| **Separación de Repositorio** | ✅ Completado | Aislado de `ABDSynthsWeb` comercial. Desplegado en Vercel: https://abd-omega-editor.vercel.app/ |
 | **Actualización del Stack** | ✅ Completado | Migrado con éxito a Next.js 16.2.4, React 19.2.4 y Tailwind CSS 4. |
 | **Editor como Home** | ✅ Completado | La ruta raíz `/` renderiza de inmediato el workbench interactivo principal. |
 | **Sincronización Local (File System Access)** | ✅ Completado | Integración en caliente con pickers de carpetas locales en el navegador. |
