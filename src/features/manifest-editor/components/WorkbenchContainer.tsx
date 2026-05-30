@@ -357,7 +357,7 @@ export default function WorkbenchContainer({
       <HiddenFileHandlers onResourceUpload={editor.handleResourceUpload} setPendingFiles={actions.setPendingFiles} />
       
       {/* HEADER WRAPPER WITH ZEN HEIGHT TRANSITION */}
-      <div className={`transition-all duration-300 ${state.isZenMode ? 'h-0 opacity-0 pointer-events-none overflow-hidden' : 'h-auto'}`}>
+      <div className={`relative z-[100] transition-all duration-300 ${state.isZenMode ? 'h-0 opacity-0 pointer-events-none overflow-hidden' : 'h-auto'}`}>
         <Header 
           onReset={onReset} 
           onUndo={editor.undo}
