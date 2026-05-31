@@ -1,56 +1,41 @@
 'use client';
 
 import { useEffect } from "react";
-import type { WorkbenchState, WorkbenchAction, WorkbenchTab, WorkbenchPane } from "../../types/workbench";
+import type { WorkbenchState, WorkbenchAction } from "../../types/workbench";
 import { STORAGE_KEYS } from "../../constants/storage";
-import { DEFAULT_TABS } from "../../constants/workbench";
-import { createInitialState } from "./workbenchReducer";
 
 /**
- * OMEGA ERA 7.2.3 - WORKBENCH PERSISTENCE HOOK
+ * OMEGA ERA 8.0.0 - WORKBENCH PERSISTENCE HOOK
  * Handles hydration from localStorage and atomic sync of layout state.
  */
 export function useWorkbenchPersistence(
   state: WorkbenchState, 
   dispatch: React.Dispatch<WorkbenchAction>
 ) {
-  // 1. Client-Side Hydration (Industrial Sync)
+  // 1. Client-Side Hydration
   useEffect(() => {
     try {
       const stored = window.localStorage.getItem(STORAGE_KEYS.WORKBENCH_SESSION);
       if (stored) {
         const parsed = JSON.parse(stored) as Partial<WorkbenchState>;
         
-        // 1.1. Purge legacy core tabs from tabsById (Canonical ID Enforcement)
-        const coreTypes = ["orbital", "rack", "source", "uca-tree", "inspector", "history"];
-        const cleanTabsById: Record<string, WorkbenchTab> = { ...(parsed.tabsById || {}) };
-        const idMap: Record<string, string> = {}; // legacyId -> canonicalId
-
-        Object.keys(cleanTabsById).forEach((id: string) => {
-          const tab = cleanTabsById[id];
-          if (coreTypes.includes(tab.type)) {
-            const canonicalId = `tab-${tab.type}`;
-            if (id !== canonicalId) {
-              idMap[id] = canonicalId;
-              delete cleanTabsById[id];
-              cleanTabsById[canonicalId] = { ...tab, id: canonicalId };
-            }
+        // Sanitize activeTabIds mapping from legacy/prefixed formats
+        const sanitizeActiveTabId = (paneId: string, activeId: string | null | undefined): string | null => {
+          if (!activeId) return null;
+          const type = activeId.includes("-") ? activeId.split("-").pop() : activeId;
+          const validTypes = ["orbital", "rack", "source", "history"];
+          if (type && validTypes.includes(type)) {
+            return `${paneId}-${type}`;
           }
-        });
+          return null;
+        };
 
-        // 1.2. Sanitize Panes (Deduplicate and Map IDs)
-        const sanitizedPanes: Record<string, WorkbenchPane> = { ...(parsed.panesById || {}) };
-        Object.keys(sanitizedPanes).forEach((pid: string) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const sanitizedPanes: Record<string, any> = { ...(parsed.panesById || {}) };
+        Object.keys(sanitizedPanes).forEach((pid) => {
           const p = sanitizedPanes[pid];
-          if (!p || !p.tabIds) return;
-          
-          const mappedIds = p.tabIds.map((id: string) => idMap[id] || id);
-          p.tabIds = Array.from(new Set(mappedIds)).filter((id: string) => 
-            cleanTabsById[id] || DEFAULT_TABS.some(t => t.id === id)
-          );
-          
-          if (p.activeTabId && idMap[p.activeTabId]) {
-            p.activeTabId = idMap[p.activeTabId];
+          if (p) {
+            p.activeTabId = sanitizeActiveTabId(pid, p.activeTabId);
           }
         });
 
@@ -59,8 +44,8 @@ export function useWorkbenchPersistence(
           payload: { 
             state: {
               ...parsed,
-              panesById: sanitizedPanes,
-              tabsById: { ...createInitialState().tabsById, ...cleanTabsById }
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              panesById: sanitizedPanes as any
             }
           } 
         });
@@ -80,9 +65,11 @@ export function useWorkbenchPersistence(
         layout: state.layout,
         tabViewState: state.tabViewState,
         selectedNodeId: state.selectedNodeId,
-        pinnedNodeId: state.pinnedNodeId
+        pinnedNodeId: state.pinnedNodeId,
+        primarySplitRatio: state.primarySplitRatio,
+        secondarySplitRatio: state.secondarySplitRatio
       };
       window.localStorage.setItem(STORAGE_KEYS.WORKBENCH_SESSION, JSON.stringify(data));
     }
-  }, [state.tabsById, state.panesById, state.focusedPaneId, state.layout, state.tabViewState, state.selectedNodeId, state.pinnedNodeId]);
+  }, [state.tabsById, state.panesById, state.focusedPaneId, state.layout, state.tabViewState, state.selectedNodeId, state.pinnedNodeId, state.primarySplitRatio, state.secondarySplitRatio]);
 }

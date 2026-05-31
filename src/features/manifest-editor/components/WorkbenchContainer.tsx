@@ -12,7 +12,7 @@ import { HiddenFileHandlers } from './shared/HiddenFileHandlers';
 import TemplateGallery from './gallery/TemplateGallery';
 import RightDockContainer from './inspector/RightDockContainer';
 import WorkbenchPane from './workspace/WorkbenchPane';
-import { SplitDivider } from './workspace/SplitDivider';
+import { SplitDivider, HorizontalSplitDivider } from './workspace/SplitDivider';
 import CellStudioContainer from './lab/CellStudioContainer';
 import Toolbar from './layout/Toolbar';
 
@@ -278,6 +278,14 @@ export default function WorkbenchContainer({
     actions.setLayoutRatio(state.layout.ratio + delta);
   }, [actions, state.layout.ratio]);
 
+  const handleDragPrimarySplitRatio = useCallback((delta: number) => {
+    actions.setPrimarySplitRatio(state.primarySplitRatio + delta);
+  }, [actions, state.primarySplitRatio]);
+
+  const handleDragSecondarySplitRatio = useCallback((delta: number) => {
+    actions.setSecondarySplitRatio(state.secondarySplitRatio + delta);
+  }, [actions, state.secondarySplitRatio]);
+
   const handleDragRatioEnd = useCallback(() => {
   }, []);
 
@@ -360,6 +368,15 @@ export default function WorkbenchContainer({
         onCompareWithHistory={handleCompareWithHistory}
         hiddenNodeIds={state.hiddenNodeIds}
         lockedNodeIds={state.lockedNodeIds}
+        onMoveTab={actions.moveTabToPane}
+        isSplitH={paneId === 'primary' || paneId === 'primary_bottom' ? state.isPrimarySplitH : state.isSecondarySplitH}
+        onToggleSplitH={paneId === 'primary' || paneId === 'secondary' ? () => actions.toggleHorizontalSplit(paneId) : undefined}
+        isSplitV={paneId === 'primary' ? derived.isSplit : undefined}
+        onToggleSplitV={paneId === 'primary' ? () => {
+          const nextMode = derived.isSplit ? 'single' : 'vertical';
+          actions.setLayoutMode(nextMode);
+        } : undefined}
+        onClosePane={paneId !== 'primary' ? () => actions.closePane(paneId) : undefined}
       />
     );
   };
@@ -374,13 +391,6 @@ export default function WorkbenchContainer({
           onReset={onReset} 
           onUndo={editor.undo}
           onRedo={editor.redo}
-          onExportManifest={editor.exportManifest} 
-          onExportPack={editor.exportOmegaPack}
-          onExportCAD={() => editor.exportCADBlueprint()} onExportContract={handleExportContract}
-          onLinkDirectory={editor.linkDirectory}
-          isDirectoryLinked={editor.isDirectoryLinked}
-          onGenerateMockup={() => actions.toggleUIState('mockupOpen')} onDeploy={onDeploy}
-          onToggleLogs={() => actions.toggleUIState('showLogs')} showLogs={state.showLogs}
           activeTabType={(activeTab?.type && ['orbital', 'rack', 'source', 'history'].includes(activeTab.type)) ? (activeTab.type as 'orbital' | 'rack' | 'source' | 'history') : 'rack'}
           onTabFocus={(type) => {
             actions.openTab({ 
@@ -389,6 +399,13 @@ export default function WorkbenchContainer({
               title: type.charAt(0).toUpperCase() + type.slice(1) 
             });
           }}
+          onExportManifest={editor.exportManifest} 
+          onExportPack={editor.exportOmegaPack}
+          onExportCAD={() => editor.exportCADBlueprint()} onExportContract={handleExportContract}
+          onLinkDirectory={editor.linkDirectory}
+          isDirectoryLinked={editor.isDirectoryLinked}
+          onGenerateMockup={() => actions.toggleUIState('mockupOpen')} onDeploy={onDeploy}
+          onToggleLogs={() => actions.toggleUIState('showLogs')} showLogs={state.showLogs}
           uiTheme={state.uiTheme}
           setUiTheme={actions.setUiTheme}
           onHelp={() => actions.setHelpState(true)}
@@ -399,11 +416,6 @@ export default function WorkbenchContainer({
           onOpenConfig={handleOpenConfig}
           onOpenCellEditor={handleOpenCellEditor}
           onOpenGallery={() => setIsGalleryOpen(true)}
-          isSplit={derived.isSplit}
-          onToggleSplit={() => {
-            const nextMode = derived.isSplit ? 'single' : 'vertical';
-            actions.setLayoutMode(nextMode);
-          }}
           windowStates={{
             window_layers: state.window_layers,
             window_properties: state.window_properties,
@@ -462,21 +474,45 @@ export default function WorkbenchContainer({
                 isZenMode={state.isZenMode}
                 onToggleZen={actions.toggleZenMode}
               />
-              {/* PRIMARY PANE */}
+              {/* PRIMARY PANE COLUMN */}
               <div 
-                className="flex flex-col overflow-hidden" 
+                className="flex flex-col overflow-hidden h-full" 
                 style={{ width: derived.isSplit ? `${state.layout.ratio * 100}%` : '100%' }}
               >
-                {renderPane('primary')}
+                {state.isPrimarySplitH ? (
+                  <>
+                    <div className="overflow-hidden min-h-[80px] flex flex-col" style={{ height: `${state.primarySplitRatio * 100}%` }}>
+                      {renderPane('primary')}
+                    </div>
+                    <HorizontalSplitDivider onDrag={handleDragPrimarySplitRatio} />
+                    <div className="flex-1 overflow-hidden min-h-[80px] flex flex-col" style={{ height: `${(1 - state.primarySplitRatio) * 100}%` }}>
+                      {renderPane('primary_bottom')}
+                    </div>
+                  </>
+                ) : (
+                  renderPane('primary')
+                )}
               </div>
 
               {/* SPLIT DIVIDER */}
               {derived.isSplit && <SplitDivider onDrag={handleDragRatio} />}
 
-              {/* SECONDARY PANE (SPLIT) */}
+              {/* SECONDARY PANE COLUMN */}
               {derived.isSplit && (
-                <div className="flex-1 border-l wb-outline flex flex-col overflow-hidden animate-in slide-in-from-right duration-500">
-                  {renderPane('secondary')}
+                <div className="flex-1 border-l wb-outline flex flex-col overflow-hidden h-full animate-in slide-in-from-right duration-500">
+                  {state.isSecondarySplitH ? (
+                    <>
+                      <div className="overflow-hidden min-h-[80px] flex flex-col" style={{ height: `${state.secondarySplitRatio * 100}%` }}>
+                        {renderPane('secondary')}
+                      </div>
+                      <HorizontalSplitDivider onDrag={handleDragSecondarySplitRatio} />
+                      <div className="flex-1 overflow-hidden min-h-[80px] flex flex-col" style={{ height: `${(1 - state.secondarySplitRatio) * 100}%` }}>
+                        {renderPane('secondary_bottom')}
+                      </div>
+                    </>
+                  ) : (
+                    renderPane('secondary')
+                  )}
                 </div>
               )}
             </div>
@@ -593,6 +629,19 @@ export default function WorkbenchContainer({
         <WorkbenchFooter 
           watchdogStatus={watchdog.status}
           watchdogTime={watchdog.lastUpdate}
+          activeTabType={(activeTab?.type && ['orbital', 'rack', 'source', 'history'].includes(activeTab.type)) ? (activeTab.type as 'orbital' | 'rack' | 'source' | 'history') : 'rack'}
+          onTabFocus={(type) => {
+            actions.openTab({ 
+              id: `tab-${type}`,
+              type: type as WorkbenchTabType, 
+              title: type.charAt(0).toUpperCase() + type.slice(1) 
+            });
+          }}
+          isSplit={derived.isSplit}
+          onToggleSplit={() => {
+            const nextMode = derived.isSplit ? 'single' : 'vertical';
+            actions.setLayoutMode(nextMode);
+          }}
         />
       )}
     </div>

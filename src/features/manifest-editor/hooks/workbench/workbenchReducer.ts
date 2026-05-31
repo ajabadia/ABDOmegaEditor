@@ -3,181 +3,133 @@ import type {
   WorkbenchAction, 
   WorkbenchTab, 
   WorkbenchPane, 
-  WorkbenchPaneId 
+  WorkbenchPaneId,
+  WorkbenchTabType
 } from "../../types/workbench";
-import { DEFAULT_TABS, WORKBENCH_LAYOUT_CONSTRAINTS } from "../../constants/workbench";
+import { WORKBENCH_LAYOUT_CONSTRAINTS } from "../../constants/workbench";
 
-export const createInitialState = (): WorkbenchState => ({
-  tabsById: Object.fromEntries(DEFAULT_TABS.map((tab) => [tab.id, tab])),
-  panesById: {
-    primary: {
-      id: "primary",
-      tabIds: DEFAULT_TABS.map((tab) => tab.id),
-      activeTabId: "tab-rack",
+const paneIds: WorkbenchPaneId[] = ["primary", "secondary", "primary_bottom", "secondary_bottom"];
+const tabTypes: Array<"orbital" | "rack" | "source" | "history"> = ["orbital", "rack", "source", "history"];
+const tabTitles: Record<"orbital" | "rack" | "source" | "history", string> = {
+  orbital: "Orbital",
+  rack: "Rack",
+  source: "Source",
+  history: "History"
+};
+
+export const createInitialState = (): WorkbenchState => {
+  const tabsById: Record<string, WorkbenchTab> = {};
+  paneIds.forEach(paneId => {
+    tabTypes.forEach(type => {
+      const id = `${paneId}-${type}`;
+      tabsById[id] = { 
+        id, 
+        type, 
+        title: tabTitles[type], 
+        persistent: true, 
+        closable: false, 
+        payload: { documentId: 'primary' } 
+      };
+    });
+  });
+
+  return {
+    tabsById,
+    panesById: {
+      primary: {
+        id: "primary",
+        tabIds: tabTypes.map(type => `primary-${type}`),
+        activeTabId: "primary-rack",
+      },
+      secondary: {
+        id: "secondary",
+        tabIds: tabTypes.map(type => `secondary-${type}`),
+        activeTabId: "secondary-source",
+      },
+      primary_bottom: {
+        id: "primary_bottom",
+        tabIds: tabTypes.map(type => `primary_bottom-${type}`),
+        activeTabId: "primary_bottom-source",
+      },
+      secondary_bottom: {
+        id: "secondary_bottom",
+        tabIds: tabTypes.map(type => `secondary_bottom-${type}`),
+        activeTabId: "secondary_bottom-history",
+      },
     },
-    secondary: {
-      id: "secondary",
-      tabIds: [],
-      activeTabId: null,
-    },
-  },
-  focusedPaneId: "primary",
-  layout: { mode: "single", ratio: WORKBENCH_LAYOUT_CONSTRAINTS.DEFAULT_RATIO },
-  selectedNodeId: null,
-  multiSelectedNodeIds: [],
-  pinnedNodeId: null,
-  expandedNodeIds: [],
-  tabViewState: {},
-  showLogs: false,
-  isLiveMode: false,
-  showModGrid: false,
-  helpState: { isOpen: false },
-  mockupOpen: false,
-  isAuditModalOpen: false,
-  isAboutModalOpen: false,
-  isConfigModalOpen: false,
-  isCellEditorOpen: false,
-  studioMode: { isOpen: false },
-  isRightPanelCollapsed: false,
-  isZenMode: false,
-  window_layers: true,
-  window_properties: true,
-  window_rack_properties: false,
-  window_blueprints: true,
-  window_info: false,
-  window_history: false,
-  window_logs: false,
-  hiddenNodeIds: [],
-  lockedNodeIds: [],
-  uiTheme: "dark",
-  pendingFiles: [],
-  isDiffModalOpen: false,
-  activeDiff: null,
-});
+    focusedPaneId: "primary",
+    layout: { mode: "single", ratio: WORKBENCH_LAYOUT_CONSTRAINTS.DEFAULT_RATIO },
+    selectedNodeId: null,
+    multiSelectedNodeIds: [],
+    pinnedNodeId: null,
+    expandedNodeIds: [],
+    tabViewState: {},
+    showLogs: false,
+    isLiveMode: false,
+    showModGrid: false,
+    helpState: { isOpen: false },
+    mockupOpen: false,
+    isAuditModalOpen: false,
+    isAboutModalOpen: false,
+    isConfigModalOpen: false,
+    isCellEditorOpen: false,
+    studioMode: { isOpen: false },
+    isRightPanelCollapsed: false,
+    isZenMode: false,
+    window_layers: true,
+    window_properties: true,
+    window_rack_properties: false,
+    window_blueprints: true,
+    window_info: false,
+    window_history: false,
+    window_logs: false,
+    hiddenNodeIds: [],
+    lockedNodeIds: [],
+    uiTheme: "dark",
+    pendingFiles: [],
+    isDiffModalOpen: false,
+    activeDiff: null,
+    isPrimarySplitH: false,
+    isSecondarySplitH: false,
+    primarySplitRatio: 0.5,
+    secondarySplitRatio: 0.5,
+  };
+};
 
 const clampRatio = (ratio: number) => 
   Math.min(WORKBENCH_LAYOUT_CONSTRAINTS.MAX_RATIO, Math.max(WORKBENCH_LAYOUT_CONSTRAINTS.MIN_RATIO, ratio));
 
-const findPaneContainingTab = (
-  panesById: WorkbenchState["panesById"],
-  tabId: string
-): WorkbenchPaneId | null => {
-  if (panesById.primary.tabIds.includes(tabId)) return "primary";
-  if (panesById.secondary.tabIds.includes(tabId)) return "secondary";
-  return null;
-};
-
-const ensureActiveTab = (pane: WorkbenchPane): WorkbenchPane => {
-  if (pane.activeTabId && pane.tabIds.includes(pane.activeTabId)) return pane;
-  return {
-    ...pane,
-    activeTabId: pane.tabIds[0] ?? null,
-  };
-};
-
-const insertAt = (items: string[], value: string, index?: number) => {
-  const next = items.filter((item) => item !== value);
-  if (index == null || index < 0 || index > next.length) return [...next, value];
-  return [...next.slice(0, index), value, ...next.slice(index)];
+const getNextActiveTabId = (parentActiveTabId: string | null, targetPaneId: WorkbenchPaneId): string => {
+  const defaultTypes: WorkbenchTabType[] = ["orbital", "rack", "source", "history"];
+  if (!parentActiveTabId) return `${targetPaneId}-rack`;
+  const parentType = parentActiveTabId.split("-")[1] as WorkbenchTabType;
+  const parentIndex = defaultTypes.indexOf(parentType);
+  const nextType = defaultTypes[(parentIndex + 1) % defaultTypes.length];
+  return `${targetPaneId}-${nextType}`;
 };
 
 export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction): WorkbenchState {
   switch (action.type) {
     case "OPEN_TAB": {
       const paneId = action.payload.targetPaneId ?? state.focusedPaneId;
-      const coreTypes = ["orbital", "rack", "source", "uca-tree", "inspector", "history"];
-      const isCoreTab = coreTypes.includes(action.payload.type);
-      const tabId = action.payload.id ?? (isCoreTab ? `tab-${action.payload.type}` : `${action.payload.type}-${Math.random().toString(36).slice(2, 10)}`);
+      const type = action.payload.type;
+      const tabId = `${paneId}-${type}`;
       
-      if (state.tabsById[tabId]) {
-        const currentPaneId = findPaneContainingTab(state.panesById, tabId);
-        const nextPanes = { ...state.panesById };
-        
-        if (currentPaneId && currentPaneId !== paneId) {
-          nextPanes[currentPaneId] = ensureActiveTab({
-            ...nextPanes[currentPaneId],
-            tabIds: nextPanes[currentPaneId].tabIds.filter(id => id !== tabId)
-          });
-        }
-        
-        nextPanes[paneId] = ensureActiveTab({
-          ...nextPanes[paneId],
-          tabIds: Array.from(new Set(nextPanes[paneId].tabIds.includes(tabId) ? nextPanes[paneId].tabIds : [...nextPanes[paneId].tabIds, tabId])),
-          activeTabId: tabId,
-        });
-
-        return {
-          ...state,
-          focusedPaneId: paneId,
-          panesById: nextPanes
-        };
-      }
-
-      if (isCoreTab) {
-        const existingId = Object.keys(state.tabsById).find(id => state.tabsById[id].type === action.payload.type);
-        if (existingId && existingId !== tabId) {
-          return workbenchReducer(state, { ...action, payload: { ...action.payload, id: existingId } });
-        }
-      }
-
-      const nextTab: WorkbenchTab = {
-        id: tabId,
-        type: action.payload.type,
-        title: action.payload.title,
-        closable: action.payload.closable ?? true,
-        persistent: action.payload.persistent ?? false,
-        payload: action.payload.payload,
-      };
-
-      const nextPane = ensureActiveTab({
-        ...state.panesById[paneId],
-        tabIds: Array.from(new Set([...state.panesById[paneId].tabIds, tabId])),
-        activeTabId: tabId,
-      });
-
       return {
         ...state,
-        tabsById: {
-          ...state.tabsById,
-          [tabId]: nextTab,
-        },
+        focusedPaneId: paneId,
         panesById: {
           ...state.panesById,
-          [paneId]: nextPane,
-        },
-        focusedPaneId: paneId,
+          [paneId]: {
+            ...state.panesById[paneId],
+            activeTabId: tabId,
+          }
+        }
       };
     }
 
-    case "CLOSE_TAB": {
-      const { tabId } = action.payload;
-      const tab = state.tabsById[tabId];
-      if (!tab || tab.persistent || tab.closable === false) return state;
-
-      const sourcePaneId = findPaneContainingTab(state.panesById, tabId);
-      if (!sourcePaneId) return state;
-      const nextTabs = { ...state.tabsById };
-      delete nextTabs[tabId];
-
-      const nextPanes = { ...state.panesById };
-      Object.keys(nextPanes).forEach((pid) => {
-        const pId = pid as WorkbenchPaneId;
-        nextPanes[pId] = ensureActiveTab({
-          ...nextPanes[pId],
-          tabIds: nextPanes[pId].tabIds.filter((id) => id !== tabId),
-        });
-      });
-
-      const nextViewState = { ...state.tabViewState };
-      delete nextViewState[tabId];
-
-      return {
-        ...state,
-        tabsById: nextTabs,
-        panesById: nextPanes,
-        tabViewState: nextViewState,
-      };
-    }
+    case "CLOSE_TAB":
+      return state; // Tabs are static and cannot be closed individually
 
     case "REORDER_TABS": {
       const { paneId, tabIds } = action.payload;
@@ -195,7 +147,8 @@ export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction)
 
     case "FOCUS_TAB": {
       const { paneId, tabId } = action.payload;
-      if (!state.panesById[paneId].tabIds.includes(tabId)) return state;
+      const cleanTabId = tabId.startsWith("tab-") ? `${paneId}-${tabId.substring(4)}` : tabId;
+      if (!state.panesById[paneId].tabIds.includes(cleanTabId)) return state;
 
       return {
         ...state,
@@ -204,7 +157,7 @@ export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction)
           ...state.panesById,
           [paneId]: {
             ...state.panesById[paneId],
-            activeTabId: tabId,
+            activeTabId: cleanTabId,
           },
         },
       };
@@ -217,53 +170,19 @@ export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction)
       };
 
     case "MOVE_TAB_TO_PANE": {
-      const { tabId, targetPaneId, index } = action.payload;
-      const sourcePaneId = findPaneContainingTab(state.panesById, tabId);
-      if (!sourcePaneId) return state;
-      
-      if (sourcePaneId === targetPaneId) {
-        const samePane = state.panesById[targetPaneId];
-        return {
-          ...state,
-          panesById: {
-            ...state.panesById,
-            [targetPaneId]: {
-              ...samePane,
-              tabIds: insertAt(samePane.tabIds, tabId, index),
-              activeTabId: tabId,
-            },
-          },
-          focusedPaneId: targetPaneId,
-        };
-      }
-
-      const sourcePane = ensureActiveTab({
-        ...state.panesById[sourcePaneId],
-        tabIds: state.panesById[sourcePaneId].tabIds.filter((id) => id !== tabId),
-        activeTabId:
-          state.panesById[sourcePaneId].activeTabId === tabId
-            ? null
-            : state.panesById[sourcePaneId].activeTabId,
-      });
-
-      const targetPane = ensureActiveTab({
-        ...state.panesById[targetPaneId],
-        tabIds: insertAt(state.panesById[targetPaneId].tabIds, tabId, index),
-        activeTabId: tabId,
-      });
-
+      const { tabId, targetPaneId } = action.payload;
+      const type = tabId.split("-")[1] as WorkbenchTabType;
+      const targetTabId = `${targetPaneId}-${type}`;
       return {
         ...state,
         panesById: {
           ...state.panesById,
-          [sourcePaneId]: sourcePane,
-          [targetPaneId]: targetPane,
+          [targetPaneId]: {
+            ...state.panesById[targetPaneId],
+            activeTabId: targetTabId,
+          }
         },
-        focusedPaneId: targetPaneId,
-        layout:
-          state.layout.mode === "single"
-            ? { ...state.layout, mode: "vertical" }
-            : state.layout,
+        focusedPaneId: targetPaneId
       };
     }
 
@@ -271,23 +190,9 @@ export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction)
       const { mode } = action.payload;
       const nextPanes = { ...state.panesById };
 
-      // SMART SPLIT: If going to vertical and secondary is empty, move 'tab-source' there
-      if (mode === "vertical" && nextPanes.secondary.tabIds.length === 0) {
-        if (nextPanes.primary.tabIds.includes("tab-source")) {
-           nextPanes.primary.tabIds = nextPanes.primary.tabIds.filter(id => id !== "tab-source");
-           nextPanes.primary = ensureActiveTab(nextPanes.primary);
-           
-           nextPanes.secondary.tabIds = ["tab-source"];
-           nextPanes.secondary.activeTabId = "tab-source";
-        }
-      }
-
-      // SMART COLLAPSE: If going back to single, move all secondary tabs to primary
-      if (mode === "single" && nextPanes.secondary.tabIds.length > 0) {
-        nextPanes.primary.tabIds = Array.from(new Set([...nextPanes.primary.tabIds, ...nextPanes.secondary.tabIds]));
-        nextPanes.secondary.tabIds = [];
-        nextPanes.secondary.activeTabId = null;
-        nextPanes.primary = ensureActiveTab(nextPanes.primary);
+      // Set secondary pane active tab to the next available one when splitting
+      if (mode === "vertical") {
+        nextPanes.secondary.activeTabId = getNextActiveTabId(nextPanes.primary.activeTabId, "secondary");
       }
 
       return {
@@ -297,6 +202,8 @@ export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction)
           ...state.layout,
           mode: action.payload.mode,
         },
+        isPrimarySplitH: mode === "single" ? false : state.isPrimarySplitH,
+        isSecondarySplitH: mode === "single" ? false : state.isSecondarySplitH,
       };
     }
 
@@ -309,11 +216,22 @@ export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction)
         },
       };
 
+    case "SET_PRIMARY_SPLIT_RATIO":
+      return {
+        ...state,
+        primarySplitRatio: Math.min(0.9, Math.max(0.1, action.payload.ratio)),
+      };
+
+    case "SET_SECONDARY_SPLIT_RATIO":
+      return {
+        ...state,
+        secondarySplitRatio: Math.min(0.9, Math.max(0.1, action.payload.ratio)),
+      };
+
     case "SET_SELECTED_NODE":
       return {
         ...state,
         selectedNodeId: action.payload.nodeId,
-        // Auto-sync multi-selection if only one item is selected normally
         multiSelectedNodeIds: action.payload.nodeId ? [action.payload.nodeId] : []
       };
     
@@ -321,8 +239,6 @@ export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction)
       return {
         ...state,
         multiSelectedNodeIds: action.payload.nodeIds,
-        // If multiple are selected, clear single selection or keep first?
-        // Standard OMEGA rule: last one selected is the "primary" focus for inspector details
         selectedNodeId: action.payload.nodeIds.length > 0 ? action.payload.nodeIds[action.payload.nodeIds.length - 1] : null
       };
     
@@ -371,7 +287,6 @@ export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction)
       return {
         ...state,
         isZenMode: nextZen,
-        // When entering Zen Mode, collapse the right panel by default to maximize canvas
         isRightPanelCollapsed: nextZen ? true : state.isRightPanelCollapsed
       };
     }
@@ -379,8 +294,6 @@ export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction)
     case "TOGGLE_WINDOW": {
       const { name } = action.payload;
       const nextValue = !state[name];
-      
-      // Auto expand right panel if we open any window and right panel is collapsed
       const isExpanding = nextValue && state.isRightPanelCollapsed;
       
       return {
@@ -425,14 +338,97 @@ export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction)
         helpState: { isOpen: action.payload.isOpen, sectionId: action.payload.sectionId }
       };
     }
+
     case "SET_UI_THEME":
       return { ...state, uiTheme: action.payload.theme };
+
     case "SET_PENDING_FILES":
       return { ...state, pendingFiles: action.payload.files };
+
     case "SET_ACTIVE_DIFF":
       return { ...state, activeDiff: action.payload.diff };
-    case "HYDRATE_WORKBENCH":
-      return { ...state, ...action.payload.state };
+
+    case "TOGGLE_HORIZONTAL_SPLIT": {
+      const { paneId } = action.payload;
+      const isSplitH = paneId === "primary" ? !state.isPrimarySplitH : !state.isSecondarySplitH;
+      const key = paneId === "primary" ? "isPrimarySplitH" : "isSecondarySplitH";
+      
+      const nextPanes = { ...state.panesById };
+      
+      if (isSplitH) {
+        const bottomId = paneId === "primary" ? "primary_bottom" as const : "secondary_bottom" as const;
+        nextPanes[bottomId].activeTabId = getNextActiveTabId(nextPanes[paneId].activeTabId, bottomId);
+      }
+      
+      return {
+        ...state,
+        [key]: isSplitH,
+        panesById: nextPanes,
+        focusedPaneId: paneId
+      };
+    }
+
+    case "CLOSE_PANE": {
+      const { paneId } = action.payload;
+      if (paneId === "primary") return state;
+      
+      let nextLayoutMode = state.layout.mode;
+      let nextPrimarySplitH = state.isPrimarySplitH;
+      let nextSecondarySplitH = state.isSecondarySplitH;
+
+      if (paneId === "primary_bottom") {
+        nextPrimarySplitH = false;
+      } else if (paneId === "secondary") {
+        nextLayoutMode = "single";
+        nextSecondarySplitH = false;
+      } else if (paneId === "secondary_bottom") {
+        nextSecondarySplitH = false;
+      }
+
+      return {
+        ...state,
+        layout: {
+          ...state.layout,
+          mode: nextLayoutMode,
+        },
+        isPrimarySplitH: nextPrimarySplitH,
+        isSecondarySplitH: nextSecondarySplitH,
+        focusedPaneId: "primary"
+      };
+    }
+
+    case "HYDRATE_WORKBENCH": {
+      const hydratedState = action.payload.state;
+      const initialState = createInitialState();
+      
+      const mergedPanes = {
+        primary: {
+          ...initialState.panesById.primary,
+          activeTabId: hydratedState?.panesById?.primary?.activeTabId ?? initialState.panesById.primary.activeTabId
+        },
+        secondary: {
+          ...initialState.panesById.secondary,
+          activeTabId: hydratedState?.panesById?.secondary?.activeTabId ?? initialState.panesById.secondary.activeTabId
+        },
+        primary_bottom: {
+          ...initialState.panesById.primary_bottom,
+          activeTabId: hydratedState?.panesById?.primary_bottom?.activeTabId ?? initialState.panesById.primary_bottom.activeTabId
+        },
+        secondary_bottom: {
+          ...initialState.panesById.secondary_bottom,
+          activeTabId: hydratedState?.panesById?.secondary_bottom?.activeTabId ?? initialState.panesById.secondary_bottom.activeTabId
+        },
+      };
+
+      return {
+        ...state,
+        ...hydratedState,
+        tabsById: initialState.tabsById,
+        panesById: mergedPanes,
+        primarySplitRatio: hydratedState?.primarySplitRatio ?? initialState.primarySplitRatio,
+        secondarySplitRatio: hydratedState?.secondarySplitRatio ?? initialState.secondarySplitRatio,
+      };
+    }
 
     default:
       return state;

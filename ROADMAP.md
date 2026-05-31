@@ -156,4 +156,12 @@ Este documento detalla el estado actual de industrialización y los próximos pa
 - [x] **Selective Undo/Redo History**: Exclusión de acciones de UI (zoom, split, colapso de paneles, ratio) en el stack de historia, limitando el deshacer/rehacer a modificaciones estructurales reales del Rack/Manifiesto.
 
 ---
-*OMEGA — Engineering Standard V8.2 — Industrial Governance ERA 8.0.0 — Roadmap Updated 2026-05-31*
+## ✅ Fase 27: Multi-Pane Split Layout & Static Views (Era 8.1.0 - Completado)
+- [x] **Header & Footer Simplification**: Removed settings gear, vertical split button, and duplicate view selectors from the main header. Relocated view selectors (`Orbital`, `Rack`, `Source`, `History`) and vertical split toggle to the central section of the footer.
+- [x] **Compact Compliance Badge**: Redesigned the compliance badge to be a highly compact horizontal badge with hover tooltip details for compliance failures and latency metrics.
+- [x] **Static 4-Option Panes**: Configured all 4 workbench panels (`primary`, `primary_bottom`, `secondary`, `secondary_bottom`) to always display the 4 canonical view options statically, allowing parallel side-by-side view comparisons.
+- [x] **Independent Horizontal Resizing**: Implemented draggable `HorizontalSplitDivider` components with dedicated split ratios (`primarySplitRatio`, `secondarySplitRatio`), allowing row splits on the left and right columns to be resized independently.
+- [x] **Close Pane & Safe Hydration**: Added close pane handlers (`X`) to collapsible panels and safe-guarded the hydration process in `useWorkbenchPersistence.ts` to cleanly restore layout ratios and prefix active tab IDs correctly without runtime crashes.
+
+---
+*OMEGA — Engineering Standard V8.2 — Industrial Governance ERA 8.1.0 — Roadmap Updated 2026-05-31*

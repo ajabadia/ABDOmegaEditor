@@ -21,6 +21,14 @@ interface WorkbenchPaneProps {
   onDiagnosticClick: (tabId: string, diag: unknown) => void;
   simulationBridge: SimulationBridgeState;
   
+  // Drag and drop & horizontal split
+  onMoveTab?: ((tabId: string, paneId: WorkbenchPaneId) => void) | undefined;
+  isSplitH?: boolean | undefined;
+  onToggleSplitH?: (() => void) | undefined;
+  isSplitV?: boolean | undefined;
+  onToggleSplitV?: (() => void) | undefined;
+  onClosePane?: (() => void) | undefined;
+  
   // Data
   manifest: OMEGA_Manifest;
   contract: OMEGA_Contract | null;
@@ -62,7 +70,23 @@ interface WorkbenchPaneProps {
 }
 
 const WorkbenchPane = React.memo((props: WorkbenchPaneProps) => {
-  const { paneId, tabs, activeTabId, isFocused, onTabSelect, onTabClose, onPaneFocus, onDiagnosticClick, simulationBridge } = props;
+  const { 
+    paneId, 
+    tabs, 
+    activeTabId, 
+    isFocused, 
+    onTabSelect, 
+    onTabClose, 
+    onPaneFocus, 
+    onDiagnosticClick, 
+    simulationBridge,
+    onMoveTab,
+    isSplitH,
+    onToggleSplitH,
+    isSplitV,
+    onToggleSplitV,
+    onClosePane
+  } = props;
   
   const activeTab = activeTabId ? tabs.find(t => t.id === activeTabId) : null;
   
@@ -83,6 +107,12 @@ const WorkbenchPane = React.memo((props: WorkbenchPaneProps) => {
         onTabClose={onTabClose}
         onPaneFocus={onPaneFocus}
         onDiagnosticClick={onDiagnosticClick}
+        onMoveTab={onMoveTab}
+        isSplitH={isSplitH}
+        onToggleSplitH={onToggleSplitH}
+        isSplitV={isSplitV}
+        onToggleSplitV={onToggleSplitV}
+        onClosePane={onClosePane}
       />
       
       <div className="flex-1 flex flex-col overflow-hidden relative">

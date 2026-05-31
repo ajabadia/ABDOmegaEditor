@@ -56,47 +56,37 @@ export function ComplianceBadge({ audit, onClick }: ComplianceBadgeProps) {
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
-      className={`flex items-center gap-4 px-3 py-1.5 rounded-sm border ${config.bg} ${config.border} transition-all group relative overflow-hidden`}
+      className={`flex items-center gap-2.5 px-2 py-1 rounded-sm border ${config.bg} ${config.border} transition-all group relative overflow-visible`}
     >
       {config.pulse && (
         <motion.div 
           animate={{ opacity: [0.2, 0.5, 0.2] }}
           transition={{ duration: 1.5, repeat: Infinity }}
-          className="absolute inset-0 bg-red-500/20 pointer-events-none"
+          className="absolute inset-0 bg-red-500/20 pointer-events-none rounded-sm"
         />
       )}
       
-      <div className={`${config.color}`}>
+      {/* Icon Area with hover pop-up */}
+      <div className={`${config.color} relative group/status`}>
         {config.icon}
+        <div className="absolute top-8 left-1/2 -translate-x-1/2 bg-black/95 border border-outline px-2 py-1 rounded-xs shadow-lg text-[7px] font-mono font-bold wb-text whitespace-nowrap opacity-0 pointer-events-none group-hover/status:opacity-100 transition-opacity z-[999] uppercase tracking-wider">
+          {config.label} ({score}%)
+        </div>
       </div>
 
-      <div className="flex flex-col items-start leading-none">
-        <span className={`text-[7px] font-black uppercase tracking-[0.2em] ${config.color}`}>
-          {config.label}
+      <div className="h-4 w-px bg-white/10" />
+
+      {/* Latency & Health Indicator with hover pop-up */}
+      <div className="flex items-center gap-2 relative group/health">
+        <span className={`text-[8px] font-mono font-bold ${health.lastLatencyMs > 200 ? 'text-amber-400' : 'text-primary/60'}`}>
+          {health.lastLatencyMs}ms
         </span>
-        <div className="flex items-center gap-2 mt-0.5">
-          <div className="h-1 w-12 bg-white/5 rounded-full overflow-hidden">
-            <motion.div 
-              initial={{ width: 0 }}
-              animate={{ width: `${score}%` }}
-              className={`h-full ${score > 80 ? 'bg-primary' : score > 50 ? 'bg-amber-500' : 'bg-red-500'}`}
-            />
-          </div>
-          <span className="text-[9px] font-mono font-bold wb-text">
-            {score}
-          </span>
+        <div className={`w-1.5 h-1.5 rounded-full ${health.failureCount > 0 ? 'bg-red-500 animate-pulse' : 'bg-green-500/50'}`} />
+        
+        <div className="absolute top-8 right-0 bg-black/95 border border-outline px-2 py-1.5 rounded-xs shadow-lg text-[7px] font-mono font-bold wb-text whitespace-nowrap opacity-0 pointer-events-none group-hover/health:opacity-100 transition-opacity z-[999] flex flex-col gap-0.5 align-end uppercase">
+          <span>Latency: {health.lastLatencyMs}ms</span>
+          <span>Failures: {health.failureCount}</span>
         </div>
-      </div>
-
-      {/* PHASE 20.5: LIVE TELEMETRY BRIDGE */}
-      <div className="flex items-center gap-3 pl-3 border-l border-white/10 h-6">
-        <div className="flex flex-col items-end leading-none">
-          <span className="text-[6px] text-white/40 font-black uppercase tracking-wider">Bridge Latency</span>
-          <span className={`text-[8px] font-mono font-bold ${health.lastLatencyMs > 200 ? 'text-amber-400' : 'text-primary/60'}`}>
-            {health.lastLatencyMs}ms
-          </span>
-        </div>
-        <div className={`w-1.5 h-1.5 rounded-full ${health.failureCount > 0 ? 'bg-red-500 animate-pulse' : 'bg-green-500/50'}`} title={`Failures: ${health.failureCount}`} />
       </div>
     </motion.button>
   );

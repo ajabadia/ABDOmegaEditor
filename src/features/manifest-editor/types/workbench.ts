@@ -9,7 +9,7 @@ export type WorkbenchTabType =
   | "inspector"
   | "history";
 
-export type WorkbenchPaneId = "primary" | "secondary";
+export type WorkbenchPaneId = "primary" | "secondary" | "primary_bottom" | "secondary_bottom";
 export type WorkbenchLayoutMode = "single" | "vertical";
 
 export interface WorkbenchTab {
@@ -92,6 +92,12 @@ export interface WorkbenchState {
   // Phase 9.2 History Diff
   isDiffModalOpen: boolean;
   activeDiff: import("../types/diff").ManifestDiffResult | null;
+  
+  // Horizontal Splits
+  isPrimarySplitH: boolean;
+  isSecondarySplitH: boolean;
+  primarySplitRatio: number;
+  secondarySplitRatio: number;
 }
 
 export type OpenTabInput = Omit<WorkbenchTab, "id"> & {
@@ -108,6 +114,8 @@ export type WorkbenchAction =
   | { type: "MOVE_TAB_TO_PANE"; payload: { tabId: string; targetPaneId: WorkbenchPaneId; index?: number | undefined } }
   | { type: "SET_LAYOUT_MODE"; payload: { mode: WorkbenchLayoutMode } }
   | { type: "SET_LAYOUT_RATIO"; payload: { ratio: number } }
+  | { type: "SET_PRIMARY_SPLIT_RATIO"; payload: { ratio: number } }
+  | { type: "SET_SECONDARY_SPLIT_RATIO"; payload: { ratio: number } }
   | { type: "SET_SELECTED_NODE"; payload: { nodeId: string | null } }
   | { type: "SET_MULTI_SELECTED_NODES"; payload: { nodeIds: string[] } }
   | { type: "SET_PINNED_NODE"; payload: { nodeId: string | null } }
@@ -124,4 +132,6 @@ export type WorkbenchAction =
   | { type: "SET_UI_THEME"; payload: { theme: "light" | "dark" } }
   | { type: "SET_PENDING_FILES"; payload: { files: File[] } }
   | { type: "SET_ACTIVE_DIFF"; payload: { diff: import("../types/diff").ManifestDiffResult | null } }
+  | { type: "TOGGLE_HORIZONTAL_SPLIT"; payload: { paneId: "primary" | "secondary" } }
+  | { type: "CLOSE_PANE"; payload: { paneId: WorkbenchPaneId } }
   | { type: "HYDRATE_WORKBENCH"; payload: { state: Partial<WorkbenchState> } };

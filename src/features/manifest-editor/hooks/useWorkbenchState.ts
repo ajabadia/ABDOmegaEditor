@@ -80,6 +80,12 @@ export function useWorkbenchState() {
       setLayoutRatio: (ratio: number) =>
         dispatch({ type: "SET_LAYOUT_RATIO", payload: { ratio } }),
 
+      setPrimarySplitRatio: (ratio: number) =>
+        dispatch({ type: "SET_PRIMARY_SPLIT_RATIO", payload: { ratio } }),
+
+      setSecondarySplitRatio: (ratio: number) =>
+        dispatch({ type: "SET_SECONDARY_SPLIT_RATIO", payload: { ratio } }),
+
       setSelectedNode: (nodeId: string | null) =>
         dispatch({ type: "SET_SELECTED_NODE", payload: { nodeId } }),
 
@@ -136,6 +142,12 @@ export function useWorkbenchState() {
 
       toggleNodeLock: (nodeId: string) =>
         dispatch({ type: "TOGGLE_NODE_LOCK", payload: { nodeId } }),
+
+      toggleHorizontalSplit: (paneId: "primary" | "secondary") =>
+        dispatch({ type: "TOGGLE_HORIZONTAL_SPLIT", payload: { paneId } }),
+
+      closePane: (paneId: WorkbenchPaneId) =>
+        dispatch({ type: "CLOSE_PANE", payload: { paneId } }),
 
       // PHASE 17.4 - RPC ORCHESTRATION ACTIONS
       rpc: {

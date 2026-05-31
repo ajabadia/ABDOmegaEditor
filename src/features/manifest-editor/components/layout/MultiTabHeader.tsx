@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { X, type LucideIcon } from 'lucide-react';
+import { X, Rows, Columns, type LucideIcon } from 'lucide-react';
 import type { WorkbenchTab, WorkbenchPaneId } from '@/features/manifest-editor/hooks/useWorkbenchState';
 import type { Diagnostic } from '@/features/manifest-editor/types/diagnostics';
 
@@ -13,7 +13,13 @@ interface MultiTabHeaderProps {
   onTabSelect: (tabId: string) => void;
   onTabClose: (tabId: string) => void;
   onPaneFocus: () => void;
-  onDiagnosticClick?: (tabId: string, diagnostic: Diagnostic) => void;
+  onDiagnosticClick?: ((tabId: string, diagnostic: Diagnostic) => void) | undefined;
+  onMoveTab?: ((tabId: string, paneId: WorkbenchPaneId) => void) | undefined;
+  isSplitH?: boolean | undefined;
+  onToggleSplitH?: (() => void) | undefined;
+  isSplitV?: boolean | undefined;
+  onToggleSplitV?: (() => void) | undefined;
+  onClosePane?: (() => void) | undefined;
 }
 
 export default function MultiTabHeader({
@@ -24,7 +30,13 @@ export default function MultiTabHeader({
   onTabSelect,
   onTabClose,
   onPaneFocus,
-  onDiagnosticClick
+  onDiagnosticClick,
+  onMoveTab,
+  isSplitH,
+  onToggleSplitH,
+  isSplitV,
+  onToggleSplitV,
+  onClosePane
 }: MultiTabHeaderProps) {
   const [mounted, setMounted] = React.useState(false);
   
@@ -34,12 +46,19 @@ export default function MultiTabHeader({
     return () => clearTimeout(timer);
   }, []);
 
-  if (tabs.length === 0) return null;
+  if (tabs.length === 0 && !onToggleSplitH) return null;
 
   return (
     <div 
       className={`flex items-center bg-black/40 border-b wb-outline h-9 px-1 gap-1 select-none transition-colors duration-300 ${isFocused ? 'bg-black/60 border-primary/20' : 'border-transparent'}`}
       onClick={onPaneFocus}
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={(e) => {
+        const tabId = e.dataTransfer.getData('text/plain');
+        if (tabId) {
+          onMoveTab?.(tabId, paneId);
+        }
+      }}
     >
       {tabs.map((tab) => {
         const isActive = tab.id === activeTabId;
@@ -48,6 +67,10 @@ export default function MultiTabHeader({
         return (
           <div
             key={tab.id}
+            draggable={true}
+            onDragStart={(e) => {
+              e.dataTransfer.setData('text/plain', tab.id);
+            }}
             onClick={(e) => {
               e.stopPropagation();
               onTabSelect(tab.id);
@@ -145,6 +168,48 @@ export default function MultiTabHeader({
       })}
 
       <div className="flex-1 h-full" />
+
+      {/* Vertical Split Toggle */}
+      {onToggleSplitV && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleSplitV();
+          }}
+          className={`h-6 px-2 rounded-xs border flex items-center justify-center transition-all mr-2 ${isSplitV ? 'bg-primary/20 border-primary text-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.2)]' : 'bg-black/40 border-outline text-foreground/40 hover:text-foreground/80 hover:border-outline/60'}`}
+          title="Toggle Split View (Vertical)"
+        >
+          <Columns className="w-3.5 h-3.5" />
+        </button>
+      )}
+
+      {/* Horizontal Split Toggle */}
+      {onToggleSplitH && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleSplitH();
+          }}
+          className={`h-6 px-2 rounded-xs border flex items-center justify-center transition-all mr-2 ${isSplitH ? 'bg-primary/20 border-primary text-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.2)]' : 'bg-black/40 border-outline text-foreground/40 hover:text-foreground/80 hover:border-outline/60'}`}
+          title="Toggle Horizontal Split (Top/Bottom)"
+        >
+          <Rows className="w-3.5 h-3.5" />
+        </button>
+      )}
+
+      {/* Close Pane Button */}
+      {onClosePane && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onClosePane();
+          }}
+          className="h-6 px-2 rounded-xs border bg-black/40 border-outline text-foreground/40 hover:text-red-400 hover:border-red-400/50 flex items-center justify-center transition-all mr-2"
+          title="Close Panel (Consolidate Tabs)"
+        >
+          <X className="w-3.5 h-3.5" />
+        </button>
+      )}
 
       {/* Pane ID Indicator (Subtle) */}
       <div className="px-2 opacity-10 flex items-center">
