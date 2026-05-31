@@ -23,11 +23,11 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({
   className 
 }) => {
   return (
-    <div className={`flex flex-col bg-black/40 rounded-xs border border-white/5 overflow-hidden ${className}`}>
+    <div className={`flex flex-col wb-surface rounded-xs border wb-outline overflow-hidden ${className}`}>
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3 bg-white/5 border-b border-white/5">
+      <div className="flex items-center gap-3 px-4 py-3 wb-surface-strong border-b wb-outline">
         <History className="w-4 h-4 text-primary/60" />
-        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/80">Document Timeline</h3>
+        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] wb-text-muted">Document Timeline</h3>
       </div>
 
       {/* List */}
@@ -35,7 +35,7 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({
         {past.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-8 opacity-20">
             <Clock className="w-8 h-8 mb-2" />
-            <span className="text-[8px] font-black uppercase tracking-widest">No history recorded</span>
+            <span className="text-[8px] font-black uppercase tracking-widest wb-text">No history recorded</span>
           </div>
         ) : (
           [...past].reverse().map((entry, revIdx) => {
@@ -46,14 +46,14 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({
                 initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: revIdx * 0.02 }}
-                className="group relative flex flex-col p-3 rounded-xs border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] transition-all"
+                className="group relative flex flex-col p-3 rounded-xs border wb-outline wb-surface-subtle hover:wb-surface-strong transition-all"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-black tracking-tight text-foreground/90 group-hover:text-primary transition-colors">
+                    <span className="text-[10px] font-black tracking-tight wb-text group-hover:text-primary transition-colors">
                       {entry.label}
                     </span>
-                    <span className="text-[8px] font-mono text-foreground/30 mt-1 uppercase tracking-tighter">
+                    <span className="text-[8px] font-mono wb-text-muted opacity-60 mt-1 uppercase tracking-tighter">
                       {new Date(entry.timestamp).toLocaleTimeString()}
                     </span>
                   </div>
@@ -62,14 +62,14 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({
                     <button
                       onClick={() => onCompare(originalIndex)}
                       title="Compare with Current"
-                      className="p-1.5 rounded-xs bg-white/5 hover:bg-primary/20 text-foreground/40 hover:text-primary transition-all"
+                      className="p-1.5 rounded-xs wb-surface border wb-outline hover:bg-primary/20 wb-text-muted hover:text-primary transition-all"
                     >
                       <GitCompare className="w-3 h-3" />
                     </button>
                     <button
                       onClick={() => onUndoTo(originalIndex)}
                       title="Revert to this state"
-                      className="p-1.5 rounded-xs bg-white/5 hover:bg-red-400/20 text-foreground/40 hover:text-red-400 transition-all"
+                      className="p-1.5 rounded-xs wb-surface border wb-outline hover:bg-red-400/20 wb-text-muted hover:text-red-400 transition-all"
                     >
                       <RotateCcw className="w-3 h-3" />
                     </button>
@@ -82,10 +82,10 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({
       </div>
 
       {/* Footer Info */}
-      <div className="px-4 py-2 bg-white/5 border-t border-white/5">
+      <div className="px-4 py-2 wb-surface-strong border-t wb-outline">
         <div className="flex items-center justify-between">
-          <span className="text-[7px] font-black uppercase text-foreground/20">Snapshot Count</span>
-          <span className="text-[8px] font-mono text-primary/40 font-black">{past.length}</span>
+          <span className="text-[7px] font-black uppercase wb-text-muted opacity-60">Snapshot Count</span>
+          <span className="text-[8px] font-mono text-primary/60 font-black">{past.length}</span>
         </div>
       </div>
     </div>

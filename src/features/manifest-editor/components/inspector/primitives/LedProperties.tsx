@@ -13,7 +13,7 @@ interface LedPropertiesProps {
 export default function LedProperties({ item, manifest, onUpdate, setActiveSection }: LedPropertiesProps) {
   const pres = (item.presentation || {}) as Presentation;
   const currentVariant = pres.variant || 'A_cyan';
-  const ledStyles = manifest.ui.styles?.['led'] || [];
+  const ledStyles = manifest.ui?.styles?.['led'] || [];
   const currentStyle = ledStyles.find(s => s.id === currentVariant) || { id: currentVariant as string, label: 'Standard LED' };
 
   // Helper to manage complex variants (e.g. "B_red_3mm")

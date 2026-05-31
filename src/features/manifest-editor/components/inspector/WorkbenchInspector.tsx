@@ -2,12 +2,9 @@
 
 import React from 'react';
 
-// import { motion, AnimatePresence } from 'framer-motion';
 import PropertyPanel from './PropertyPanel';
-import BlueprintLibraryPanel from './BlueprintLibraryPanel';
 import type { OMEGA_Manifest, LayoutContainer, ManifestEntity, OMEGA_Modulation, ExtraResource, OmegaNode, BlueprintDefinition } from '@/omega-ui-core/types/manifest';
 import type { AuditResult } from '@/features/manifest-editor/types/diagnostics';
-import { Zap, FileText } from 'lucide-react';
 import { findNodeInTree } from '@/features/manifest-editor/hooks/entities/ucaInspectorAdapter';
 
 interface WorkbenchInspectorProps {
@@ -41,15 +38,29 @@ interface WorkbenchInspectorProps {
   onOpenConfig?: (() => void) | undefined;
   onOpenLibrary?: (() => void) | undefined;
   onSelectBlueprint?: ((blueprint: BlueprintDefinition) => void) | undefined;
+  exportSelectedAsBlueprint?: ((id: string) => void) | undefined;
   
   // Pin & Route (Era 8)
   pinnedNodeId: string | null;
   onTogglePin: (id: string | null) => void;
   layout: import('../../types/workbench').WorkbenchLayout;
   onSetLayoutRatio: (ratio: number) => void;
-  onSetLayoutRatioEnd?: () => void;
+  onSetLayoutRatioEnd?: (() => void) | undefined;
   multiSelectedIds: string[];
   onSelectMultiple: (ids: string[]) => void;
+  visibleSections?: {
+    identity?: boolean;
+    essentialIdentity?: boolean;
+    identityBranding?: boolean;
+    globalUiSkin?: boolean;
+    activeConstructionPlane?: boolean;
+    moduleTaxonomy?: boolean;
+    physicalEmulationProfile?: boolean;
+    aestheticsGlobals?: boolean;
+    aestheticsElements?: boolean;
+    architecture?: boolean;
+    diagnostics?: boolean;
+  } | undefined;
 }
 
 import { HorizontalSplitDivider } from './layout/HorizontalSplitDivider';
@@ -62,8 +73,6 @@ export function WorkbenchInspector({
   onSetLayoutRatioEnd,
   ...props
 }: WorkbenchInspectorProps) {
-  const [activeTab, setActiveTab] = React.useState<'inspector' | 'blueprints'>('inspector');
-  
   // ASEPTIC HANDLERS...
   const handleUpdate = (updates: Partial<OMEGA_Manifest> | Partial<ManifestEntity> | Partial<OmegaNode>) => {
     if (props.selectedItemId) {
@@ -91,30 +100,8 @@ export function WorkbenchInspector({
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-[#0d0d0d]">
-      {/* Tab Switcher */}
-      <div className="flex border-b border-[#222] bg-[#111]">
-        <button
-          onClick={() => setActiveTab('inspector')}
-          className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${
-            activeTab === 'inspector' ? 'text-white border-b-2 border-blue-600 bg-white/5' : 'text-gray-500 hover:text-gray-300'
-          }`}
-        >
-          <FileText className="w-3 h-3" />
-          Inspector
-        </button>
-        <button
-          onClick={() => setActiveTab('blueprints')}
-          className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${
-            activeTab === 'blueprints' ? 'text-blue-400 border-b-2 border-blue-600 bg-blue-600/5' : 'text-gray-500 hover:text-gray-300'
-          }`}
-        >
-          <Zap className="w-3 h-3" />
-          Blueprints
-        </button>
-      </div>
-
       <div className="flex-1 flex flex-col overflow-hidden relative">
-        {activeTab === 'inspector' && !props.isLiveMode && (
+        {!props.isLiveMode && (
           <div className="flex-1 flex flex-col overflow-hidden divide-y divide-white/5">
             {/* PINNED PANEL (REFERENCE) */}
             {pinnedItem && (
@@ -158,13 +145,6 @@ export function WorkbenchInspector({
               />
             </div>
           </div>
-        )}
-
-        {activeTab === 'blueprints' && (
-          <BlueprintLibraryPanel 
-            manifest={props.manifest}
-            onSelectBlueprint={props.onSelectBlueprint || (() => {})}
-          />
         )}
       </div>
     </div>

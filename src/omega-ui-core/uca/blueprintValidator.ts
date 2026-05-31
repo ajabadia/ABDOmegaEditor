@@ -49,9 +49,9 @@ export class BlueprintValidator {
        return; // Stop recursion for this branch
     }
 
-    // 3. Required Fields for Cells
-    if (node.kind === 'cell') {
-      if (!node.cellRef) {
+    // 2. Cell integrity checks
+    if (node.kind === 'cell' || node.kind === 'port') {
+      if (!node.cellRef && !node.templateRef) {
         errors.push(`Cell node "${node.id}" is missing "cellRef".`);
       }
       // If it's a control, it usually needs a bind

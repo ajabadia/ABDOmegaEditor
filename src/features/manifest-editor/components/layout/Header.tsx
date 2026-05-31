@@ -1,4 +1,4 @@
-import { Shield, Terminal, Settings, Columns } from 'lucide-react';
+import { Shield, Settings, Columns } from 'lucide-react';
 
 import type { AuditResult } from '@/services/auditService';
 import { ComplianceBadge } from '../shared/ComplianceBadge';
@@ -6,6 +6,8 @@ import { ComplianceBadge } from '../shared/ComplianceBadge';
 import ViewModeSelector from '../header/ViewModeSelector';
 import ThemeToggle from '../header/ThemeToggle';
 import MenuBar from './MenuBar';
+import { SimulationStatusBadge } from '@/features/manifest-editor/components/header/SimulationStatusBadge';
+import type { SimulationBridgeState } from '@/features/manifest-editor/hooks/useSimulationBridge';
 
 interface HeaderProps {
   onReset: () => void;
@@ -35,6 +37,9 @@ interface HeaderProps {
   isDirectoryLinked?: boolean;
   isSplit?: boolean;
   onToggleSplit?: () => void;
+  windowStates?: { window_layers: boolean; window_properties: boolean; window_rack_properties: boolean; window_blueprints: boolean; window_info: boolean; window_history: boolean; window_logs: boolean } | undefined;
+  onToggleWindow?: ((name: 'window_layers' | 'window_properties' | 'window_rack_properties' | 'window_blueprints' | 'window_info' | 'window_history' | 'window_logs') => void) | undefined;
+  simulationBridge?: SimulationBridgeState;
 }
 
 export default function Header(props: HeaderProps) {
@@ -63,6 +68,8 @@ export default function Header(props: HeaderProps) {
           onOpenGallery={props.onOpenGallery}
           onLinkDirectory={props.onLinkDirectory}
           isDirectoryLinked={props.isDirectoryLinked}
+          windowStates={props.windowStates}
+          onToggleWindow={props.onToggleWindow}
         />
       </div>
 
@@ -109,13 +116,13 @@ export default function Header(props: HeaderProps) {
           <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-red-500 rounded-full" />
         </button>
 
-        <button 
-          onClick={props.onToggleLogs}
-          className={`flex items-center gap-2 px-3 py-1.5 border rounded-xs text-[8px] font-black uppercase tracking-widest transition-all ${props.showLogs ? 'bg-accent border-accent text-black' : 'bg-black/40 border-outline text-foreground/60 hover:border-accent/40'}`}
-        >
-          <Terminal className="w-3.5 h-3.5" />
-          <span className="hidden lg:inline">Logs</span>
-        </button>
+        {props.simulationBridge && (
+          <SimulationStatusBadge 
+            status={props.simulationBridge.status}
+            lastSyncAt={props.simulationBridge.lastSuccessfulSyncAt}
+            onForceResync={props.simulationBridge.forceResync}
+          />
+        )}
       </div>
     </header>
   );

@@ -28,6 +28,8 @@ interface VirtualRackProps {
   previewManifest?: OMEGA_Manifest | null;
   multiSelectedIds: string[];
   onSelectMultiple: (ids: string[]) => void;
+  hiddenNodeIds?: string[] | undefined;
+  lockedNodeIds?: string[] | undefined;
 }
 
 /**
@@ -49,7 +51,9 @@ export default function VirtualRack({
   pushParameterUpdate,
   previewManifest,
   multiSelectedIds,
-  onSelectMultiple
+  onSelectMultiple,
+  hiddenNodeIds = [],
+  lockedNodeIds = []
 }: VirtualRackProps) {
   const rackRef = useRef<HTMLDivElement>(null);
   const skin = manifest.ui?.skin || 'industrial';
@@ -122,24 +126,48 @@ export default function VirtualRack({
 
         {/* UCA NATIVE ENGINE (Recursive Tree) */}
         <div className="absolute inset-0 uca-native-layer">
-          <UniversalRenderer 
-            node={manifest.ui.tree || manifestToTree(manifest, manifest.ui?.tree)} 
-            manifest={manifest} 
-            catalog={manifest.moduleTemplates || {}}
-            resolveAsset={resolveAsset}
-            debugContext={{
-              enabled: manifest.ui?.ucaDebug?.enabled || false,
-              showLabels: manifest.ui?.ucaDebug?.showLabels !== false,
-              hideDecorative: manifest.ui?.ucaDebug?.hideDecorative || false,
-              showCADOverlay: manifest.ui?.ucaDebug?.showCADOverlay || false,
-              selectedId: selectedItemId,
-              multiSelectedIds: multiSelectedIds,
-              onSelect: onSelectItem,
-              onSelectMultiple: onSelectMultiple,
-              onUpdateNode: onUpdateItem,
-              runtimeValues: runtimeValues
-            }}
-          />
+          {(() => {
+            const filterTree = (n: OmegaNode | null | undefined, hiddenIds: string[]): OmegaNode | null => {
+              if (!n) return null;
+              if (hiddenIds.includes(n.id)) return null;
+              if (n.children) {
+                return {
+                  ...n,
+                  children: n.children
+                    .map(c => filterTree(c, hiddenIds))
+                    .filter((c): c is OmegaNode => c !== null)
+                };
+              }
+              return n;
+            };
+
+            const rootTree = manifest.ui?.tree || manifestToTree(manifest, manifest.ui?.tree);
+            const filteredTree = filterTree(rootTree, hiddenNodeIds);
+
+            if (!filteredTree) return null;
+
+            return (
+              <UniversalRenderer 
+                node={filteredTree} 
+                manifest={manifest} 
+                catalog={manifest.moduleTemplates || {}}
+                resolveAsset={resolveAsset}
+                debugContext={{
+                  enabled: manifest.ui?.ucaDebug?.enabled || false,
+                  showLabels: manifest.ui?.ucaDebug?.showLabels !== false,
+                  hideDecorative: manifest.ui?.ucaDebug?.hideDecorative || false,
+                  showCADOverlay: manifest.ui?.ucaDebug?.showCADOverlay || false,
+                  selectedId: selectedItemId,
+                  multiSelectedIds: multiSelectedIds,
+                  onSelect: onSelectItem,
+                  onSelectMultiple: onSelectMultiple,
+                  onUpdateNode: onUpdateItem,
+                  runtimeValues: runtimeValues,
+                  lockedNodeIds: lockedNodeIds
+                }}
+              />
+            );
+          })()}
         </div>
 
         {/* BLUEPRINT STUDIO GHOST LAYER (Phase 11) */}

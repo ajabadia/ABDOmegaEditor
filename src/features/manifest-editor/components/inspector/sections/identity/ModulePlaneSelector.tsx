@@ -8,42 +8,73 @@ import InspectorCollapsible from '@/features/manifest-editor/components/inspecto
 interface ModulePlaneSelectorProps {
   manifest: OMEGA_Manifest;
   onUpdate: (updates: Partial<OMEGA_Manifest>) => void;
+  standalone?: boolean;
 }
 
-export default function ModulePlaneSelector({ manifest, onUpdate }: ModulePlaneSelectorProps) {
+const PLANES = [
+  { id: 'front',    label: 'Front',    desc: 'Panel visual' },
+  { id: 'back',     label: 'Back',     desc: 'Rear connections' },
+  { id: 'pcb',      label: 'PCB',      desc: 'Circuit board' },
+  { id: 'internal', label: 'Internal', desc: 'Internal layout' },
+] as const;
+
+export default function ModulePlaneSelector({ manifest, onUpdate, standalone }: ModulePlaneSelectorProps) {
   const activeTab = manifest.ui?.layout?.activeTab || 'front';
+
+  const content = (
+    <div className="space-y-3 pt-2">
+      <p className="text-[8px] wb-text-muted font-bold uppercase tracking-wider italic">
+        Select the active construction plane for editing.
+      </p>
+
+      {/* Tab bar — theme-safe background */}
+      <div className="grid grid-cols-4 wb-surface-strong border wb-outline rounded-xs overflow-hidden">
+        {PLANES.map(plane => (
+          <button
+            key={plane.id}
+            onClick={() => {
+              onUpdate({
+                ui: {
+                  ...manifest.ui,
+                  layout: {
+                    width: manifest.ui?.layout?.width ?? 800,
+                    height: manifest.ui?.layout?.height ?? 600,
+                    ...manifest.ui?.layout,
+                    containers: manifest.ui?.layout?.containers || [],
+                    activeTab: plane.id
+                  }
+                }
+              });
+            }}
+            className={`flex flex-col items-center justify-center py-2 px-1 text-center transition-all border-b-2 ${
+              activeTab === plane.id
+                ? 'bg-accent/15 text-accent border-accent font-black'
+                : 'wb-text-muted border-transparent hover:bg-primary/5 hover:wb-text'
+            }`}
+            title={plane.desc}
+          >
+            <span className="text-[8px] font-black uppercase tracking-widest leading-none">{plane.label}</span>
+            <span className="text-[6px] opacity-60 normal-case mt-0.5 leading-none hidden sm:block">{plane.desc}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Active plane info */}
+      <div className="flex items-center gap-2 px-2 py-1.5 wb-surface-inset border wb-outline rounded-xs">
+        <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse shrink-0" />
+        <span className="text-[8px] wb-text-muted uppercase font-bold tracking-wider">
+          Editing: <span className="text-accent font-black text-[9px]">{PLANES.find(p => p.id === activeTab)?.label}</span>
+          <span className="opacity-50 ml-1 lowercase text-[7px]">— {PLANES.find(p => p.id === activeTab)?.desc}</span>
+        </span>
+      </div>
+    </div>
+  );
+
+  if (standalone) return content;
 
   return (
     <InspectorCollapsible title="Active Construction Plane" icon={Layers}>
-      <div className="space-y-3 pt-2">
-        <p className="text-[7px] wb-text-muted font-bold uppercase tracking-tighter italic">
-          Select the industrial plane for editing.
-        </p>
-        <div className="flex bg-black/20 rounded-xs border wb-outline overflow-hidden">
-           {['front', 'back', 'pcb', 'internal'].map(plane => (
-             <button
-               key={plane}
-               onClick={() => {
-                  onUpdate({
-                    ui: {
-                      ...manifest.ui,
-                      layout: {
-                        width: manifest.ui?.layout?.width ?? 800,
-                        height: manifest.ui?.layout?.height ?? 600,
-                        ...manifest.ui?.layout,
-                        containers: manifest.ui?.layout?.containers || [],
-                        activeTab: plane
-                      }
-                    }
-                  });
-               }}
-               className={`flex-1 py-2 text-[10px] font-black transition-all uppercase tracking-widest ${activeTab === plane ? 'bg-accent/20 text-accent border-b-2 border-accent' : 'wb-text-muted hover:text-white'}`}
-             >
-               {plane}
-             </button>
-           ))}
-        </div>
-      </div>
+      {content}
     </InspectorCollapsible>
   );
 }

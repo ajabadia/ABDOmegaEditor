@@ -22,7 +22,8 @@ export const useFileOps = (
   addLog: (msg: string) => void,
   issues: ValidationIssue[],
   captureStableSnapshot: () => void,
-  directoryHandle?: FileSystemDirectoryHandle | null
+  directoryHandle?: FileSystemDirectoryHandle | null,
+  updateDocumentWithHistory?: (updates: { manifest?: Partial<OMEGA_Manifest> | ((prev: OMEGA_Manifest) => Partial<OMEGA_Manifest>); extraResources?: { name: string, data: ArrayBuffer, type: string }[] | ((prev: { name: string, data: ArrayBuffer, type: string }[]) => { name: string, data: ArrayBuffer, type: string }[]) }, label: string) => void
 ) => {
 
   // 1. Manifest Operations (Import/Export/CAD)
@@ -43,7 +44,8 @@ export const useFileOps = (
     wasmIO.handleWasmUpload,
     wasmIO.handleContractUpload,
     manifestIO.handleManifestUpload,
-    captureStableSnapshot
+    captureStableSnapshot,
+    updateDocumentWithHistory
   );
 
   return {

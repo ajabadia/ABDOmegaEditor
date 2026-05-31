@@ -5,7 +5,6 @@ import { motion } from 'framer-motion';
 import { Search, Zap, Layers, Package, Layout } from 'lucide-react';
 import type { OMEGA_Manifest, BlueprintDefinition } from '@/omega-ui-core/types/manifest.js';
 import { adaptModuleTemplateToBlueprintDefinition } from '../../utils/blueprintUtils';
-import { INDUSTRIAL_TEMPLATES } from '../../constants/templates';
 
 interface BlueprintLibraryPanelProps {
   manifest: OMEGA_Manifest;
@@ -22,16 +21,43 @@ export default function BlueprintLibraryPanel({
 }: BlueprintLibraryPanelProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [systemBlueprints, setSystemBlueprints] = useState<BlueprintDefinition[]>([]);
 
-  // Extract blueprints from manifest and system registry
-  const systemBlueprints = INDUSTRIAL_TEMPLATES.map(tmpl => {
-    try {
-      return adaptModuleTemplateToBlueprintDefinition(tmpl);
-    } catch (err) {
-      console.warn("[BLUEPRINT] Skipping invalid system template:", tmpl.id, err);
-      return null;
+  // Load dynamic blueprints from catalog
+  React.useEffect(() => {
+    let active = true;
+    async function loadCatalog() {
+      try {
+        const res = await fetch('/blueprints/index.json');
+        if (!res.ok) throw new Error(`Catalog fetch failed: ${res.status}`);
+        const catalog = await res.json();
+        
+        const loaded = await Promise.all(
+          catalog.map(async (item: { id: string; path: string }) => {
+            try {
+              const bpRes = await fetch(item.path);
+              if (!bpRes.ok) throw new Error(`Blueprint fetch failed: ${bpRes.status}`);
+              const bpData = await bpRes.json();
+              return adaptModuleTemplateToBlueprintDefinition(bpData);
+            } catch (err) {
+              console.warn("[BLUEPRINT] Error loading dynamic template:", item.id, err);
+              return null;
+            }
+          })
+        );
+        
+        if (active) {
+          setSystemBlueprints(loaded.filter((bp): bp is BlueprintDefinition => bp !== null));
+        }
+      } catch (err) {
+        console.error("[BLUEPRINT] Failed to load blueprints catalog:", err);
+      }
     }
-  });
+    loadCatalog();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const manifestBlueprints = Object.values(manifest.moduleTemplates || {}).map(tmpl => {
     try {
@@ -42,104 +68,129 @@ export default function BlueprintLibraryPanel({
     }
   });
 
-  const blueprints = [...systemBlueprints, ...manifestBlueprints].filter((bp): bp is BlueprintDefinition => bp !== null);
+  const blueprintsMap = new Map<string, BlueprintDefinition>();
+  
+  systemBlueprints.forEach(bp => {
+    if (bp) blueprintsMap.set(bp.blueprintId, bp);
+  });
+  
+  manifestBlueprints.forEach(bp => {
+    if (bp) blueprintsMap.set(bp.blueprintId, bp);
+  });
+
+  const blueprints = Array.from(blueprintsMap.values());
 
   const categories = ['all', 'voice', 'fx', 'mod', 'utility'];
+
+  const getCategoryForBlueprint = (bp: BlueprintDefinition): string => {
+    const id = bp.blueprintId.toLowerCase();
+    const name = bp.name.toLowerCase();
+    
+    if (id.includes('vcf') || id.includes('vco') || id.includes('osc') || name.includes('filter') || name.includes('oscillator') || name.includes('vco') || name.includes('vcf')) {
+      return 'voice';
+    }
+    if (id.includes('io') || id.includes('jack') || id.includes('port') || id.includes('grid') || id.includes('macro') || name.includes('grid') || name.includes('i/o') || name.includes('jack')) {
+      return 'utility';
+    }
+    if (id.includes('delay') || id.includes('reverb') || id.includes('chorus') || id.includes('fx') || name.includes('delay') || name.includes('reverb') || name.includes('fx')) {
+      return 'fx';
+    }
+    if (id.includes('lfo') || id.includes('env') || id.includes('adsr') || id.includes('mod') || name.includes('lfo') || name.includes('envelope') || name.includes('modulator')) {
+      return 'mod';
+    }
+    return 'voice';
+  };
 
   const filtered = blueprints.filter(bp => {
     const matchesSearch = bp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           bp.description?.toLowerCase().includes(searchQuery.toLowerCase());
-    // In a real scenario, we'd use bp.tags or bp.category
-    return matchesSearch;
+    
+    if (activeCategory === 'all') return matchesSearch;
+    return matchesSearch && getCategoryForBlueprint(bp) === activeCategory;
   });
 
   return (
-    <div className="flex flex-col h-full bg-[#0a0a0a] border-l border-[#222]">
-      {/* Header */}
-      <div className="p-4 border-b border-[#222] bg-[#111]">
-        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400 flex items-center gap-2">
-          <Zap className="w-3 h-3" />
-          Industrial Blueprint Library
-        </h3>
-        
-        <div className="mt-4 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
+    <div className="flex-1 flex flex-col overflow-hidden wb-surface text-[9px] font-sans">
+      {/* SEARCH AND FILTERS (Identical to LayersPanel layout) */}
+      <div className="p-2 border-b wb-outline flex flex-col gap-1.5 wb-surface-subtle shrink-0">
+        <div className="relative flex items-center">
+          <Search className="absolute left-2 w-3 h-3 wb-text-muted opacity-40" />
           <input
             type="text"
             placeholder="Search blueprints..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#1a1a1a] border border-[#333] rounded-md py-2 pl-9 pr-4 text-xs text-white focus:outline-none focus:border-blue-600 transition-all"
+            className="w-full pl-7 pr-3 py-1.5 wb-surface-strong border wb-outline text-[9px] uppercase tracking-wider rounded-xs wb-text placeholder-wb-text-muted/40 focus:outline-none focus:border-primary/50 transition-colors"
           />
+        </div>
+
+        <div className="flex gap-1">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={`px-2 py-0.5 border rounded-xs uppercase tracking-widest text-[7px] font-black transition-all ${
+                activeCategory === cat 
+                  ? 'bg-primary/20 border-primary text-primary shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]' 
+                  : 'wb-surface-strong wb-outline wb-text-muted hover:wb-text'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Category Tabs */}
-      <div className="flex gap-1 p-2 bg-[#0d0d0d] border-b border-[#222]">
-        {categories.map(cat => (
-          <button
-            key={cat}
-            onClick={() => setActiveCategory(cat)}
-            className={`flex-1 py-1 text-[8px] font-bold uppercase tracking-widest rounded transition-all ${
-              activeCategory === cat 
-                ? 'bg-blue-600/10 text-blue-400 border border-blue-600/20' 
-                : 'text-gray-500 hover:text-gray-300'
-            }`}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
-
-      {/* List */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-3 industrial-scrollbar">
+      {/* LIST (Identical scroll and margin parameters to LayersPanel) */}
+      <div className="flex-1 overflow-y-auto p-1.5 flex flex-col gap-2 select-none">
         {filtered.length > 0 ? (
-          filtered.map(bp => (
-            <motion.button
-              key={bp.blueprintId}
-              whileHover={{ x: 4 }}
-              onClick={() => onSelectBlueprint(bp)}
-              className="w-full text-left p-3 bg-[#111] border border-[#222] rounded-lg group hover:border-blue-600/40 hover:bg-[#151515] transition-all"
-            >
-              <div className="flex justify-between items-start">
-                <div className="p-1.5 bg-[#1a1a1a] rounded-md border border-[#333] group-hover:border-blue-600/30">
-                  <Package className="w-4 h-4 text-gray-400 group-hover:text-blue-400" />
-                </div>
-                <span className="text-[8px] font-mono text-gray-600">v{bp.version}</span>
-              </div>
+          <div className="flex flex-col gap-0.5">
+            <div className="px-1.5 py-0.5 text-[7px] font-black wb-text-muted uppercase tracking-widest flex items-center gap-1">
+              <Zap className="w-2.5 h-2.5 text-primary" />
+              <span>Available blueprints ({filtered.length})</span>
+            </div>
 
-              <h4 className="mt-3 text-xs font-bold text-gray-200 group-hover:text-white">{bp.name}</h4>
-              <p className="mt-1 text-[10px] text-gray-500 line-clamp-2 leading-relaxed">
-                {bp.description}
-              </p>
-
-              <div className="mt-3 flex gap-2">
-                <div className="px-1.5 py-0.5 bg-[#1a1a1a] border border-[#222] rounded text-[8px] font-bold text-gray-600 uppercase">
-                  {bp.origin}
-                </div>
-                {bp.placeholders && bp.placeholders.length > 0 && (
-                  <div className="flex items-center gap-1 text-[8px] font-bold text-blue-500/60 uppercase">
-                    <Layers className="w-2.5 h-2.5" />
-                    {bp.placeholders.length} Params
+            {filtered.map((bp) => (
+              <div
+                key={bp.blueprintId}
+                onClick={() => onSelectBlueprint(bp)}
+                className="flex items-center justify-between px-2 py-1.5 border rounded-xs cursor-pointer transition-all wb-surface-subtle border-transparent hover:wb-surface-strong hover:wb-outline wb-text"
+              >
+                <div className="flex items-center gap-2 overflow-hidden mr-2">
+                  <Package className="w-3 h-3 shrink-0 wb-text-muted opacity-60" />
+                  <div className="flex flex-col overflow-hidden">
+                    <span className="font-mono text-[8px] uppercase tracking-wider truncate leading-tight">
+                      {bp.name}
+                    </span>
+                    {bp.description && (
+                      <span className="text-[7px] opacity-50 uppercase tracking-widest truncate leading-tight">
+                        {bp.description}
+                      </span>
+                    )}
                   </div>
-                )}
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  {bp.placeholders && bp.placeholders.length > 0 && (
+                    <span className="text-[6px] font-mono font-bold bg-primary/10 border border-primary/20 text-primary px-1 rounded-xs uppercase">
+                      {bp.placeholders.length} P
+                    </span>
+                  )}
+                  <span className="text-[6px] font-mono wb-text-muted opacity-60">
+                    v{bp.version}
+                  </span>
+                </div>
               </div>
-            </motion.button>
-          ))
+            ))}
+          </div>
         ) : (
-          <div className="h-full flex flex-col items-center justify-center opacity-20 py-20">
-            <Layout className="w-10 h-10 mb-4" />
-            <p className="text-[10px] font-black uppercase">No results found</p>
+          <div className="flex-1 flex flex-col items-center justify-center py-10 opacity-30 gap-1.5">
+            <Package className="w-5 h-5 wb-text" />
+            <span className="text-[7px] font-black uppercase tracking-widest wb-text">No blueprints found</span>
           </div>
         )}
       </div>
 
-      {/* Footer Hint */}
-      <div className="p-4 bg-[#111] border-t border-[#222]">
-        <p className="text-[9px] text-gray-600 leading-tight">
-          <span className="text-blue-500 font-bold">PRO TIP:</span> Drag and drop blueprints directly onto rack containers to auto-inject.
-        </p>
-      </div>
     </div>
   );
 }

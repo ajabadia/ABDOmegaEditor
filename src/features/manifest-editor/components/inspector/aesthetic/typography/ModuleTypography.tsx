@@ -23,7 +23,7 @@ interface ModuleTypographyProps {
 const SYSTEM_FONTS = OMEGA_OFFICIAL_FONTS;
  
 export default function ModuleTypography({ manifest, onUpdate, onHelp }: ModuleTypographyProps) {
-  const typography = manifest.ui.typography || {};
+  const typography = manifest.ui?.typography || {};
   const fonts = (manifest.resources?.fonts || []) as { name: string; file: string }[];
   const allAvailableFonts = [...SYSTEM_FONTS.map((f: { name: string }) => f.name), ...fonts.map((f: { name: string }) => f.name)];
  

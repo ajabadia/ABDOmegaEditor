@@ -14,8 +14,8 @@ export default function DisplayProperties({ item, manifest, onUpdate, setActiveS
   const pres = (item.presentation || {}) as Presentation;
   const currentVariant = pres.variant || 'A';
   const precision = pres.precision ?? 2;
-  const isCustom = manifest.ui.skinMode === 'custom';
-  const displayStyles = manifest.ui.styles?.['display'] || [];
+  const isCustom = manifest.ui?.skinMode === 'custom';
+  const displayStyles = manifest.ui?.styles?.['display'] || [];
   const currentStyle = displayStyles.find((s: { id: string; label: string }) => s.id === currentVariant) || { id: currentVariant as string, label: 'Standard Display' };
 
   const updateVariant = (v: string) => {

@@ -77,6 +77,15 @@ export interface WorkbenchState {
   studioMode: StudioModeState; // Phase 15 - Isolated Studio
   isRightPanelCollapsed: boolean;
   isZenMode: boolean;
+  window_layers: boolean;
+  window_properties: boolean;
+  window_rack_properties: boolean;
+  window_blueprints: boolean;
+  window_info: boolean;
+  window_history: boolean;
+  window_logs: boolean;
+  hiddenNodeIds: string[];
+  lockedNodeIds: string[];
   uiTheme: "dark" | "light";
   pendingFiles: File[];
   
@@ -107,6 +116,9 @@ export type WorkbenchAction =
   | { type: "TOGGLE_UI_STATE"; payload: { key: keyof Pick<WorkbenchState, 'showLogs' | 'isLiveMode' | 'showModGrid' | 'mockupOpen' | 'isAuditModalOpen' | 'isAboutModalOpen' | 'isConfigModalOpen' | 'isCellEditorOpen' | 'isDiffModalOpen'>, value?: boolean } }
   | { type: "TOGGLE_RIGHT_PANEL" }
   | { type: "TOGGLE_ZEN_MODE" }
+  | { type: "TOGGLE_WINDOW"; payload: { name: 'window_layers' | 'window_properties' | 'window_rack_properties' | 'window_blueprints' | 'window_info' | 'window_history' | 'window_logs' } }
+  | { type: "TOGGLE_NODE_VISIBILITY"; payload: { nodeId: string } }
+  | { type: "TOGGLE_NODE_LOCK"; payload: { nodeId: string } }
   | { type: "SET_STUDIO_MODE"; payload: StudioModeState } // Phase 15 Action
   | { type: "SET_HELP_STATE"; payload: { isOpen: boolean; sectionId?: string | undefined } }
   | { type: "SET_UI_THEME"; payload: { theme: "light" | "dark" } }

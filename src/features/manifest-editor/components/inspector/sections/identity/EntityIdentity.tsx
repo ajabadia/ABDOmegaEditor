@@ -1,9 +1,10 @@
 'use client';
- 
+
 import React from 'react';
 import type { ManifestEntity, OMEGA_Manifest, OmegaNode } from '@/omega-ui-core/types/manifest';
 import { getInspectorModel, buildInspectorPatch } from '@/features/manifest-editor/hooks/entities/ucaInspectorModel';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Download } from 'lucide-react';
+import { ContractService } from '@/services/contractService';
  
 interface EntityIdentityProps {
   entity: ManifestEntity | OmegaNode;
@@ -12,39 +13,78 @@ interface EntityIdentityProps {
   onUpdate: (updates: Partial<ManifestEntity> | Partial<OmegaNode>) => void;
   onHelp?: ((id: string) => void) | undefined;
   isHighlighted?: ((key: string) => boolean) | undefined;
+  exportSelectedAsBlueprint?: ((id: string) => void) | undefined;
 }
  
 import PropertyField from '../../PropertyField';
+import { IndustrialInput } from '@/features/manifest-editor/components/primitives/IndustrialInput';
  
-export default function EntityIdentity({ entity, rootManifest, rootTree, onUpdate, isHighlighted }: EntityIdentityProps) {
+export default function EntityIdentity({ entity, rootManifest, rootTree, onUpdate, isHighlighted, exportSelectedAsBlueprint }: EntityIdentityProps) {
   const model = getInspectorModel(entity, rootTree, rootManifest?.moduleTemplates);
  
   const getAuthority = () => {
     if (!rootManifest) return null;
-    const cIdx = (rootManifest.ui?.controls || []).findIndex(c => c.id === model.id);
-    if (cIdx !== -1) return { type: 'ParamId', value: cIdx };
-    const jIdx = (rootManifest.ui?.jacks || []).findIndex(j => j.id === model.id);
-    if (jIdx !== -1) return { type: 'PortId', value: jIdx };
+    const useUCA = rootManifest.ui?.useUCA ?? !!rootManifest.nodes?.[0];
+    if (useUCA) {
+      const { parameters, ports } = ContractService.collectUcaEntities(rootManifest);
+      const pIdx = parameters.findIndex(p => p.id === model.id);
+      if (pIdx !== -1) return { type: 'ParamId', value: pIdx };
+      const ptIdx = ports.findIndex(pt => pt.id === model.id);
+      if (ptIdx !== -1) return { type: 'PortId', value: ptIdx };
+    } else {
+      const cIdx = (rootManifest.ui?.controls || []).findIndex(c => c.id === model.id);
+      if (cIdx !== -1) return { type: 'ParamId', value: cIdx };
+      const jIdx = (rootManifest.ui?.jacks || []).findIndex(j => j.id === model.id);
+      if (jIdx !== -1) return { type: 'PortId', value: jIdx };
+    }
     return null;
   };
   const auth = getAuthority();
 
   const isDuplicateId = React.useMemo(() => {
     if (!rootManifest || !model.id) return false;
-    const controls = rootManifest.ui?.controls || [];
-    const jacks = rootManifest.ui?.jacks || [];
 
-    const isCurrentEntity = (item: ManifestEntity) => {
-      if (item === entity) return true;
+    const isCurrentEntity = (id: string) => {
       const entityId = 'id' in entity ? entity.id : undefined;
-      if (entityId && item.id === entityId) return true;
-      return false;
+      return !!entityId && id === entityId;
     };
 
-    const duplicateInControls = controls.some(c => c.id === model.id && !isCurrentEntity(c));
-    const duplicateInJacks = jacks.some(j => j.id === model.id && !isCurrentEntity(j));
+    const useUCA = rootManifest.ui?.useUCA ?? !!rootManifest.nodes?.[0];
+    if (useUCA) {
+      const { parameters, ports } = ContractService.collectUcaEntities(rootManifest);
+      const containers: string[] = [];
+      const collectContainers = (node: OmegaNode) => {
+        if (node.kind === 'container' || node.role === 'container') {
+          containers.push(node.id);
+        }
+        if (node.children) {
+          node.children.forEach(collectContainers);
+        }
+      };
+      const rootNode = rootManifest.nodes?.[0] || rootManifest.ui?.tree;
+      if (rootNode) collectContainers(rootNode);
 
-    return duplicateInControls || duplicateInJacks;
+      const duplicateInParams = parameters.some(p => p.id === model.id && !isCurrentEntity(p.id));
+      const duplicateInPorts = ports.some(pt => pt.id === model.id && !isCurrentEntity(pt.id));
+      const duplicateInContainers = containers.some(c => c === model.id && !isCurrentEntity(c));
+
+      return duplicateInParams || duplicateInPorts || duplicateInContainers;
+    } else {
+      const controls = rootManifest.ui?.controls || [];
+      const jacks = rootManifest.ui?.jacks || [];
+
+      const isCurrentEntityLegacy = (item: ManifestEntity) => {
+        if (item === entity) return true;
+        const entityId = 'id' in entity ? entity.id : undefined;
+        if (entityId && item.id === entityId) return true;
+        return false;
+      };
+
+      const duplicateInControls = controls.some(c => c.id === model.id && !isCurrentEntityLegacy(c));
+      const duplicateInJacks = jacks.some(j => j.id === model.id && !isCurrentEntityLegacy(j));
+
+      return duplicateInControls || duplicateInJacks;
+    }
   }, [rootManifest, model.id, entity]);
  
   return (
@@ -59,12 +99,12 @@ export default function EntityIdentity({ entity, rootManifest, rootTree, onUpdat
       <div className="grid grid-cols-2 gap-3">
         <PropertyField label="Canonical ID" {...(isDuplicateId ? { status: 'error' as const } : {})}>
           <div className="relative flex items-center">
-            <input 
-              type="text" 
+            <IndustrialInput 
               value={model.id} 
-              onChange={(e) => onUpdate(buildInspectorPatch(entity, { id: e.target.value }))}
+              onChange={(v) => onUpdate(buildInspectorPatch(entity, { id: v }))}
               disabled={model.governance?.['id'] === 'locked'}
-              className={`w-full bg-black/60 border ${isDuplicateId ? 'border-red-500 ring-1 ring-red-500 pr-7' : isHighlighted?.('id') ? 'border-amber-500 ring-1 ring-amber-500 animate-pulse' : 'wb-outline'} rounded-xs px-2 py-1 text-[10px] font-mono wb-text outline-none focus:border-primary/40 transition-all font-mono [color-scheme:dark] ${model.governance?.['id'] === 'locked' ? 'opacity-60 cursor-not-allowed bg-black/80' : ''}`}
+              mono
+              className={`${isDuplicateId ? 'border-red-500 ring-1 ring-red-500 pr-7' : ''}`}
             />
             {isDuplicateId && (
               <div className="absolute right-2 text-red-500 flex items-center pointer-events-none">
@@ -80,15 +120,24 @@ export default function EntityIdentity({ entity, rootManifest, rootTree, onUpdat
         </PropertyField>
         
         <PropertyField label="Display Label">
-          <input 
-            type="text" 
+          <IndustrialInput 
             value={('label' in entity ? entity.label : (entity as OmegaNode).meta?.label as string) || ''} 
-            onChange={(e) => onUpdate('label' in entity ? { label: e.target.value } : { meta: { ...((entity as OmegaNode).meta || {}), label: e.target.value } })}
+            onChange={(v) => onUpdate('label' in entity ? { label: v } : { meta: { ...((entity as OmegaNode).meta || {}), label: v } })}
             disabled={model.governance?.['label'] === 'locked'}
-            className={`w-full bg-black/60 border ${isHighlighted?.('label') ? 'border-amber-500 ring-1 ring-amber-500 animate-pulse' : 'wb-outline'} rounded-xs px-2 py-1 text-[10px] font-bold wb-text outline-none focus:border-primary/40 transition-all [color-scheme:dark] ${model.governance?.['label'] === 'locked' ? 'opacity-50 cursor-not-allowed bg-black/80' : ''}`}
+            className="font-bold"
           />
         </PropertyField>
       </div>
+
+      {exportSelectedAsBlueprint && 'kind' in entity && (entity.kind === 'container' || entity.kind === 'face') && (
+        <button
+          onClick={() => exportSelectedAsBlueprint(entity.id)}
+          className="mt-4 w-full flex items-center justify-center gap-2 bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 rounded-xs py-2 px-3 text-[8px] font-black uppercase tracking-wider transition-all duration-300"
+        >
+          <Download className="w-3.5 h-3.5" />
+          <span>Exportar como Blueprint</span>
+        </button>
+      )}
     </div>
   );
 }

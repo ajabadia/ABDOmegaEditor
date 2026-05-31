@@ -128,6 +128,15 @@ export function useWorkbenchState() {
       toggleZenMode: () =>
         dispatch({ type: "TOGGLE_ZEN_MODE" }),
 
+      toggleWindow: (name: 'window_layers' | 'window_properties' | 'window_rack_properties' | 'window_blueprints' | 'window_info' | 'window_history' | 'window_logs') =>
+        dispatch({ type: "TOGGLE_WINDOW", payload: { name } }),
+
+      toggleNodeVisibility: (nodeId: string) =>
+        dispatch({ type: "TOGGLE_NODE_VISIBILITY", payload: { nodeId } }),
+
+      toggleNodeLock: (nodeId: string) =>
+        dispatch({ type: "TOGGLE_NODE_LOCK", payload: { nodeId } }),
+
       // PHASE 17.4 - RPC ORCHESTRATION ACTIONS
       rpc: {
         applyDelta: (patch: DeltaPatch) => {

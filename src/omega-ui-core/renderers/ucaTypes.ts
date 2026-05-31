@@ -11,6 +11,7 @@ export interface UCADebugContext {
   hideDecorative: boolean;
   showCADOverlay?: boolean | undefined;
   runtimeValues?: Record<string, number> | undefined;
+  lockedNodeIds?: string[] | undefined;
 }
 
 export interface UniversalRendererProps {

@@ -65,12 +65,13 @@ export function UniversalRenderer({
         worldPos={worldPos}
         isLayoutGoverned={isLayoutGoverned}
         handleDebugClick={handleDebugClick}
+        parentNode={parentNode}
       />
     );
   }
 
-  // B. Atomic Cells
-  if (node.kind === 'cell') {
+  // B. Atomic Cells and Ports
+  if (node.kind === 'cell' || node.kind === 'port') {
     return (
       <CellNode 
         node={node}
@@ -82,6 +83,7 @@ export function UniversalRenderer({
         worldPos={worldPos}
         isLayoutGoverned={isLayoutGoverned}
         handleDebugClick={handleDebugClick}
+        parentNode={parentNode}
       />
     );
   }

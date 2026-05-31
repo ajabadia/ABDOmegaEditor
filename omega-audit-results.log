@@ -1,16 +1,18 @@
-﻿OMEGA SYSTEM AUDIT REPORT - 05/30/2026 12:05:32
+﻿OMEGA SYSTEM AUDIT REPORT - 05/31/2026 11:38:20
 
-[PHASE:SUCCESS] [1/6 Structural Integrity]: Passed successfully with 0 errors and 127 warnings.
+[PHASE:SUCCESS] [1/6 Structural Integrity]: Passed successfully with 0 errors and 129 warnings.
 --- WARNING DETAILS START ---
 
 [OMEGA ARCH-GUARD] Auditing architectural precedence (ADR-014)...
 
-=== ÔÜá´©Å MEDIUM RISK HALLUCINATIONS (35) ===
+=== ÔÜá´©Å MEDIUM RISK HALLUCINATIONS (37) ===
 [throw new Error] src\components\ui\contact\useContactForm.ts:55 -> throw new Error(result.error || t("error"));
 [ElementCatalog] src\features\manifest-editor\components\inspector\aesthetic\styles\library\GuildNavigator.tsx:4 -> import type { ElementCategory } from '@/omega-ui-core/governance/ElementCatalog'...
 [ElementCatalog] src\features\manifest-editor\components\inspector\aesthetic\styles\ModuleStyleLibrary.tsx:6 -> import { OMEGA_ELEMENT_CATALOG, type ElementCategory, getElementDefinition } fro...
 [allowedFragments] src\features\manifest-editor\components\inspector\attachments\AttachmentTypeAnchor.tsx:19 -> const allowedIds = hostDef?.allowedFragments || [];
 [ElementCatalog] src\features\manifest-editor\components\inspector\attachments\AttachmentTypeAnchor.tsx:7 -> import { OMEGA_ELEMENT_CATALOG, getElementDefinition } from '@/omega-ui-core/gov...
+[throw new Error] src\features\manifest-editor\components\inspector\BlueprintLibraryPanel.tsx:32 -> if (!res.ok) throw new Error(`Catalog fetch failed: ${res.status}`);
+[throw new Error] src\features\manifest-editor\components\inspector\BlueprintLibraryPanel.tsx:39 -> if (!bpRes.ok) throw new Error(`Blueprint fetch failed: ${bpRes.status}`);
 [ElementCatalog] src\features\manifest-editor\components\inspector\sections\AestheticSection.tsx:13 -> import { getElementDefinition } from '@/omega-ui-core/governance/ElementCatalog'...
 [ElementCatalog] src\features\manifest-editor\components\inspector\sections\LogicSection.tsx:11 -> import { OMEGA_ELEMENT_CATALOG } from '@/omega-ui-core/governance/ElementCatalog...
 [ElementCatalog] src\features\manifest-editor\components\inspector\sections\SpatialSection.tsx:11 -> import { getElementDefinition } from '@/omega-ui-core/governance/ElementCatalog'...
@@ -19,9 +21,7 @@
 [ElementCatalog] src\features\manifest-editor\components\inspector\shared\aesthetic\IdentityGovernance.tsx:6 -> import { OMEGA_ELEMENT_CATALOG } from '@/omega-ui-core/governance/ElementCatalog...
 [ElementCatalog] src\features\manifest-editor\components\inspector\shared\aesthetic\map.md:2 -> Componentes modulares de gobernanza est├®tica impulsados por el ElementCatalog.
 [reject] src\features\manifest-editor\components\inspector\shared\aesthetic\SequenceIngestionLab.tsx:42 -> return new Promise<HTMLImageElement>((resolve, reject) => {
-[reject] src\features\manifest-editor\components\inspector\shared\aesthetic\SequenceIngestionLab.tsx:45 -> img.onerror = reject;
-[ElementCatalog] src\features\manifest-editor\components\inspector\shared\aesthetic\UnifiedGraphicGovernance.tsx:5 -> import { getElementDefinition } from '@/omega-ui-core/governance/ElementCatalog'...
-... and 20 more in this category.
+... and 22 more in this category.
 
 === Ô£à LOW RISK HALLUCINATIONS (92) ===
 [validate] src\data\map.md:45 -> - **Schema Parity**: Any changes to instrument data structures MUST be reflected...
@@ -43,7 +43,7 @@
 
 [SUMMARY] Audit complete.
 - High-risk:   0
-- Medium-risk: 35
+- Medium-risk: 37
 - Low-risk:    92
 - JSON Report: docs/arch-audit-report.json
 - CSV Report:  docs/arch-audit-report.csv
@@ -51,3 +51,11 @@
 Ô£à ARCHITECTURAL INTEGRITY VERIFIED.
 --- WARNING DETAILS END ---
 
+
+[PHASE:SUCCESS] [2/6 Type Safety (TSC)   ]: Passed successfully with 0 errors and 0 warnings.
+
+[PHASE:SUCCESS] [3/6 Code Linting (ESL)  ]: Passed successfully with 0 errors and 0 warnings.
+OK: package.json exists.
+OK: tsconfig.json exists.
+OK: src/omega-ui-core/governance/ElementCatalog.ts exists.
+STATUS: ALL CHECKS PASSED

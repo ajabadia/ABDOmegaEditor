@@ -24,21 +24,21 @@ export default function IngestionModal({ files, onConfirm, onCancel }: Ingestion
     <div className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
       <motion.div 
         initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="w-full max-w-2xl wb-surface border wb-outline rounded-lg shadow-2xl overflow-hidden flex flex-col max-h-[80vh] transition-colors duration-500"
+        className="relative w-full max-w-7xl h-full max-h-[850px] wb-surface border wb-outline shadow-2xl overflow-hidden flex flex-col"
       >
         {/* HEADER */}
-        <div className="p-6 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
+        <div className="p-6 border-b wb-outline flex items-center justify-between wb-surface-subtle">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
+            <div className="w-10 h-10 rounded-xs bg-primary/10 flex items-center justify-center border border-primary/20">
               <ScrollText className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h2 className="text-sm font-black uppercase tracking-[0.2em] wb-text">Industrial Ingestion Wizard</h2>
-              <p className="text-[9px] wb-text-muted uppercase font-bold mt-0.5">OMEGA Era 7.2.3 • Asset Synchronization</p>
+              <h2 className="text-base font-black uppercase tracking-widest wb-text">Industrial Ingestion Wizard</h2>
+              <p className="text-[8px] md:text-[9px] font-bold uppercase wb-text-muted tracking-widest mt-1 opacity-70">OMEGA Era 7.2.3 • Asset Synchronization</p>
             </div>
           </div>
-          <button onClick={onCancel} className="p-2 hover:bg-white/5 rounded-full transition-colors text-white/20 hover:text-white">
-            <X className="w-5 h-5" />
+          <button onClick={onCancel} className="p-1.5 rounded-xs border wb-outline wb-text-muted hover:wb-text hover:bg-red-500/10 hover:border-red-500/30 transition-all">
+            <X className="w-4 h-4" />
           </button>
         </div>
 
@@ -57,14 +57,17 @@ export default function IngestionModal({ files, onConfirm, onCancel }: Ingestion
         </div>
 
         {/* FOOTER */}
-        <div className="p-6 border-t border-white/5 bg-white/[0.01] flex items-center justify-between">
-          <button onClick={onCancel} className="px-6 py-2 text-[10px] font-black uppercase wb-text-muted hover:wb-text transition-colors">
+        <div className="p-6 border-t wb-outline flex justify-end gap-3 wb-surface-subtle">
+          <button 
+            onClick={onCancel} 
+            className="px-6 py-2.5 rounded-xs border wb-outline wb-text-muted hover:wb-text hover:bg-white/5 text-[9px] font-black uppercase tracking-widest transition-all duration-200"
+          >
             Abort Ingestion
           </button>
           <button 
             onClick={handleConfirm}
             disabled={!ingestionList.some((i: IngestionFile) => i.selected)}
-            className="px-8 py-3 bg-primary text-white text-[11px] font-black uppercase tracking-widest rounded-xs hover:bg-primary/80 transition-all flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed shadow-[0_0_20px_var(--wb-bloom)]"
+            className="px-8 py-2.5 bg-primary/20 border border-primary/40 text-primary text-[9px] font-black uppercase tracking-widest rounded-xs hover:bg-primary/30 transition-all flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed shadow-[0_0_20px_var(--wb-bloom)]"
           >
             <span>Confirm Injection</span>
             <ChevronRight className="w-4 h-4" />

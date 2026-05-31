@@ -4,8 +4,6 @@ import React from 'react';
 import { X, type LucideIcon } from 'lucide-react';
 import type { WorkbenchTab, WorkbenchPaneId } from '@/features/manifest-editor/hooks/useWorkbenchState';
 import type { Diagnostic } from '@/features/manifest-editor/types/diagnostics';
-import { SimulationStatusBadge } from '@/features/manifest-editor/components/header/SimulationStatusBadge';
-import type { SimulationBridgeState } from '@/features/manifest-editor/hooks/useSimulationBridge';
 
 interface MultiTabHeaderProps {
   paneId: WorkbenchPaneId;
@@ -16,7 +14,6 @@ interface MultiTabHeaderProps {
   onTabClose: (tabId: string) => void;
   onPaneFocus: () => void;
   onDiagnosticClick?: (tabId: string, diagnostic: Diagnostic) => void;
-  simulationBridge?: SimulationBridgeState;
 }
 
 export default function MultiTabHeader({
@@ -27,8 +24,7 @@ export default function MultiTabHeader({
   onTabSelect,
   onTabClose,
   onPaneFocus,
-  onDiagnosticClick,
-  simulationBridge
+  onDiagnosticClick
 }: MultiTabHeaderProps) {
   const [mounted, setMounted] = React.useState(false);
   
@@ -149,16 +145,6 @@ export default function MultiTabHeader({
       })}
 
       <div className="flex-1 h-full" />
-      
-      {simulationBridge && (
-        <div className="mr-2">
-          <SimulationStatusBadge 
-            status={simulationBridge.status}
-            lastSyncAt={simulationBridge.lastSuccessfulSyncAt}
-            onForceResync={simulationBridge.forceResync}
-          />
-        </div>
-      )}
 
       {/* Pane ID Indicator (Subtle) */}
       <div className="px-2 opacity-10 flex items-center">

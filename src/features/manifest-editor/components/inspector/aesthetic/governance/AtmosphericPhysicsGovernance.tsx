@@ -18,18 +18,18 @@ type LightingConfig = NonNullable<OMEGA_Manifest['ui']['lighting']>;
 
 export default function AtmosphericPhysicsGovernance({ manifest, onUpdate, resolveAsset }: AtmosphericPhysicsGovernanceProps) {
   const { physics } = useDesignTokens(manifest);
-  const lighting = (manifest.ui.lighting || { 
+  const lighting = (manifest.ui?.lighting || { 
     shadowAngle: 135, 
     ambientIntensity: 0.5, specularIntensity: 0.2, 
     surfaceGrain: 0.1, opacity: 1, globalBlur: 0 
   }) as LightingConfig;
-  const colors = manifest.ui.colors || { accent: '#00f2ff', weak: '#555555', surface: '#1a1c1e', text: '#ffffff' };
+  const colors = manifest.ui?.colors || { accent: '#00f2ff', weak: '#555555', surface: '#1a1c1e', text: '#ffffff' };
   
   const updateLighting = (updates: Partial<LightingConfig>) => {
     onUpdate({ ui: { ...manifest.ui, lighting: { ...lighting, ...updates } } });
   };
   
-  const faceplate = manifest.ui.faceplate;
+  const faceplate = manifest.ui?.faceplate;
   const bgUrl = typeof faceplate === 'string' ? resolveAsset(faceplate) : resolveAsset((faceplate as Record<string, string> | undefined)?.['MAIN']);
 
   return (

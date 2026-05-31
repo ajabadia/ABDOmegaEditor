@@ -33,7 +33,7 @@ export function IndustrialTextArea(props: IndustrialTextAreaProps) {
   } = props;
 
   const baseStyles =
-    "w-full wb-surface-subtle border wb-outline rounded-xs px-3 py-2 text-10px wb-text outline-none transition-all resize-none custom-scrollbar";
+    "w-full wb-surface-subtle border wb-outline rounded-xs px-3 py-2 text-[10px] wb-text outline-none transition-all resize-none custom-scrollbar";
 
   const sizeStyles = {
     sm: "text-[10px]",

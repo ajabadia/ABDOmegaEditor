@@ -34,7 +34,7 @@ export default function NodeCanvas({ manifest, contract, selectedItemId, multiSe
     
     const entities: OmegaNode[] = [];
     const traverse = (node: OmegaNode) => {
-      if (node.kind === 'cell') {
+      if (node.kind === 'cell' || node.kind === 'port') {
         entities.push(node);
       }
       if (node.children) {

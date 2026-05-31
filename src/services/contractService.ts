@@ -2,16 +2,91 @@
  * OMEGA Contract Service (v7.2.3)
  * Handles generation of technical contracts (enums, schema IDs) from manifests.
  */
-import type { OMEGA_Manifest } from '../types/manifest';
+import type { OMEGA_Manifest, OmegaNode } from '../types/manifest';
 
 export class ContractService {
+  /**
+   * Helper to recursively collect parameters and ports from the UCA node tree.
+   * Following Era 8 Sovereign UCA Graph standards.
+   */
+  static collectUcaEntities(manifest: OMEGA_Manifest): {
+    parameters: Array<{ id: string; label: string; bind?: string | undefined }>;
+    ports: Array<{ id: string; label: string; bind?: string | undefined }>;
+  } {
+    const parameters: Array<{ id: string; label: string; bind?: string | undefined }> = [];
+    const ports: Array<{ id: string; label: string; bind?: string | undefined }> = [];
+    const seenParams = new Set<string>();
+    const seenPorts = new Set<string>();
+
+    const rootNode = manifest.nodes?.[0] || manifest.ui?.tree;
+    if (!rootNode) return { parameters, ports };
+
+    const walk = (node: OmegaNode) => {
+      if (!node) return;
+
+      const isPortNode = node.kind === 'port' || node.role === 'io';
+
+      if (isPortNode) {
+        if (!seenPorts.has(node.id)) {
+          seenPorts.add(node.id);
+          ports.push({
+            id: node.id,
+            label: (node.meta?.label as string) || node.id,
+            bind: node.bind
+          });
+        }
+      } else if (node.role === 'control' || node.role === 'telemetry') {
+        if (!seenParams.has(node.id)) {
+          seenParams.add(node.id);
+          parameters.push({
+            id: node.id,
+            label: (node.meta?.label as string) || node.id,
+            bind: node.bind
+          });
+        }
+      }
+
+      if (node.ports) {
+        node.ports.forEach(p => {
+          if (!seenPorts.has(p.id)) {
+            seenPorts.add(p.id);
+            ports.push({
+              id: p.id,
+              label: p.label || p.id,
+              bind: p.bind
+            });
+          }
+        });
+      }
+
+      if (node.children) {
+        node.children.forEach(walk);
+      }
+    };
+
+    walk(rootNode);
+
+    return { parameters, ports };
+  }
+
   /**
    * Generates a TypeScript source file containing Enums for all parameters and ports.
    * This is the "Numeric Authority" for the C++ engine.
    */
   static generateTypeScriptContract(manifest: OMEGA_Manifest): string {
-    const controls = manifest.ui?.controls || [];
-    const jacks = manifest.ui?.jacks || [];
+    const useUCA = manifest.ui?.useUCA ?? !!manifest.nodes?.[0];
+    let controls: Array<{ id: string; label?: string; bind?: string | undefined }> = [];
+    let jacks: Array<{ id: string; label?: string; bind?: string | undefined }> = [];
+
+    if (useUCA) {
+      const uca = this.collectUcaEntities(manifest);
+      controls = uca.parameters;
+      jacks = uca.ports;
+    } else {
+      controls = manifest.ui?.controls || [];
+      jacks = manifest.ui?.jacks || [];
+    }
+
     const name = manifest.metadata?.name || 'OmegaModule';
     const safeName = name.replace(/[^a-zA-Z0-9]/g, '');
 
@@ -47,8 +122,19 @@ export class ContractService {
    * Generates a C++ Header file for direct inclusion in the OMEGA Engine.
    */
   static generateCppContract(manifest: OMEGA_Manifest): string {
-    const controls = manifest.ui?.controls || [];
-    const jacks = manifest.ui?.jacks || [];
+    const useUCA = manifest.ui?.useUCA ?? !!manifest.nodes?.[0];
+    let controls: Array<{ id: string; label?: string; bind?: string | undefined }> = [];
+    let jacks: Array<{ id: string; label?: string; bind?: string | undefined }> = [];
+
+    if (useUCA) {
+      const uca = this.collectUcaEntities(manifest);
+      controls = uca.parameters;
+      jacks = uca.ports;
+    } else {
+      controls = manifest.ui?.controls || [];
+      jacks = manifest.ui?.jacks || [];
+    }
+
     const name = manifest.metadata?.name || 'OmegaModule';
     const safeName = name.toUpperCase().replace(/[^A-Z0-9]/g, '_');
 
@@ -97,3 +183,4 @@ export class ContractService {
     URL.revokeObjectURL(url);
   }
 }
+

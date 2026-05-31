@@ -61,33 +61,16 @@ export default function HelpModal({ isOpen, onClose, initialSectionId }: HelpMod
 
         <motion.div 
           initial={{ scale: 0.98, opacity: 0, y: 10 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.98, opacity: 0, y: 10 }}
-          className="relative w-full max-w-4xl h-[85vh] bg-[#080808] border border-white/10 rounded-sm shadow-2xl flex flex-col overflow-hidden"
+          className="relative w-full max-w-7xl h-full max-h-[850px] wb-surface border wb-outline rounded-xs shadow-2xl flex flex-col overflow-hidden"
         >
           {/* HEADER */}
-          <div className="flex-none p-6 border-b border-white/10 bg-black/60 flex items-center justify-between">
-            <div className="flex items-center gap-6">
-              <div className="flex flex-col">
-                <h2 className="text-[12px] font-black uppercase tracking-[0.4em] text-white">Ingeniería OMEGA v7.2.3</h2>
-                <p className="text-[8px] font-mono text-primary/60 uppercase tracking-widest mt-1">Unified Documentation System</p>
-              </div>
-
-              <div className="flex bg-white/5 p-1 rounded-xs border border-white/5 ml-4">
-                 <button 
-                   onClick={() => { setActiveCategory('user'); setExpandedSection('introduccion'); }}
-                   className={`px-6 py-1.5 rounded-xs text-[9px] font-black uppercase tracking-widest transition-all ${activeCategory === 'user' ? 'bg-primary text-black' : 'text-white/40 hover:text-white'}`}
-                 >
-                   Manual Usuario
-                 </button>
-                 <button 
-                   onClick={() => { setActiveCategory('developer'); setExpandedSection('sdk_core'); }}
-                   className={`px-6 py-1.5 rounded-xs text-[9px] font-black uppercase tracking-widest transition-all ${activeCategory === 'developer' ? 'bg-accent text-black' : 'text-white/40 hover:text-white'}`}
-                 >
-                   Guía SDK (Dev)
-                 </button>
-              </div>
+          <div className="flex-none p-6 border-b wb-outline flex items-center justify-between wb-surface-subtle">
+            <div className="flex flex-col">
+              <h2 className="text-base font-black uppercase tracking-widest wb-text">Ingeniería OMEGA v7.2.3</h2>
+              <p className="text-[8px] md:text-[9px] font-bold uppercase wb-text-muted tracking-widest mt-1 opacity-70">Unified Documentation System</p>
             </div>
-            <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-full transition-colors group">
-              <X className="w-5 h-5 text-white/20 group-hover:text-white" />
+            <button onClick={onClose} className="p-1.5 rounded-xs border wb-outline wb-text-muted hover:wb-text hover:bg-red-500/10 hover:border-red-500/30 transition-all">
+              <X className="w-4 h-4" />
             </button>
           </div>
 
@@ -103,15 +86,27 @@ export default function HelpModal({ isOpen, onClose, initialSectionId }: HelpMod
           </div>
 
           {/* FOOTER */}
-          <div className="flex-none p-5 bg-black border-t border-white/10 flex items-center justify-between">
-            <div className="flex items-center gap-3 text-primary/40">
-              <Cpu className="w-4 h-4" />
-              <span className="text-[8px] font-black uppercase tracking-[0.2em]">Protocol: SECURE // ERA 4 Compliance</span>
+          <div className="flex-none p-5 border-t wb-outline flex items-center justify-between wb-surface-subtle">
+            <div className="flex bg-black/20 p-1 rounded-xs border wb-outline">
+               <button 
+                 onClick={() => { setActiveCategory('user'); setExpandedSection('introduccion'); }}
+                 className={`px-6 py-1.5 rounded-xs text-[9px] font-black uppercase tracking-widest transition-all ${activeCategory === 'user' ? 'bg-primary/20 border border-primary/40 text-primary' : 'wb-text-muted hover:wb-text'}`}
+               >
+                 Manual Usuario
+               </button>
+               <button 
+                 onClick={() => { setActiveCategory('developer'); setExpandedSection('sdk_core'); }}
+                 className={`px-6 py-1.5 rounded-xs text-[9px] font-black uppercase tracking-widest transition-all ${activeCategory === 'developer' ? 'bg-accent/20 border border-accent/40 text-accent' : 'wb-text-muted hover:wb-text'}`}
+               >
+                 Guía SDK (Dev)
+               </button>
             </div>
-            <div className="flex items-center gap-4 bg-white/5 px-4 py-1.5 rounded-full border border-white/5 text-white/40">
-               <Info className="w-3 h-3 text-primary" />
-               <span className="text-[9px] font-black uppercase tracking-widest">v7.2.3 Production</span>
-            </div>
+            <button 
+              onClick={onClose} 
+              className="px-6 py-2.5 rounded-xs border wb-outline wb-text-muted hover:wb-text hover:bg-white/5 text-[9px] font-black uppercase tracking-widest transition-all duration-200"
+            >
+              Dismiss View
+            </button>
           </div>
         </motion.div>
       </div>

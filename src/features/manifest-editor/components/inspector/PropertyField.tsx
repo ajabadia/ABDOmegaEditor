@@ -33,12 +33,12 @@ export default function PropertyField({
   return (
     <div className={`space-y-1.5 ${compact ? 'opacity-80 scale-[0.98] origin-left' : ''}`}>
       <div className="flex items-center justify-between gap-2">
-        <label className="text-[7px] font-black uppercase wb-text-muted tracking-wider flex items-center gap-1.5">
+        <label className="text-[8px] font-black uppercase wb-text-muted tracking-wider flex items-center gap-1.5">
           {status && <div className={`w-1 h-1 rounded-full ${statusColors[status]}`} />}
           {label}
         </label>
         {readOnly && (
-          <span className="text-[6px] font-black uppercase text-white/20 italic">Read Only</span>
+          <span className="text-[6px] font-black uppercase opacity-40 wb-text italic">Read Only</span>
         )}
       </div>
 
@@ -46,7 +46,7 @@ export default function PropertyField({
         {children ? (
           children
         ) : (
-          <div className={`w-full py-2 px-3 bg-black/40 border wb-outline rounded-xs text-[10px] ${mono ? 'font-mono' : 'font-medium'} ${readOnly ? 'opacity-50 cursor-not-allowed' : 'group-hover:border-primary/30 transition-colors'}`}>
+          <div className={`w-full py-2 px-3 wb-surface-subtle border wb-outline rounded-xs text-[10px] ${mono ? 'font-mono' : 'font-medium'} ${readOnly ? 'opacity-50 cursor-not-allowed' : 'group-hover:border-primary/30 transition-colors'}`}>
             {value !== undefined ? value : '—'}
           </div>
         )}

@@ -15,7 +15,7 @@ interface ContainerFormProps {
 }
 
 export default function ContainerForm({ container, onUpdate, manifest, setActiveSection }: Omit<ContainerFormProps, 'resolveAsset'>) {
-  const containerStyles = manifest.ui.styles?.['container'] || [];
+  const containerStyles = manifest.ui?.styles?.['container'] || [];
   const currentStyleId = container.variant || 'default';
   const currentStyle = containerStyles.find(s => s.id === currentStyleId) || { id: 'default', label: 'Default Style' };
   const widthUnits: ContainerSizeUnit[] = ['full', '3/4', '2/3', '1/2', '1/3', '1/4'];
@@ -147,7 +147,7 @@ export default function ContainerForm({ container, onUpdate, manifest, setActive
           <TabSelector 
             value={(container.tab as unknown as string) || 'MAIN'} 
             onChange={(val) => onUpdate(container.id, { tab: val })}
-            availableTabs={manifest.ui.layout?.planes || ['MAIN']}
+            availableTabs={manifest.ui?.layout?.planes || ['MAIN']}
           />
       </div>
       

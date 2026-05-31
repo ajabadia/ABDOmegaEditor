@@ -15,7 +15,7 @@ interface PortPropertiesProps {
  
 export default function PortProperties({ item, manifest, onUpdate, setActiveSection }: PortPropertiesProps) {
   const pres = (item.presentation || {}) as Presentation;
-  const portStyles = manifest.ui.styles?.['port'] || [];
+  const portStyles = manifest.ui?.styles?.['port'] || [];
   const currentStyleId = pres.variant || 'default';
   const currentStyle = portStyles.find(s => s.id === currentStyleId) || { id: 'default', label: 'Default Port Style' };
  

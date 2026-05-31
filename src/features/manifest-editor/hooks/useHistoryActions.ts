@@ -50,10 +50,15 @@ export const useHistoryActions = ({
       return;
     }
 
+    const currentDoc = orchestrator.documentsById[activeId];
+    const latestManifest = currentDoc?.manifest || manifest;
+    const latestResources = currentDoc?.extraResources || [];
+
     orchestrator.pushHistory(activeId, {
       id: `hist_${now}_${Math.random().toString(36).substring(2, 7)}`,
       type: 'SNAPSHOT',
-      manifest: structuredClone(manifest),
+      manifest: structuredClone(latestManifest),
+      extraResources: structuredClone(latestResources),
       timestamp: now,
       label,
       correlationId: `tx_${now}`,
@@ -68,7 +73,7 @@ export const useHistoryActions = ({
     });
 
     lastHistoryPushRef.current = { timestamp: now, label };
-  }, [orchestrator, activeId, manifest]);
+  }, [orchestrator, activeId, manifest, workbenchState]);
 
   const undo = useCallback(() => {
     const doc = orchestrator.documentsById[activeId];
@@ -153,6 +158,31 @@ export const useHistoryActions = ({
     }
   }, [pushHistoryEntry, orchestrator, activeId, manifest, simulationBridge]);
 
+  const updateDocumentWithHistory = useCallback((
+    updates: { manifest?: Partial<OMEGA_Manifest> | ((prev: OMEGA_Manifest) => Partial<OMEGA_Manifest>); extraResources?: { name: string, data: ArrayBuffer, type: string }[] | ((prev: { name: string, data: ArrayBuffer, type: string }[]) => { name: string, data: ArrayBuffer, type: string }[]) },
+    label: string,
+    forceHistory = false
+  ) => {
+    const currentDoc = orchestrator.documentsById[activeId];
+    const baseManifest = currentDoc?.manifest || manifest;
+    const baseResources = currentDoc?.extraResources || [];
+
+    const finalManifest = typeof updates.manifest === 'function' ? updates.manifest(baseManifest) : updates.manifest;
+    const finalResources = typeof updates.extraResources === 'function' ? updates.extraResources(baseResources) : updates.extraResources;
+
+    pushHistoryEntry(label, forceHistory);
+
+    const docUpdates: { manifest?: Partial<OMEGA_Manifest>; extraResources?: { name: string, data: ArrayBuffer, type: string }[] } = {};
+    if (finalManifest !== undefined) docUpdates.manifest = finalManifest;
+    if (finalResources !== undefined) docUpdates.extraResources = finalResources;
+
+    orchestrator.updateDocument(activeId, docUpdates);
+
+    if (finalManifest && !currentDoc?.activeTransaction) {
+      simulationBridge.scheduleStructuralSync(label);
+    }
+  }, [pushHistoryEntry, orchestrator, activeId, manifest, simulationBridge]);
+
   const compareWithHistory = useCallback((index: number): ManifestDiffResult | null => {
     const doc = orchestrator.documentsById[activeId];
     if (!doc || !doc.history.past[index]) return null;
@@ -163,7 +193,7 @@ export const useHistoryActions = ({
 
   const handleMergeEntries = useCallback((entries: DiffEntry[]) => {
     if (entries.length === 0) return;
-
+ 
     let nextManifest = manifest;
     entries.forEach(entry => {
       nextManifest = applyDiffEntry(nextManifest, entry);
@@ -183,6 +213,7 @@ export const useHistoryActions = ({
     redo,
     undoTo,
     updateManifestWithHistory,
+    updateDocumentWithHistory,
     compareWithHistory,
     handleMergeEntries
   };

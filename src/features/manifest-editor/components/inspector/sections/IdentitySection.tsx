@@ -19,6 +19,7 @@ interface IdentitySectionProps {
   rootTree?: OmegaNode | undefined;
   highlightPath?: (string | null) | undefined;
   resolveAsset: (id: string | undefined) => string | undefined;
+  exportSelectedAsBlueprint?: ((id: string) => void) | undefined;
 }
  
 export default function IdentitySection({ 
@@ -27,7 +28,8 @@ export default function IdentitySection({
   rootManifest, 
   rootTree,
   highlightPath,
-  resolveAsset
+  resolveAsset,
+  exportSelectedAsBlueprint
 }: IdentitySectionProps) {
   const isModule = 'metadata' in item;
   const isHighlighted = (key: string) => !!highlightPath?.includes(key);
@@ -40,6 +42,7 @@ export default function IdentitySection({
         rootTree={rootTree}
         onUpdate={(u) => onUpdate(u)} 
         isHighlighted={isHighlighted} 
+        exportSelectedAsBlueprint={exportSelectedAsBlueprint}
       />
     );
   }

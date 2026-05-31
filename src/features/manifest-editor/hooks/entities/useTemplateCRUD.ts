@@ -1,7 +1,9 @@
 'use client';
 
-import { useCallback } from 'react';
+import React, { useCallback } from 'react';
 import type { OMEGA_Manifest, ModuleTemplate, OmegaNode } from '@/omega-ui-core/types/manifest';
+import { findNodeInTree } from './ucaInspectorAdapter';
+import { manifestToTree } from '@/omega-ui-core/uca/ucaBridge';
 
 /**
  * useTemplateCRUD (Phase 5.4)
@@ -82,9 +84,42 @@ export const useTemplateCRUD = (
     addLog(`[SUCCESS] Template '${template.label}' injected into workspace.`);
   }, [manifest, updateManifest, addLog]);
 
+  const exportSelectedAsBlueprint = useCallback((nodeId: string) => {
+    const tree = manifest.ui?.tree || manifestToTree(manifest);
+    const node = findNodeInTree(tree, nodeId);
+    if (!node || (node.kind !== 'container' && node.kind !== 'face')) {
+      addLog(`[ERROR] Solo se pueden exportar contenedores o módulos estructurales como blueprints.`);
+      alert("Solo se pueden exportar contenedores o módulos estructurales como blueprints.");
+      return;
+    }
+
+    // Estructurar el Blueprint según ADR-011
+    const blueprintFile = {
+      id: node.id.toLowerCase().replace(/[^a-z0-9_]/g, '_'),
+      label: (node.meta?.label as string) || `Custom ${node.id}`,
+      category: node.kind === 'face' ? 'structure' : 'composite',
+      description: `Exported custom module from design workspace.`,
+      version: "1.0.0",
+      policy: [],
+      slots: [],
+      baseNode: JSON.parse(JSON.stringify(node))
+    };
+
+    // Crear descarga del archivo
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(blueprintFile, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `${blueprintFile.id}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    addLog(`[SUCCESS] Blueprint exportado: ${blueprintFile.id}.json`);
+  }, [manifest, addLog]);
+
   return {
     registerTemplate,
     removeTemplate,
-    applyTemplate
+    applyTemplate,
+    exportSelectedAsBlueprint
   };
 };

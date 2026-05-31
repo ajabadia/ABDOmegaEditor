@@ -36,9 +36,9 @@ export function IndustrialSelect(props: IndustrialSelectProps) {
   } = props;
 
   const sizeStyles = {
-    xs: "px-2 py-1 text-8px",
-    sm: "px-3 py-2.5 text-10px",
-    md: "px-3 py-3 text-11px",
+    xs: "px-2 py-1 text-[8px]",
+    sm: "px-3 py-2.5 text-[10px]",
+    md: "px-3 py-3 text-[11px]",
   };
 
   return (

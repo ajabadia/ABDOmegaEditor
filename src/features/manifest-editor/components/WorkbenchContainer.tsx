@@ -10,7 +10,7 @@ import EditorModals from './modals/EditorModals';
 import ModulationGrid from './modulation/ModulationGrid';
 import { HiddenFileHandlers } from './shared/HiddenFileHandlers';
 import TemplateGallery from './gallery/TemplateGallery';
-import { WorkbenchInspector } from './inspector/WorkbenchInspector';
+import RightDockContainer from './inspector/RightDockContainer';
 import WorkbenchPane from './workspace/WorkbenchPane';
 import { SplitDivider } from './workspace/SplitDivider';
 import CellStudioContainer from './lab/CellStudioContainer';
@@ -59,10 +59,22 @@ interface WorkbenchContainerProps {
 export default function WorkbenchContainer({ 
   onOpenGovernance,
   setIsCellLibraryOpen: setIsCellLibraryOpenProp,
-  isCellLibraryOpen: isCellLibraryOpenProp
+  isCellLibraryOpen: isCellLibraryOpenProp,
+  onOpenCellEditor,
+  onOpenAudit,
+  isAuditOpen,
+  setIsAuditOpen,
+  isGovernanceOpen,
+  setIsGovernanceOpen,
+  isCellEditorOpen,
+  setIsCellEditorOpen,
 }: WorkbenchContainerProps) {
   // 1. Workspace State
   const { state, actions, derived } = useWorkbenchState();
+
+  const handleOpenConfig = onOpenGovernance || (() => actions.toggleUIState('isConfigModalOpen'));
+  const handleOpenAudit = onOpenAudit || (() => actions.toggleUIState('isAuditModalOpen'));
+  const handleOpenCellEditor = onOpenCellEditor || (() => actions.toggleUIState('isCellEditorOpen'));
 
   // 2. Core Data & Operations
   const editor = useManifestEditor(state, actions);
@@ -147,8 +159,7 @@ export default function WorkbenchContainer({
   
   const handleSelectItem = useCallback((id: string | null) => {
     actions.setSelectedNode(id);
-    if (id) editor.pushHistoryEntry('Select Node');
-  }, [actions, editor]);
+  }, [actions]);
 
   const selectedItemId = state.selectedNodeId;
 
@@ -268,8 +279,7 @@ export default function WorkbenchContainer({
   }, [actions, state.layout.ratio]);
 
   const handleDragRatioEnd = useCallback(() => {
-    editor.pushHistoryEntry('Adjust Splitter');
-  }, [editor]);
+  }, []);
 
   const handleDiagnosticClick = useCallback((tabId: string, diagRaw: unknown) => {
     const diag = diagRaw as Diagnostic;
@@ -348,6 +358,8 @@ export default function WorkbenchContainer({
         setIsLiveMode={() => actions.toggleUIState('isLiveMode')}
         onUndoTo={editor.undoTo}
         onCompareWithHistory={handleCompareWithHistory}
+        hiddenNodeIds={state.hiddenNodeIds}
+        lockedNodeIds={state.lockedNodeIds}
       />
     );
   };
@@ -376,24 +388,33 @@ export default function WorkbenchContainer({
               type: type as WorkbenchTabType, 
               title: type.charAt(0).toUpperCase() + type.slice(1) 
             });
-            editor.pushHistoryEntry(`Switch to ${type} view`);
           }}
           uiTheme={state.uiTheme}
           setUiTheme={actions.setUiTheme}
           onHelp={() => actions.setHelpState(true)}
           audit={auditResult}
-          onOpenAudit={() => actions.toggleUIState('isAuditModalOpen')}
+          onOpenAudit={handleOpenAudit}
           onTriggerUpload={triggerUpload}
           onOpenAbout={() => actions.toggleUIState('isAboutModalOpen')}
-          onOpenConfig={() => actions.toggleUIState('isConfigModalOpen')}
-          onOpenCellEditor={() => actions.toggleUIState('isCellEditorOpen')}
+          onOpenConfig={handleOpenConfig}
+          onOpenCellEditor={handleOpenCellEditor}
           onOpenGallery={() => setIsGalleryOpen(true)}
           isSplit={derived.isSplit}
           onToggleSplit={() => {
             const nextMode = derived.isSplit ? 'single' : 'vertical';
             actions.setLayoutMode(nextMode);
-            editor.pushHistoryEntry(nextMode === 'vertical' ? 'Enable Split View' : 'Disable Split View');
           }}
+          windowStates={{
+            window_layers: state.window_layers,
+            window_properties: state.window_properties,
+            window_rack_properties: state.window_rack_properties,
+            window_blueprints: state.window_blueprints,
+            window_info: state.window_info,
+            window_history: state.window_history,
+            window_logs: state.window_logs
+          }}
+          onToggleWindow={actions.toggleWindow}
+          simulationBridge={editor.simulationBridge}
         />
       </div>
 
@@ -432,8 +453,8 @@ export default function WorkbenchContainer({
                 isLiveMode={state.isLiveMode}
                 onToggleLive={() => actions.toggleUIState('isLiveMode')}
                 onOpenGallery={() => actions.toggleUIState('mockupOpen')}
-                onOpenAudit={() => actions.toggleUIState('isAuditModalOpen')}
-                onOpenConfig={() => actions.toggleUIState('isConfigModalOpen')}
+                onOpenAudit={handleOpenAudit}
+                onOpenConfig={handleOpenConfig}
                 onOpenCellStudio={() => {
                   actions.setStudioMode(true, selectedItemId || undefined);
                 }}
@@ -460,60 +481,68 @@ export default function WorkbenchContainer({
               )}
             </div>
 
-            {/* RIGHT WORKSPACE: DOCKED INSPECTOR (COLLAPSIBLE WITH SLIDE TRANSITION) */}
-            <div className="flex flex-row relative h-full">
-              {/* INTERACTIVE VERTICAL COLLAPSE HANDLE */}
-              <div 
-                onClick={actions.toggleRightPanel}
-                className="w-1.5 hover:w-2 bg-black/40 hover:bg-[#ff8c00]/30 border-l border-r wb-outline/40 flex items-center justify-center cursor-pointer select-none transition-all duration-200 group z-40"
-                title={state.isRightPanelCollapsed ? "Expand Inspector" : "Collapse Inspector"}
-              >
-                <span className="text-[6px] opacity-40 group-hover:opacity-100 transition-opacity text-foreground select-none">
-                  {state.isRightPanelCollapsed ? '◀' : '▶'}
-                </span>
-              </div>
-
-              <div 
-                className="flex-shrink-0 flex flex-col bg-black/10 overflow-hidden transition-all duration-300 border-l wb-outline"
-                style={{ 
-                  width: state.isRightPanelCollapsed ? '0px' : '340px',
-                  borderLeftWidth: state.isRightPanelCollapsed ? '0px' : '1px'
-                }}
-              >
-                <div className="w-[340px] h-full flex flex-col overflow-hidden">
-                  <WorkbenchInspector 
-                    isLiveMode={state.isLiveMode} uiTheme={state.uiTheme}
-                    manifest={manifest as OMEGA_Manifest} selectedItem={selectedItem}
-                    selectedItemId={selectedItemId} highlightPath={gps.highlightPath}
-                    availableBinds={availableBinds} extraResources={editor.extraResources}
-                    audit={auditResult}
-                    onUpdateItem={editor.updateItem} onUpdateManifest={updateManifest}
-                    onSelectItem={handleSelectItem} onAddEntity={handleAddEntity}
-                    onDuplicateItem={handleDuplicateItem} onRemoveItem={handleRemoveItem}
-                    onAddModulation={editor.addModulation} onRemoveModulation={editor.removeModulation}
-                    onUpdateModulation={editor.updateModulation} onOpenModGrid={() => actions.toggleUIState('showModGrid')}
-                    addContainer={editor.addContainer} updateContainer={editor.updateContainer}
-                    removeContainer={editor.removeContainer} onHelp={(sectionId) => actions.setHelpState(true, sectionId)}
-                    onRemoveResource={editor.handleRemoveResource}
-                    resolveAsset={editor.resolveAsset}
-                    onTriggerUpload={triggerUpload}
-                    onOpenConfig={onOpenGovernance || (() => actions.toggleUIState('isConfigModalOpen'))}
-                    onOpenLibrary={() => setIsCellLibraryOpen(true)}
-                    onSelectBlueprint={editor.blueprintInjection.startInjection}
-                    pinnedNodeId={state.pinnedNodeId}
-                    onTogglePin={(id) => {
-                      actions.setPinnedNode(id);
-                      editor.pushHistoryEntry(id ? 'Pin Node' : 'Unpin Node');
-                    }}
-                    layout={state.layout}
-                    onSetLayoutRatio={actions.setLayoutRatio}
-                    onSetLayoutRatioEnd={handleDragRatioEnd}
-                    multiSelectedIds={state.multiSelectedNodeIds}
-                    onSelectMultiple={actions.setMultiSelectedNodes}
-                  />
-                </div>
-              </div>
-            </div>
+            {/* RIGHT WORKSPACE: MODULAR DOCK SYSTEM (Photoshop style) */}
+            <RightDockContainer 
+              manifest={manifest as OMEGA_Manifest}
+              contract={contract as OMEGA_Contract | null}
+              selectedItem={selectedItem}
+              selectedItemId={selectedItemId}
+              highlightPath={gps.highlightPath}
+              availableBinds={availableBinds}
+              extraResources={editor.extraResources}
+              audit={auditResult}
+              isLiveMode={state.isLiveMode}
+              uiTheme={state.uiTheme}
+              pinnedNodeId={state.pinnedNodeId}
+              layout={state.layout}
+              multiSelectedIds={state.multiSelectedNodeIds}
+              pastHistory={editor.orchestrator.documentsById['primary']?.history?.past || []}
+              onUndoTo={editor.undoTo}
+              logs={editor.logs}
+              windowStates={{
+                window_layers: state.window_layers,
+                window_properties: state.window_properties,
+                window_rack_properties: state.window_rack_properties,
+                window_blueprints: state.window_blueprints,
+                window_info: state.window_info,
+                window_history: state.window_history,
+                window_logs: state.window_logs
+              }}
+              onToggleWindow={actions.toggleWindow}
+              hiddenNodeIds={state.hiddenNodeIds}
+              lockedNodeIds={state.lockedNodeIds}
+              onToggleVisibility={actions.toggleNodeVisibility}
+              onToggleLock={actions.toggleNodeLock}
+              isCollapsed={state.isRightPanelCollapsed}
+              onToggleCollapse={actions.toggleRightPanel}
+              onUpdateItem={editor.updateItem}
+              onUpdateManifest={updateManifest}
+              onSelectItem={handleSelectItem}
+              onAddEntity={handleAddEntity}
+              onDuplicateItem={handleDuplicateItem}
+              onRemoveItem={handleRemoveItem}
+              onAddModulation={editor.addModulation}
+              onRemoveModulation={editor.removeModulation}
+              onUpdateModulation={editor.updateModulation}
+              onOpenModGrid={() => actions.toggleUIState('showModGrid')}
+              addContainer={editor.addContainer}
+              updateContainer={editor.updateContainer}
+              removeContainer={editor.removeContainer}
+              onHelp={(sectionId) => actions.setHelpState(true, sectionId)}
+              onRemoveResource={editor.handleRemoveResource}
+              resolveAsset={editor.resolveAsset}
+              onTriggerUpload={triggerUpload}
+              onOpenConfig={handleOpenConfig}
+              onOpenLibrary={() => setIsCellLibraryOpen(true)}
+              onSelectBlueprint={editor.blueprintInjection.startInjection}
+              exportSelectedAsBlueprint={editor.exportSelectedAsBlueprint}
+              onTogglePin={(id) => {
+                actions.setPinnedNode(id);
+              }}
+              onSetLayoutRatio={actions.setLayoutRatio}
+              onSetLayoutRatioEnd={handleDragRatioEnd}
+              onSelectMultiple={actions.setMultiSelectedNodes}
+            />
           </>
         )}
 
@@ -533,8 +562,8 @@ export default function WorkbenchContainer({
         handleBulkUpload={editor.handleBulkUpload}
         helpState={{ isOpen: state.helpState.isOpen, sectionId: state.helpState.sectionId || '' }}
         closeHelp={() => actions.setHelpState(false)}
-        isAuditModalOpen={state.isAuditModalOpen}
-        setIsAuditModalOpen={() => actions.toggleUIState('isAuditModalOpen')}
+        isAuditModalOpen={isAuditOpen !== undefined ? isAuditOpen : state.isAuditModalOpen}
+        setIsAuditModalOpen={setIsAuditOpen ? (open) => setIsAuditOpen(open) : () => actions.toggleUIState('isAuditModalOpen')}
         isAboutModalOpen={state.isAboutModalOpen}
         setIsAboutModalOpen={() => actions.toggleUIState('isAboutModalOpen')}
         handleNavigateToIssue={handleNavigateToIssue}
@@ -543,11 +572,11 @@ export default function WorkbenchContainer({
         setMockupOpen={() => actions.toggleUIState('mockupOpen')}
         resolveAsset={editor.resolveAsset}
         onDeploy={onDeploy}
-        isConfigModalOpen={state.isConfigModalOpen}
-        setIsConfigModalOpen={() => actions.toggleUIState('isConfigModalOpen')}
+        isConfigModalOpen={isGovernanceOpen !== undefined ? isGovernanceOpen : state.isConfigModalOpen}
+        setIsConfigModalOpen={setIsGovernanceOpen ? (open) => setIsGovernanceOpen(open) : () => actions.toggleUIState('isConfigModalOpen')}
         onUpdateManifest={updateManifest}
-        isCellEditorOpen={state.isCellEditorOpen}
-        setIsCellEditorOpen={() => actions.toggleUIState('isCellEditorOpen')}
+        isCellEditorOpen={isCellEditorOpen !== undefined ? isCellEditorOpen : state.isCellEditorOpen}
+        setIsCellEditorOpen={setIsCellEditorOpen ? (open) => setIsCellEditorOpen(open) : () => actions.toggleUIState('isCellEditorOpen')}
         isCellLibraryOpen={isCellLibraryOpen}
         setIsCellLibraryOpen={setIsCellLibraryOpen}
         onAddEntityFromLibrary={handleAddFromLibrary}
@@ -560,7 +589,6 @@ export default function WorkbenchContainer({
         blueprintInjection={editor.blueprintInjection}
       />
 
-      <WorkbenchLogs showLogs={state.showLogs && !state.isZenMode} setShowLogs={() => actions.toggleUIState('showLogs')} logs={editor.logs} />
       {!state.isZenMode && (
         <WorkbenchFooter 
           watchdogStatus={watchdog.status}

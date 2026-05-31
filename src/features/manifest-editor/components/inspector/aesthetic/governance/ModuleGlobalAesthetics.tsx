@@ -17,7 +17,8 @@ interface ModuleGlobalAestheticsProps {
 }
 
 export default function ModuleGlobalAesthetics({ manifest, onUpdate, resolveAsset }: ModuleGlobalAestheticsProps) {
-  const faceplate = manifest.ui.faceplate;
+  const ui = manifest.ui || {};
+  const faceplate = ui.faceplate;
 
   return (
     <div className="space-y-4">
@@ -35,7 +36,7 @@ export default function ModuleGlobalAesthetics({ manifest, onUpdate, resolveAsse
                manifest={manifest}
                label="Faceplate Texture"
                selectedAssetId={typeof faceplate === 'string' ? faceplate : undefined}
-               onSelect={(id) => onUpdate({ ui: { ...manifest.ui, faceplate: id } })}
+               onSelect={(id) => onUpdate({ ui: { ...ui, faceplate: id } })}
                resolveAsset={resolveAsset || ((id) => id)}
             />
          </div>

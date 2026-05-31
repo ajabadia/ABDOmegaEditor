@@ -57,6 +57,8 @@ interface WorkbenchPaneProps {
   onCompareWithHistory: (index: number) => void;
   multiSelectedIds: string[];
   onSelectMultiple: (ids: string[]) => void;
+  hiddenNodeIds?: string[] | undefined;
+  lockedNodeIds?: string[] | undefined;
 }
 
 const WorkbenchPane = React.memo((props: WorkbenchPaneProps) => {
@@ -81,7 +83,6 @@ const WorkbenchPane = React.memo((props: WorkbenchPaneProps) => {
         onTabClose={onTabClose}
         onPaneFocus={onPaneFocus}
         onDiagnosticClick={onDiagnosticClick}
-        simulationBridge={simulationBridge}
       />
       
       <div className="flex-1 flex flex-col overflow-hidden relative">
@@ -119,6 +120,8 @@ const WorkbenchPane = React.memo((props: WorkbenchPaneProps) => {
             onCompareWithHistory={props.onCompareWithHistory}
             multiSelectedIds={props.multiSelectedIds}
             onSelectMultiple={props.onSelectMultiple}
+            hiddenNodeIds={props.hiddenNodeIds}
+            lockedNodeIds={props.lockedNodeIds}
           />
         )}
 

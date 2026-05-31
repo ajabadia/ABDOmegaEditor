@@ -161,7 +161,11 @@ function performMerge(manifest: OMEGA_Manifest, node: OmegaNode, strategy: Bluep
 
   return {
     ...manifest,
-    ...canonicalUpdates, // Populates manifest.nodes and manifest.ui
+    ...canonicalUpdates,
+    ui: {
+      ...manifest.ui,
+      ...canonicalUpdates.ui,
+    }
   };
 }
 

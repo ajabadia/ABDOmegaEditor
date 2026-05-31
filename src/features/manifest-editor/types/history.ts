@@ -25,6 +25,7 @@ export interface HistoryEntry {
   
   // State Delta or Snapshot
   manifest: OMEGA_Manifest; // For now, we use snapshots for reliability
+  extraResources?: { name: string, data: ArrayBuffer, type: string }[] | undefined;
   
   // UI State Context
   uiState?: {

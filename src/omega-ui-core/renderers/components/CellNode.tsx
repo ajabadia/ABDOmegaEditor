@@ -69,12 +69,20 @@ export function CellNode({
 
   const isSelected = debugContext?.selectedId === node.id;
 
+  const parentIsDraggableContainer = !!(
+    parentNode && 
+    parentNode.id !== 'root' &&
+    parentNode.kind !== 'rack' &&
+    (parentNode.kind === 'container' || parentNode.kind === 'face') &&
+    !(debugContext?.lockedNodeIds?.includes(parentNode.id))
+  );
+
   return (
     <motion.div 
       id={`uca-${node.id}`}
       className="uca-node uca-cell group"
       onClick={handleDebugClick}
-      drag={debugContext?.enabled || false}
+      drag={(debugContext?.enabled && !debugContext?.lockedNodeIds?.includes(node.id) && !parentIsDraggableContainer) || false}
       dragMomentum={false}
       onDrag={handleDrag}
       onDragEnd={handleDragEnd}

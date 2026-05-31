@@ -200,7 +200,7 @@ export class StructuralAuditor implements DiagnosticSource {
       visited.add(node.id);
 
       // A. Template Reference Check
-      if (node.kind === 'cell' && node.cellRef) {
+      if ((node.kind === 'cell' || node.kind === 'port') && node.cellRef) {
         if (!cellLibrary[node.cellRef]) {
           diagnostics.errors.push({
             id: `broken-cellref-${node.id}`,

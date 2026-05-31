@@ -97,38 +97,38 @@ export default function ModuleArchitectureSection({
                 ui: { 
                   ...manifest.ui, 
                   ucaDebug: { 
-                    enabled: !manifest.ui.ucaDebug?.enabled,
-                    showLabels: manifest.ui.ucaDebug?.showLabels ?? true,
-                    hideDecorative: manifest.ui.ucaDebug?.hideDecorative ?? false,
-                    showCADOverlay: manifest.ui.ucaDebug?.showCADOverlay ?? false,
-                    selectedId: manifest.ui.ucaDebug?.selectedId
+                    enabled: !manifest.ui?.ucaDebug?.enabled,
+                    showLabels: manifest.ui?.ucaDebug?.showLabels ?? true,
+                    hideDecorative: manifest.ui?.ucaDebug?.hideDecorative ?? false,
+                    showCADOverlay: manifest.ui?.ucaDebug?.showCADOverlay ?? false,
+                    selectedId: manifest.ui?.ucaDebug?.selectedId
                   } as UcaDebugConfig
                 } 
               })}
               className={`px-3 py-1 text-[8px] font-black uppercase rounded-full border transition-all ${
-                manifest.ui.ucaDebug?.enabled 
+                manifest.ui?.ucaDebug?.enabled 
                   ? 'bg-purple-500 border-purple-500 text-black' 
                   : 'border-purple-500/30 text-purple-500/50 hover:bg-purple-500/10'
               }`}
             >
-              {manifest.ui.ucaDebug?.enabled ? 'ON' : 'OFF'}
+              {manifest.ui?.ucaDebug?.enabled ? 'ON' : 'OFF'}
             </button>
           </div>
-          {manifest.ui.ucaDebug?.enabled && (
+          {manifest.ui?.ucaDebug?.enabled && (
             <div className="flex gap-4 pt-1 border-t border-purple-500/10">
               <label className="flex items-center gap-1.5 text-[8px] font-medium text-white/70 cursor-pointer hover:text-white">
                 <input 
                   type="checkbox" 
-                  checked={manifest.ui.ucaDebug?.showLabels !== false} 
+                  checked={manifest.ui?.ucaDebug?.showLabels !== false} 
                   onChange={(e) => onUpdate({ 
                     ui: { 
                       ...manifest.ui, 
                       ucaDebug: { 
-                        enabled: manifest.ui.ucaDebug?.enabled || false, 
+                        enabled: manifest.ui?.ucaDebug?.enabled || false, 
                         showLabels: e.target.checked,
-                        hideDecorative: manifest.ui.ucaDebug?.hideDecorative ?? false,
-                        showCADOverlay: manifest.ui.ucaDebug?.showCADOverlay ?? false,
-                        selectedId: manifest.ui.ucaDebug?.selectedId
+                        hideDecorative: manifest.ui?.ucaDebug?.hideDecorative ?? false,
+                        showCADOverlay: manifest.ui?.ucaDebug?.showCADOverlay ?? false,
+                        selectedId: manifest.ui?.ucaDebug?.selectedId
                       } as UcaDebugConfig
                     } 
                   })}
@@ -138,16 +138,16 @@ export default function ModuleArchitectureSection({
               <label className="flex items-center gap-1.5 text-[8px] font-medium text-white/70 cursor-pointer hover:text-white">
                 <input 
                   type="checkbox" 
-                  checked={manifest.ui.ucaDebug?.hideDecorative || false} 
+                  checked={manifest.ui?.ucaDebug?.hideDecorative || false} 
                   onChange={(e) => onUpdate({ 
                     ui: { 
                       ...manifest.ui, 
                       ucaDebug: { 
-                        enabled: manifest.ui.ucaDebug?.enabled || false, 
+                        enabled: manifest.ui?.ucaDebug?.enabled || false, 
                         hideDecorative: e.target.checked,
-                        showLabels: manifest.ui.ucaDebug?.showLabels ?? true,
-                        showCADOverlay: manifest.ui.ucaDebug?.showCADOverlay ?? false,
-                        selectedId: manifest.ui.ucaDebug?.selectedId
+                        showLabels: manifest.ui?.ucaDebug?.showLabels ?? true,
+                        showCADOverlay: manifest.ui?.ucaDebug?.showCADOverlay ?? false,
+                        selectedId: manifest.ui?.ucaDebug?.selectedId
                       } as UcaDebugConfig
                     } 
                   })}
@@ -157,16 +157,16 @@ export default function ModuleArchitectureSection({
               <label className="flex items-center gap-1.5 text-[8px] font-medium text-white/70 cursor-pointer hover:text-white">
                 <input 
                   type="checkbox" 
-                  checked={manifest.ui.ucaDebug?.showCADOverlay || false} 
+                  checked={manifest.ui?.ucaDebug?.showCADOverlay || false} 
                   onChange={(e) => onUpdate({ 
                     ui: { 
                       ...manifest.ui, 
                       ucaDebug: { 
-                        enabled: manifest.ui.ucaDebug?.enabled || false, 
+                        enabled: manifest.ui?.ucaDebug?.enabled || false, 
                         showCADOverlay: e.target.checked,
-                        showLabels: manifest.ui.ucaDebug?.showLabels ?? true,
-                        hideDecorative: manifest.ui.ucaDebug?.hideDecorative ?? false,
-                        selectedId: manifest.ui.ucaDebug?.selectedId
+                        showLabels: manifest.ui?.ucaDebug?.showLabels ?? true,
+                        hideDecorative: manifest.ui?.ucaDebug?.hideDecorative ?? false,
+                        selectedId: manifest.ui?.ucaDebug?.selectedId
                       } as UcaDebugConfig
                     } 
                   })}
@@ -190,45 +190,45 @@ export default function ModuleArchitectureSection({
               ui: { 
                 ...manifest.ui, 
                 layout: { 
-                  ...manifest.ui.layout, 
-                  width: manifest.ui.layout?.width ?? 800,
-                  height: manifest.ui.layout?.height ?? 600,
-                  containers: manifest.ui.layout?.containers || [],
+                  ...manifest.ui?.layout, 
+                  width: manifest.ui?.layout?.width ?? 800,
+                  height: manifest.ui?.layout?.height ?? 600,
+                  containers: manifest.ui?.layout?.containers || [],
                   grid: { 
-                    enabled: !manifest.ui.layout?.grid?.enabled,
-                    spacingX: manifest.ui.layout?.grid?.spacingX ?? 24,
-                    spacingY: manifest.ui.layout?.grid?.spacingY ?? 24,
-                    snapMode: manifest.ui.layout?.grid?.snapMode ?? 'center'
+                    enabled: !manifest.ui?.layout?.grid?.enabled,
+                    spacingX: manifest.ui?.layout?.grid?.spacingX ?? 24,
+                    spacingY: manifest.ui?.layout?.grid?.spacingY ?? 24,
+                    snapMode: manifest.ui?.layout?.grid?.snapMode ?? 'center'
                   } as GridConfig
                 } 
               } 
             })}
             className={`px-3 py-1 text-[8px] font-black uppercase rounded-full border transition-all ${
-              manifest.ui.layout?.grid?.enabled 
+              manifest.ui?.layout?.grid?.enabled 
                 ? 'bg-emerald-500 border-emerald-500 text-black' 
                 : 'border-emerald-500/30 text-emerald-500/50 hover:bg-emerald-500/10'
             }`}
           >
-            {manifest.ui.layout?.grid?.enabled ? 'ACTIVE' : 'OFF'}
+            {manifest.ui?.layout?.grid?.enabled ? 'ACTIVE' : 'OFF'}
           </button>
         </div>
-        {manifest.ui.layout?.grid?.enabled && (
+        {manifest.ui?.layout?.grid?.enabled && (
           <div className="flex gap-4 pt-1 border-t border-emerald-500/10 items-center">
               <div className="flex items-center gap-1.5 text-[8px] font-medium text-white/70">
                 <span>X:</span>
                 <input 
                   type="number" 
-                  value={manifest.ui.layout?.grid?.spacingX || 24}
+                  value={manifest.ui?.layout?.grid?.spacingX || 24}
                   onChange={(e) => {
-                    const grid = manifest.ui.layout?.grid || { spacingX: 24, spacingY: 24, enabled: false, snapMode: 'center' };
+                    const grid = manifest.ui?.layout?.grid || { spacingX: 24, spacingY: 24, enabled: false, snapMode: 'center' };
                     onUpdate({ 
                       ui: { 
                         ...manifest.ui, 
                         layout: { 
-                          ...manifest.ui.layout, 
-                          width: manifest.ui.layout?.width ?? 800,
-                          height: manifest.ui.layout?.height ?? 600,
-                          containers: manifest.ui.layout?.containers || [], 
+                          ...manifest.ui?.layout, 
+                          width: manifest.ui?.layout?.width ?? 800,
+                          height: manifest.ui?.layout?.height ?? 600,
+                          containers: manifest.ui?.layout?.containers || [], 
                           grid: { 
                             ...grid, 
                             spacingX: parseInt(e.target.value) || 1,
@@ -245,17 +245,17 @@ export default function ModuleArchitectureSection({
                 <span>Y:</span>
                 <input 
                   type="number" 
-                  value={manifest.ui.layout?.grid?.spacingY || 24}
+                  value={manifest.ui?.layout?.grid?.spacingY || 24}
                   onChange={(e) => {
-                    const grid = manifest.ui.layout?.grid || { spacingX: 24, spacingY: 24, enabled: false, snapMode: 'center' };
+                    const grid = manifest.ui?.layout?.grid || { spacingX: 24, spacingY: 24, enabled: false, snapMode: 'center' };
                     onUpdate({ 
                       ui: { 
                         ...manifest.ui, 
                         layout: { 
-                          ...manifest.ui.layout, 
-                          width: manifest.ui.layout?.width ?? 800,
-                          height: manifest.ui.layout?.height ?? 600,
-                          containers: manifest.ui.layout?.containers || [], 
+                          ...manifest.ui?.layout, 
+                          width: manifest.ui?.layout?.width ?? 800,
+                          height: manifest.ui?.layout?.height ?? 600,
+                          containers: manifest.ui?.layout?.containers || [], 
                           grid: { 
                             ...grid, 
                             spacingY: parseInt(e.target.value) || 1,
@@ -302,7 +302,7 @@ export default function ModuleArchitectureSection({
         
         {activeSubTab === 'infra' && (
           <ContainerSection 
-            containers={manifest.ui.layout?.containers || []} 
+            containers={manifest.ui?.layout?.containers || []} 
             manifest={manifest} 
             onAdd={addContainer} 
             onUpdate={updateContainer} 

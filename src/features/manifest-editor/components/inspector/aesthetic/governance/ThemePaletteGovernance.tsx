@@ -12,7 +12,7 @@ interface ThemePaletteGovernanceProps {
 }
 
 export default function ThemePaletteGovernance({ manifest, onUpdate }: ThemePaletteGovernanceProps) {
-  const palette = manifest.ui.palette || { 
+  const palette = manifest.ui?.palette || { 
     primary: '#00f2ff', 
     secondary: '#ff8c00', 
     utility: '#a0a0a0', 
@@ -24,7 +24,7 @@ export default function ThemePaletteGovernance({ manifest, onUpdate }: ThemePale
     warning: '#ff3300',
     highlight: '#ffffff'
   };
-  const colors = manifest.ui.colors || { accent: '#00f2ff', weak: '#555555', surface: '#1a1c1e', text: '#ffffff' };
+  const colors = manifest.ui?.colors || { accent: '#00f2ff', weak: '#555555', surface: '#1a1c1e', text: '#ffffff' };
 
   const updatePalette = (key: string, value: string) => {
     onUpdate({ 

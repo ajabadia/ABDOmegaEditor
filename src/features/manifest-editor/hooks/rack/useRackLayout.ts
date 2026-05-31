@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import type { OMEGA_Manifest, ManifestEntity, OmegaNode } from '@/omega-ui-core/types/manifest';
 import { adaptNodeToManifestEntity, calculateWorldPosition } from '../entities/ucaInspectorAdapter';
+import { manifestToTree } from '@/omega-ui-core/uca/ucaBridge';
 
 /**
  * OMEGA ERA 7.2.3 - RACK LAYOUT ENGINE
@@ -17,14 +18,14 @@ export function useRackLayout(manifest: OMEGA_Manifest) {
  
   // 1. FLATTEN CANONICAL TREE (Sovereign Source)
   const allElements = useMemo(() => {
-    const tree = manifest.ui?.tree;
+    const tree = manifest.ui?.tree || manifestToTree(manifest, manifest.ui?.tree);
     if (!tree) return [];
 
     const entities: (ManifestEntity & { isJack: boolean })[] = [];
 
     const traverse = (node: OmegaNode) => {
       // We only project 'cell' nodes into the flat entity list for the rack engine
-      if (node.kind === 'cell') {
+      if (node.kind === 'cell' || node.kind === 'port') {
         const projection = adaptNodeToManifestEntity(node);
         // Recalculate absolute position based on parent offsets
         const worldPos = calculateWorldPosition(tree, node.id) || projection.pos;

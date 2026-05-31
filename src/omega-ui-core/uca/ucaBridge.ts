@@ -196,6 +196,9 @@ export function blueprintToTree(
 
     // Template Expansion
     if (materialNode.kind === 'cell' && materialNode.cellRef) {
+      const primitives = ['knob', 'port', 'slider_v', 'slider_h', 'display', 'led', 'switch', 'button', 'label', 'asset-layer', 'illustration', 'rack-screw'];
+      const isPrimitive = primitives.includes(materialNode.cellRef);
+      
       const template = options.templates?.[materialNode.cellRef];
       if (template) {
         return {
@@ -220,7 +223,7 @@ export function blueprintToTree(
             ...(materialNode.modulationTargets?.map(t => normalizeModulationTarget(t, id)) || [])
           ].filter((t, i, self) => i === self.findLastIndex(other => other === t))
         };
-      } else {
+      } else if (!isPrimitive) {
         missingTemplates.add(materialNode.cellRef);
         errors.push(`[UCA BRIDGE] Missing template: ${materialNode.cellRef}`);
         materialNode.role = 'decor';

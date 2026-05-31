@@ -13,8 +13,8 @@ interface SliderPropertiesProps {
 export default function SliderProperties({ item, manifest, onUpdate, setActiveSection }: SliderPropertiesProps) {
   const pres = (item.presentation || {}) as Presentation;
   const currentVariant = pres.variant || 'A_silver';
-  const isCustom = manifest.ui.skinMode === 'custom';
-  const sliderStyles = manifest.ui.styles?.[pres.component || 'slider-v'] || [];
+  const isCustom = manifest.ui?.skinMode === 'custom';
+  const sliderStyles = manifest.ui?.styles?.[pres.component || 'slider-v'] || [];
   const currentStyle = sliderStyles.find(s => s.id === currentVariant) || { id: currentVariant as string, label: 'Standard Fader' };
 
   const parseVariant = (v: string) => {

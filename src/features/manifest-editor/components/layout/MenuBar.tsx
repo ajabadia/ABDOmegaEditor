@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FileCode, Package, Layers, Camera, Zap, FolderOpen, 
   Cpu, Database, Image as ImageIcon, LogOut, Undo2, 
-  Redo2, Terminal, HelpCircle, Shield, ChevronRight, Settings, Layout, History
+  Redo2, Terminal, HelpCircle, Shield, ChevronRight, Settings, Layout, History,
+  Check, Sliders
 } from 'lucide-react';
 
 interface MenuBarProps {
@@ -29,6 +30,8 @@ interface MenuBarProps {
   onOpenGallery?: (() => void) | undefined;
   onLinkDirectory?: (() => void) | undefined;
   isDirectoryLinked?: boolean | undefined;
+  windowStates?: { window_layers: boolean; window_properties: boolean; window_rack_properties: boolean; window_blueprints: boolean; window_info: boolean; window_history: boolean; window_logs: boolean } | undefined;
+  onToggleWindow?: ((name: 'window_layers' | 'window_properties' | 'window_rack_properties' | 'window_blueprints' | 'window_info' | 'window_history' | 'window_logs') => void) | undefined;
 }
 
 export default function MenuBar(props: MenuBarProps) {
@@ -125,7 +128,55 @@ export default function MenuBar(props: MenuBarProps) {
         { label: 'Virtual Rack', icon: Layers, onClick: () => props.onTabFocus('rack') },
         { label: 'Source Code', icon: FileCode, onClick: () => props.onTabFocus('source') },
         { type: 'divider' },
-        { label: 'Toggle Logs Terminal', icon: Terminal, onClick: props.onToggleLogs },
+        { label: 'Toggle Logs Window', icon: Terminal, onClick: () => props.onToggleWindow?.('window_logs') },
+      ]
+    },
+    {
+      id: 'window',
+      label: 'Ventana',
+      items: [
+        { 
+          label: 'Capas (Layers)', 
+          icon: Layers, 
+          checked: props.windowStates?.window_layers, 
+          onClick: () => props.onToggleWindow?.('window_layers') 
+        },
+        { 
+          label: 'Propiedades del Rack (Rack)', 
+          icon: Settings, 
+          checked: props.windowStates?.window_rack_properties, 
+          onClick: () => props.onToggleWindow?.('window_rack_properties') 
+        },
+        { 
+          label: 'Propiedades de Elemento (Properties)', 
+          icon: Sliders, 
+          checked: props.windowStates?.window_properties, 
+          onClick: () => props.onToggleWindow?.('window_properties') 
+        },
+        { 
+          label: 'Librería de Blueprints (Blueprints)', 
+          icon: Zap, 
+          checked: props.windowStates?.window_blueprints, 
+          onClick: () => props.onToggleWindow?.('window_blueprints') 
+        },
+        { 
+          label: 'Información (Info)', 
+          icon: HelpCircle, 
+          checked: props.windowStates?.window_info, 
+          onClick: () => props.onToggleWindow?.('window_info') 
+        },
+        { 
+          label: 'Historial (History)', 
+          icon: History, 
+          checked: props.windowStates?.window_history, 
+          onClick: () => props.onToggleWindow?.('window_history') 
+        },
+        { 
+          label: 'Logs (Console)', 
+          icon: Terminal, 
+          checked: props.windowStates?.window_logs, 
+          onClick: () => props.onToggleWindow?.('window_logs') 
+        },
       ]
     },
     {
@@ -200,10 +251,15 @@ function MenuItem({ item, closeMenu }: { item: any, closeMenu: () => void }) {
           }
         }}
         className={`w-full flex items-center justify-between px-3 py-1.5 text-[8px] font-black uppercase tracking-widest transition-all ${
-          item.disabled ? 'opacity-20 cursor-not-allowed' : 'hover:bg-primary hover:text-black'
+          item.disabled ? 'opacity-20 cursor-not-allowed' : 'hover:bg-primary hover:text-black hover:text-black group'
         } ${item.highlight === 'accent' ? 'text-accent hover:bg-accent hover:text-black' : item.highlight === 'deprecated' ? 'text-red-500/70 hover:bg-red-500 hover:text-black bg-red-500/5 line-through decoration-red-500/40' : 'wb-text'}`}
       >
         <div className="flex items-center gap-2">
+          {item.checked !== undefined && (
+            <div className="w-3 h-3 flex items-center justify-center shrink-0 border border-outline/30 rounded-xs bg-black/40 group-hover:border-black/50">
+              {item.checked && <Check className="w-2 h-2 text-primary group-hover:text-black" />}
+            </div>
+          )}
           {Icon && <Icon className="w-3 h-3" />}
           <span>{item.label}</span>
         </div>

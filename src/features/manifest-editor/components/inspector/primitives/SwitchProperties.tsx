@@ -16,7 +16,7 @@ interface SwitchPropertiesProps {
 export default function SwitchProperties({ item, manifest, onUpdate, setActiveSection }: SwitchPropertiesProps) {
   const pres = (item.presentation || {}) as Presentation;
   const currentVariant = pres.variant || 'toggle_grey';
-  const switchStyles = manifest.ui.styles?.[pres.component || 'switch'] || [];
+  const switchStyles = manifest.ui?.styles?.[pres.component || 'switch'] || [];
   const currentStyle = switchStyles.find(s => s.id === currentVariant) || { id: currentVariant as string, label: 'Standard Switch' };
 
   const parseVariant = (v: string) => {

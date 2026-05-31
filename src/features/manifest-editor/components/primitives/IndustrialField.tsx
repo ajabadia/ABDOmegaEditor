@@ -72,10 +72,10 @@ export function IndustrialField(props: IndustrialFieldProps) {
     "flex items-center justify-between gap-2";
 
   const labelBase =
-    "text-7px font-black uppercase wb-text-muted tracking-widest ml-1 flex items-center gap-1";
+    "text-[8px] font-black uppercase wb-text-muted tracking-wider ml-1 flex items-center gap-1";
 
   const descriptionBase =
-    "text-[8px] wb-text-muted font-bold uppercase tracking-tighter italic leading-tight px-1";
+    "text-[8px] wb-text-muted font-bold uppercase tracking-wider italic leading-tight px-1";
 
   const capsuleBase =
     "inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full border text-[7px] font-black uppercase";

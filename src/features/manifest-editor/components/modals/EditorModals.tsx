@@ -61,7 +61,7 @@ interface EditorModalsProps {
     setIsPromptOpen: (open: boolean) => void;
     confirmInjection: (values: BlueprintPlaceholderValues) => void;
     cancelInjection: () => void;
-    onUpdatePlaceholder?: ((id: string, value: string | number | boolean) => void) | undefined;
+    updatePlaceholder?: ((id: string, value: string | number | boolean) => void) | undefined;
   } | undefined;
 }
 
@@ -195,7 +195,7 @@ export default function EditorModals({
           blueprint={blueprintInjection.activeBlueprint}
           onClose={blueprintInjection.cancelInjection}
           onConfirm={blueprintInjection.confirmInjection}
-          onUpdatePlaceholder={blueprintInjection.onUpdatePlaceholder}
+          onUpdatePlaceholder={blueprintInjection.updatePlaceholder}
         />
       )}
     </>

@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import type { 
   OMEGA_Manifest, 
   BlueprintDefinition,
-  BlueprintPlaceholderValues 
+  BlueprintPlaceholderValues,
+  CellTemplate
 } from '@/omega-ui-core/types/manifest';
 import type { 
   BlueprintInjectionRequest, 
@@ -28,6 +29,8 @@ export const useBlueprintInjection = (
   const [previewManifest, setPreviewManifest] = useState<OMEGA_Manifest | null>(null);
   const [placeholderValues, setPlaceholderValues] = useState<BlueprintPlaceholderValues>({});
 
+  const isInProgressRef = useRef(false);
+
   /**
    * Dry-run for preview (Non-mutant)
    */
@@ -49,13 +52,14 @@ export const useBlueprintInjection = (
       }
     };
 
-    const result = await injectBlueprint(manifest, blueprint, request);
+    const templates = (manifest.moduleTemplates || {}) as Record<string, CellTemplate>;
+    const result = await injectBlueprint(manifest, blueprint, request, { templates });
     if (result.success && result.resultManifest) {
       setPreviewManifest(result.resultManifest);
     } else if (result.success && result.injectedSubtree) {
       // Generate preview by forcing dryRun: false internally
       const previewRequest = { ...request, strategy: { ...request.strategy, dryRun: false } };
-      const previewResult = await injectBlueprint(manifest, blueprint, previewRequest);
+      const previewResult = await injectBlueprint(manifest, blueprint, previewRequest, { templates });
       setPreviewManifest(previewResult.resultManifest || null);
     }
   }, [manifest]);
@@ -68,47 +72,58 @@ export const useBlueprintInjection = (
     targetId: string | undefined, 
     values: BlueprintPlaceholderValues
   ) => {
-    const request: BlueprintInjectionRequest = {
-      blueprintId: blueprint.blueprintId,
-      placeholderValues: values,
-      manifestId: manifest.id || '',
-      mode: 'commit',
-      strategy: {
-        targetParentNodeId: targetId || null,
-        idCollisionStrategy: 'remap',
-        dryRun: false,
-        forceIdRemap: true
+    if (isInProgressRef.current) return;
+    isInProgressRef.current = true;
+
+    try {
+      const request: BlueprintInjectionRequest = {
+        blueprintId: blueprint.blueprintId,
+        placeholderValues: values,
+        manifestId: manifest.id || '',
+        mode: 'commit',
+        strategy: {
+          targetParentNodeId: targetId || null,
+          idCollisionStrategy: 'remap',
+          dryRun: false,
+          forceIdRemap: true
+        }
+      };
+
+      addLog(`[SYSTEM] Committing Blueprint injection: ${blueprint.name}...`);
+      
+      const templates = (manifest.moduleTemplates || {}) as Record<string, CellTemplate>;
+      const result = await injectBlueprint(manifest, blueprint, request, { templates });
+      setLastResult(result);
+
+      if (!result.success) {
+        addLog(`[ERROR] Injection failed: ${result.fatalError?.message} (${result.fatalError?.code})`);
+        return;
       }
-    };
 
-    addLog(`[SYSTEM] Committing Blueprint injection: ${blueprint.name}...`);
-    
-    const result = await injectBlueprint(manifest, blueprint, request);
-    setLastResult(result);
-
-    if (!result.success) {
-      addLog(`[ERROR] Injection failed: ${result.fatalError?.message} (${result.fatalError?.code})`);
-      return;
+      if (result.resultManifest) {
+        const label = `[BLUEPRINT] Inject ${blueprint.name} (v${blueprint.version})`;
+        updateManifest(result.resultManifest, label, true);
+        addLog(`[SUCCESS] ${blueprint.name} inserted successfully.`);
+      }
+    } catch (err: unknown) {
+      addLog(`[ERROR] Injection failed due to internal error: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      // Cleanup
+      setIsPromptOpen(false);
+      setActiveBlueprint(null);
+      setTargetParentId(null);
+      setPreviewManifest(null);
+      setPlaceholderValues({});
+      isInProgressRef.current = false;
     }
-
-    if (result.resultManifest) {
-      const label = `[BLUEPRINT] Inject ${blueprint.name} (v${blueprint.version})`;
-      updateManifest(result.resultManifest, label, true);
-      addLog(`[SUCCESS] ${blueprint.name} inserted successfully.`);
-    }
-
-    // Cleanup
-    setIsPromptOpen(false);
-    setActiveBlueprint(null);
-    setTargetParentId(null);
-    setPreviewManifest(null);
-    setPlaceholderValues({});
   }, [manifest, updateManifest, addLog]);
 
   /**
    * Initiates the injection flow.
    */
   const startInjection = useCallback((blueprint: BlueprintDefinition, targetId?: string) => {
+    if (isInProgressRef.current) return;
+    
     setActiveBlueprint(blueprint);
     setTargetParentId(targetId || null);
     

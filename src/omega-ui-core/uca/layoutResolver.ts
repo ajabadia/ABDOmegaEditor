@@ -7,10 +7,40 @@ import { getNodeSize } from './spatialConstraints';
  * Recursively calculates effective children positions for nodes with stacking modes.
  */
 export function resolveLayout(node: OmegaNode, providedSize?: { width: number; height: number }): OmegaNode {
-  // Use provided size if present, otherwise fallback to explicit or default
+  const mode = node.layout?.mode || 'absolute';
+  const gap = node.layout?.gap || 0;
+  const padding = node.layout?.padding || 0;
+
+  // 1. Initial resolution of children (Bottom-up)
+  const nestedResolvedChildren = node.children ? node.children.map(c => resolveLayout(c)) : [];
+  const childrenSizes = nestedResolvedChildren.map(c => getNodeSize(c));
+
+  // Compute content-based auto size if not explicitly provided
+  let autoWidth = 0;
+  let autoHeight = 0;
+
+  if (mode === 'stack-v') {
+    autoWidth = childrenSizes.reduce((max, s) => Math.max(max, s.width), 0) + 2 * padding;
+    autoHeight = childrenSizes.reduce((acc, s) => acc + s.height, 0) + (Math.max(0, childrenSizes.length - 1) * gap) + 2 * padding;
+  } else if (mode === 'stack-h') {
+    autoWidth = childrenSizes.reduce((acc, s) => acc + s.width, 0) + (Math.max(0, childrenSizes.length - 1) * gap) + 2 * padding;
+    autoHeight = childrenSizes.reduce((max, s) => Math.max(max, s.height), 0) + 2 * padding;
+  } else {
+    // absolute
+    autoWidth = childrenSizes.reduce((max, s, i) => {
+      const childX = nestedResolvedChildren[i].layout?.pos?.x || 0;
+      return Math.max(max, childX + s.width);
+    }, 0) + 2 * padding;
+    autoHeight = childrenSizes.reduce((max, s, i) => {
+      const childY = nestedResolvedChildren[i].layout?.pos?.y || 0;
+      return Math.max(max, childY + s.height);
+    }, 0) + 2 * padding;
+  }
+
+  // Use provided size if present, otherwise fallback to explicit, auto, or default 80
   const effectiveSize = {
-    width: providedSize?.width ?? node.layout?.size?.width ?? 0,
-    height: providedSize?.height ?? node.layout?.size?.height ?? 0
+    width: providedSize?.width || node.layout?.size?.width || autoWidth || 80,
+    height: providedSize?.height || node.layout?.size?.height || autoHeight || 80
   };
 
   const nodeWithEffectiveSize = {
@@ -24,11 +54,6 @@ export function resolveLayout(node: OmegaNode, providedSize?: { width: number; h
 
   if (!nodeWithEffectiveSize.children || nodeWithEffectiveSize.children.length === 0) return nodeWithEffectiveSize;
 
-  const mode = nodeWithEffectiveSize.layout?.mode || 'absolute';
-
-  // 1. Initial resolution of children (Bottom-up)
-  const nestedResolvedChildren = nodeWithEffectiveSize.children.map(c => resolveLayout(c));
-
   if (mode === 'absolute') {
     return {
       ...nodeWithEffectiveSize,
@@ -37,13 +62,10 @@ export function resolveLayout(node: OmegaNode, providedSize?: { width: number; h
   }
 
   // 2. Calculate Metrics
-  const gap = nodeWithEffectiveSize.layout?.gap || 0;
-  const padding = nodeWithEffectiveSize.layout?.padding || 0;
   const containerWidth = effectiveSize.width;
   const containerHeight = effectiveSize.height;
 
   let totalContentSize = 0;
-  const childrenSizes = nestedResolvedChildren.map(c => getNodeSize(c));
 
   if (mode === 'stack-v') {
     totalContentSize = childrenSizes.reduce((acc, s) => acc + s.height, 0) + (Math.max(0, childrenSizes.length - 1) * gap);

@@ -23,12 +23,12 @@ export type IndustrialInputProps = {
 };
 
 const baseStyles =
-  "w-full wb-surface-subtle border wb-outline rounded-xs px-3 py-2 text-10px wb-text outline-none transition-all";
+  "w-full wb-surface-subtle border wb-outline rounded-xs px-3 py-2 text-[10px] wb-text outline-none transition-all";
 
 const sizeStyles: Record<IndustrialInputSize, string> = {
-  xs: "px-2 py-1 text-8px",
-  sm: "px-3 py-2 text-10px",
-  md: "px-3 py-2.5 text-11px",
+  xs: "px-2 py-1 text-[8px]",
+  sm: "px-3 py-2 text-[10px]",
+  md: "px-3 py-2.5 text-[11px]",
 };
 
 export function IndustrialInput(props: IndustrialInputProps) {

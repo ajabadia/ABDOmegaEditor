@@ -33,7 +33,7 @@ export class AutoWireResolver {
       
       if (nextManifest.ui.tree) {
         this.walkTree(nextManifest.ui.tree, (node) => {
-          if (node.kind === 'cell' && (!node.bind || node.bind === 'none')) {
+          if ((node.kind === 'cell' || node.kind === 'port') && (!node.bind || node.bind === 'none')) {
             const candidateId = allEntities.find(e => e.id === node.id || e.label === node.id)?.id;
             if (candidateId) {
               node.bind = candidateId;

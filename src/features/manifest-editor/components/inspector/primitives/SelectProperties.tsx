@@ -18,7 +18,7 @@ export default function SelectProperties({ item, manifest, onUpdate, setActiveSe
   const pres = (item.presentation || {}) as Presentation;
   const options = pres.options || [];
   const currentVariant = pres.variant || 'default';
-  const selectStyles = manifest.ui.styles?.['select'] || [];
+  const selectStyles = manifest.ui?.styles?.['select'] || [];
   const currentStyle = selectStyles.find(s => s.id === currentVariant) || { id: currentVariant as string, label: 'Standard Select' };
 
 

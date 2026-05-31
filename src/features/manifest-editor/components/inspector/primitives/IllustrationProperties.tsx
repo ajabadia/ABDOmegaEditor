@@ -17,7 +17,7 @@ export default function IllustrationProperties({ item, manifest, onUpdate, setAc
   const pres = (item.presentation || {}) as Presentation;
   const size = pres.size || { width: 40, height: 40 };
   const currentVariant = pres.variant || 'contain';
-  const illustrationStyles = manifest.ui.styles?.['illustration'] || [];
+  const illustrationStyles = manifest.ui?.styles?.['illustration'] || [];
   const currentStyle = illustrationStyles.find((s: { id: string; label: string }) => s.id === currentVariant) || { id: currentVariant as string, label: 'Standard Image' };
 
   return (

@@ -55,12 +55,20 @@ export function StructuralNode({
   const isSelected = debugContext?.selectedId === node.id;
   const { cssVars } = useDesignTokens(manifest);
 
+  const parentIsDraggableContainer = !!(
+    parentNode && 
+    parentNode.id !== 'root' &&
+    parentNode.kind !== 'rack' &&
+    (parentNode.kind === 'container' || parentNode.kind === 'face') &&
+    !(debugContext?.lockedNodeIds?.includes(parentNode.id))
+  );
+
   return (
     <motion.div 
       id={`uca-${node.id}`}
       className={`uca-node uca-${node.kind} group`}
       onClick={handleDebugClick}
-      drag={(debugContext?.enabled && node.kind !== 'rack') || false}
+      drag={(debugContext?.enabled && node.kind !== 'rack' && !debugContext?.lockedNodeIds?.includes(node.id) && !parentIsDraggableContainer) || false}
       dragMomentum={false}
       onDrag={handleDrag}
       onDragEnd={handleDragEnd}
@@ -73,13 +81,18 @@ export function StructuralNode({
         zIndex: isSelected ? 101 : (node.layout?.zIndex || 0),
         ...cssVars,
         // Semantic overrides for structural types
-        backgroundColor: node.kind === 'rack' ? 'var(--omega-color-surface)' : (node.kind === 'face' ? 'var(--omega-color-background)' : 'transparent'),
+        backgroundColor: node.kind === 'rack' 
+          ? 'var(--omega-color-surface)' 
+          : (node.kind === 'face' 
+              ? 'var(--omega-color-background)' 
+              : (debugContext?.enabled ? 'rgba(16, 185, 129, 0.05)' : 'transparent')),
         border: debugContext?.enabled 
           ? `1px dashed ${node.kind === 'rack' ? '#9333ea' : node.kind === 'face' ? '#3b82f6' : '#10b981'}` 
           : `${node.style?.borderWidth || 0}px solid rgba(255,255,255,0.05)`,
         backdropFilter: node.kind === 'face' ? 'var(--omega-blur-global)' : 'none',
         padding: '2px',
         boxSizing: 'border-box',
+        pointerEvents: debugContext?.enabled && node.kind !== 'rack' ? 'auto' : 'none',
         outline: isSelected ? '2px solid #00f2ff' : 'none',
         outlineOffset: '4px',
         boxShadow: isSelected ? '0 0 20px rgba(0, 242, 255, 0.5)' : 'none'

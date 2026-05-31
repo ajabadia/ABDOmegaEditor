@@ -64,7 +64,7 @@ export const useManifestEditor = (
   });
 
   // 3.2. Entity & Modulation Management
-  const entities = useEntityManager(manifest, (u) => orchestrator.updateDocument(activeId, { manifest: typeof u === 'function' ? u(manifest) : u }), (u, l) => history.updateManifestWithHistory(u, l || 'Edit Properties'), addLog);
+  const entities = useEntityManager(manifest, (u) => orchestrator.updateDocument(activeId, { manifest: typeof u === 'function' ? u(manifest) : u }), (u, l, f) => history.updateManifestWithHistory(u, l || 'Edit Properties', f), addLog);
 
   // 3.3. Clipboard Actions
   const clipboard = useClipboardActions({
@@ -116,7 +116,8 @@ export const useManifestEditor = (
     addLog, 
     issues, 
     () => orchestrator.captureStableSnapshot(activeId),
-    directoryHandle
+    directoryHandle,
+    history.updateDocumentWithHistory
   );
 
   // 5. Asset Management (Fase 13)
@@ -148,7 +149,7 @@ export const useManifestEditor = (
     isDirectoryLinked: !!directoryHandle,
     
     // Core Actions
-    updateManifest: (updates: Partial<OMEGA_Manifest> | ((prev: OMEGA_Manifest) => Partial<OMEGA_Manifest>), label?: string) => history.updateManifestWithHistory(updates, label || 'Edit Properties'),
+    updateManifest: (updates: Partial<OMEGA_Manifest> | ((prev: OMEGA_Manifest) => Partial<OMEGA_Manifest>), label?: string, forceHistory?: boolean) => history.updateManifestWithHistory(updates, label || 'Edit Properties', forceHistory),
     updateManifestWithHistory: history.updateManifestWithHistory,
     pushHistoryEntry: history.pushHistoryEntry,
     pushHistory: orchestrator.pushHistory,

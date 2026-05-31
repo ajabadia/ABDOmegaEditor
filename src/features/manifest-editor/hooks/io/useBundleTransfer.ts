@@ -17,7 +17,8 @@ export const useBundleTransfer = (
   handleWasmUpload: (file: File) => Promise<void>,
   handleContractUpload: (file: File) => Promise<void>,
   handleManifestUpload: (file: File) => Promise<void>,
-  captureStableSnapshot: () => void
+  captureStableSnapshot: () => void,
+  updateDocumentWithHistory?: (updates: { manifest?: Partial<OMEGA_Manifest> | ((prev: OMEGA_Manifest) => Partial<OMEGA_Manifest>); extraResources?: { name: string, data: ArrayBuffer, type: string }[] | ((prev: { name: string, data: ArrayBuffer, type: string }[]) => { name: string, data: ArrayBuffer, type: string }[]) }, label: string) => void
 ) => {
 
   const sanitizeSVG = (content: string): string => {
@@ -75,13 +76,12 @@ export const useBundleTransfer = (
 
         addLog(`[SYSTEM] Processing Resource: ${file.name} -> ${finalName}`);
 
-        setExtraResources(prev => [
-          ...prev.filter(r => r.name !== finalName),
+        const nextResources = [
+          ...extraResources.filter(r => r.name !== finalName),
           { name: finalName, data: buffer, type: file.type }
-        ]);
+        ];
 
-        // Auto-Register in manifest for immediate selector visibility
-        setManifest((prev: OMEGA_Manifest) => ({
+        const manifestUpdates = (prev: OMEGA_Manifest) => ({
           ...prev,
           size: { width: 48, height: 48 },
           presentation: {
@@ -103,7 +103,17 @@ export const useBundleTransfer = (
               }
             ]
           }
-        }));
+        });
+
+        if (updateDocumentWithHistory) {
+          updateDocumentWithHistory({
+            extraResources: nextResources,
+            manifest: manifestUpdates
+          }, `Import Asset: ${finalName}`);
+        } else {
+          setExtraResources(nextResources);
+          setManifest(manifestUpdates);
+        }
         
         addLog(`[OK] Resource '${finalName}' stored and registered in manifest.`);
       } catch (err: unknown) {
@@ -112,7 +122,7 @@ export const useBundleTransfer = (
       }
     }
     return lastAssetId;
-  }, [addLog, setExtraResources, setManifest]);
+  }, [addLog, extraResources, setExtraResources, setManifest, updateDocumentWithHistory]);
 
   const exportOmegaPack = useCallback(async () => {
     try {
@@ -238,9 +248,14 @@ export const useBundleTransfer = (
   }, [handleContractUpload, handleWasmUpload, handleManifestUpload, handleResourceUpload, addLog]);
 
   const handleRemoveResource = useCallback((name: string) => {
-    setExtraResources(prev => prev.filter(r => r.name !== name));
+    const nextResources = extraResources.filter(r => r.name !== name);
+    if (updateDocumentWithHistory) {
+      updateDocumentWithHistory({ extraResources: nextResources }, `Remove Asset: ${name}`);
+    } else {
+      setExtraResources(nextResources);
+    }
     addLog(`[SYSTEM] Resource removed: ${name}`);
-  }, [setExtraResources, addLog]);
+  }, [extraResources, setExtraResources, updateDocumentWithHistory, addLog]);
 
   return {
     exportOmegaPack,

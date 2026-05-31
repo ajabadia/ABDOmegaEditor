@@ -24,3 +24,46 @@ export const DEFAULT_MANIFEST: OMEGA_Manifest = {
     }
   }
 };
+
+/**
+ * normalizeManifest — Defensive schema migration layer.
+ *
+ * Called on every manifest loaded from localStorage, file import, or
+ * session recovery. Guarantees that ALL required top-level properties
+ * exist and have correct shapes, regardless of what schema version they
+ * were saved with.
+ *
+ * This is the single source of truth for manifest integrity at the
+ * application boundary. Components must NOT defensively patch missing
+ * fields — they can assume the manifest is always normalized after this.
+ */
+export function normalizeManifest(raw: unknown): OMEGA_Manifest {
+  const m = (raw || {}) as Partial<OMEGA_Manifest>;
+
+  return {
+    ...DEFAULT_MANIFEST,
+    ...m,
+
+    // Ensure metadata always exists with required fields
+    metadata: {
+      name:    'Untitled Module',
+      version: '1.0.0',
+      ...(m.metadata || {}),
+    },
+
+    // Ensure resources always exists
+    resources: m.resources || {},
+
+    // Ensure entities always exists
+    entities: m.entities || [],
+
+    // Ensure nodes always exists
+    nodes: m.nodes || [],
+
+    // Ensure ui always exists with a valid tree
+    ui: {
+      ...(m.ui || {}),
+      tree: m.ui?.tree || DEFAULT_MANIFEST.ui.tree,
+    },
+  };
+}

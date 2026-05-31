@@ -24,36 +24,43 @@ export default function TieredSection({
 }: TieredSectionProps) {
   const [isOpen, setIsOpen] = useState(level === 'essential' ? true : defaultOpen);
 
+  // Theme-safe level styles — no hardcoded black/white
   const levelStyles = {
-    essential: 'border-l-2 border-primary bg-primary/5',
-    advanced: 'border-l-2 border-outline/20 bg-black/10',
-    diagnostics: 'border-l-2 border-amber-500/20 bg-amber-500/5'
+    essential: 'border-l-2 border-primary bg-primary/5 hover:bg-primary/8',
+    advanced:  'border-l-2 border-wb-outline bg-wb-surface-subtle hover:bg-wb-surface-hover',
+    diagnostics: 'border-l-2 border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/8'
   };
 
-  const textStyles = {
-    essential: 'text-primary',
-    advanced: 'wb-text-muted',
-    diagnostics: 'text-amber-500/70'
+  const iconStyles = {
+    essential:   isOpen ? 'text-primary' : 'wb-text-muted',
+    advanced:    isOpen ? 'wb-text-muted' : 'opacity-40',
+    diagnostics: isOpen ? 'text-amber-500/80' : 'text-amber-500/40'
+  };
+
+  const titleStyles = {
+    essential:   isOpen ? 'wb-text' : 'wb-text-muted',
+    advanced:    isOpen ? 'wb-text' : 'wb-text-muted',
+    diagnostics: isOpen ? 'text-amber-600 dark:text-amber-400' : 'wb-text-muted'
   };
 
   return (
-    <div className={`mb-1 transition-all duration-300 ${isOpen ? 'pb-4' : 'pb-0'}`}>
+    <div className={`mb-1 transition-all duration-300 ${isOpen ? 'pb-3' : 'pb-0'}`}>
       {/* HEADER */}
       <div 
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center justify-between p-2.5 cursor-pointer group select-none hover:bg-white/5 rounded-t-xs border-b border-white/5 ${levelStyles[level]}`}
+        className={`flex items-center justify-between px-2.5 py-2 cursor-pointer group select-none transition-colors duration-150 rounded-t-xs ${levelStyles[level]}`}
       >
         <div className="flex items-center gap-2.5">
           <div className={`transition-transform duration-200 ${isOpen ? 'rotate-0' : '-rotate-90'}`}>
-            <ChevronDown className="w-3 h-3 opacity-40" />
+            <ChevronDown className="w-3 h-3 wb-text-muted opacity-60" />
           </div>
-          {Icon && <Icon className={`w-3.5 h-3.5 ${isOpen ? textStyles[level] : 'opacity-40'}`} />}
+          {Icon && <Icon className={`w-3.5 h-3.5 transition-colors ${iconStyles[level]}`} />}
           <div className="flex flex-col">
-            <span className={`text-[8px] font-black uppercase tracking-widest ${isOpen ? 'text-white' : 'wb-text-muted'}`}>
+            <span className={`text-[8px] font-black uppercase tracking-widest transition-colors ${titleStyles[level]}`}>
               {title}
             </span>
             {level !== 'essential' && !isOpen && (
-              <span className="text-[6px] font-mono opacity-30 lowercase tracking-normal">
+              <span className="text-[6px] wb-text-muted opacity-60 lowercase tracking-normal">
                 Click to expand {level} settings
               </span>
             )}
@@ -62,12 +69,12 @@ export default function TieredSection({
 
         <div className="flex items-center gap-2">
           {badge && (
-            <span className="text-[6px] font-black px-1.5 py-0.5 rounded-full bg-white/5 border border-white/10 opacity-40 uppercase">
+            <span className="text-[6px] font-black px-1.5 py-0.5 rounded-full wb-surface-strong wb-outline border wb-text-muted uppercase">
               {badge}
             </span>
           )}
           {level === 'diagnostics' && (
-             <div className="w-1.5 h-1.5 rounded-full bg-amber-500/50 animate-pulse" />
+             <div className="w-1.5 h-1.5 rounded-full bg-amber-500/60 animate-pulse" />
           )}
         </div>
       </div>
@@ -79,10 +86,11 @@ export default function TieredSection({
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25, ease: 'easeInOut' }}
-            className="overflow-hidden bg-black/20"
+            transition={{ duration: 0.22, ease: 'easeInOut' }}
+            className="overflow-hidden"
           >
-            <div className="p-3 space-y-3 border-x border-b border-white/5 rounded-b-xs">
+            {/* Theme-safe content area — uses semantic surface tokens */}
+            <div className="p-3 space-y-3 wb-surface-subtle border-x border-b wb-outline rounded-b-xs">
               {children}
             </div>
           </motion.div>

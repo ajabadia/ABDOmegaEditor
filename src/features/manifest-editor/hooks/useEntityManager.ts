@@ -14,7 +14,7 @@ import type { OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
 export const useEntityManager = (
   manifest: OMEGA_Manifest, 
   setManifest: (updater: OMEGA_Manifest | ((prev: OMEGA_Manifest) => OMEGA_Manifest), label?: string) => void, 
-  updateManifest: (updates: Partial<OMEGA_Manifest> | ((prev: OMEGA_Manifest) => Partial<OMEGA_Manifest>), label?: string) => void,
+  updateManifest: (updates: Partial<OMEGA_Manifest> | ((prev: OMEGA_Manifest) => Partial<OMEGA_Manifest>), label?: string, forceHistory?: boolean) => void,
   addLog: (msg: string) => void
 ) => {
   
@@ -22,7 +22,7 @@ export const useEntityManager = (
   const entityOps = useEntityCRUD(manifest, updateManifest, addLog);
 
   // 2. Modulation CRUD (Patching)
-  const modulationOps = useModulationCRUD(setManifest);
+  const modulationOps = useModulationCRUD(updateManifest);
 
   // 3. Layout CRUD (Containers)
   const layoutOps = useLayoutCRUD(manifest, updateManifest, addLog);

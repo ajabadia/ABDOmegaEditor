@@ -248,9 +248,26 @@ export function calculateWorldPosition(root: OmegaNode, targetId: string, curren
 }
 /**
  * insertNodeInTree
- * Inserts a new node into the tree, typically into the root's children.
+ * Inserts a new node into MAIN_FACE (or root if not found).
+ * This ensures that treeToManifest projections (controls/jacks) work correctly,
+ * as the walk function reads children from MAIN_FACE.
  */
 export function insertNodeInTree(root: OmegaNode, newNode: OmegaNode): OmegaNode {
+  // Try to find MAIN_FACE and insert there
+  if (root.children) {
+    const mainFaceIdx = root.children.findIndex(c => c.id === 'MAIN_FACE');
+    if (mainFaceIdx !== -1) {
+      const mainFace = root.children[mainFaceIdx];
+      const updatedMainFace: OmegaNode = {
+        ...mainFace,
+        children: [...(mainFace.children || []), newNode]
+      };
+      const updatedChildren = [...root.children];
+      updatedChildren[mainFaceIdx] = updatedMainFace;
+      return { ...root, children: updatedChildren };
+    }
+  }
+  // Fallback: insert directly into root
   return {
     ...root,
     children: [...(root.children || []), newNode]

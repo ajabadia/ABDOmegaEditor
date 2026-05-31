@@ -149,4 +149,11 @@ Este documento detalla el estado actual de industrialización y los próximos pa
 - [x] **Modo de Enfoque (Zen)**: Integración de botón Zen en Toolbar para contraer cabecera (`Header`), pie de página (`Footer`), logs e inspector con transiciones fluidas de opacidad y altura.
 
 ---
-*OMEGA — Engineering Standard V8.2 — Industrial Governance ERA 7.3.0 — Roadmap Updated 2026-05-30*
+## ✅ Fase 26: Estandarización de Modales, Reubicación de Logs y Live Loop (Completado)
+- [x] **Modal Size Standardization**: Estandarización de dimensiones (`max-w-7xl` de ancho y `h-full max-h-[850px]` de alto) en todas las modales principales (`AboutModal`, `AuditModal`, `TemplateGallery`, `IngestionModal`, `ManifestDiffModal`, `HelpModal`, `BlueprintPromptDialog`, `GlobalGovernanceModal`) para lograr consistencia visual uniforme con el editor de celdas.
+- [x] **Live Loop Centralization**: Relocalización del indicador de telemetría y sincronización `SimulationStatusBadge` (`LIVE LOOP`) al sector superior del Header principal.
+- [x] **Right Dock Logs integration**: Reemplazo del panel flotante de logs inferior por un panel lateral integrado en el dock de la derecha (`RightDockContainer`), accesible mediante un nuevo botón de acceso rápido en la tira de botones.
+- [x] **Selective Undo/Redo History**: Exclusión de acciones de UI (zoom, split, colapso de paneles, ratio) en el stack de historia, limitando el deshacer/rehacer a modificaciones estructurales reales del Rack/Manifiesto.
+
+---
+*OMEGA — Engineering Standard V8.2 — Industrial Governance ERA 8.0.0 — Roadmap Updated 2026-05-31*

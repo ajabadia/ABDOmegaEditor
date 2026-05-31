@@ -1,4 +1,4 @@
-# OMEGA Manifest Editor - Handoff Briefing (Era 7.3.0)
+# OMEGA Manifest Editor - Handoff Briefing (Era 8.0.0)
 
 Este briefing sirve como guía técnica para desarrolladores o agentes de IA que asuman el mantenimiento o desarrollo de este repositorio independiente.
 
@@ -52,3 +52,7 @@ La separación de la web principal garantiza ciclos de compilación sumamente r�
     *   Debido a que `showDirectoryPicker` y las APIs asociadas no son nativas de la librería estándar `dom` de TS, se realizan castings controlados `(handle as any)` en el flujo de interacción de archivos.
 *   **Gobernanza .agent**:
     *   El directorio `.agent` en la raíz contiene las reglas adaptadas del estándar de calidad de `ABDSuite`. Úsalas para guiar a los agentes de IA en las buenas prácticas del proyecto.
+*   **Estandarización Estética e Historial Selectivo**:
+    *   **Modales**: Todas las ventanas modales de la aplicación deben ceñirse a las dimensiones unificadas de `max-w-7xl` para ancho y `h-full max-h-[850px]` para alto.
+    *   **Logs & Live Loop**: La terminal de logs corre de manera asilada en su propio panel del `RightDockContainer.tsx` (con ancho dinámico de 260px) activada desde el manillar lateral de la derecha. El `SimulationStatusBadge` (`LIVE LOOP`) se renderiza de forma centralizada en el `Header.tsx` principal.
+    *   **Undo/Redo**: Para evitar ruido en la pila de historial, los cambios de estado de UI pura (como transiciones de paneles, zoom, split) están excluidos de las operaciones semánticas de Undo/Redo. Solo mutaciones de datos del rack son registradas.

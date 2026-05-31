@@ -87,7 +87,7 @@ export default function MockupModal({ isOpen, onClose, manifest, audit, resolveA
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          className="relative w-full max-w-6xl aspect-video bg-[#050505] border border-white/5 rounded-sm shadow-2xl overflow-hidden flex flex-col"
+          className="relative w-full max-w-4xl aspect-video wb-surface border wb-outline rounded-xs shadow-2xl overflow-hidden flex flex-col"
         >
           <MockupHeader 
             name={manifest.metadata?.name || 'Unnamed Module'} 

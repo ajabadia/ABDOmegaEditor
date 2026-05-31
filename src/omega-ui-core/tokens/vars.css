@@ -79,4 +79,12 @@
     --wb-bloom: rgba(100, 116, 139, 0.1);
     --wb-primary: #5c7089; 
     --wb-accent: #f59e0b;
+
+    /* Extra tokens adaptation */
+    --omega-text: #020617;
+    --omega-surface: #ffffff;
+    --omega-weak: #94a3b8;
+    --primitive-bg: #f8fafc;
+    --primitive-bg-dark: #f1f5f9;
+    --primitive-border-color: #cbd5e1;
 }

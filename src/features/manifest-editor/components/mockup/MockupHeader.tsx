@@ -8,15 +8,15 @@ interface MockupHeaderProps {
 }
 
 export const MockupHeader = ({ name, activeTab, onClose }: MockupHeaderProps) => (
-  <div className="h-12 border-b border-white/10 flex items-center justify-between px-6 bg-black/60 z-10">
+  <div className="h-12 border-b wb-outline flex items-center justify-between px-6 wb-surface-subtle z-10">
     <div className="flex items-center gap-3">
       <Camera className="w-4 h-4 text-primary" />
-      <span className="text-[10px] font-black uppercase tracking-widest text-foreground/40">Industrial Render Engine v7.2.3</span>
-      <div className="h-4 w-px bg-white/10 mx-2" />
-      <span className="text-[10px] font-mono text-primary/80">{name.toUpperCase()} — {activeTab} PLANE</span>
+      <span className="text-[8px] md:text-[9px] font-bold uppercase wb-text-muted tracking-widest opacity-70">Industrial Render Engine v7.2.3</span>
+      <div className="h-4 w-px wb-outline mx-2" />
+      <span className="text-[9px] font-mono text-primary/80">{name.toUpperCase()} — {activeTab} PLANE</span>
     </div>
-    <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-full transition-colors">
-      <X className="w-4 h-4 text-foreground/40" />
+    <button onClick={onClose} className="p-1.5 rounded-xs border wb-outline wb-text-muted hover:wb-text hover:bg-red-500/10 hover:border-red-500/30 transition-all">
+      <X className="w-4 h-4" />
     </button>
   </div>
 );

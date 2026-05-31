@@ -40,16 +40,23 @@ export const useSimulationBridge = (
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const syncInProgressRef = useRef(false);
 
+  // Keep a mutable ref of manifest to avoid stale closures in debounced sync timers
+  const manifestRef = useRef(manifest);
+  useEffect(() => {
+    manifestRef.current = manifest;
+  }, [manifest]);
+
   /**
    * Workstream 2: Parameter Fast-Path
    * Low-latency route for numeric updates.
    */
   const pushParameterUpdate = useCallback((id: string, value: number) => {
-    if (!isReady || !manifest.nodes?.[0]) return;
+    const currentManifest = manifestRef.current;
+    if (!isReady || !currentManifest.nodes?.[0]) return;
     
     try {
       // Resolve hierarchical path (HPA) for deterministic binding
-      const path = ucaPathResolver.resolvePath(id, manifest.nodes[0]);
+      const path = ucaPathResolver.resolvePath(id, currentManifest.nodes[0]);
       wasmRuntime.setParameter(path, value);
       
       // Status maintenance is handled by the RPC Bridge callback
@@ -57,7 +64,7 @@ export const useSimulationBridge = (
       console.warn(`[BRIDGE] Failed to resolve HPA for node ${id}. Falling back to ID.`, err);
       wasmRuntime.setParameter(id, value);
     }
-  }, [isReady, manifest.nodes]);
+  }, [isReady]);
 
   /**
    * Core Sync Logic (Workstream 3, 4 & 6)
@@ -73,7 +80,7 @@ export const useSimulationBridge = (
       await flushPendingHash(activeId);
       
       // 2. Hot-Reload Deployment (Workstream 4)
-      const result = await wasmRuntime.deployManifest(manifest, { isHotReload: true });
+      const result = await wasmRuntime.deployManifest(manifestRef.current, { isHotReload: true });
       
       if (result.success) {
         // 3. Capture stable snapshot AFTER successful deploy
@@ -94,7 +101,7 @@ export const useSimulationBridge = (
       syncInProgressRef.current = false;
       debounceTimerRef.current = null;
     }
-  }, [isReady, activeId, manifest, flushPendingHash, captureStableSnapshot]);
+  }, [isReady, activeId, flushPendingHash, captureStableSnapshot]);
 
   /**
    * Workstream 3: Structural Sync Queue

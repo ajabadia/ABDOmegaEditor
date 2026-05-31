@@ -9,7 +9,7 @@ import type {
   OrchestratorState, 
   OrchestratorAction 
 } from '../types/document';
-import { DEFAULT_MANIFEST } from '../constants/defaults';
+import { DEFAULT_MANIFEST, normalizeManifest } from '../constants/defaults';
 import { IntegrityService } from '@/services/integrityService';
 import { historyService } from '@/services/historyService';
 import { persistenceService } from '@/services/persistenceService';
@@ -31,7 +31,7 @@ const orchestratorReducer = (state: OrchestratorState, action: OrchestratorActio
           ...state.documentsById,
           [action.id]: {
             id: action.id,
-            manifest: action.manifest,
+            manifest: normalizeManifest(action.manifest),
             isDirty: false,
             lastStableHash: '',
             history: { past: [], future: [], lastSavedIndex: -1 },
@@ -59,7 +59,7 @@ const orchestratorReducer = (state: OrchestratorState, action: OrchestratorActio
       if (!doc) return state;
       
       const updatedManifest = action.updates.manifest 
-        ? { ...doc.manifest, ...action.updates.manifest }
+        ? normalizeManifest({ ...doc.manifest, ...action.updates.manifest })
         : doc.manifest;
 
       return {
@@ -144,7 +144,8 @@ const orchestratorReducer = (state: OrchestratorState, action: OrchestratorActio
         label: 'Current State',
         timestamp: Date.now(),
         correlationId: 'undo_op',
-        manifest: d.manifest
+        manifest: d.manifest,
+        extraResources: d.extraResources
       };
 
       return {
@@ -153,11 +154,60 @@ const orchestratorReducer = (state: OrchestratorState, action: OrchestratorActio
           ...state.documentsById,
           [action.id]: {
             ...d,
-            manifest: lastPast.manifest,
+            manifest: normalizeManifest(lastPast.manifest),
+            extraResources: lastPast.extraResources || d.extraResources,
             history: {
               ...d.history,
               past: newPast,
               future: [currentEntry, ...d.history.future]
+            }
+          }
+        }
+      };
+    }
+
+    case 'UNDO_TO_INDEX': {
+      const d = state.documentsById[action.id];
+      if (!d || action.index < 0 || action.index >= d.history.past.length) return state;
+
+      const targetIndex = action.index;
+      const targetEntry = d.history.past[targetIndex];
+      
+      const newPast = d.history.past.slice(0, targetIndex);
+      const poppedEntries = d.history.past.slice(targetIndex + 1);
+      
+      const currentEntry: HistoryEntry = {
+        id: `redo_${Date.now()}`,
+        type: 'SNAPSHOT',
+        label: 'State before Timeline Jump',
+        timestamp: Date.now(),
+        correlationId: 'undo_to_op',
+        manifest: d.manifest,
+        extraResources: d.extraResources
+      };
+
+      const newFuture = [
+        ...poppedEntries.map((entry, idx) => ({
+          ...entry,
+          manifest: idx + 1 < poppedEntries.length ? poppedEntries[idx + 1].manifest : d.manifest,
+          extraResources: idx + 1 < poppedEntries.length ? poppedEntries[idx + 1].extraResources : d.extraResources
+        })),
+        currentEntry,
+        ...d.history.future
+      ];
+
+      return {
+        ...state,
+        documentsById: {
+          ...state.documentsById,
+          [action.id]: {
+            ...d,
+            manifest: normalizeManifest(targetEntry.manifest),
+            extraResources: targetEntry.extraResources || d.extraResources,
+            history: {
+              ...d.history,
+              past: newPast,
+              future: newFuture
             }
           }
         }
@@ -177,7 +227,8 @@ const orchestratorReducer = (state: OrchestratorState, action: OrchestratorActio
         label: 'Previous State',
         timestamp: Date.now(),
         correlationId: 'redo_op',
-        manifest: d.manifest
+        manifest: d.manifest,
+        extraResources: d.extraResources
       };
 
       return {
@@ -186,7 +237,8 @@ const orchestratorReducer = (state: OrchestratorState, action: OrchestratorActio
           ...state.documentsById,
           [action.id]: {
             ...d,
-            manifest: firstFuture.manifest,
+            manifest: normalizeManifest(firstFuture.manifest),
+            extraResources: firstFuture.extraResources || d.extraResources,
             history: {
               ...d.history,
               past: [...d.history.past, currentEntry],
@@ -327,14 +379,14 @@ export const useDocumentOrchestrator = () => {
           });
 
           // Open the recovered document
-          const recoveredManifest: OMEGA_Manifest = {
+          const recoveredManifest: OMEGA_Manifest = normalizeManifest({
             ...DEFAULT_MANIFEST,
             id: persisted.id,
             ui: {
               ...DEFAULT_MANIFEST.ui,
               tree: persisted.graph
             }
-          };
+          });
 
           dispatch({ 
             type: 'OPEN_DOCUMENT', 
@@ -387,6 +439,8 @@ export const useDocumentOrchestrator = () => {
           Object.keys(parsed.documentsById).forEach(id => {
             const doc = parsed.documentsById[id];
             if (doc) {
+              // Normalize manifest to ensure all required fields exist regardless of schema version
+              doc.manifest = normalizeManifest(doc.manifest);
               if (!doc.history) {
                 doc.history = { past: [], future: [], lastSavedIndex: -1 };
               }
@@ -570,22 +624,6 @@ export const useDocumentOrchestrator = () => {
     if (!doc) return;
     const hash = await IntegrityService.generateManifestHash(doc.manifest);
     dispatch({ type: 'CAPTURE_HASH', id, hash });
-
-    // Phase 21.1: Capture as historical revision
-    pushHistory(id, {
-      id: `sync_${Date.now()}_${hash.substring(0, 8)}`,
-      type: 'SNAPSHOT',
-      label: 'Structural Sync Point',
-      timestamp: Date.now(),
-      correlationId: `sync_${Date.now()}`,
-      manifest: doc.manifest,
-      uiState: {
-        selectedNodeId: null,
-        multiSelectedNodeIds: [],
-        pinnedNodeId: null,
-        layoutRatio: 0.5
-      }
-    });
   }, [state.documentsById, flushPendingHash]);
 
   useEffect(() => {

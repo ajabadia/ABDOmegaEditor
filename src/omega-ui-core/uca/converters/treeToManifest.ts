@@ -29,8 +29,8 @@ export function treeToManifest(root: OmegaNode): Partial<OMEGA_Manifest['ui']> {
         borderWidth: node.style?.borderWidth as number | undefined,
         tab: parentFace || 'MAIN'
       });
-    } else if (node.kind === 'cell') {
-      const isJack = node.role === 'port' || node.cellRef === 'port';
+    } else if (node.kind === 'cell' || node.kind === 'port') {
+      const isJack = node.kind === 'port' || node.role === 'port' || node.role === 'stream' && node.cellRef === 'port' || node.cellRef === 'port';
       
       const entity: ManifestEntity = {
         id: node.id,

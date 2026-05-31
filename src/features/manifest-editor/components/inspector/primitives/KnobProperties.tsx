@@ -15,7 +15,7 @@ interface KnobPropertiesProps {
  
 export default function KnobProperties({ item, manifest, onUpdate, setActiveSection }: KnobPropertiesProps) {
   const pres = (item.presentation || {}) as Presentation;
-  const knobStyles = manifest.ui.styles?.['knob'] || [];
+  const knobStyles = manifest.ui?.styles?.['knob'] || [];
   const currentStyleId = pres.variant || 'default';
   const currentStyle = knobStyles.find((s: { id: string; label: string }) => s.id === currentStyleId) || { id: 'default', label: 'Default Knob Style' };
  

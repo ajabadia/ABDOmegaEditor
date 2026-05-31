@@ -25,7 +25,7 @@ export default function FontSelector({
   const customFonts = manifest.resources?.fonts?.map((f: { name: string }) => f.name) || [];
   const systemFontNames = OMEGA_OFFICIAL_FONTS.map(f => f.name);
   
-  const typography = manifest.ui.typography;
+  const typography = manifest.ui?.typography;
   const categoryConfig = category && typography ? (typography[category] as { font?: string } | undefined) : undefined;
   const inheritedFont = categoryConfig?.font || defaultFont;
  

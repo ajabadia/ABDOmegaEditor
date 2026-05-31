@@ -28,32 +28,29 @@ export default function TemplateGallery({ onSelect, onClose }: TemplateGalleryPr
         initial={{ opacity: 0, scale: 0.9, y: 40 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.9, y: 40 }}
-        className="w-full max-w-5xl h-[80vh] wb-surface border wb-outline rounded-xl shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col"
+        className="w-full max-w-7xl h-full max-h-[850px] wb-surface border wb-outline rounded-xs shadow-2xl overflow-hidden flex flex-col"
       >
         {/* HEADER */}
-        <div className="p-6 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
+        <div className="p-6 border-b wb-outline flex items-center justify-between wb-surface-subtle">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center border border-primary/20 shadow-[0_0_20px_rgba(0,242,255,0.1)]">
-              <Layout className="w-6 h-6 text-primary" />
+            <div className="w-10 h-10 rounded-xs bg-primary/10 flex items-center justify-center border border-primary/20">
+              <Layout className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h2 className="text-lg font-black uppercase tracking-[0.25em] wb-text">Blueprint Gallery</h2>
-              <p className="text-[10px] wb-text-muted uppercase font-bold mt-1 tracking-widest flex items-center gap-2">
+              <h2 className="text-base font-black uppercase tracking-widest wb-text">Blueprint Gallery</h2>
+              <p className="text-[8px] md:text-[9px] font-bold uppercase wb-text-muted tracking-widest mt-1 opacity-70 flex items-center gap-2">
                 <Sparkles className="w-3 h-3 text-primary/60" />
                 Select a modular starting point for your Era 7.2.3 module
               </p>
             </div>
           </div>
-          <button 
-            onClick={onClose}
-            className="p-3 hover:bg-white/5 rounded-full transition-colors text-white/20 hover:text-white"
-          >
-            <X className="w-6 h-6" />
+          <button onClick={onClose} className="p-1.5 rounded-xs border wb-outline wb-text-muted hover:wb-text hover:bg-red-500/10 hover:border-red-500/30 transition-all">
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* SEARCH & FILTERS */}
-        <div className="px-6 py-4 border-b border-white/5 bg-black/20 flex items-center gap-4">
+        <div className="px-6 py-4 border-b wb-outline wb-surface-subtle flex items-center gap-4">
           <div className="flex-1 relative group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-primary transition-colors" />
             <input 
@@ -61,13 +58,13 @@ export default function TemplateGallery({ onSelect, onClose }: TemplateGalleryPr
               placeholder="Search templates (e.g. Filter, Oscillator, I/O)..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-black/40 border wb-outline focus:border-primary/40 focus:bg-black/60 rounded-lg py-3 pl-12 pr-4 text-[11px] font-bold tracking-wider wb-text placeholder:text-white/10 outline-none transition-all"
+              className="w-full bg-black/40 border wb-outline focus:border-primary/40 focus:bg-black/60 rounded-xs py-3 pl-12 pr-4 text-[11px] font-bold tracking-wider wb-text placeholder:text-white/10 outline-none transition-all"
             />
           </div>
           <div className="flex items-center gap-2">
             <button 
               onClick={() => setActiveCategory(null)}
-              className={`px-4 py-2.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all border ${
+              className={`px-4 py-2.5 rounded-xs text-[9px] font-black uppercase tracking-widest transition-all border ${
                 !activeCategory 
                   ? 'bg-primary/20 border-primary/40 text-primary' 
                   : 'bg-white/5 border-white/5 text-white/40 hover:bg-white/10'
@@ -79,7 +76,7 @@ export default function TemplateGallery({ onSelect, onClose }: TemplateGalleryPr
               <button 
                 key={cat}
                 onClick={() => setActiveCategory(cat || null)}
-                className={`px-4 py-2.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all border ${
+                className={`px-4 py-2.5 rounded-xs text-[9px] font-black uppercase tracking-widest transition-all border ${
                   activeCategory === cat 
                     ? 'bg-primary/20 border-primary/40 text-primary' 
                     : 'bg-white/5 border-white/5 text-white/40 hover:bg-white/10'
@@ -104,33 +101,32 @@ export default function TemplateGallery({ onSelect, onClose }: TemplateGalleryPr
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ delay: idx * 0.05 }}
                   onClick={() => handleSelect(template)}
-                  className="group relative flex flex-col text-left wb-surface border wb-outline rounded-xl p-5 hover:border-primary/40 transition-all hover:shadow-[0_0_30px_rgba(0,242,255,0.05)] overflow-hidden"
+                  className="group relative flex flex-col text-left wb-surface border wb-outline rounded-xs p-5 hover:border-primary/40 transition-all hover:shadow-[0_0_30px_rgba(0,242,255,0.05)] overflow-hidden"
                 >
-                   {/* CATEGORY TAG */}
-                  <div className="absolute top-4 right-4 flex gap-2">
-                   {!!template.compatibility?.minFaceplateVersion && (
-                      <div className="px-2 py-1 bg-accent/10 rounded-md border border-accent/20">
-                         <span className="text-[7px] font-black uppercase text-accent">
-                          FP v{String(template.compatibility.minFaceplateVersion)}
-                        </span>
-                      </div>
-                    )}
-                    {!!template.assetBehavior && (
-                      <div className="px-2 py-1 bg-amber-500/10 rounded-md border border-amber-500/20 flex items-center gap-1">
-                         <Cpu className="w-2.5 h-2.5 text-amber-500" />
-                         <span className="text-[7px] font-black uppercase text-amber-500">
-                           LAB
+                   <div className="absolute top-4 right-4 flex gap-2">
+                    {!!template.compatibility?.minFaceplateVersion && (
+                       <div className="px-2 py-1 bg-accent/10 rounded-xs border border-accent/20">
+                          <span className="text-[7px] font-black uppercase text-accent">
+                           FP v{String(template.compatibility.minFaceplateVersion)}
                          </span>
-                      </div>
-                    )}
-                    <div className="px-2 py-1 bg-white/5 rounded-md border border-white/5">
-                      <span className="text-[7px] font-black uppercase text-white/40 group-hover:text-primary transition-colors">
+                       </div>
+                     )}
+                     {!!template.assetBehavior && (
+                       <div className="px-2 py-1 bg-amber-500/10 rounded-xs border border-amber-500/20 flex items-center gap-1">
+                          <Cpu className="w-2.5 h-2.5 text-amber-500" />
+                          <span className="text-[7px] font-black uppercase text-amber-500">
+                            LAB
+                          </span>
+                       </div>
+                     )}
+                     <div className="px-2 py-1 bg-white/5 rounded-xs border border-white/5">
+                       <span className="text-[7px] font-black uppercase text-white/40 group-hover:text-primary transition-colors">
                         {template.family}
                       </span>
                     </div>
                   </div>
 
-                   <div className="mb-6 w-12 h-12 rounded-lg bg-black/40 border border-white/5 flex items-center justify-center group-hover:border-primary/40 group-hover:bg-primary/5 transition-all shadow-inner">
+                   <div className="mb-6 w-12 h-12 rounded-xs bg-black/40 border border-white/5 flex items-center justify-center group-hover:border-primary/40 group-hover:bg-primary/5 transition-all shadow-inner">
                     {(template.family || '') === 'Filter' && <Cpu className="w-6 h-6 text-white/20 group-hover:text-primary transition-colors" />}
                     {(template.family || '') === 'I/O' && <Box className="w-6 h-6 text-white/20 group-hover:text-primary transition-colors" />}
                     {(template.family || '') === 'Oscillator' && <Sparkles className="w-6 h-6 text-white/20 group-hover:text-primary transition-colors" />}
@@ -181,13 +177,10 @@ export default function TemplateGallery({ onSelect, onClose }: TemplateGalleryPr
         </div>
 
         {/* FOOTER */}
-        <div className="p-6 border-t border-white/5 bg-black/40 flex items-center justify-between">
-          <div className="text-[8px] font-black text-white/20 uppercase tracking-[0.3em]">
-            OMEGA Architectural Assembly Console • v7.2.3
-          </div>
+        <div className="p-6 border-t wb-outline flex justify-end wb-surface-subtle">
           <button 
             onClick={onClose}
-            className="px-6 py-2 text-[9px] font-black uppercase wb-text-muted hover:wb-text transition-colors"
+            className="px-6 py-2.5 rounded-xs border wb-outline wb-text-muted hover:wb-text hover:bg-white/5 text-[9px] font-black uppercase tracking-widest transition-all duration-200"
           >
             Cancel Selection
           </button>

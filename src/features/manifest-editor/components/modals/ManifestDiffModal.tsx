@@ -36,28 +36,25 @@ export default function ManifestDiffModal({ isOpen, onClose, diff, onMergeEntrie
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="relative w-full max-w-4xl h-[80vh] bg-neutral-900 border border-white/10 rounded-sm shadow-2xl flex flex-col overflow-hidden"
+            className="relative w-full max-w-7xl h-full max-h-[850px] wb-surface border wb-outline shadow-2xl flex flex-col overflow-hidden"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 bg-black/40 border-b border-white/5">
+            <div className="flex items-center justify-between p-6 border-b wb-outline wb-surface-subtle">
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-xs bg-primary/10 border border-primary/20 flex items-center justify-center shadow-[0_0_15px_rgba(var(--primary-rgb),0.1)]">
                   <GitCompare className="w-5 h-5 text-primary" />
                 </div>
                 <div className="flex flex-col">
-                  <h2 className="text-sm font-black uppercase tracking-widest text-foreground">Structural Comparison</h2>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <History className="w-3 h-3 text-foreground/40" />
-                    <span className="text-[9px] font-black uppercase text-foreground/40 tracking-tighter">History Snapshot vs Current Workspace</span>
+                  <h2 className="text-base font-black uppercase tracking-widest wb-text">Structural Comparison</h2>
+                  <div className="flex items-center gap-2 mt-1">
+                    <History className="w-3 h-3 text-primary/60" />
+                    <span className="text-[8px] md:text-[9px] font-bold uppercase wb-text-muted tracking-widest opacity-70">History Snapshot vs Current Workspace</span>
                   </div>
                 </div>
               </div>
 
-              <button 
-                onClick={onClose}
-                className="p-2 rounded-xs hover:bg-white/5 text-foreground/40 hover:text-foreground transition-all duration-200"
-              >
-                <X className="w-5 h-5" />
+              <button onClick={onClose} className="p-1.5 rounded-xs border wb-outline wb-text-muted hover:wb-text hover:bg-red-500/10 hover:border-red-500/30 transition-all">
+                <X className="w-4 h-4" />
               </button>
             </div>
 
@@ -72,17 +69,17 @@ export default function ManifestDiffModal({ isOpen, onClose, diff, onMergeEntrie
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-4 bg-black/40 border-t border-white/5 flex justify-end gap-3">
+            <div className="p-6 border-t wb-outline flex justify-end gap-3 wb-surface-subtle">
               <button
                 onClick={onClose}
-                className="px-6 py-2 rounded-xs border border-white/10 hover:bg-white/5 text-[10px] font-black uppercase tracking-widest transition-all duration-200"
+                className="px-6 py-2.5 rounded-xs border wb-outline wb-text-muted hover:wb-text hover:bg-white/5 text-[9px] font-black uppercase tracking-widest transition-all duration-200"
               >
                 Dismiss View
               </button>
               <button
                 onClick={() => diff && onMergeEntries?.(diff.entries)}
                 disabled={!diff || diff.entries.length === 0}
-                className="px-6 py-2 rounded-xs bg-primary/20 border border-primary/40 text-primary text-[10px] font-black uppercase tracking-widest hover:bg-primary/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                className="px-6 py-2.5 rounded-xs bg-primary/20 border border-primary/40 text-primary text-[9px] font-black uppercase tracking-widest hover:bg-primary/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
               >
                 Merge All Changes
               </button>

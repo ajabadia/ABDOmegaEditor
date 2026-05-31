@@ -9,10 +9,41 @@ interface EngineeringSectionProps {
   onUpdate: (updates: Partial<OmegaNode>) => void;
   onHelp?: ((sectionId: string) => void) | undefined;
   highlightPath?: (string | null) | undefined;
+  standalone?: boolean;
 }
 
-export default function EngineeringSection({ item, onUpdate, onHelp, highlightPath }: EngineeringSectionProps) {
+export default function EngineeringSection({ item, onUpdate, onHelp, highlightPath, standalone }: EngineeringSectionProps) {
   const isHighlighted = (key: string) => !!highlightPath?.includes(key);
+
+  const content = (
+    <div className="space-y-4 pt-2">
+      <p className="text-[8px] wb-text-muted leading-relaxed uppercase font-bold tracking-wider italic">
+        * Roles define the governance behavior of this entity within the OMEGA C++ Registry.
+      </p>
+      <div className="grid grid-cols-4 wb-surface-strong border wb-outline rounded-xs overflow-hidden">
+        {['control', 'input', 'output', 'telemetry', 'expert', 'stream', 'mod_source', 'mod_target'].map(role => {
+          const isActive = (item.role || 'control') === role;
+          return (
+            <button
+              key={role}
+              onClick={() => onUpdate({ role })}
+              className={`flex flex-col items-center justify-center py-2 px-1 text-center transition-all border-b-2 ${
+                isHighlighted('role') ? 'border-amber-500 ring-1 ring-amber-500 animate-pulse' : ''
+              } ${
+                isActive
+                  ? 'bg-primary/15 text-primary border-primary font-black'
+                  : 'wb-text-muted border-transparent hover:bg-primary/5 hover:wb-text'
+              }`}
+            >
+              <span className="text-[8px] font-black uppercase tracking-widest leading-none">{role.replace('_', ' ')}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  if (standalone) return content;
 
   return (
     <InspectorCollapsible 
@@ -20,28 +51,7 @@ export default function EngineeringSection({ item, onUpdate, onHelp, highlightPa
       icon={Layers}
       onHelp={() => onHelp?.('logic')}
     >
-      <div className="space-y-4 pt-2">
-        <p className="text-[7px] wb-text-muted leading-relaxed uppercase font-bold tracking-tighter italic">
-          * Roles define the governance behavior of this entity within the OMEGA C++ Registry.
-        </p>
-        <div className="flex flex-wrap gap-1.5">
-          {['control', 'input', 'output', 'telemetry', 'expert', 'stream', 'mod_source', 'mod_target'].map(role => (
-            <button
-              key={role}
-              onClick={() => onUpdate({ role })}
-              className={`px-2 py-1 text-[7px] font-black uppercase tracking-tighter border rounded-full transition-all ${
-                isHighlighted('role') ? 'border-amber-500 ring-1 ring-amber-500 animate-pulse' : ''
-              } ${
-                (item.role || 'control') === role
-                  ? 'bg-primary/20 border-primary text-primary shadow-[0_0_10px_rgba(0,240,255,0.1)]'
-                  : 'bg-black/5 wb-outline wb-text-muted hover:wb-text'
-              }`}
-            >
-              {role}
-            </button>
-          ))}
-        </div>
-      </div>
+      {content}
     </InspectorCollapsible>
   );
 }

@@ -28,7 +28,7 @@ export default function StyleLibraryLink({ type, styleId, styleLabel, setActiveS
         <span className="text-[7px] font-mono opacity-20 uppercase">Governance Active</span>
       </div>
 
-      <div className="flex items-center justify-between bg-black/40 p-3 border wb-outline rounded-xs">
+      <div className="flex items-center justify-between wb-surface-strong p-3 border wb-outline rounded-xs">
          <div className="flex flex-col gap-0.5">
             <span className="text-[6px] font-black uppercase wb-text-muted">Current Style</span>
             <span className="text-[10px] font-bold text-primary uppercase">{styleLabel}</span>

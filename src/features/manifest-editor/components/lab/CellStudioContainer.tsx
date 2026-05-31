@@ -318,23 +318,23 @@ export default function CellStudioContainer({
   };
  
   return (
-    <div className={`flex flex-col h-full bg-[#0c0c0d] overflow-hidden text-[#a0a0a0] ${isModal ? '' : 'rounded-lg border border-[#222]'}`}>
+    <div className={`flex flex-col h-full wb-bg overflow-hidden wb-text-muted ${isModal ? '' : 'rounded-xs border wb-outline'}`}>
       {/* HEADER (ASEPTIC STRIP) */}
-      <div className="p-4 border-b border-[#222] flex items-center justify-between bg-[#111112]">
+      <div className="p-6 border-b wb-outline flex items-center justify-between wb-surface-subtle shrink-0">
         <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded bg-[#1a1a1b] border border-[#333] flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xs bg-primary/10 border border-primary/20 flex items-center justify-center">
             <Cpu className="w-5 h-5 text-accent" />
           </div>
           <div>
-            <h2 className="text-sm font-black uppercase tracking-widest text-white">Universal Cell Studio</h2>
-            <div className="flex items-center gap-2">
+            <h2 className="text-base md:text-lg font-black uppercase tracking-widest wb-text">Universal Cell Studio</h2>
+            <div className="flex items-center gap-2 mt-1">
               <span className="text-[7px] bg-accent/10 text-accent px-1.5 py-0.5 rounded-full font-black uppercase">Phase 15 Isolation</span>
-              <span className="text-[7px] opacity-40 font-bold uppercase tracking-widest">Era 7.2.3 Industrial Logic</span>
+              <span className="text-[8px] md:text-[9px] wb-text-muted font-bold uppercase tracking-widest opacity-70">Era 7.2.3 Industrial Logic</span>
             </div>
           </div>
         </div>
         {onClose && (
-          <button onClick={onClose} className="w-8 h-8 rounded-full border border-[#333] flex items-center justify-center hover:bg-red-500/10 hover:border-red-500/40 hover:text-red-500 transition-all">
+          <button onClick={onClose} className="p-1.5 rounded-xs border wb-outline wb-text-muted hover:wb-text hover:bg-red-500/10 hover:border-red-500/30 transition-all">
             <X className="w-4 h-4" />
           </button>
         )}
@@ -342,9 +342,9 @@ export default function CellStudioContainer({
  
       <div className="flex-1 flex overflow-hidden">
         {/* LEFT: PREVIEW STRIP */}
-        <div className="w-96 border-r border-[#222] bg-[#080809] flex flex-col relative overflow-hidden">
-          <div className="p-4 border-b border-[#222] bg-[#111112]">
-            <span className="text-[8px] font-black uppercase tracking-widest opacity-40">DNA Real-time View</span>
+        <div className="w-80 md:w-96 border-r wb-outline wb-surface-subtle flex flex-col relative overflow-hidden shrink-0">
+          <div className="p-4 border-b wb-outline wb-surface-subtle flex items-center justify-between shrink-0">
+            <span className="text-[8px] font-black uppercase tracking-widest wb-text-muted">DNA Real-time View</span>
           </div>
           
           <div className="flex-1 flex items-center justify-center relative bg-[radial-gradient(circle_at_center,_#111_0%,_transparent_70%)] group">
@@ -354,7 +354,7 @@ export default function CellStudioContainer({
             </div>
  
             {/* SCRUBBING UI */}
-            <div className="absolute bottom-4 left-4 right-4 bg-[#1a1a1b]/90 backdrop-blur-md border border-white/5 p-3 rounded-lg flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
+            <div className="absolute bottom-4 left-4 right-4 wb-surface-inset border wb-outline p-3 rounded-xs flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
               <div className="flex items-center justify-between">
                 <span className="text-[6px] font-black uppercase tracking-widest text-accent flex items-center gap-1">
                   <Activity className={`w-2.5 h-2.5 ${testValue !== 0.75 ? 'animate-pulse' : ''}`} /> Behavior Scrubber
@@ -375,27 +375,27 @@ export default function CellStudioContainer({
         </div>
  
         {/* CENTER: WORKSPACE */}
-        <div className="flex-1 flex flex-col bg-[#0c0c0d] overflow-hidden">
-          <div className="p-6 border-b border-[#222] bg-[#111112]/50 flex items-center justify-between gap-8">
+        <div className="flex-1 flex flex-col wb-bg overflow-hidden">
+          <div className="p-6 border-b wb-outline wb-surface-subtle flex items-center justify-between gap-8 shrink-0">
             <div className="flex-1 space-y-4">
               <input 
                 type="text" value={cellData.label || ''} 
                 onChange={(e) => setCellData({...cellData, label: e.target.value})}
-                className="bg-transparent text-xl font-black uppercase tracking-tighter text-white outline-none w-full border-b border-transparent focus:border-accent/40 placeholder:opacity-20"
+                className="bg-transparent text-xl font-black uppercase tracking-tighter wb-text outline-none w-full border-b border-transparent focus:border-accent/40 placeholder:opacity-20"
                 placeholder="CELL IDENTITY NAME"
               />
               <div className="flex items-center gap-4">
                 <div className="w-64">
-                  <span className="text-[7px] font-black uppercase tracking-widest opacity-40 block mb-1">Master Class</span>
+                  <span className="text-[7px] font-black uppercase tracking-widest wb-text-muted block mb-1">Master Class</span>
                   <select 
                     disabled={isTypeLocked} value={cellData.type}
                     onChange={(e) => setCellData({ ...cellData, type: e.target.value })}
-                    className="w-full bg-[#1a1a1b] border border-[#333] rounded p-1.5 text-[8px] font-black uppercase text-accent outline-none"
+                    className="w-full wb-surface-subtle border wb-outline rounded-xs p-1.5 text-[8px] font-black uppercase text-accent outline-none focus:border-accent/40"
                   >
                     {['signal', 'io', 'telemetry', 'mechanical', 'infrastructure', 'rack', 'decor'].map(cat => (
-                      <optgroup key={cat} label={cat.toUpperCase()} className="bg-[#0a0a0b] text-white/40">
+                      <optgroup key={cat} label={cat.toUpperCase()} className="bg-background text-foreground/45">
                         {OMEGA_ELEMENT_CATALOG.filter(e => e.category === cat).map(el => (
-                          <option key={el.id} value={el.id}>{el.icon} {el.label}</option>
+                          <option key={el.id} value={el.id} className="bg-surface wb-text">{el.icon} {el.label}</option>
                         ))}
                       </optgroup>
                     ))}
@@ -404,7 +404,7 @@ export default function CellStudioContainer({
               </div>
             </div>
  
-            <div className="flex items-center gap-1 bg-[#1a1a1b] p-1 rounded border border-[#333]">
+            <div className="flex items-center gap-1 wb-surface p-1 rounded-xs border wb-outline">
               {[
                 { id: 'fragments', icon: Layers, label: 'Fragments' },
                 { id: 'behavior', icon: Activity, label: 'Behavior' },
@@ -414,7 +414,7 @@ export default function CellStudioContainer({
                 <button 
                   key={t.id}
                   onClick={() => { setActiveTab(t.id as 'fragments' | 'behavior' | 'recipes' | 'properties'); setIsCommandCenterOpen(false); }}
-                  className={`px-4 py-1.5 rounded text-[8px] font-black uppercase transition-all ${activeTab === t.id && !isCommandCenterOpen ? 'bg-accent text-black shadow-lg' : 'text-white/40 hover:text-white/60'}`}
+                  className={`px-4 py-1.5 rounded-xs text-[8px] font-black uppercase transition-all ${activeTab === t.id && !isCommandCenterOpen ? 'bg-accent text-black shadow-none' : 'wb-text-muted hover:wb-text hover:bg-accent/5'}`}
                 >
                   <t.icon className="w-3 h-3 inline-block mr-2" /> {t.label}
                 </button>
@@ -430,43 +430,43 @@ export default function CellStudioContainer({
               />
             ) : activeTab === 'fragments' ? (
               <div className="max-w-3xl mx-auto space-y-6">
-                <div className="flex items-center justify-between border-b border-[#222] pb-4">
-                  <h3 className="text-xs font-black uppercase tracking-[0.2em] text-white">Cell Composition Tree</h3>
+                <div className="flex items-center justify-between border-b wb-outline pb-4">
+                  <h3 className="text-xs font-black uppercase tracking-[0.2em] wb-text">Cell Composition Tree</h3>
                   <select 
                     onChange={(e) => { if(e.target.value) addFragment(e.target.value); e.target.value = ''; }}
-                    className="bg-accent/10 border border-accent/30 rounded px-3 py-1.5 text-[8px] font-black uppercase text-accent outline-none"
+                    className="bg-accent/10 border border-accent/30 rounded-xs px-3 py-1.5 text-[8px] font-black uppercase text-accent outline-none focus:border-accent/40"
                   >
-                    <option value="" className="bg-[#111]">+ Add Fragment</option>
+                    <option value="" className="bg-surface wb-text">+ Add Fragment</option>
                     {OMEGA_ELEMENT_CATALOG.filter(e => e.attachmentRole === 'fragment' || e.attachmentRole === 'both').map(frag => (
-                      <option key={frag.id} value={frag.id}>{frag.label.toUpperCase()}</option>
+                      <option key={frag.id} value={frag.id} className="bg-surface wb-text">{frag.label.toUpperCase()}</option>
                     ))}
                   </select>
                 </div>
                 <div className="space-y-3">
                   <div 
                     onClick={() => { setSelectedFragmentId('host'); setActiveTab('properties'); }}
-                    className={`p-4 rounded-lg border flex items-center gap-4 cursor-pointer transition-all ${selectedFragmentId === 'host' ? 'bg-accent/5 border-accent' : 'bg-[#111112] border-[#222]'}`}
+                    className={`p-4 rounded-xs border flex items-center gap-4 cursor-pointer transition-all ${selectedFragmentId === 'host' ? 'bg-accent/10 border-accent text-accent' : 'wb-surface-subtle wb-outline wb-text-muted hover:wb-text hover:border-outline/60'}`}
                   >
                     <Box className="w-6 h-6 text-accent" />
                     <div className="flex-1">
-                      <h4 className="text-[10px] font-black uppercase text-white">Main Host</h4>
-                      <p className="text-[7px] font-bold uppercase opacity-30">Surface & Body</p>
+                      <h4 className="text-[10px] font-black uppercase wb-text">Main Host</h4>
+                      <p className="text-[7px] font-bold uppercase wb-text-muted opacity-60">Surface & Body</p>
                     </div>
                   </div>
                   {(cellData.presentation?.attachments || []).map(frag => (
                     <div 
                       key={frag.id}
                       onClick={() => { setSelectedFragmentId(frag.id); setActiveTab('properties'); }}
-                      className={`p-4 rounded-lg border flex items-center gap-4 cursor-pointer transition-all ${selectedFragmentId === frag.id ? 'bg-accent/5 border-accent' : 'bg-[#111112] border-[#222]'}`}
+                      className={`p-4 rounded-xs border flex items-center gap-4 cursor-pointer transition-all ${selectedFragmentId === frag.id ? 'bg-accent/10 border-accent text-accent' : 'wb-surface-subtle wb-outline wb-text-muted hover:wb-text hover:border-outline/60'}`}
                     >
                       <div className="flex flex-col gap-1">
-                        <button onClick={(e) => { e.stopPropagation(); moveFragment(frag.id, 'up'); }}><ChevronUp className="w-3 h-3" /></button>
-                        <button onClick={(e) => { e.stopPropagation(); moveFragment(frag.id, 'down'); }}><ChevronDown className="w-3 h-3" /></button>
+                        <button onClick={(e) => { e.stopPropagation(); moveFragment(frag.id, 'up'); }} className="hover:text-primary"><ChevronUp className="w-3 h-3" /></button>
+                        <button onClick={(e) => { e.stopPropagation(); moveFragment(frag.id, 'down'); }} className="hover:text-primary"><ChevronDown className="w-3 h-3" /></button>
                       </div>
                       <Layout className="w-5 h-5 opacity-40" />
                       <div className="flex-1">
-                        <h4 className="text-[10px] font-black uppercase text-white">{frag.type}</h4>
-                        <span className="text-[6px] font-mono opacity-20">#{frag.id.slice(-4)}</span>
+                        <h4 className="text-[10px] font-black uppercase wb-text">{frag.type}</h4>
+                        <span className="text-[6px] font-mono wb-text-muted opacity-50">#{frag.id.slice(-4)}</span>
                       </div>
                       <button onClick={(e) => { e.stopPropagation(); removeFragment(frag.id); }} className="text-red-500/40 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
                     </div>
@@ -508,13 +508,13 @@ export default function CellStudioContainer({
             )}
           </div>
  
-          <div className="p-4 border-t border-[#222] bg-[#111112] flex items-center justify-end gap-2">
-            <button onClick={() => navigator.clipboard.writeText(JSON.stringify({ behavior, recipe }, null, 2))} className="px-6 py-2 bg-[#1a1a1b] border border-[#333] rounded text-[9px] font-black uppercase">Copy DNA</button>
-            <button onClick={handleExport} className="px-6 py-2 bg-[#1a1a1b] border border-[#333] rounded text-[9px] font-black uppercase">Export Entity</button>
-            <button onClick={handleFreeze} className="px-6 py-2 bg-blue-500/10 border border-blue-500/30 text-blue-400 rounded text-[9px] font-black uppercase flex items-center gap-2 hover:bg-blue-500/20 transition-all">
-              <Database className="w-3 h-3" /> Freeze as DNA Template
+          <div className="p-6 border-t wb-outline wb-surface-subtle flex items-center justify-end gap-3 shrink-0">
+            <button onClick={() => navigator.clipboard.writeText(JSON.stringify({ behavior, recipe }, null, 2))} className="px-6 py-2.5 rounded-xs border wb-outline wb-text-muted hover:wb-text hover:bg-primary/5 text-[9px] font-black uppercase tracking-widest transition-all">Copy DNA</button>
+            <button onClick={handleExport} className="px-6 py-2.5 rounded-xs border wb-outline wb-text-muted hover:wb-text hover:bg-primary/5 text-[9px] font-black uppercase tracking-widest transition-all">Export Entity</button>
+            <button onClick={handleFreeze} className="px-6 py-2.5 rounded-xs bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
+              <Database className="w-3.5 h-3.5" /> Freeze as DNA Template
             </button>
-            <button onClick={() => onSave({ ...cellData, assetBehavior: behavior, recipe })} className="px-8 py-2 bg-accent text-black rounded text-[9px] font-black uppercase ml-4">Finalize Cell</button>
+            <button onClick={() => onSave({ ...cellData, assetBehavior: behavior, recipe })} className="px-8 py-2.5 rounded-xs bg-accent text-black hover:brightness-110 text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ml-4 shadow-[0_0_15px_rgba(var(--accent-rgb),0.25)]">Finalize Cell</button>
           </div>
         </div>
       </div>
@@ -522,11 +522,11 @@ export default function CellStudioContainer({
       {/* ASSET SELECTOR OVERLAY */}
       {isAssetSelectorOpen && (
         <>
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md">
-            <div className="w-[800px] h-[600px] bg-[#111112] border border-[#333] rounded-2xl overflow-hidden flex flex-col">
-              <div className="p-4 border-b border-[#222] flex items-center justify-between">
-                <h3 className="text-[10px] font-black uppercase tracking-widest text-accent">Select Layer Asset</h3>
-                <button onClick={() => setIsAssetSelectorOpen(false)}><X className="w-4 h-4" /></button>
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+            <div className="w-[800px] h-[600px] wb-surface border wb-outline rounded-xs overflow-hidden flex flex-col shadow-2xl">
+              <div className="p-6 border-b wb-outline flex items-center justify-between wb-surface-subtle shrink-0">
+                <h3 className="text-base font-black uppercase tracking-widest text-accent">Select Layer Asset</h3>
+                <button onClick={() => setIsAssetSelectorOpen(false)} className="p-1.5 rounded-xs border wb-outline wb-text-muted hover:wb-text hover:bg-red-500/10 hover:border-red-500/30 transition-all"><X className="w-4 h-4" /></button>
               </div>
               <div className="flex-1">
                 <AssetSelector 

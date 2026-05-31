@@ -29,13 +29,15 @@ interface WorkbenchViewportProps {
   handleFitViewport: (mode: string) => void;
   isLiveMode: boolean;
   setIsLiveMode: (val: boolean) => void;
-  resolveAsset?: (ref: string | undefined) => string | undefined;
-  pushParameterUpdate?: (id: string, value: number) => void;
+  resolveAsset?: ((ref: string | undefined) => string | undefined) | undefined;
+  pushParameterUpdate?: ((id: string, value: number) => void) | undefined;
   
   // History Integration (Phase 9.2)
-  past?: HistoryEntry[];
-  onUndoTo?: (index: number) => void;
-  onCompareWithHistory?: (index: number) => void;
+  past?: HistoryEntry[] | undefined;
+  onUndoTo?: ((index: number) => void) | undefined;
+  onCompareWithHistory?: ((index: number) => void) | undefined;
+  hiddenNodeIds?: string[] | undefined;
+  lockedNodeIds?: string[] | undefined;
 }
 
 
@@ -87,7 +89,9 @@ export function WorkbenchViewport({
   onUndoTo,
   onCompareWithHistory,
   multiSelectedIds,
-  onSelectMultiple
+  onSelectMultiple,
+  hiddenNodeIds = [],
+  lockedNodeIds = []
 }: WorkbenchViewportProps) {
   
   return (
@@ -132,6 +136,8 @@ export function WorkbenchViewport({
               audit={auditResult} 
               resolveAsset={resolveAsset}
               pushParameterUpdate={pushParameterUpdate}
+              hiddenNodeIds={hiddenNodeIds}
+              lockedNodeIds={lockedNodeIds}
             />
           </ViewWrapper>
         )}

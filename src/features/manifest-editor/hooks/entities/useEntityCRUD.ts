@@ -1,14 +1,14 @@
 'use client';
 
 import { useCallback } from 'react';
-import type { OMEGA_Manifest, ManifestEntity, OmegaNode, LayoutContainer, ComponentType } from '@/omega-ui-core/types/manifest';
-import { findNodeInTree, updateNodeInTree, findLegacyItem, applyUpdatesToNode, insertNodeInTree } from './ucaInspectorAdapter';
+import type { OMEGA_Manifest, ManifestEntity, OmegaNode, LayoutContainer, ComponentType, NodeRole } from '@/omega-ui-core/types/manifest';
+import { findNodeInTree, updateNodeInTree, findLegacyItem, applyUpdatesToNode, insertNodeInTree, getAllIdsInTree } from './ucaInspectorAdapter';
 import { treeToManifest, manifestToTree } from '@/omega-ui-core/uca/ucaBridge';
 import { regenerateEntityId, cloneAndRegenerateNodeIds } from '../../utils/idManagement';
 
 export const useEntityCRUD = (
   manifest: OMEGA_Manifest,
-  updateManifest: (updates: Partial<OMEGA_Manifest> | ((prev: OMEGA_Manifest) => Partial<OMEGA_Manifest>), label?: string) => void,
+  updateManifest: (updates: Partial<OMEGA_Manifest> | ((prev: OMEGA_Manifest) => Partial<OMEGA_Manifest>), label?: string, forceHistory?: boolean) => void,
   addLog: (msg: string) => void
 ) => {
   
@@ -51,16 +51,17 @@ export const useEntityCRUD = (
         const legacyProjections = treeToManifest(nextTree);
         
         return { 
+          nodes: [nextTree],
           ui: {
             ...latestManifest.ui,
             tree: nextTree,
-            controls: legacyProjections.controls || latestManifest.ui?.controls || [],
-            jacks: legacyProjections.jacks || latestManifest.ui?.jacks || [],
+            controls: legacyProjections.ui?.controls ?? legacyProjections.controls ?? latestManifest.ui?.controls ?? [],
+            jacks: legacyProjections.ui?.jacks ?? legacyProjections.jacks ?? latestManifest.ui?.jacks ?? [],
             layout: {
-              ...(latestManifest.ui?.layout as Record<string, unknown>), // Containers and other keys might be missing from partials
+              ...(latestManifest.ui?.layout as Record<string, unknown>),
               width: latestManifest.ui?.layout?.width || 800,
               height: latestManifest.ui?.layout?.height || 600,
-              containers: legacyProjections.layout?.containers || latestManifest.ui?.layout?.containers || []
+              containers: legacyProjections.ui?.layout?.containers ?? legacyProjections.layout?.containers ?? latestManifest.ui?.layout?.containers ?? []
             }
           }
         };
@@ -97,10 +98,10 @@ export const useEntityCRUD = (
     
     if (isControl) {
       const newList = [...(manifest.ui?.controls || []), newItem as ManifestEntity];
-      updateManifest({ ui: { ...manifest.ui, controls: newList } }, `Duplicate Control: ${id}`);
+      updateManifest({ ui: { ...manifest.ui, controls: newList } }, `Duplicate Control: ${id}`, true);
     } else {
       const newList = [...(manifest.ui?.jacks || []), newItem as ManifestEntity];
-      updateManifest({ ui: { ...manifest.ui, jacks: newList } }, `Duplicate Jack: ${id}`);
+      updateManifest({ ui: { ...manifest.ui, jacks: newList } }, `Duplicate Jack: ${id}`, true);
     }
     
     addLog(`Duplicated entity: ${newId}`);
@@ -108,16 +109,41 @@ export const useEntityCRUD = (
   }, [manifest, findItem, updateManifest, addLog]);
 
   const removeItem = useCallback((id: string) => {
-    const isJack = manifest.ui?.jacks?.some((j: ManifestEntity) => j.id === id);
-    if (isJack) {
-      const nextJacks = (manifest.ui?.jacks || []).filter((j: ManifestEntity) => j.id !== id);
-      updateManifest({ ui: { ...manifest.ui, jacks: nextJacks } }, `Remove Jack: ${id}`);
-    } else {
-      const nextControls = (manifest.ui?.controls || []).filter((c: ManifestEntity) => c.id !== id);
-      updateManifest({ ui: { ...manifest.ui, controls: nextControls } }, `Remove Control: ${id}`);
-    }
+    updateManifest((latestManifest) => {
+      const isUCA = latestManifest.ui?.useUCA !== false;
+      const currentTree = isUCA && latestManifest.ui?.tree ? latestManifest.ui.tree : manifestToTree(latestManifest, latestManifest.ui?.tree);
+      
+      const removeNodeFromTree = (root: OmegaNode, targetId: string): OmegaNode => {
+        if (root.children) {
+          const nextChildren = root.children
+            .filter(child => child.id !== targetId)
+            .map(child => removeNodeFromTree(child, targetId));
+          return { ...root, children: nextChildren };
+        }
+        return root;
+      };
+
+      const nextTree = removeNodeFromTree(currentTree, id);
+      const legacyProjections = treeToManifest(nextTree);
+
+      return {
+        nodes: [nextTree],
+        ui: {
+          ...latestManifest.ui,
+          tree: nextTree,
+          controls: legacyProjections.ui?.controls ?? legacyProjections.controls ?? [],
+          jacks: legacyProjections.ui?.jacks ?? legacyProjections.jacks ?? [],
+          layout: {
+            ...(latestManifest.ui?.layout as Record<string, unknown>),
+            width: latestManifest.ui?.layout?.width || 800,
+            height: latestManifest.ui?.layout?.height || 600,
+            containers: legacyProjections.ui?.layout?.containers ?? legacyProjections.layout?.containers ?? []
+          }
+        }
+      };
+    }, `Remove Entity: ${id}`, true);
     addLog(`Removed entity: ${id}`);
-  }, [manifest, updateManifest, addLog]);
+  }, [updateManifest, addLog]);
 
   const addEntity = useCallback((type: 'control' | 'jack', template?: Partial<ManifestEntity>, node?: OmegaNode, container?: LayoutContainer) => {
     const hasWasm = !!(manifest.resources?.wasm || (manifest.resources as Record<string, unknown> | undefined)?.contract);
@@ -195,13 +221,87 @@ export const useEntityCRUD = (
       }
     } as ManifestEntity : baseEntity;
 
-    if (type === 'control' && container && manifest.ui) {
-      const nextLayout = { ...manifest.ui.layout, width: manifest.ui.layout?.width || 800, height: manifest.ui.layout?.height || 600, containers: [...(manifest.ui.layout?.containers || []), container] };
-    updateManifest({ ui: { ...manifest.ui, layout: nextLayout as OMEGA_Manifest['ui']['layout'] } }, `Add Container: ${id}`);
-    } else {
-      const nextJacks = [...(manifest.ui?.jacks || []), newEntity];
-      updateManifest({ ui: { ...manifest.ui, jacks: nextJacks } }, `Add Jack: ${id}`);
-    }
+    const isUCA = manifest.ui?.useUCA !== false;
+
+    updateManifest((prev) => {
+      // 1. Re-verify ID uniqueness against LATEST tree (prev.ui.tree) to avoid double-click and desync stale closure bugs
+      let safeId = id;
+      const allLatestIds = isUCA && prev.ui?.tree ? getAllIdsInTree(prev.ui.tree) : [...(prev.ui?.controls || []), ...(prev.ui?.jacks || [])].map(e => e.id);
+      
+      if (allLatestIds.includes(safeId)) {
+        let idx = 1;
+        const cType = template?.type || (type === 'control' ? 'knob' : 'port');
+        const mId = prev.id || 'omega';
+        let cId = `${mId}_${cType}_${String(idx).padStart(3, '0')}`;
+        while (allLatestIds.includes(cId)) {
+          idx++;
+          cId = `${mId}_${cType}_${String(idx).padStart(3, '0')}`;
+        }
+        safeId = cId;
+      }
+
+      const safeEntity = { ...newEntity, id: safeId, label: newEntity.label === generatedLabel ? safeId : newEntity.label };
+
+      if (isUCA && prev.ui?.tree) {
+        let newNode: OmegaNode;
+        if (container) {
+          newNode = {
+            id: container.id,
+            kind: 'container',
+            role: 'structure',
+            layout: { 
+              pos: container.pos, 
+              size: { 
+                width: typeof container.size.width === 'number' ? container.size.width : 100, 
+                height: typeof container.size.height === 'number' ? container.size.height : 100 
+              } 
+            },
+            children: []
+          };
+        } else {
+          newNode = {
+            id: safeId,
+            kind: type === 'control' ? 'cell' : 'port',
+            cellRef: safeEntity.type as ComponentType,
+            role: safeEntity.role as NodeRole,
+            bind: safeEntity.bind,
+            layout: { pos: safeEntity.pos, size: safeEntity.size as { width: number; height: number } },
+            style: { variant: safeEntity.presentation?.variant || 'default' }
+          };
+        }
+
+        const nextTree = insertNodeInTree(prev.ui.tree, newNode);
+        const projections = treeToManifest(nextTree);
+
+        return {
+          nodes: [nextTree], // Depending on orchestrator logic, this might be needed
+          ui: {
+            ...prev.ui,
+            tree: nextTree,
+            controls: projections.ui?.controls ?? projections.controls ?? prev.ui?.controls ?? [],
+            jacks: projections.ui?.jacks ?? projections.jacks ?? prev.ui?.jacks ?? [],
+            layout: {
+              ...prev.ui?.layout,
+              width: prev.ui?.layout?.width || 800,
+              height: prev.ui?.layout?.height || 600,
+              containers: projections.ui?.layout?.containers ?? projections.layout?.containers ?? prev.ui?.layout?.containers ?? []
+            }
+          }
+        };
+      } else {
+        if (container) {
+          const nextLayout = { ...prev.ui?.layout, width: prev.ui?.layout?.width || 800, height: prev.ui?.layout?.height || 600, containers: [...(prev.ui?.layout?.containers || []), container] };
+          return { ui: { ...prev.ui, layout: nextLayout as OMEGA_Manifest['ui']['layout'] } };
+        } else if (type === 'control') {
+          const nextControls = [...(prev.ui?.controls || []), safeEntity];
+          return { ui: { ...prev.ui, controls: nextControls } };
+        } else {
+          const nextJacks = [...(prev.ui?.jacks || []), safeEntity];
+          return { ui: { ...prev.ui, jacks: nextJacks } };
+        }
+      }
+    }, container ? `Add Container: ${id}` : `Add ${type}: ${id}`, true);
+
     addLog(`Added new ${type}: ${id}`);
     return id;
   }, [manifest, updateManifest, addLog]);
@@ -227,19 +327,20 @@ export const useEntityCRUD = (
       const projections = treeToManifest(nextTree);
       
       updateManifest({
+        nodes: [nextTree],
         ui: {
           ...manifest.ui,
           tree: nextTree,
-          controls: projections.controls || manifest.ui?.controls || [],
-          jacks: projections.jacks || manifest.ui?.jacks || [],
+          controls: projections.ui?.controls ?? projections.controls ?? manifest.ui?.controls ?? [],
+          jacks: projections.ui?.jacks ?? projections.jacks ?? manifest.ui?.jacks ?? [],
           layout: {
             ...manifest.ui?.layout,
             width: manifest.ui?.layout?.width || 800,
             height: manifest.ui?.layout?.height || 600,
-            containers: projections.layout?.containers || manifest.ui?.layout?.containers || []
+            containers: projections.ui?.layout?.containers ?? projections.layout?.containers ?? manifest.ui?.layout?.containers ?? []
           }
         }
-      }, `Paste Entity (UCA): ${newId}`);
+      }, `Paste Entity (UCA): ${newId}`, true);
     } else {
       addLog(`[CLIPBOARD] Strategic Insertion: Legacy Array Mode.`);
       // Legacy Strategy: Add to correct array
@@ -248,10 +349,10 @@ export const useEntityCRUD = (
       
       if (isJack) {
         const nextJacks = [...(manifest.ui?.jacks || []), entity];
-        updateManifest({ ui: { ...manifest.ui, jacks: nextJacks } }, `Paste Jack: ${newId}`);
+        updateManifest({ ui: { ...manifest.ui, jacks: nextJacks } }, `Paste Jack: ${newId}`, true);
       } else {
         const nextControls = [...(manifest.ui?.controls || []), entity];
-        updateManifest({ ui: { ...manifest.ui, controls: nextControls } }, `Paste Control: ${newId}`);
+        updateManifest({ ui: { ...manifest.ui, controls: nextControls } }, `Paste Control: ${newId}`, true);
       }
     }
 

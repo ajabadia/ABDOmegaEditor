@@ -16,6 +16,14 @@ import ModuleArchitectureSection from '@/features/manifest-editor/components/ins
 import LayoutGovernanceSection from '@/features/manifest-editor/components/inspector/sections/LayoutGovernanceSection';
 import CellPreview from '@/features/manifest-editor/components/inspector/CellPreview';
 import CustomSkinSection from '@/features/manifest-editor/components/inspector/sections/CustomSkinSection';
+
+// Split Identity sections
+import ModuleSignature from '@/features/manifest-editor/components/inspector/sections/identity/ModuleSignature';
+import ModuleBranding from '@/features/manifest-editor/components/inspector/sections/identity/ModuleBranding';
+import ModuleSkinSelector from '@/features/manifest-editor/components/inspector/sections/identity/ModuleSkinSelector';
+import ModulePlaneSelector from '@/features/manifest-editor/components/inspector/sections/identity/ModulePlaneSelector';
+import ModuleTaxonomy from '@/features/manifest-editor/components/inspector/sections/identity/ModuleTaxonomy';
+import ModuleMechanicalSpec from '@/features/manifest-editor/components/inspector/sections/identity/ModuleMechanicalSpec';
  
 // Layout Components & Hooks
 import InspectorHeader from '@/features/manifest-editor/components/inspector/layout/InspectorHeader';
@@ -54,11 +62,25 @@ export interface PropertyPanelProps {
   multiSelectedIds?: string[];
   isPinned?: boolean;
   onPin?: () => void;
+  exportSelectedAsBlueprint?: ((id: string) => void) | undefined;
+    visibleSections?: {
+      identity?: boolean; // For nodes
+      essentialIdentity?: boolean;
+      identityBranding?: boolean;
+      globalUiSkin?: boolean;
+      activeConstructionPlane?: boolean;
+      moduleTaxonomy?: boolean;
+      physicalEmulationProfile?: boolean;
+      aestheticsGlobals?: boolean;
+      aestheticsElements?: boolean;
+      architecture?: boolean;
+      diagnostics?: boolean;
+    } | undefined;
 }
 
 import TieredSection from './TieredSection';
 import DiagnosticBlock from './DiagnosticBlock';
-import { Info, Layout, Palette, Settings, Zap, Play, Square, Activity } from 'lucide-react';
+import { Info, Layout, Palette, Settings, Zap, Play, Square, Activity, Box, Target, Tag, Cpu, Paintbrush, Layers } from 'lucide-react';
 import { useDryRunSimulation } from '@/features/manifest-editor/hooks/useDryRunSimulation';
 
 export default function PropertyPanel(props: PropertyPanelProps) {
@@ -136,15 +158,13 @@ export default function PropertyPanel(props: PropertyPanelProps) {
            </div>
         )}
 
-        {/* ESSENTIAL LEVEL - ALWAYS VISIBLE */}
-        {!isBulk && (
+        {/* ESSENTIAL LEVEL - ALWAYS VISIBLE FOR NODES */}
+        {!isModule && !isBulk && props.visibleSections?.identity !== false && (
           <TieredSection title="Essential Identity" level="essential" icon={Info} defaultOpen={true}>
              <div className="space-y-2">
-                {!isModule && (
-                  <div className="mb-2">
-                     <CellPreview item={liveItem as OmegaNode} resolveAsset={props.resolveAsset} />
-                  </div>
-                )}
+                <div className="mb-2">
+                   <CellPreview item={liveItem as OmegaNode} resolveAsset={props.resolveAsset} />
+                </div>
                 <IdentitySection 
                   item={liveItem as OmegaNode} 
                   onUpdate={(u) => props.onUpdate?.(u)} 
@@ -152,8 +172,77 @@ export default function PropertyPanel(props: PropertyPanelProps) {
                   rootTree={rootTree}
                   highlightPath={props.highlightPath}
                   resolveAsset={props.resolveAsset}
+                  exportSelectedAsBlueprint={props.exportSelectedAsBlueprint}
                 />
              </div>
+          </TieredSection>
+        )}
+
+        {/* 1. ESSENTIAL IDENTITY (MODULE) */}
+        {isModule && !isBulk && props.visibleSections?.essentialIdentity !== false && (
+          <TieredSection title="Essential Identity" level="essential" icon={Info} defaultOpen={true}>
+             <ModuleSignature 
+               manifest={item as OMEGA_Manifest} 
+               onUpdate={(u) => props.onUpdate?.(u)} 
+               resolveAsset={props.resolveAsset}
+             />
+          </TieredSection>
+        )}
+
+        {/* 2. IDENTITY BRANDING (MODULE) */}
+        {isModule && !isBulk && props.visibleSections?.identityBranding !== false && (
+          <TieredSection title="Identity Branding" level="essential" icon={Target}>
+             <ModuleBranding 
+               manifest={item as OMEGA_Manifest} 
+               onUpdate={(u) => props.onUpdate?.(u)} 
+               resolveAsset={props.resolveAsset}
+             />
+          </TieredSection>
+        )}
+
+        {/* 3. GLOBAL UI SKIN (MODULE) */}
+        {isModule && !isBulk && props.visibleSections?.globalUiSkin !== false && (
+          <TieredSection title="Global UI Skin" level="essential" icon={Paintbrush}>
+             <ModuleSkinSelector 
+               manifest={item as OMEGA_Manifest} 
+               onUpdate={(u) => props.onUpdate?.(u)} 
+               standalone={true}
+             />
+          </TieredSection>
+        )}
+
+        {/* 4. ACTIVE CONSTRUCTION PLANE (MODULE) */}
+        {isModule && !isBulk && props.visibleSections?.activeConstructionPlane !== false && (
+          <TieredSection title="Active Construction Plane" level="essential" icon={Layers}>
+             <ModulePlaneSelector 
+               manifest={item as OMEGA_Manifest}
+               onUpdate={(u) => props.onUpdate?.(u)}
+               standalone={true}
+             />
+          </TieredSection>
+        )}
+
+        {/* 5. MODULE TAXONOMY (MODULE) */}
+        {isModule && !isBulk && props.visibleSections?.moduleTaxonomy !== false && (
+          <TieredSection title="Module Taxonomy" level="essential" icon={Tag}>
+             <ModuleTaxonomy 
+               manifest={item as OMEGA_Manifest} 
+               onUpdate={(u) => props.onUpdate?.(u)} 
+               isHighlighted={(key) => !!props.highlightPath?.includes(key)}
+               standalone={true}
+             />
+          </TieredSection>
+        )}
+
+        {/* 6. PHYSICAL EMULATION PROFILE (MODULE) */}
+        {isModule && !isBulk && props.visibleSections?.physicalEmulationProfile !== false && (
+          <TieredSection title="Physical Emulation Profile" level="essential" icon={Cpu}>
+             <ModuleMechanicalSpec 
+               manifest={item as OMEGA_Manifest} 
+               onUpdate={(u) => props.onUpdate?.(u)} 
+               onHelp={props.onHelp}
+               standalone={true}
+             />
           </TieredSection>
         )}
 
@@ -193,37 +282,54 @@ export default function PropertyPanel(props: PropertyPanelProps) {
           </TieredSection>
         )}
 
-        {/* ADVANCED LEVEL - COLLAPSIBLE */}
-        <TieredSection title="Design & Aesthetics" level="advanced" icon={Palette}>
-           {isModule && !isBulk ? (
+        {/* DESIGN GLOBALS */}
+        {isModule && !isBulk && props.visibleSections?.aestheticsGlobals !== false && (
+          <TieredSection title="Aesthetics Globals" level="advanced" icon={Box}>
              <CustomSkinSection 
                 manifest={item as OMEGA_Manifest} 
                 onUpdate={(u) => props.onUpdate?.(u)} 
                 resolveAsset={props.resolveAsset}
                 activeRackTab={props.activeTab || 'MAIN'}
                 onOpenConfig={props.onOpenConfig}
+                forceTab="globals"
               />
-           ) : (
-              <AestheticSection 
-                 item={liveItem as OmegaNode} 
-                 manifest={enrichedManifest} 
-                 onUpdate={(u) => {
-                   if (isBulk && props.multiSelectedIds) {
-                     props.multiSelectedIds.forEach(id => {
-                       props.onUpdateItem?.(id, u as HybridEntityUpdate);
-                     });
-                   } else {
-                     props.onUpdate?.(u);
-                   }
-                 }} 
-                 resolveAsset={props.resolveAsset} 
-                 onOpenConfig={props.onOpenConfig} 
+          </TieredSection>
+        )}
+
+        {/* DESIGN ELEMENTS / AESTHETICS */}
+        {props.visibleSections?.aestheticsElements !== false && (
+          <TieredSection title={isModule ? "Aesthetics Elements" : "Design & Aesthetics"} level="advanced" icon={Palette}>
+            {isModule && !isBulk ? (
+              <CustomSkinSection 
+                 manifest={item as OMEGA_Manifest} 
+                 onUpdate={(u) => props.onUpdate?.(u)} 
+                 resolveAsset={props.resolveAsset}
+                 activeRackTab={props.activeTab || 'MAIN'}
+                 onOpenConfig={props.onOpenConfig}
+                 forceTab="elements"
                />
-           )}
-        </TieredSection>
+            ) : (
+               <AestheticSection 
+                  item={liveItem as OmegaNode} 
+                  manifest={enrichedManifest} 
+                  onUpdate={(u) => {
+                    if (isBulk && props.multiSelectedIds) {
+                      props.multiSelectedIds.forEach(id => {
+                        props.onUpdateItem?.(id, u as HybridEntityUpdate);
+                      });
+                    } else {
+                      props.onUpdate?.(u);
+                    }
+                  }} 
+                  resolveAsset={props.resolveAsset} 
+                  onOpenConfig={props.onOpenConfig} 
+                />
+            )}
+          </TieredSection>
+        )}
 
         {/* LOGIC & ARCHITECTURE */}
-        {!isBulk && (
+        {!isBulk && props.visibleSections?.architecture !== false && (
           <TieredSection title={isModule ? "Architecture" : "Logic & Ports"} level="advanced" icon={isModule ? Layout : Zap}>
              {isModule ? (
                <ModuleArchitectureSection 
@@ -256,7 +362,8 @@ export default function PropertyPanel(props: PropertyPanelProps) {
         )}
 
         {/* DIAGNOSTICS LEVEL */}
-        <TieredSection title="System Diagnostics" level="diagnostics" icon={Settings}>
+        {props.visibleSections?.diagnostics !== false && (
+          <TieredSection title="Low-Level Registry Role" level="diagnostics" icon={Layers}>
            <div className="space-y-4">
               <EngineeringSection 
                 item={liveItem as OmegaNode} 
@@ -271,6 +378,7 @@ export default function PropertyPanel(props: PropertyPanelProps) {
                 }} 
                 onHelp={props.onHelp} 
                 highlightPath={props.highlightPath} 
+                standalone={true}
               />
               {isUcaNode(liveItem) && !isModule && !isBulk && (
                 <LayoutGovernanceSection 
@@ -278,17 +386,9 @@ export default function PropertyPanel(props: PropertyPanelProps) {
                   onUpdate={(u) => props.onUpdate?.(u)} 
                 />
               )}
-              <DiagnosticBlock 
-                title="OMEGA Sync Status"
-                signals={[
-                  { id: 'rpc', label: 'RPC Latency', value: '1.2ms', status: 'ok', icon: 'activity' },
-                  { id: 'hpa', label: 'HPA Path', value: isBulk ? 'MULTIPLE' : (itemId || 'root'), icon: 'power' },
-                  { id: 'dirty', label: 'Dirty State', value: 'CLEAN', status: 'ok' },
-                  { id: 'lock', label: 'Write Lock', value: isReadOnly ? 'LOCKED' : 'AVAILABLE', status: isReadOnly ? 'warn' : 'ok', icon: 'security' }
-                ]}
-              />
            </div>
-        </TieredSection>
+          </TieredSection>
+        )}
       </div>
     </div>
   );

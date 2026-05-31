@@ -11,12 +11,14 @@ interface CustomSkinSectionProps {
   resolveAsset: (id: string | undefined) => string | undefined;
   activeRackTab: string;
   onOpenConfig?: (() => void) | undefined;
+  forceTab?: CustomSubTab | undefined;
 }
  
 type CustomSubTab = 'globals' | 'elements';
  
-export default function CustomSkinSection({ manifest, onUpdate, resolveAsset, activeRackTab, onOpenConfig }: CustomSkinSectionProps) {
-  const [activeTab, setActiveTab] = React.useState<CustomSubTab>('elements');
+export default function CustomSkinSection({ manifest, onUpdate, resolveAsset, activeRackTab, onOpenConfig, forceTab }: CustomSkinSectionProps) {
+  const [localActiveTab, setLocalActiveTab] = React.useState<CustomSubTab>('elements');
+  const activeTab = forceTab || localActiveTab;
  
   const tabs: { id: CustomSubTab; label: string; icon: React.ElementType; color: string }[] = [
     { id: 'globals', label: 'Globals', icon: Box, color: 'text-accent' },
@@ -29,26 +31,28 @@ export default function CustomSkinSection({ manifest, onUpdate, resolveAsset, ac
   return (
     <div className="space-y-6">
       {/* SUB-NAVIGATION */}
-      <div className="flex border-b wb-outline bg-black/20 rounded-t-xs overflow-hidden">
-        {tabs.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 px-2 transition-all duration-300 relative group ${
-              activeTab === tab.id 
-                ? 'bg-primary/10 text-foreground' 
-                : 'text-foreground/40 hover:bg-white/5 hover:text-foreground/60'
-            }`}
-          >
-            <tab.icon className={`w-3.5 h-3.5 ${activeTab === tab.id ? tab.color : 'opacity-40'}`} />
-            <span className="text-[9px] font-black uppercase tracking-widest">{tab.label}</span>
-            
-            {activeTab === tab.id && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary shadow-[0_0_10px_rgba(0,240,255,0.5)]" />
-            )}
-          </button>
-        ))}
-      </div>
+      {!forceTab && (
+        <div className="flex border-b wb-outline bg-black/20 rounded-t-xs overflow-hidden">
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setLocalActiveTab(tab.id)}
+              className={`flex-1 flex items-center justify-center gap-2 py-3 px-2 transition-all duration-300 relative group ${
+                activeTab === tab.id 
+                  ? 'bg-primary/10 text-foreground' 
+                  : 'text-foreground/40 hover:bg-white/5 hover:text-foreground/60'
+              }`}
+            >
+              <tab.icon className={`w-3.5 h-3.5 ${activeTab === tab.id ? tab.color : 'opacity-40'}`} />
+              <span className="text-[9px] font-black uppercase tracking-widest">{tab.label}</span>
+              
+              {activeTab === tab.id && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary shadow-[0_0_10px_rgba(0,240,255,0.5)]" />
+              )}
+            </button>
+          ))}
+        </div>
+      )}
  
       {/* CONTENT AREA */}
       <div className="animate-in fade-in slide-in-from-right-2 duration-300">

@@ -40,6 +40,15 @@ export const createInitialState = (): WorkbenchState => ({
   studioMode: { isOpen: false },
   isRightPanelCollapsed: false,
   isZenMode: false,
+  window_layers: true,
+  window_properties: true,
+  window_rack_properties: false,
+  window_blueprints: true,
+  window_info: false,
+  window_history: false,
+  window_logs: false,
+  hiddenNodeIds: [],
+  lockedNodeIds: [],
   uiTheme: "dark",
   pendingFiles: [],
   isDiffModalOpen: false,
@@ -364,6 +373,42 @@ export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction)
         isZenMode: nextZen,
         // When entering Zen Mode, collapse the right panel by default to maximize canvas
         isRightPanelCollapsed: nextZen ? true : state.isRightPanelCollapsed
+      };
+    }
+
+    case "TOGGLE_WINDOW": {
+      const { name } = action.payload;
+      const nextValue = !state[name];
+      
+      // Auto expand right panel if we open any window and right panel is collapsed
+      const isExpanding = nextValue && state.isRightPanelCollapsed;
+      
+      return {
+        ...state,
+        [name]: nextValue,
+        isRightPanelCollapsed: isExpanding ? false : state.isRightPanelCollapsed
+      };
+    }
+
+    case "TOGGLE_NODE_VISIBILITY": {
+      const { nodeId } = action.payload;
+      const isHidden = state.hiddenNodeIds.includes(nodeId);
+      return {
+        ...state,
+        hiddenNodeIds: isHidden 
+          ? state.hiddenNodeIds.filter(id => id !== nodeId) 
+          : [...state.hiddenNodeIds, nodeId]
+      };
+    }
+
+    case "TOGGLE_NODE_LOCK": {
+      const { nodeId } = action.payload;
+      const isLocked = state.lockedNodeIds.includes(nodeId);
+      return {
+        ...state,
+        lockedNodeIds: isLocked 
+          ? state.lockedNodeIds.filter(id => id !== nodeId) 
+          : [...state.lockedNodeIds, nodeId]
       };
     }
 
