@@ -122,7 +122,7 @@ export function WorkbenchViewport({
         )}
  
         {viewMode === 'rack' && (
-          <ViewWrapper id="rack" zoom={zoom} pan={pan}>
+          <ViewWrapper id="rack" applyTransform={false} zoom={zoom} pan={pan}>
             <VirtualRack 
               manifest={manifest} 
               onSelectItem={onSelectItem} 
@@ -131,6 +131,7 @@ export function WorkbenchViewport({
               onSelectMultiple={onSelectMultiple}
               onUpdateItem={updateItem} 
               zoom={zoom} 
+              pan={pan}
               isLiveMode={isLiveMode} 
               setIsLiveMode={setIsLiveMode} 
               audit={auditResult} 

@@ -104,7 +104,7 @@ export function useWorkbenchState() {
           payload: { tabId, viewState },
         }),
 
-      toggleUIState: (key: keyof Pick<WorkbenchState, 'showLogs' | 'isLiveMode' | 'showModGrid' | 'mockupOpen' | 'isAuditModalOpen' | 'isAboutModalOpen' | 'isConfigModalOpen' | 'isCellEditorOpen'>) =>
+      toggleUIState: (key: keyof Pick<WorkbenchState, 'showLogs' | 'isLiveMode' | 'showModGrid' | 'mockupOpen' | 'blueprintGalleryOpen' | 'isAuditModalOpen' | 'isAboutModalOpen' | 'isConfigModalOpen' | 'isCellEditorOpen'>) =>
         dispatch({ type: "TOGGLE_UI_STATE", payload: { key } }),
 
       setHelpState: (isOpen: boolean, sectionId?: string) =>

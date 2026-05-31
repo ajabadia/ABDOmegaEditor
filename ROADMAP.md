@@ -162,6 +162,13 @@ Este documento detalla el estado actual de industrialización y los próximos pa
 - [x] **Static 4-Option Panes**: Configured all 4 workbench panels (`primary`, `primary_bottom`, `secondary`, `secondary_bottom`) to always display the 4 canonical view options statically, allowing parallel side-by-side view comparisons.
 - [x] **Independent Horizontal Resizing**: Implemented draggable `HorizontalSplitDivider` components with dedicated split ratios (`primarySplitRatio`, `secondarySplitRatio`), allowing row splits on the left and right columns to be resized independently.
 - [x] **Close Pane & Safe Hydration**: Added close pane handlers (`X`) to collapsible panels and safe-guarded the hydration process in `useWorkbenchPersistence.ts` to cleanly restore layout ratios and prefix active tab IDs correctly without runtime crashes.
+ 
+---
+## ✅ Fase 28: Independencia de Viewport, Aislamiento de Rack HUD y Estructura Avanzada (Era 8.2.0 - Completado)
+- [x] **Viewport Independence**: Configuración de zoom y paneo independientes por pestaña y panel mediante el paso de `useViewport` local a cada `WorkbenchPane`.
+- [x] **Rack HUD Isolation**: Aislamiento de la escala y traslación en el renderizador del Rack (`VirtualRack`). El zoom y la posición afectan únicamente al chasis (`RACK_FRAME`), manteniendo los controles de `ENGINEERING / LIVE` y las pestañas de plano de cara (`MAIN`) fijos y legibles.
+- [x] **Monaco JSON Folding**: Activación explícita del plegado JSON (`folding: true`) y visibilidad persistente de controles de plegado (`showFoldingControls: 'always'`) en la vista de código fuente (`SourceView`).
+- [x] **Window Menu Alignment**: Refactorización completa del menú `Ventana` (renombrado a `Window`) para reflejar todas las ventanas del Right Dock, incluyendo la activación de submenús interactivos con estados de verificación (`Check`) para las secciones del Rack.
 
 ---
-*OMEGA — Engineering Standard V8.2 — Industrial Governance ERA 8.1.0 — Roadmap Updated 2026-05-31*
+*OMEGA — Engineering Standard V8.2 — Industrial Governance ERA 8.2.0 — Roadmap Updated 2026-05-31*

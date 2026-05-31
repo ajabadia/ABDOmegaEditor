@@ -70,6 +70,7 @@ export interface WorkbenchState {
   showModGrid: boolean;
   helpState: { isOpen: boolean; sectionId?: string | undefined };
   mockupOpen: boolean;
+  blueprintGalleryOpen: boolean;
   isAuditModalOpen: boolean;
   isAboutModalOpen: boolean;
   isConfigModalOpen: boolean;
@@ -99,12 +100,12 @@ export interface WorkbenchState {
   primarySplitRatio: number;
   secondarySplitRatio: number;
 }
-
+ 
 export type OpenTabInput = Omit<WorkbenchTab, "id"> & {
   id?: string;
   targetPaneId?: WorkbenchPaneId;
 };
-
+ 
 export type WorkbenchAction =
   | { type: "OPEN_TAB"; payload: OpenTabInput }
   | { type: "CLOSE_TAB"; payload: { tabId: string } }
@@ -121,7 +122,7 @@ export type WorkbenchAction =
   | { type: "SET_PINNED_NODE"; payload: { nodeId: string | null } }
   | { type: "SET_EXPANDED_NODE_IDS"; payload: { nodeIds: string[] } }
   | { type: "CAPTURE_TAB_VIEW_STATE"; payload: { tabId: string; viewState: Partial<WorkbenchTabViewState> } }
-  | { type: "TOGGLE_UI_STATE"; payload: { key: keyof Pick<WorkbenchState, 'showLogs' | 'isLiveMode' | 'showModGrid' | 'mockupOpen' | 'isAuditModalOpen' | 'isAboutModalOpen' | 'isConfigModalOpen' | 'isCellEditorOpen' | 'isDiffModalOpen'>, value?: boolean } }
+  | { type: "TOGGLE_UI_STATE"; payload: { key: keyof Pick<WorkbenchState, 'showLogs' | 'isLiveMode' | 'showModGrid' | 'mockupOpen' | 'blueprintGalleryOpen' | 'isAuditModalOpen' | 'isAboutModalOpen' | 'isConfigModalOpen' | 'isCellEditorOpen' | 'isDiffModalOpen'>, value?: boolean } }
   | { type: "TOGGLE_RIGHT_PANEL" }
   | { type: "TOGGLE_ZEN_MODE" }
   | { type: "TOGGLE_WINDOW"; payload: { name: 'window_layers' | 'window_properties' | 'window_rack_properties' | 'window_blueprints' | 'window_info' | 'window_history' | 'window_logs' } }

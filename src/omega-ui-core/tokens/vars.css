@@ -79,12 +79,19 @@
     --wb-bloom: rgba(100, 116, 139, 0.1);
     --wb-primary: #5c7089; 
     --wb-accent: #f59e0b;
+}
 
-    /* Extra tokens adaptation */
-    --omega-text: #020617;
-    --omega-surface: #ffffff;
-    --omega-weak: #94a3b8;
-    --primitive-bg: #f8fafc;
-    --primitive-bg-dark: #f1f5f9;
-    --primitive-border-color: #cbd5e1;
+[data-ui-theme="dark"] {
+    --wb-bg: #050505;
+    --wb-surface: #0a0a0b;
+    --wb-surface-hover: #141416;
+    --wb-surface-subtle: rgba(255, 255, 255, 0.03);
+    --wb-surface-strong: rgba(255, 255, 255, 0.08);
+    --wb-surface-inset: #1a1a1c;
+    --wb-outline: rgba(255, 255, 255, 0.08);
+    --wb-text: #e0e0e0;
+    --wb-text-muted: rgba(255, 255, 255, 0.4);
+    --wb-bloom: rgba(0, 240, 255, 0.3);
+    --wb-primary: #00f0ff;
+    --wb-accent: #ff8c00;
 }

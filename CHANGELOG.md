@@ -2,6 +2,16 @@
 
 All notable changes to the OMEGA Manifest Editor will be documented in this file.
 
+## [8.2.0] - 2026-05-31
+### Added
+- **Independent Viewport State**: Moved viewport tracking hook (`useViewport`) to the individual pane level (`WorkbenchPane.tsx`), enabling isolated zoom and scroll offsets per tab.
+- **Fixed Rack HUD Overlay**: Isolated zoom and pan transforms to the rack chassis frame inside `VirtualRack.tsx`, preventing scaling or shifting of the mode selector (ENGINEERING/LIVE) and the active plane navigation (MAIN/VOICE/etc.).
+- **Persistently Visible JSON Folding**: Configured Monaco Editor options in `SourceView.tsx` with explicit folding settings and set folding control visibility to `always` in the gutter.
+- **Unified Window Menu (formerly Ventana)**: Renamed the menu to `Window`, aligned menu entries with right-dock sidebar panels, and added dynamic checkable submenus to toggle individual sections of the Rack Properties.
+- **Uncommented Mockup Rendering & Decoupled Gallery State**: Resolved a state collision where both the Blueprints gallery and Studio Render modals were linked to `mockupOpen`. Created an independent `blueprintGalleryOpen` state for the template gallery and uncommented/activated the `MockupModal` renderer for high-definition studio renders.
+- **Fixed Light Mode Module Render**: Removed light-theme overrides for `--omega-` and `--primitive-` variables in `vars.css`. Defined `[data-ui-theme="dark"]` reset selectors in `vars.css` and `signals.css`, and forced `data-ui-theme="dark"` on the mockup viewport inside `MockupViewport.tsx` to guarantee that high-fidelity exports rendered from light mode use the correct dark-theme colors (text, borders, signal ports) and match the dark `#050505` background.
+- **Improved Studio Render Export with Save Picker**: Integrated `showSaveFilePicker()` to prompt the user for the file path when downloading studio renders, bypassing browser-blocked automatic downloads. Added `skipFonts: true` to prevent network/CORS timeouts during render capture, and kept the save button enabled even when governance errors are present (which are now shown as a status badge on the left side of the footer).
+
 ## [8.0.0] - 2026-05-31
 ### Added
 - **Sovereign UCA Numeric Authority Linter**: Refactored the inspector's identity component to predict and map `ParamId` and `PortId` based on recursive traversal of the modern canonical UCA tree instead of deprecated controls/jacks arrays.

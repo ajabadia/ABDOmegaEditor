@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-05-31T11:10:16.568Z",
+  "timestamp": "2026-05-31T17:47:46.233Z",
   "counts": {
     "high": 0,
     "medium": 37,
@@ -155,13 +155,13 @@
       },
       {
         "file": "src\\features\\manifest-editor\\hooks\\io\\useManifestTransfer.ts",
-        "line": 25,
+        "line": 26,
         "content": "if (!parsed || typeof parsed !== 'object') throw new Error(\"Invalid manifest format.\");",
         "pattern": "throw new Error"
       },
       {
         "file": "src\\features\\manifest-editor\\hooks\\io\\useManifestTransfer.ts",
-        "line": 172,
+        "line": 173,
         "content": "if (req !== 'granted') throw new Error('File system write permission denied.');",
         "pattern": "throw new Error"
       },

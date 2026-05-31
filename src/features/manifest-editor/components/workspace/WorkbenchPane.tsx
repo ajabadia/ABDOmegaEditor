@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import type { WorkbenchPaneId, WorkbenchTab } from '../../types/workbench';
 import MultiTabHeader from '../layout/MultiTabHeader';
 import { WorkbenchViewport } from '../viewport/WorkbenchViewport';
@@ -9,6 +9,7 @@ import type { OMEGA_Manifest, OMEGA_Contract, OmegaNode, HybridEntityUpdate } fr
 import type { SimulationBridgeState } from '../../hooks/useSimulationBridge';
 import type { AuditResult } from '@/services/auditService';
 import type { DocumentOrchestrator } from '../../types/document';
+import { useViewport } from '../../hooks/useViewport';
  
 interface WorkbenchPaneProps {
   paneId: WorkbenchPaneId;
@@ -48,14 +49,6 @@ interface WorkbenchPaneProps {
   auditResult: AuditResult;
   resolveAsset: (id: string | undefined) => string | undefined;
   
-  // Viewport
-  zoom: number;
-  pan: { x: number; y: number };
-  handleZoom: (zoom: number) => void;
-  handlePan: (dx: number, dy: number) => void;
-  handleResetViewport: () => void;
-  handleFitViewport: (viewMode: string) => void;
-  
   // Live Mode
   isLiveMode: boolean;
   setIsLiveMode: (live: boolean) => void;
@@ -68,7 +61,7 @@ interface WorkbenchPaneProps {
   hiddenNodeIds?: string[] | undefined;
   lockedNodeIds?: string[] | undefined;
 }
-
+ 
 const WorkbenchPane = React.memo((props: WorkbenchPaneProps) => {
   const { 
     paneId, 
@@ -95,6 +88,19 @@ const WorkbenchPane = React.memo((props: WorkbenchPaneProps) => {
   const tabDoc = props.orchestrator.documentsById[tabDocId];
   const tabManifest = tabDoc?.manifest || props.manifest;
   const tabContract = (tabDoc?.contract as OMEGA_Contract | null) || props.contract;
+
+  // Local viewport per tab
+  const currentTabViewState = activeTabId ? (props.tabViewState[activeTabId] as { rackViewport?: { zoom: number; offsetX: number; offsetY: number } }) : undefined;
+  const { zoom, pan, handleZoom, handlePan, handleResetViewport, handleFitViewport } = useViewport(currentTabViewState?.rackViewport);
+
+  useEffect(() => {
+    if (activeTabId && activeTab && (activeTab.type === 'rack' || activeTab.type === 'orbital')) {
+      const t = setTimeout(() => {
+        props.onCaptureViewState(activeTabId, { rackViewport: { zoom, offsetX: pan.x, offsetY: pan.y } });
+      }, 500);
+      return () => clearTimeout(t);
+    }
+  }, [zoom, pan.x, pan.y, activeTabId, activeTab?.type, props.onCaptureViewState]);
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
@@ -135,12 +141,12 @@ const WorkbenchPane = React.memo((props: WorkbenchPaneProps) => {
             updateManifest={(updates) => props.orchestrator.updateDocument(tabDocId, { manifest: updates })}
             updateContainer={props.updateContainer} 
             auditResult={props.auditResult}
-            zoom={props.zoom} 
-            pan={props.pan} 
-            handleZoom={props.handleZoom} 
-            handlePan={props.handlePan}
-            handleResetViewport={props.handleResetViewport} 
-            handleFitViewport={props.handleFitViewport}
+            zoom={zoom} 
+            pan={pan} 
+            handleZoom={handleZoom} 
+            handlePan={handlePan}
+            handleResetViewport={handleResetViewport} 
+            handleFitViewport={handleFitViewport}
             isLiveMode={props.isLiveMode} 
             setIsLiveMode={props.setIsLiveMode}
             resolveAsset={props.resolveAsset}

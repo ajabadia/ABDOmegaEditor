@@ -20,6 +20,7 @@ interface VirtualRackProps {
   onSelectItem: (id: string | null) => void;
   onUpdateItem: (id: string, updates: Partial<ManifestEntity>) => void;
   zoom?: number;
+  pan?: { x: number; y: number } | undefined;
   isLiveMode: boolean;
   setIsLiveMode: (val: boolean) => void;
   audit: AuditResult;
@@ -44,6 +45,7 @@ export default function VirtualRack({
   onSelectItem, 
   onUpdateItem, 
   zoom = 1.0, 
+  pan = { x: 0, y: 0 },
   isLiveMode, 
   setIsLiveMode, 
   audit,
@@ -114,7 +116,9 @@ export default function VirtualRack({
         style={{ 
           width: `${width}px`, 
           height: `${height}px`,
-          boxShadow: isLiveMode ? '0 0 120px rgba(0,0,0,0.8)' : '0 10px 30px rgba(0,0,0,0.3)'
+          boxShadow: isLiveMode ? '0 0 120px rgba(0,0,0,0.8)' : '0 10px 30px rgba(0,0,0,0.3)',
+          transform: `translate(${pan?.x ?? 0}px, ${pan?.y ?? 0}px) scale(${zoom})`,
+          transformOrigin: 'center center'
         }}
         onClick={(e) => { e.stopPropagation(); onSelectItem(null); }}
       >

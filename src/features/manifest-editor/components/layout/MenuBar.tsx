@@ -32,6 +32,20 @@ interface MenuBarProps {
   isDirectoryLinked?: boolean | undefined;
   windowStates?: { window_layers: boolean; window_properties: boolean; window_rack_properties: boolean; window_blueprints: boolean; window_info: boolean; window_history: boolean; window_logs: boolean } | undefined;
   onToggleWindow?: ((name: 'window_layers' | 'window_properties' | 'window_rack_properties' | 'window_blueprints' | 'window_info' | 'window_history' | 'window_logs') => void) | undefined;
+  rackSections?: {
+    identity: boolean;
+    essentialIdentity: boolean;
+    identityBranding: boolean;
+    globalUiSkin: boolean;
+    activeConstructionPlane: boolean;
+    moduleTaxonomy: boolean;
+    physicalEmulationProfile: boolean;
+    aestheticsGlobals: boolean;
+    aestheticsElements: boolean;
+    architecture: boolean;
+    diagnostics: boolean;
+  } | undefined;
+  onToggleRackSection?: ((section: 'identity' | 'essentialIdentity' | 'identityBranding' | 'globalUiSkin' | 'activeConstructionPlane' | 'moduleTaxonomy' | 'physicalEmulationProfile' | 'aestheticsGlobals' | 'aestheticsElements' | 'architecture' | 'diagnostics') => void) | undefined;
 }
 
 export default function MenuBar(props: MenuBarProps) {
@@ -133,7 +147,7 @@ export default function MenuBar(props: MenuBarProps) {
     },
     {
       id: 'window',
-      label: 'Ventana',
+      label: 'Window',
       items: [
         { 
           label: 'Capas (Layers)', 
@@ -145,7 +159,19 @@ export default function MenuBar(props: MenuBarProps) {
           label: 'Propiedades del Rack (Rack)', 
           icon: Settings, 
           checked: props.windowStates?.window_rack_properties, 
-          onClick: () => props.onToggleWindow?.('window_rack_properties') 
+          onClick: () => props.onToggleWindow?.('window_rack_properties'),
+          submenu: [
+            { label: 'Essential Identity', checked: props.rackSections?.essentialIdentity, onClick: () => props.onToggleRackSection?.('essentialIdentity') },
+            { label: 'Identity Branding', checked: props.rackSections?.identityBranding, onClick: () => props.onToggleRackSection?.('identityBranding') },
+            { label: 'Global UI Skin', checked: props.rackSections?.globalUiSkin, onClick: () => props.onToggleRackSection?.('globalUiSkin') },
+            { label: 'Active Construction Plane', checked: props.rackSections?.activeConstructionPlane, onClick: () => props.onToggleRackSection?.('activeConstructionPlane') },
+            { label: 'Module Taxonomy', checked: props.rackSections?.moduleTaxonomy, onClick: () => props.onToggleRackSection?.('moduleTaxonomy') },
+            { label: 'Physical Emulation Profile', checked: props.rackSections?.physicalEmulationProfile, onClick: () => props.onToggleRackSection?.('physicalEmulationProfile') },
+            { label: 'Aesthetics Globals', checked: props.rackSections?.aestheticsGlobals, onClick: () => props.onToggleRackSection?.('aestheticsGlobals') },
+            { label: 'Aesthetics Elements', checked: props.rackSections?.aestheticsElements, onClick: () => props.onToggleRackSection?.('aestheticsElements') },
+            { label: 'Architecture', checked: props.rackSections?.architecture, onClick: () => props.onToggleRackSection?.('architecture') },
+            { label: 'Diagnostics', checked: props.rackSections?.diagnostics, onClick: () => props.onToggleRackSection?.('diagnostics') },
+          ]
         },
         { 
           label: 'Propiedades de Elemento (Properties)', 
@@ -283,10 +309,17 @@ function MenuItem({ item, closeMenu }: { item: any, closeMenu: () => void }) {
                   sub.onClick();
                   closeMenu();
                 }}
-                className="w-full flex items-center gap-2 px-3 py-1.5 text-[8px] font-black uppercase tracking-widest wb-text hover:bg-primary hover:text-black transition-all"
+                className="w-full flex items-center justify-between px-3 py-1.5 text-[8px] font-black uppercase tracking-widest transition-all hover:bg-primary hover:text-black group"
               >
-                {sub.icon && <sub.icon className="w-3 h-3" />}
-                <span>{sub.label}</span>
+                <div className="flex items-center gap-2">
+                  {sub.checked !== undefined && (
+                    <div className="w-3 h-3 flex items-center justify-center shrink-0 border border-outline/30 rounded-xs bg-black/40 group-hover:border-black/50">
+                      {sub.checked && <Check className="w-2 h-2 text-primary group-hover:text-black" />}
+                    </div>
+                  )}
+                  {sub.icon && <sub.icon className="w-3 h-3" />}
+                  <span>{sub.label}</span>
+                </div>
               </button>
             ))}
           </motion.div>

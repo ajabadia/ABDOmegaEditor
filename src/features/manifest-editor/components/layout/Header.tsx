@@ -39,8 +39,22 @@ interface HeaderProps {
   windowStates?: { window_layers: boolean; window_properties: boolean; window_rack_properties: boolean; window_blueprints: boolean; window_info: boolean; window_history: boolean; window_logs: boolean } | undefined;
   onToggleWindow?: ((name: 'window_layers' | 'window_properties' | 'window_rack_properties' | 'window_blueprints' | 'window_info' | 'window_history' | 'window_logs') => void) | undefined;
   simulationBridge?: SimulationBridgeState;
+  rackSections?: {
+    identity: boolean;
+    essentialIdentity: boolean;
+    identityBranding: boolean;
+    globalUiSkin: boolean;
+    activeConstructionPlane: boolean;
+    moduleTaxonomy: boolean;
+    physicalEmulationProfile: boolean;
+    aestheticsGlobals: boolean;
+    aestheticsElements: boolean;
+    architecture: boolean;
+    diagnostics: boolean;
+  } | undefined;
+  onToggleRackSection?: ((section: 'identity' | 'essentialIdentity' | 'identityBranding' | 'globalUiSkin' | 'activeConstructionPlane' | 'moduleTaxonomy' | 'physicalEmulationProfile' | 'aestheticsGlobals' | 'aestheticsElements' | 'architecture' | 'diagnostics') => void) | undefined;
 }
-
+ 
 export default function Header(props: HeaderProps) {
   return (
     <header className="h-11 border-b wb-outline wb-surface backdrop-blur-md flex items-center justify-between px-6 z-[100] shrink-0 transition-colors duration-500">
@@ -69,6 +83,8 @@ export default function Header(props: HeaderProps) {
           isDirectoryLinked={props.isDirectoryLinked}
           windowStates={props.windowStates}
           onToggleWindow={props.onToggleWindow}
+          rackSections={props.rackSections}
+          onToggleRackSection={props.onToggleRackSection}
         />
       </div>
 

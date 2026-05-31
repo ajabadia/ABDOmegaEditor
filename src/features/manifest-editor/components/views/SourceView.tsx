@@ -261,6 +261,9 @@ export function SourceView({
             verticalScrollbarSize: 10,
             horizontalScrollbarSize: 10,
           },
+          folding: true,
+          foldingStrategy: 'auto',
+          showFoldingControls: 'always',
         }}
       />
     </div>

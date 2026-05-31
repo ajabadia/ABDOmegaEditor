@@ -72,6 +72,24 @@ export default function WorkbenchContainer({
   // 1. Workspace State
   const { state, actions, derived } = useWorkbenchState();
 
+  const [rackSections, setRackSections] = useState({
+    identity: true,
+    essentialIdentity: true,
+    identityBranding: true,
+    globalUiSkin: true,
+    activeConstructionPlane: true,
+    moduleTaxonomy: true,
+    physicalEmulationProfile: true,
+    aestheticsGlobals: true,
+    aestheticsElements: true,
+    architecture: true,
+    diagnostics: true
+  });
+
+  const handleToggleRackSection = useCallback((section: 'identity' | 'essentialIdentity' | 'identityBranding' | 'globalUiSkin' | 'activeConstructionPlane' | 'moduleTaxonomy' | 'physicalEmulationProfile' | 'aestheticsGlobals' | 'aestheticsElements' | 'architecture' | 'diagnostics') => {
+    setRackSections(prev => ({ ...prev, [section]: !prev[section] }));
+  }, []);
+
   const handleOpenConfig = onOpenGovernance || (() => actions.toggleUIState('isConfigModalOpen'));
   const handleOpenAudit = onOpenAudit || (() => actions.toggleUIState('isAuditModalOpen'));
   const handleOpenCellEditor = onOpenCellEditor || (() => actions.toggleUIState('isCellEditorOpen'));
@@ -96,18 +114,6 @@ export default function WorkbenchContainer({
 
   const currentTabViewState = activeTabId ? state.tabViewState[activeTabId] : undefined;
   
-  const { zoom, pan, handleZoom, handlePan, handleResetViewport, handleFitViewport } = useViewport(currentTabViewState?.rackViewport);
-  
-  // Sync viewport changes back to tab state
-  useEffect(() => {
-    if (activeTabId && (activeTab?.type === 'rack' || activeTab?.type === 'orbital')) {
-      const t = setTimeout(() => {
-        actions.captureTabViewState(activeTabId, { rackViewport: { zoom, offsetX: pan.x, offsetY: pan.y } });
-      }, 500);
-      return () => clearTimeout(t);
-    }
-  }, [zoom, pan.x, pan.y, activeTabId, activeTab?.type, actions]);
-  
   // Sync Active Document with Focused Tab
   useEffect(() => {
     const docId = activeTab?.payload?.documentId as string;
@@ -116,14 +122,14 @@ export default function WorkbenchContainer({
     }
   }, [activeTab?.payload?.documentId, editor.orchestrator.activeDocumentId, editor.orchestrator]);
 
-  const isGalleryOpen = state.mockupOpen; 
+  const isGalleryOpen = state.blueprintGalleryOpen; 
   const setIsGalleryOpen = useCallback((open?: boolean) => {
     if (typeof open === 'boolean') {
-      if (open !== state.mockupOpen) actions.toggleUIState('mockupOpen');
+      if (open !== state.blueprintGalleryOpen) actions.toggleUIState('blueprintGalleryOpen');
     } else {
-      actions.toggleUIState('mockupOpen');
+      actions.toggleUIState('blueprintGalleryOpen');
     }
-  }, [state.mockupOpen, actions]);
+  }, [state.blueprintGalleryOpen, actions]);
   
   // 3. Diagnostics Surface (Phase 6.3 Aggregation)
   const [tabDiagnostics, setTabDiagnostics] = useState<Record<string, TabDiagnostics>>({});
@@ -356,13 +362,7 @@ export default function WorkbenchContainer({
         updateContainer={editor.updateContainer}
         auditResult={auditResult}
         resolveAsset={editor.resolveAsset}
-        zoom={zoom}
-        pan={pan}
-        handleZoom={handleZoom}
-        handlePan={handlePan}
-        handleResetViewport={handleResetViewport}
-        handleFitViewport={handleFitViewport}
-        isLiveMode={state.isLiveMode}
+        isLiveMode={state.isLiveMode} 
         setIsLiveMode={() => actions.toggleUIState('isLiveMode')}
         onUndoTo={editor.undoTo}
         onCompareWithHistory={handleCompareWithHistory}
@@ -427,6 +427,8 @@ export default function WorkbenchContainer({
           }}
           onToggleWindow={actions.toggleWindow}
           simulationBridge={editor.simulationBridge}
+          rackSections={rackSections}
+          onToggleRackSection={handleToggleRackSection}
         />
       </div>
 
@@ -464,7 +466,7 @@ export default function WorkbenchContainer({
               <Toolbar 
                 isLiveMode={state.isLiveMode}
                 onToggleLive={() => actions.toggleUIState('isLiveMode')}
-                onOpenGallery={() => actions.toggleUIState('mockupOpen')}
+                onOpenGallery={() => actions.toggleUIState('blueprintGalleryOpen')}
                 onOpenAudit={handleOpenAudit}
                 onOpenConfig={handleOpenConfig}
                 onOpenCellStudio={() => {
@@ -578,6 +580,8 @@ export default function WorkbenchContainer({
               onSetLayoutRatio={actions.setLayoutRatio}
               onSetLayoutRatioEnd={handleDragRatioEnd}
               onSelectMultiple={actions.setMultiSelectedNodes}
+              rackSections={rackSections}
+              onToggleRackSection={handleToggleRackSection}
             />
           </>
         )}

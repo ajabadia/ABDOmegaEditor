@@ -58,7 +58,36 @@ export default function MockupModal({ isOpen, onClose, manifest, audit, resolveA
         pixelRatio: 4,
         backgroundColor: '#050505',
         cacheBust: true,
+        skipFonts: true,
       });
+
+      if (typeof window !== 'undefined' && 'showSaveFilePicker' in window) {
+        try {
+          const handle = await (window as any).showSaveFilePicker({
+            suggestedName: `OMEGA_${manifest.id || 'module'}_studio_render.png`,
+            types: [
+              {
+                description: 'PNG Image',
+                accept: {
+                  'image/png': ['.png'],
+                },
+              },
+            ],
+          });
+          const writable = await handle.createWritable();
+          const response = await fetch(dataUrl);
+          const blob = await response.blob();
+          await writable.write(blob);
+          await writable.close();
+          return;
+        } catch (err: any) {
+          if (err.name === 'AbortError') {
+            console.log('User cancelled save operation');
+            return;
+          }
+          console.error('File system access error, falling back to legacy download:', err);
+        }
+      }
 
       const link = document.createElement('a');
       link.download = `OMEGA_${manifest.id || 'module'}_studio_render.png`;

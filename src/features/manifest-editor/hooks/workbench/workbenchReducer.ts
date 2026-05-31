@@ -69,6 +69,7 @@ export const createInitialState = (): WorkbenchState => {
     showModGrid: false,
     helpState: { isOpen: false },
     mockupOpen: false,
+    blueprintGalleryOpen: false,
     isAuditModalOpen: false,
     isAboutModalOpen: false,
     isConfigModalOpen: false,

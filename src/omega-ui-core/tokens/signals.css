@@ -15,3 +15,10 @@
     --signal-gate: #475569;
     --signal-midi: #ea580c;
 }
+
+[data-ui-theme="dark"] {
+    --signal-audio: #00f0ff;
+    --signal-cv: #ffaa00;
+    --signal-gate: #ffffff;
+    --signal-midi: #ff5500;
+}

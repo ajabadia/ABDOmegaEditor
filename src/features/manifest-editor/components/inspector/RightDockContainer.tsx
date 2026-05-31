@@ -85,6 +85,20 @@ interface RightDockContainerProps {
   onSetLayoutRatio: (ratio: number) => void;
   onSetLayoutRatioEnd?: () => void;
   onSelectMultiple: (ids: string[]) => void;
+  rackSections: {
+    identity: boolean;
+    essentialIdentity: boolean;
+    identityBranding: boolean;
+    globalUiSkin: boolean;
+    activeConstructionPlane: boolean;
+    moduleTaxonomy: boolean;
+    physicalEmulationProfile: boolean;
+    aestheticsGlobals: boolean;
+    aestheticsElements: boolean;
+    architecture: boolean;
+    diagnostics: boolean;
+  };
+  onToggleRackSection: (section: 'identity' | 'essentialIdentity' | 'identityBranding' | 'globalUiSkin' | 'activeConstructionPlane' | 'moduleTaxonomy' | 'physicalEmulationProfile' | 'aestheticsGlobals' | 'aestheticsElements' | 'architecture' | 'diagnostics') => void;
 }
 
 export default function RightDockContainer(props: RightDockContainerProps) {
@@ -92,22 +106,8 @@ export default function RightDockContainer(props: RightDockContainerProps) {
     windowStates, onToggleWindow, isCollapsed, onToggleCollapse,
     hiddenNodeIds, lockedNodeIds, onToggleVisibility, onToggleLock,
     manifest, selectedItem, selectedItemId, onSelectItem, pastHistory, onUndoTo,
-    onRemoveItem
+    onRemoveItem, rackSections, onToggleRackSection
   } = props;
-  
-  const [rackSections, setRackSections] = React.useState({
-    identity: true,
-    essentialIdentity: true,
-    identityBranding: true,
-    globalUiSkin: true,
-    activeConstructionPlane: true,
-    moduleTaxonomy: true,
-    physicalEmulationProfile: true,
-    aestheticsGlobals: true,
-    aestheticsElements: true,
-    architecture: true,
-    diagnostics: true
-  });
 
   // Count active windows in the dock
   const activeCount = Object.values(windowStates).filter(Boolean).length;
@@ -476,7 +476,7 @@ export default function RightDockContainer(props: RightDockContainerProps) {
           <div className="text-[5px] font-black uppercase text-foreground/45 tracking-widest text-center select-none pointer-events-none mb-1">RACK SECT</div>
           
           <button
-            onClick={() => setRackSections(prev => ({ ...prev, essentialIdentity: !prev.essentialIdentity }))}
+            onClick={() => onToggleRackSection('essentialIdentity')}
             className={`w-7 h-7 rounded-xs flex items-center justify-center transition-all ${
               rackSections.essentialIdentity 
                 ? 'bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]' 
@@ -488,7 +488,7 @@ export default function RightDockContainer(props: RightDockContainerProps) {
           </button>
 
           <button
-            onClick={() => setRackSections(prev => ({ ...prev, identityBranding: !prev.identityBranding }))}
+            onClick={() => onToggleRackSection('identityBranding')}
             className={`w-7 h-7 rounded-xs flex items-center justify-center transition-all ${
               rackSections.identityBranding 
                 ? 'bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]' 
@@ -500,7 +500,7 @@ export default function RightDockContainer(props: RightDockContainerProps) {
           </button>
 
           <button
-            onClick={() => setRackSections(prev => ({ ...prev, globalUiSkin: !prev.globalUiSkin }))}
+            onClick={() => onToggleRackSection('globalUiSkin')}
             className={`w-7 h-7 rounded-xs flex items-center justify-center transition-all ${
               rackSections.globalUiSkin 
                 ? 'bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]' 
@@ -512,7 +512,7 @@ export default function RightDockContainer(props: RightDockContainerProps) {
           </button>
 
           <button
-            onClick={() => setRackSections(prev => ({ ...prev, activeConstructionPlane: !prev.activeConstructionPlane }))}
+            onClick={() => onToggleRackSection('activeConstructionPlane')}
             className={`w-7 h-7 rounded-xs flex items-center justify-center transition-all ${
               rackSections.activeConstructionPlane 
                 ? 'bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]' 
@@ -524,7 +524,7 @@ export default function RightDockContainer(props: RightDockContainerProps) {
           </button>
 
           <button
-            onClick={() => setRackSections(prev => ({ ...prev, moduleTaxonomy: !prev.moduleTaxonomy }))}
+            onClick={() => onToggleRackSection('moduleTaxonomy')}
             className={`w-7 h-7 rounded-xs flex items-center justify-center transition-all ${
               rackSections.moduleTaxonomy 
                 ? 'bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]' 
@@ -536,7 +536,7 @@ export default function RightDockContainer(props: RightDockContainerProps) {
           </button>
 
           <button
-            onClick={() => setRackSections(prev => ({ ...prev, physicalEmulationProfile: !prev.physicalEmulationProfile }))}
+            onClick={() => onToggleRackSection('physicalEmulationProfile')}
             className={`w-7 h-7 rounded-xs flex items-center justify-center transition-all ${
               rackSections.physicalEmulationProfile 
                 ? 'bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]' 
@@ -548,7 +548,7 @@ export default function RightDockContainer(props: RightDockContainerProps) {
           </button>
 
           <button
-            onClick={() => setRackSections(prev => ({ ...prev, aestheticsGlobals: !prev.aestheticsGlobals }))}
+            onClick={() => onToggleRackSection('aestheticsGlobals')}
             className={`w-7 h-7 rounded-xs flex items-center justify-center transition-all ${
               rackSections.aestheticsGlobals 
                 ? 'bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]' 
@@ -560,7 +560,7 @@ export default function RightDockContainer(props: RightDockContainerProps) {
           </button>
 
           <button
-            onClick={() => setRackSections(prev => ({ ...prev, aestheticsElements: !prev.aestheticsElements }))}
+            onClick={() => onToggleRackSection('aestheticsElements')}
             className={`w-7 h-7 rounded-xs flex items-center justify-center transition-all ${
               rackSections.aestheticsElements 
                 ? 'bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]' 
@@ -572,7 +572,7 @@ export default function RightDockContainer(props: RightDockContainerProps) {
           </button>
 
           <button
-            onClick={() => setRackSections(prev => ({ ...prev, architecture: !prev.architecture }))}
+            onClick={() => onToggleRackSection('architecture')}
             className={`w-7 h-7 rounded-xs flex items-center justify-center transition-all ${
               rackSections.architecture 
                 ? 'bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]' 
@@ -584,7 +584,7 @@ export default function RightDockContainer(props: RightDockContainerProps) {
           </button>
 
           <button
-            onClick={() => setRackSections(prev => ({ ...prev, diagnostics: !prev.diagnostics }))}
+            onClick={() => onToggleRackSection('diagnostics')}
             className={`w-7 h-7 rounded-xs flex items-center justify-center transition-all ${
               rackSections.diagnostics 
                 ? 'bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]' 

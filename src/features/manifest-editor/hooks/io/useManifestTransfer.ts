@@ -6,6 +6,7 @@ import type { OMEGA_Manifest, ManifestEntity, ComponentType, AttachmentType, Att
 import type { ValidationIssue } from '@/types/validation';
 import { purgeUnusedStyles } from '@/features/manifest-editor/utils/governanceUtils';
 import { ContractService } from '@/services/contractService';
+import { CADExportService } from '@/services/cadExportService';
 
 export const useManifestTransfer = (
   manifest: OMEGA_Manifest,
@@ -253,7 +254,6 @@ export const useManifestTransfer = (
   }, [manifest, issues, addLog, captureStableSnapshot, directoryHandle]);
 
   const exportCADBlueprint = useCallback(async () => {
-    const { CADExportService } = await import('@/services/cadExportService');
     const svg = CADExportService.generateSVGBlueprint(manifest, {
       skin: manifest.ui?.skin || 'industrial',
       drillLayer: false,

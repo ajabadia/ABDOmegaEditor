@@ -41,6 +41,7 @@ export const MockupViewport = ({
       {/* THE ACTUAL RACK SNAPSHOT (TARGET NODE) */}
       <div 
         ref={viewportRef}
+        data-ui-theme="dark"
         className={`relative border-x-[6px] border-y-[2px] rounded-sm overflow-hidden ${getSkinConfig()} ring-1 ring-white/10`}
         style={{ 
           width: `${width}px`, 

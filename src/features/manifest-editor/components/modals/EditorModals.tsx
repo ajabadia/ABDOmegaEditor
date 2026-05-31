@@ -5,7 +5,7 @@ import { AnimatePresence } from 'framer-motion';
 import IngestionModal from './IngestionModal';
 import HelpModal from './HelpModal';
 import AuditModal from './AuditModal';
-// import MockupModal from './MockupModal';
+import MockupModal from './MockupModal';
 import AboutModal from './AboutModal';
 import GlobalGovernanceModal from './GlobalGovernanceModal';
 import UniversalCellEditorModal from './UniversalCellEditorModal';
@@ -145,13 +145,13 @@ export default function EditorModals({
         manifest={manifest} 
       />
 
-      {/* <MockupModal 
+      <MockupModal 
         isOpen={mockupOpen} 
         onClose={() => setMockupOpen(false)} 
         manifest={manifest} 
         audit={auditResult}
         resolveAsset={resolveAsset}
-      /> */}
+      />
 
       <AboutModal 
         isOpen={isAboutModalOpen}
