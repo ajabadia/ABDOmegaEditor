@@ -27,8 +27,8 @@ export default function RackStartupAssistant({
   isDirectoryLinked = false,
 }: RackStartupAssistantProps) {
   return (
-    <div className="absolute inset-0 z-[150] flex items-center justify-center bg-black/60 backdrop-blur-md pointer-events-auto">
-      <div className="w-[500px] p-8 border border-primary/20 bg-[#0a0a0b] shadow-[0_0_80px_rgba(0,242,255,0.1)] flex flex-col gap-8 rounded-xs relative overflow-hidden">
+    <div data-startup-assistant className="absolute inset-0 z-[150] flex items-center justify-center bg-black/60 backdrop-blur-md pointer-events-none">
+      <div className="w-[500px] p-8 border border-primary/20 bg-[#0a0a0b] shadow-[0_0_80px_rgba(0,242,255,0.1)] flex flex-col gap-8 rounded-xs relative overflow-hidden pointer-events-auto">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-50" />
 
         <div className="text-center flex flex-col items-center">
@@ -84,7 +84,7 @@ export default function RackStartupAssistant({
           className="w-full py-4 border border-outline bg-black/40 hover:border-primary/50 hover:bg-white/5 text-[10px] font-black uppercase tracking-[0.15em] text-foreground/60 hover:text-primary transition-all flex items-center justify-center gap-3 rounded-xs group cursor-pointer"
         >
           <Settings className="w-3.5 h-3.5 group-hover:animate-spin-slow" />
-          <span>Create From Scratch</span>
+          <span>Create from Scratch</span>
         </button>
       </div>
     </div>
