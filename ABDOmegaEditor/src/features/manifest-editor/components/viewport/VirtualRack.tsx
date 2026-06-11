@@ -15,6 +15,7 @@ import { manifestToTree } from '@/omega-ui-core/utils/ucaBridge';
 import { findNodeInTree, findParentInTree } from '@/omega-ui-core/uca/treeUtils';
 import { snapToGrid } from '@/omega-ui-core/uca/spatialConstraints';
 import { InjectionPreviewOverlay } from './InjectionPreviewOverlay';
+import { GhostPreviewOverlay } from './GhostPreviewOverlay';
 import RackContextMenu from './RackContextMenu';
 import RackStartupAssistant from './RackStartupAssistant';
  
@@ -23,6 +24,8 @@ interface VirtualRackProps {
   selectedItemId: string | null;
   onSelectItem: (id: string | null) => void;
   onUpdateItem: (id: string, updates: HybridEntityUpdate) => void;
+  /** Batch update multiple nodes atomically (Bug 1 fix) */
+  onUpdateItems?: ((updatesMap: Record<string, Partial<OmegaNode>>) => void) | undefined;
   zoom?: number;
   pan?: { x: number; y: number } | undefined;
   isLiveMode: boolean;
@@ -49,6 +52,15 @@ interface VirtualRackProps {
   onLinkWorkspace?: (() => void) | undefined;
   onCreateFromScratch?: (() => void) | undefined;
   isDirectoryLinked?: boolean | undefined;
+
+  // v9.2.1 — Interactive Ghost Preview Layer
+  ghostPosition?: { x: number; y: number } | null | undefined;
+  ghostSize?: { width: number; height: number } | undefined;
+  isGhostCollision?: boolean | undefined;
+  isGhostVisible?: boolean | undefined;
+  onGhostMouseMove?: ((clientX: number, clientY: number) => void) | undefined;
+  onGhostClick?: ((x: number, y: number) => void) | undefined;
+  onGhostCancel?: (() => void) | undefined;
 }
 
 
@@ -98,11 +110,19 @@ export default function VirtualRack({
   onToggleVisibility,
   onGroupSelected,
   onUngroupNode,
+  onUpdateItems,
   gridVisible: gridVisibleProp,
   onOpenGallery,
   onLinkWorkspace,
   onCreateFromScratch,
-  isDirectoryLinked
+  isDirectoryLinked,
+  ghostPosition,
+  ghostSize,
+  isGhostCollision,
+  isGhostVisible = false,
+  onGhostMouseMove,
+  onGhostClick,
+  onGhostCancel
 }: VirtualRackProps) {
   const rackRef = useRef<HTMLDivElement>(null);
   const skin = manifest.ui?.skin || 'industrial';
@@ -113,7 +133,39 @@ export default function VirtualRack({
   const [isStartupDismissed, setIsStartupDismissed] = React.useState(false);
 
 
-  
+  // ── Ghost Preview: keyboard confirm (Enter) & cancel (Escape) ───────
+  React.useEffect(() => {
+    if (!isGhostVisible) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && onGhostCancel) {
+        onGhostCancel();
+      } else if (e.key === 'Enter' && onGhostClick && ghostPosition) {
+        e.preventDefault();
+        onGhostClick(ghostPosition.x, ghostPosition.y);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isGhostVisible, onGhostCancel, onGhostClick, ghostPosition]);
+
+  // ── Ghost Preview: mouse move tracking ─────────────────────────────
+  const handleRackMouseMove = React.useCallback((e: React.MouseEvent) => {
+    if (!isGhostVisible || !onGhostMouseMove || !rackRef.current) return;
+    // Convert screen coordinates to rack-local coordinates
+    const rect = rackRef.current.getBoundingClientRect();
+    const dx = e.clientX - rect.left;
+    const dy = e.clientY - rect.top;
+    const rackX = dx / zoom;
+    const rackY = dy / zoom;
+    onGhostMouseMove(rackX, rackY);
+  }, [isGhostVisible, onGhostMouseMove, zoom]);
+
+  // ── Ghost Preview: click to confirm injection ──────────────────────
+  const handleRackGhostClick = React.useCallback((x: number, y: number) => {
+    if (!isGhostVisible || !onGhostClick) return;
+    onGhostClick(x, y);
+  }, [isGhostVisible, onGhostClick]);
+
   // ASEPTIC LAYOUT & SIMULATION
   const { width, height, allElements } = useRackLayout(manifest);
   const { runtimeValues, activeInjectorPort, setActiveInjectorPort, updateValue } = useRackSimulation(allElements, isLiveMode, pushParameterUpdate);
@@ -180,20 +232,44 @@ export default function VirtualRack({
           transform: `translate(${pan?.x ?? 0}px, ${pan?.y ?? 0}px) scale(${zoom})`,
           transformOrigin: 'center center'
         }}
-        onClick={(e) => { e.stopPropagation(); onSelectItem(null); }}
+        onMouseDown={(e) => {
+          if (isGhostVisible && ghostPosition) {
+            e.stopPropagation();
+            if (e.button === 0) {
+              handleRackGhostClick(ghostPosition.x, ghostPosition.y);
+            }
+            return;
+          }
+        }}
+        onClick={(e) => {
+          if (isGhostVisible) {
+            e.stopPropagation();
+            return;
+          }
+          e.stopPropagation(); onSelectItem(null);
+        }}
+        onMouseMove={handleRackMouseMove}
         onContextMenu={(e) => {
           if (isLiveMode) return;
           e.preventDefault();
           e.stopPropagation();
+          if (isGhostVisible) {
+            if (onGhostCancel) onGhostCancel();
+            return;
+          }
           const target = e.target as HTMLElement;
           const ucaNode = target.closest('[id^="uca-"]');
           const targetId = ucaNode ? ucaNode.id.replace('uca-', '') : null;
           if (targetId) {
-            // Capture multi-selection BEFORE onSelectItem clears it
-            const currentMultiSelection = multiSelectedIds.length >= 2 && multiSelectedIds.includes(targetId)
+            // Capture multi-selection BEFORE onSelectItem clears it (Bug 2 fix)
+            const isAlreadySelected = multiSelectedIds.includes(targetId);
+            const currentMultiSelection = multiSelectedIds.length >= 2 && isAlreadySelected
               ? [...multiSelectedIds]
               : [targetId];
-            onSelectItem(targetId);
+            // Only update selection if the clicked node is NOT already part of multi-selection
+            if (!isAlreadySelected) {
+              onSelectItem(targetId);
+            }
             setContextMenu({ x: e.clientX, y: e.clientY, targetId, multiSelectedIds: currentMultiSelection });
           }
         }}
@@ -256,6 +332,7 @@ export default function VirtualRack({
                   onSelect: onSelectItem,
                   onSelectMultiple: onSelectMultiple,
                   onUpdateNode: onUpdateItem,
+                  onUpdateNodes: onUpdateItems,
                   runtimeValues: runtimeValues,
                   lockedNodeIds: lockedNodeIds,
                   isLiveMode: isLiveMode,
@@ -275,6 +352,17 @@ export default function VirtualRack({
           <InjectionPreviewOverlay 
             previewManifest={previewManifest} 
             resolveAsset={resolveAsset} 
+          />
+        )}
+
+        {/* INTERACTIVE GHOST PREVIEW LAYER (v9.2.1) */}
+        {isGhostVisible && ghostPosition && ghostSize && (
+          <GhostPreviewOverlay
+            x={ghostPosition.x}
+            y={ghostPosition.y}
+            width={ghostSize.width}
+            height={ghostSize.height}
+            isCollision={isGhostCollision ?? false}
           />
         )}
 
@@ -314,7 +402,13 @@ export default function VirtualRack({
 
         const getParentGroupId = (id: string): string | undefined => {
           const parent = findParentInTree(rootTree, id);
-          return (parent && parent.kind === 'group') ? parent.id : undefined;
+          const rootId = manifest.ui?.tree?.id || 'root';
+          // Include 'container' so injected blueprints (kind: 'container') can be ungrouped
+          // but exclude the rack root node to prevent 'Ungroup' from showing for ungrouped elements
+          if (parent && parent.id !== rootId && (parent.kind === 'group' || parent.kind === 'container')) {
+            return parent.id;
+          }
+          return undefined;
         };
 
         const targetGroupId = targetId ? getParentGroupId(targetId) : undefined;

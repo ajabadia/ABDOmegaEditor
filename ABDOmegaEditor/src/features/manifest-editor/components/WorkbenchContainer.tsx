@@ -26,10 +26,11 @@ import { useWorkbenchState, type WorkbenchTabType, type WorkbenchPaneId } from '
 import { useAuditNavigator } from '@/features/manifest-editor/hooks/useAuditNavigator';
 import { useWatchdog } from '@/features/manifest-editor/hooks/useWatchdog';
 import { adaptModuleTemplateToBlueprintDefinition, adaptV2BlueprintToBlueprintDefinition } from '../utils/blueprintUtils';
-import type { V2BlueprintData } from '@/omega-ui-core/types';
+import type { V2BlueprintData, BlueprintDefinition } from '@/omega-ui-core/types';
 import { findNodeInTree } from '../hooks/entities/ucaInspectorAdapter';
 import { manifestToTree } from '@/omega-ui-core/utils/ucaBridge';
 import { useDynamicFonts } from '@/features/manifest-editor/hooks/useDynamicFonts';
+import { useGhostPreview } from '@/features/manifest-editor/hooks/useGhostPreview';
 import type { TabDiagnostics, Diagnostic } from '../types/diagnostics';
 import { createEmptyDiagnostics } from '../types/diagnostics';
 import { mergeDiagnostics } from '../utils/diagnosticUtils';
@@ -45,26 +46,20 @@ import { ContractService } from '@/services/contractService';
 interface WorkbenchContainerProps {
   onOpenCellEditor?: () => void;
   onOpenAudit?: () => void;
-  onOpenGovernance?: () => void;
   
   // External state overrides
   isAuditOpen?: boolean;
   setIsAuditOpen?: (open: boolean) => void;
-  isGovernanceOpen?: boolean;
-  setIsGovernanceOpen?: (open: boolean) => void;
   isCellEditorOpen?: boolean;
   setIsCellEditorOpen?: (open: boolean) => void;
 
 }
 
 export default function WorkbenchContainer({ 
-  onOpenGovernance,
   onOpenCellEditor,
   onOpenAudit,
   isAuditOpen,
   setIsAuditOpen,
-  isGovernanceOpen,
-  setIsGovernanceOpen,
   isCellEditorOpen,
   setIsCellEditorOpen,
 }: WorkbenchContainerProps) {
@@ -92,15 +87,11 @@ export default function WorkbenchContainer({
   // Phase 39 — recovered from backup MenuBar (View > Inspector Level)
   const [inspectorLevel, setInspectorLevel] = useState<'simple' | 'medium' | 'advanced'>('medium');
 
-  const [activeTool, setActiveTool] = useState<'select' | 'marquee' | 'add' | 'studio' | null>('select');
+  // S7: User-imported blueprints (from .acepack files) — stored for User Library display + injection
+  const [userBlueprints, setUserBlueprints] = useState<Array<{ label: string; description: string | undefined; version: string | undefined; blueprint: BlueprintDefinition | undefined }>>([]);
+  const [inspectorActiveSection, setInspectorActiveSection] = useState<string | undefined>(undefined);
 
-  const handleOpenConfig = onOpenGovernance || (() => actions.toggleUIState('isConfigModalOpen'));
-  const handleOpenAudit = onOpenAudit || (() => actions.toggleUIState('isAuditModalOpen'));
-  const handleOpenCellEditor = onOpenCellEditor || (() => {
-    if (state.selectedNodeId) {
-      actions.setStudioMode(true, state.selectedNodeId);
-    }
-  });
+  const [activeTool, setActiveTool] = useState<'select' | 'marquee' | 'add' | 'studio' | null>('select');
 
   // 2. Core Data & Operations
   const editor = useManifestEditor(state, actions);
@@ -148,7 +139,8 @@ export default function WorkbenchContainer({
     };
 
     editor.registerTemplate(template);
-    editor.addLog(`[SUCCESS] Cell ${selectedNode.id} serialized as blueprint ${blueprintId} and registered in moduleTemplates.`);
+    // ── S1: Also export physical .acepack ─────────────────────────
+    editor.exportCellAsBlueprint?.(selectedId);
   }, [manifest, state.selectedNodeId, editor]);
 
   // Grid & Guides state derived from manifest
@@ -229,17 +221,127 @@ export default function WorkbenchContainer({
     }
   }, [editor, setIsGalleryOpen]);
 
+  // S7: Handle .acepack upload — ingested resources + store for User Library
+  const handleLoadAcepack = useCallback(async () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.acepack,.zip';
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      const result = await editor.handleBlueprintUpload(file);
+      if (result) {
+        setUserBlueprints(prev => [...prev, result]);
+      }
+    };
+    input.click();
+  }, [editor]);
+
+  // S8: Inject a user-imported blueprint
+  const handleSelectUserBlueprint = useCallback((blueprint: BlueprintDefinition) => {
+    editor.applyTemplate(blueprint);
+  }, [editor]);
+
+  /** Handle "Save as Blueprint..." from GroupEditor — converts group to BlueprintDefinition and registers it. */
+  const handleSaveGroupAsBlueprint = useCallback((groupNode: import('@/omega-ui-core/types/rack').GroupNode) => {
+    // 1. Create a BlueprintDefinition from the GroupNode
+    const blueprint: BlueprintDefinition = {
+      blueprintId: `bp_user_${groupNode.id}_${Date.now().toString(36)}`,
+      version: '1.0.0',
+      name: groupNode.label || 'Custom Composite Group',
+      description: 'User-defined grouped template',
+      origin: 'user',
+      rootNode: {
+        id: groupNode.id,
+        kind: 'container',
+        role: 'composite',
+        layout: {
+          pos: { x: groupNode.pos.x, y: groupNode.pos.y },
+          mode: 'absolute',
+        },
+        children: groupNode.children.map((child) => ({
+          id: child.id,
+          kind: 'cell' as const,
+          cellRef: child.type,
+          layout: {
+            pos: { x: child.pos.x, y: child.pos.y },
+            size: { width: child.size.width, height: child.size.height },
+          },
+          style: child.style as unknown as import('@/omega-ui-core/types/manifest').OmegaStyleNode,
+          bind: child.bind?.target,
+        })),
+      },
+      compatibility: {
+        allowedParentKinds: ['rack', 'container', 'group', 'face'],
+        deniedParentKinds: ['cell'],
+      },
+      autoWirePolicy: { mode: 'none' },
+      materializeSnapshot: false,
+      defaultOverridePolicy: 'extendable',
+    };
+
+    // 2. Register in userBlueprints state for immediate Library visibility
+    setUserBlueprints((prev) => [
+      ...prev,
+      {
+        label: blueprint.name,
+        description: blueprint.description,
+        version: blueprint.version,
+        blueprint,
+      },
+    ]);
+
+    // 3. Export physical .acepack via existing export pipeline
+    editor.exportCellAsBlueprint?.(groupNode.id);
+    editor.addLog(`[OK] Group '${blueprint.name}' exported to library and disk.`);
+  }, [editor]);
+
+  // ── Ghost Preview: Interactive Blueprint Placement ────────────────
+  const ghostPreview = useGhostPreview();
+
   const handleSelectBlueprintFromPanel = useCallback((v2data: V2BlueprintData) => {
     try {
       const blueprint = adaptV2BlueprintToBlueprintDefinition(v2data);
-      editor.applyTemplate(blueprint);
+      // Enter ghost preview mode instead of immediately injecting
+      ghostPreview.startGhostPreview(blueprint);
     } catch (err) {
       console.error("[BLUEPRINT] Failed to adapt V2 blueprint:", err);
     }
-  }, [editor]);
+  }, [ghostPreview]);
+
+  const handleGhostClick = useCallback((x: number, y: number) => {
+    const bp = ghostPreview.activeBlueprint;
+    if (!bp) return;
+
+    // Update the blueprint's rootNode position to the clicked (snapped) position
+    const updatedBlueprint: BlueprintDefinition = {
+      ...bp,
+      rootNode: {
+        ...bp.rootNode,
+        layout: {
+          ...bp.rootNode.layout,
+          pos: { x: Math.round(x), y: Math.round(y) },
+        },
+      },
+    };
+
+    // Now inject at the chosen position
+    editor.applyTemplate(updatedBlueprint);
+    ghostPreview.cancelGhostPreview();
+  }, [ghostPreview, editor]);
+
+  const handleGhostMouseMove = useCallback((rackX: number, rackY: number) => {
+    // VirtualRack has already converted screen → rack-local coordinates
+    ghostPreview.updateGhostAtRackCoords(rackX, rackY, manifest as OMEGA_Manifest);
+  }, [ghostPreview, manifest]);
+
+  const handleGhostCancel = useCallback(() => {
+    ghostPreview.cancelGhostPreview();
+  }, [ghostPreview]);
   
   const handleSelectItem = useCallback((id: string | null) => {
     actions.setSelectedNode(id);
+    setInspectorActiveSection(undefined);
     if (id) {
       if (state.isRightPanelCollapsed) {
         actions.toggleRightPanel();
@@ -249,6 +351,28 @@ export default function WorkbenchContainer({
       }
     }
   }, [actions, state.isRightPanelCollapsed, state.window_properties]);
+
+  const handleOpenConfig = useCallback(() => {
+    if (state.isRightPanelCollapsed) {
+      actions.toggleRightPanel();
+    }
+    if (!state.window_rack_properties) {
+      actions.toggleWindow('window_rack_properties');
+    }
+    handleSelectItem(null);
+    setInspectorActiveSection('globals');
+  }, [actions, state.isRightPanelCollapsed, state.window_rack_properties, handleSelectItem]);
+
+  const handleOpenAudit = onOpenAudit || (() => {
+    if (state.isRightPanelCollapsed) actions.toggleRightPanel();
+    if (!state.window_compliance) actions.toggleWindow('window_compliance');
+  });
+
+  const handleOpenCellEditor = onOpenCellEditor || (() => {
+    if (state.selectedNodeId) {
+      actions.setStudioMode(true, state.selectedNodeId);
+    }
+  });
 
   const selectedItemId = state.selectedNodeId;
 
@@ -323,7 +447,10 @@ export default function WorkbenchContainer({
   }, [editor, selectedItemId, handleSelectItem]);
   
   const onDeploy = useCallback(async () => {
-    if (await editor.handleDeploy() === 'AUDIT_FAIL') actions.toggleUIState('isAuditModalOpen');
+    if (await editor.handleDeploy() === 'AUDIT_FAIL') {
+      if (state.isRightPanelCollapsed) actions.toggleRightPanel();
+      if (!state.window_compliance) actions.toggleWindow('window_compliance');
+    }
   }, [editor, actions]);
 
   const onReset = useCallback(() => {
@@ -449,15 +576,23 @@ export default function WorkbenchContainer({
         onDuplicateItem={handleDuplicateItem}
         onRemoveItem={handleRemoveItem}
         onToggleLock={actions.toggleNodeLock}
-        onToggleVisibility={actions.toggleNodeVisibility}
-        onGroupSelected={editor.groupSelected}
-        onUngroupNode={editor.ungroupNode}
-        // v9.1.7-dev — RackStartupAssistant wiring (REGRESSION_RECOVERY_PLAN.md item 23)
-        onOpenGallery={() => setIsGalleryOpen(true)}
-        onLinkWorkspace={editor.linkDirectory}
-        onCreateFromScratch={() => editor.reset()}
-        isDirectoryLinked={editor.isDirectoryLinked}
-        onMoveTab={actions.moveTabToPane}
+        onToggleVisibility={actions.toggleNodeVisibility}                onGroupSelected={editor.groupSelected}
+                onUngroupNode={editor.ungroupNode}
+                updateItems={editor.updateItems}
+  // v9.1.7-dev — RackStartupAssistant wiring (REGRESSION_RECOVERY_PLAN.md item 23)
+  onOpenGallery={() => actions.toggleWindow('window_blueprints')}
+  onLinkWorkspace={editor.linkDirectory}
+  onCreateFromScratch={() => editor.reset()}
+  isDirectoryLinked={editor.isDirectoryLinked}
+  // v9.2.1 — Interactive Ghost Preview Layer
+  ghostPosition={ghostPreview.ghostPosition}
+  ghostSize={ghostPreview.ghostSize}
+  isGhostCollision={ghostPreview.isCollision}
+  isGhostVisible={ghostPreview.isGhostVisible}
+  onGhostMouseMove={handleGhostMouseMove}
+  onGhostClick={handleGhostClick}
+  onGhostCancel={handleGhostCancel}
+  onMoveTab={actions.moveTabToPane}
         isSplitH={paneId === 'primary' || paneId === 'primary_bottom' ? state.isPrimarySplitH : state.isSecondarySplitH}
         onToggleSplitH={paneId === 'primary' || paneId === 'secondary' ? () => actions.toggleHorizontalSplit(paneId) : undefined}
         isSplitV={paneId === 'primary' ? derived.isSplit : undefined}
@@ -504,12 +639,13 @@ export default function WorkbenchContainer({
           onOpenAbout={() => actions.toggleUIState('isAboutModalOpen')}
           onOpenConfig={handleOpenConfig}
           onOpenCellEditor={handleOpenCellEditor}
-          onOpenGallery={() => setIsGalleryOpen(true)}
+          onOpenGallery={() => actions.toggleWindow('window_blueprints')}
           windowStates={{
             window_layers: state.window_layers,
             window_properties: state.window_properties,
             window_rack_properties: state.window_rack_properties,
             window_blueprints: state.window_blueprints,
+            window_compliance: state.window_compliance,
             window_info: state.window_info,
             window_history: state.window_history,
             window_logs: state.window_logs
@@ -567,7 +703,7 @@ export default function WorkbenchContainer({
               <Toolbar 
                 isLiveMode={state.isLiveMode}
                 onToggleLive={() => actions.toggleUIState('isLiveMode')}
-                onOpenGallery={() => actions.toggleUIState('blueprintGalleryOpen')}
+                onOpenGallery={() => actions.toggleWindow('window_blueprints')}
                 onOpenAudit={handleOpenAudit}
                 onOpenConfig={handleOpenConfig}
                 onOpenCellStudio={() => {
@@ -581,6 +717,11 @@ export default function WorkbenchContainer({
                 activeTool={activeTool}
                 setActiveTool={setActiveTool}
                 selectedNodeId={selectedItemId}
+                multiSelectedIds={state.multiSelectedNodeIds}
+                onGroupSelected={state.multiSelectedNodeIds.length >= 2 ? editor.groupSelected : undefined}
+                onUngroupNode={state.multiSelectedNodeIds.length === 1 ? editor.ungroupNode : undefined}
+                findItem={editor.findItem}
+                manifest={manifest as OMEGA_Manifest}
               />
               {/* PRIMARY PANE COLUMN */}
               <div 
@@ -641,6 +782,7 @@ export default function WorkbenchContainer({
               layout={state.layout}
               multiSelectedIds={state.multiSelectedNodeIds}
               inspectorLevel={inspectorLevel}
+              activeSection={inspectorActiveSection}
               pastHistory={editor.orchestrator.documentsById['primary']?.history?.past || []}
               onUndoTo={editor.undoTo}
               logs={editor.logs}
@@ -649,6 +791,7 @@ export default function WorkbenchContainer({
                 window_properties: state.window_properties,
                 window_rack_properties: state.window_rack_properties,
                 window_blueprints: state.window_blueprints,
+                window_compliance: state.window_compliance,
                 window_info: state.window_info,
                 window_history: state.window_history,
                 window_logs: state.window_logs
@@ -680,7 +823,14 @@ export default function WorkbenchContainer({
               onOpenConfig={handleOpenConfig}
               onOpenLibrary={() => setIsCellLibraryOpen(true)}
               onSelectBlueprint={handleSelectBlueprintFromPanel}
+              onSelectUserBlueprint={handleSelectUserBlueprint}
+              userBlueprints={userBlueprints}
+              onLoadAcepack={handleLoadAcepack}
               exportSelectedAsBlueprint={editor.exportSelectedAsBlueprint}
+              onSaveGroupAsBlueprint={handleSaveGroupAsBlueprint}
+              onUngroupNode={editor.ungroupNode}
+              onGroupSelected={state.multiSelectedNodeIds.length >= 2 ? () => editor.groupSelected(state.multiSelectedNodeIds) : undefined}
+              onGroupDown={editor.groupDown}
               onTogglePin={(id) => {
                 actions.setPinnedNode(id);
               }}
@@ -689,6 +839,7 @@ export default function WorkbenchContainer({
               onSelectMultiple={actions.setMultiSelectedNodes}
               rackSections={rackSections}
               onToggleRackSection={handleToggleRackSection}
+              onNavigate={gps.handleNavigateToIssue}
             />
           </>
         )}
@@ -719,9 +870,6 @@ export default function WorkbenchContainer({
         setMockupOpen={() => actions.toggleUIState('mockupOpen')}
         resolveAsset={editor.resolveAsset}
         onDeploy={onDeploy}
-        isConfigModalOpen={isGovernanceOpen !== undefined ? isGovernanceOpen : state.isConfigModalOpen}
-        setIsConfigModalOpen={setIsGovernanceOpen ? (open) => setIsGovernanceOpen(open) : () => actions.toggleUIState('isConfigModalOpen')}
-        onUpdateManifest={updateManifest}
         isCellEditorOpen={isCellEditorOpen !== undefined ? isCellEditorOpen : state.isCellEditorOpen}
         setIsCellEditorOpen={setIsCellEditorOpen ? (open) => setIsCellEditorOpen(open) : () => actions.toggleUIState('isCellEditorOpen')}
         

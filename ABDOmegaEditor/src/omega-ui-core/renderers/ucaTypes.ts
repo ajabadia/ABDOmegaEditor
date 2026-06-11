@@ -1,0 +1,36 @@
+import type { OmegaNode, OMEGA_Manifest, CellTemplate, Position } from '../types/manifest';
+
+export interface UCADebugContext {
+  enabled: boolean;
+  selectedId: string | null;
+  onSelect: (id: string | null) => void;
+  multiSelectedIds?: string[] | undefined;
+  onSelectMultiple?: ((ids: string[]) => void) | undefined;
+  onUpdateNode?: ((id: string, updates: Partial<OmegaNode>) => void) | undefined;
+  /** Batch update multiple nodes atomically (Bug 1 fix — avoids race conditions in multi-drag) */
+  onUpdateNodes?: ((updatesMap: Record<string, Partial<OmegaNode>>) => void) | undefined;
+  showLabels: boolean;
+  hideDecorative: boolean;
+  showCADOverlay?: boolean | undefined;
+  runtimeValues?: Record<string, number> | undefined;
+  lockedNodeIds?: string[] | undefined;
+  isLiveMode?: boolean | undefined;
+  onUpdateRuntimeValue?: ((id: string, value: number) => void) | undefined;
+  zoom?: number | undefined;
+  pan?: { x: number; y: number } | undefined;
+  activeDragOffset?: { x: number; y: number; draggedNodeId: string } | null | undefined;
+  onUpdateDragOffset?: ((offset: { x: number; y: number; draggedNodeId: string } | null) => void) | undefined;
+}
+
+export interface UniversalRendererProps {
+  key?: string | number | undefined;
+  node: OmegaNode;
+  manifest: OMEGA_Manifest;
+  depth?: number | undefined;
+  catalog?: Record<string, CellTemplate> | undefined; 
+  resolveAsset?: ((id: string | undefined) => string | undefined) | undefined;
+  debugContext?: UCADebugContext | undefined;
+  parentWorldPos?: Position | undefined;
+  parentNode?: OmegaNode | null | undefined;
+  audit?: import('@/services/auditService').AuditResult | undefined;
+}

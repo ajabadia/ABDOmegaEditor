@@ -4,7 +4,7 @@
 > **Fecha de análisis**: 2026-06-10
 > **Backup de referencia**: `D:\desarrollos\ABDSynths\ABDOmegaEditor___222` (día 5, pre-100% madurez)
 > **Proyecto actual**: `D:\desarrollos\ABDSynths\ABDOmegaEditor`
-> **Última actualización**: 2026-06-10 (Refactorización Modular Cell Studio & Draft Recovery)
+> **Última actualización**: 2026-06-10 (Cierre de Viewport Isolation, Rulers/Mouse-zoom/Pan & Cell Studio Selection Guard)
 
 ---
 
@@ -382,3 +382,66 @@ done
 ---
 
 *Documento vivo. Actualizar el checklist conforme se avanza en los pasos del plan.*
+
+
+---
+
+## 10. Estado de Tests E2E — Sesión 11 (2026-06-10)
+
+### Resumen
+
+La suite e2e (`npm run test:e2e`) tiene **11 tests pasando / 12 fallando** distribuidos en 3 spec files. **0 regresiones** atribuibles a las sesiones 1-11. Todos los fallos son pre-existentes o ya conocidos y documentados en el addendum de v9.1.8-dev / Sesión 11.
+
+### Desglose por spec
+
+#### `e2e/blueprint-injection.spec.ts` (6/8 ✅)
+
+| Test | Estado | Causa |
+|---|---|---|
+| 1. Industrial VCF inject | ✅ PASS | — |
+| 2. Stereo I/O Block | ✅ PASS | — |
+| 3. Performance 8-Grid | ✅ PASS | — |
+| 4. Multiple sequential | ✅ PASS | — |
+| 5. VCO Macro Block | ✅ PASS | — |
+| 6. Cancel flow (no injection) | ✅ PASS (Sesión 11) | strict mode violation resuelta con `getByRole` |
+| 7. BlueprintLibraryPanel inject | ❌ FAIL | Panel abre, click ocurre, pero `cellCount = 0`. Handler de fila no propaga inyección al rack |
+| 8. Click-to-select outline cyan | ❌ FAIL | `force: true` + `expect.poll` 5s. `onClick` suprimido por framer-motion `onPanStart` (ambos activos en modo ENGINEERING) |
+
+#### `e2e/rack-features.spec.ts` (5/9 ✅)
+
+| Test | Estado | Causa |
+|---|---|---|
+| 6 tests originales (rack context menu, zoom, etc.) | ✅ PASS | — |
+| RackStartupAssistant Matrix — Condition 1 (empty + ENGINEERING) | ✅ PASS | — |
+| RackStartupAssistant Matrix — Condition 2 (inject → hidden) | ❌ FAIL | DOM actualizado con celda, pero `allElements.length === 0` en state React; gate no desmonta overlay |
+| RackStartupAssistant Matrix — Condition 3 (empty + LIVE) | ✅ PASS | — |
+| RackStartupAssistant Matrix — Condition 4 (inject + delete → reappears) | ❌ FAIL | Mismo gate React que Condition 2 |
+
+#### `e2e/smoke-tests.spec.ts` (0/5 ❌)
+
+| Test | Estado | Causa |
+|---|---|---|
+| Flow 1-5 (5 tests) | ❌ FAIL | Selectores `header >> getByText('Source'/'Virtual Rack')` no matchean la estructura real del header (los botones están en `MenuBar.tsx` con otro DOM) |
+
+### Cambios pendientes sin commitear
+
+```
+M  REGRESSION_RECOVERY_PLAN.md           (este addendum)
+M  ROADMAP.md
+M  docs/seguimiento/CHANGELOG.md         (Sesión 11)
+M  docs/seguimiento/CHAT_LOG.md           (Sesión 11)
+M  src/features/manifest-editor/components/WorkbenchContainer.tsx
+M  src/features/manifest-editor/components/viewport/RackContextMenu.tsx
+M  src/features/manifest-editor/components/viewport/VirtualRack.tsx
+M  src/features/manifest-editor/components/viewport/WorkbenchViewport.tsx
+M  e2e/blueprint-injection.spec.ts       (test 6 fix + test 7/8 partial)
+```
+
+### Acciones recomendadas (ordenadas por impacto)
+
+1. **Commit de la Sesión 11**: stagear los 4 archivos `.tsx` modificados (revisar diff antes) + `e2e/blueprint-injection.spec.ts` + docs, con mensaje `v9.1.9-dev: test 6 e2e fix + partial fixes 7/8 + suite state baseline`.
+2. **Test 7 — investigar handler de BlueprintLibraryPanel**: leer `BlueprintLibraryPanel.tsx` líneas 50-120, comparar con `TemplateGallery.handleSelect` (`useTemplateGallery.ts:50-53`), y trazar el wiring `RightDockContainer` → `BlueprintLibraryPanel` → `editor.applyTemplate`.
+3. **Test 8 — bypass de framer-motion**: probar `dispatchEvent('click')` programático o click en zona no-draggable (UCADebugHUD).
+4. **rack-features Conditions 2/4 — state reconciliation**: el gate de `VirtualRack.tsx` lee `allElements` del state React, no del DOM. Necesita reconciliación tras `applyTemplate` (posible candidato: `useDeferredValue` o un `useEffect` que sincronice DOM→state).
+5. **smoke-tests — actualizar selectores**: leer `Header.tsx` y `MenuBar.tsx` para identificar los selectores accesibles actuales (probable `getByRole('button', { name: ... })`).
+6. **Marcar tests 7/8 como `.fixme`** si la investigación de las acciones 2-3 se prolonga más de 1 sesión, para desbloquear la suite sin perder trazabilidad.

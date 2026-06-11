@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Copy, Trash2, Eye, EyeOff, Lock, Unlock, Layers, BoxSelect, Maximize } from 'lucide-react';
+import { Copy, Trash2, Eye, EyeOff, Lock, Unlock, Layers, Group, Ungroup, Maximize } from 'lucide-react';
 
 interface RackContextMenuProps {
   x: number;
@@ -18,6 +18,8 @@ interface RackContextMenuProps {
   onGroup?: (ids: string[]) => void;
   onUngroup?: (groupId: string) => void;
   onSnapToGrid?: (id: string) => void;
+  isGroupEnabled?: boolean;
+  isUngroupEnabled?: boolean;
 }
 
 export default function RackContextMenu({
@@ -35,6 +37,8 @@ export default function RackContextMenu({
   onGroup,
   onUngroup,
   onSnapToGrid,
+  isGroupEnabled = true,
+  isUngroupEnabled = true,
 }: RackContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const [adjustedPos, setAdjustedPos] = useState({ x, y });
@@ -78,7 +82,7 @@ export default function RackContextMenu({
     >
       <MenuItem
         icon={<Layers className="w-3 h-3" />}
-        label="Select"
+        label="Edit Properties"
         onClick={(e) => { e.stopPropagation(); onSelect(targetId); onClose(); }}
       />
       <MenuItem
@@ -95,15 +99,17 @@ export default function RackContextMenu({
       )}
       {onGroup && (
         <MenuItem
-          icon={<BoxSelect className="w-3 h-3" />}
+          icon={<Group className="w-3 h-3" />}
           label="Group"
+          disabled={!isGroupEnabled}
           onClick={(e) => { e.stopPropagation(); onGroup([targetId]); onClose(); }}
         />
       )}
       {onUngroup && (
         <MenuItem
-          icon={<Maximize className="w-3 h-3" />}
+          icon={<Ungroup className="w-3 h-3" />}
           label="Ungroup"
+          disabled={!isUngroupEnabled}
           onClick={(e) => { e.stopPropagation(); onUngroup(targetId); onClose(); }}
         />
       )}
@@ -129,19 +135,23 @@ export default function RackContextMenu({
   );
 }
 
-function MenuItem({ icon, label, onClick, danger }: {
+function MenuItem({ icon, label, onClick, danger, disabled }: {
   icon: React.ReactNode;
   label: string;
   onClick: (e: React.MouseEvent) => void;
   danger?: boolean;
+  disabled?: boolean;
 }) {
   return (
     <button
       onClick={onClick}
+      disabled={disabled}
       className={`w-full flex items-center gap-2 px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider transition-all ${
-        danger
-          ? 'text-red-400 hover:bg-red-500 hover:text-white'
-          : 'text-white/70 hover:bg-primary hover:text-black'
+        disabled
+          ? 'text-white/30 cursor-not-allowed opacity-40'
+          : danger
+            ? 'text-red-400 hover:bg-red-500 hover:text-white'
+            : 'text-white/70 hover:bg-primary hover:text-black'
       }`}
     >
       {icon}

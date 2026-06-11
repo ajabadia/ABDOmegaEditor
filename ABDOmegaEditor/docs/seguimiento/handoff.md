@@ -2,9 +2,34 @@
 
 Este briefing sirve como guía técnica para desarrolladores o agentes de IA que asuman el mantenimiento o desarrollo de este repositorio independiente.
 
-*Última actualización: 10/06/2026 (v9.1.4-dev -- MenuBar Wiring, Duplicate Elimination & Typecheck Cleanup) — Fase 39 Alignment Hardening & Drag Inertia Elimination)*
+*Última actualización: 11/06/2026 (v9.2.0-dev -- E2E Blueprint Injection Suite 8/8 PASS. Suite total 17/22 77%)*
 
-> **Regression Recovery Plan**: 8/29 items completados. Ver `REGRESSION_RECOVERY_PLAN.md` sección 6 (checklist) y sección 7 (riesgos). Pendientes 21/29.
+> **Regression Recovery Plan**: 100% completado (23/23 archivos + 2 tipos GridConfig). Ver `REGRESSION_RECOVERY_PLAN.md`. Pendiente: smoke-tests.spec.ts (0/5 — selectores desactualizados).
+
+---
+
+## Estado de la Suite E2E (v9.2.0-dev)
+
+| Spec | Pass/Total | Estado |
+|------|:----------:|--------|
+| `blueprint-injection.spec.ts` | **8/8** ✅ | 100% — Tests 1-8 pasando. Helper `injectBlueprint` refactorizado para BlueprintLibraryPanel. |
+| `rack-features.spec.ts` | **9/9** ✅ | 100% — Incluye RackStartupAssistant Matrix 4/4. Arreglado indirectamente por helper refactor. |
+| `smoke-tests.spec.ts` | **0/5** ❌ | Selectores desactualizados (header → MenuBar). Pendiente desde Sesión 11. |
+| **Total** | **17/22** ✅ | **77%. 0 regresiones** atribuibles a Sesiones 1-12. |
+
+### Arquitectura del Helper E2E (`e2e/helpers/blueprintInjection.ts`)
+- Función `injectBlueprint(page, options?)`: Abre Toolbar → espera BlueprintLibraryPanel → click entrada blueprint → espera celda en rack.
+- **Toggle secuencial-safe**: Detecta si el panel ya está abierto antes de togglarlo.
+- **Timeout configurable**: `panelLoadTimeoutMs` (10s por defecto).
+- **Independiente del modal antiguo**: No usa `TemplateGallery`. No tiene dependencias de selectores de modal.
+
+### Tests Conocidos y su Estrategia
+| Test | Estrategia |
+|------|-----------|
+| 1-5 (injection) | Helper `injectBlueprint` con diferentes blueprints + aserciones de estructura |
+| 6 (cancel) | Toggle Toolbar → DockIconStrip, verificar rack no cambia |
+| 7 (panel injection) | Helper con marcador `"Official Store"` para panel listo |
+| 8 (selection outline) | `dispatchEvent(MouseEvent('click'))` para sortear framer-motion |
 
 ---
 

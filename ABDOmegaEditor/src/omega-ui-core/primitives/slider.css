@@ -1,0 +1,63 @@
+/* OMEGA INDUSTRIAL SLIDERS (Era 7.2.3 — High Fidelity) */
+/* Aligned with ABDSynthsWeb Standards */
+
+.slider-wrapper {
+    background: var(--primitive-bg) !important;
+    border: var(--primitive-border) !important;
+    border-radius: var(--primitive-radius-pill) !important;
+    padding: 2px !important;
+    position: relative;
+    cursor: crosshair;
+}
+
+.slider-rail-active {
+    position: absolute;
+    background: var(--primitive-accent);
+    opacity: 0.1;
+    border-radius: var(--primitive-radius-pill) !important;
+    pointer-events: none;
+    transition: width 0.1s ease-out, height 0.1s ease-out;
+}
+
+.slider-cap {
+    position: absolute;
+    border-radius: var(--primitive-radius-flat) !important;
+    box-shadow: var(--primitive-marker-glow) !important;
+    z-index: 10;
+    pointer-events: none;
+    background: var(--primitive-accent);
+    transition: left 0.1s ease-out, bottom 0.1s ease-out;
+}
+
+/* SIZES (Height for V, Width for H) */
+.slider-wrapper.size-A { --slider-dim: 80px; }
+.slider-wrapper.size-B { --slider-dim: 60px; }
+.slider-wrapper.size-C { --slider-dim: 40px; }
+.slider-wrapper.size-D { --slider-dim: 30px; }
+
+/* HORIZONTAL / VERTICAL SPECIFIC */
+.slider-v { width: 12px !important; height: var(--slider-dim) !important; }
+.slider-h { height: 12px !important; width: var(--slider-dim) !important; }
+
+/* ASSET BRIDGE */
+.slider-wrapper.has-asset .slider-cap,
+.slider-wrapper.has-asset .slider-rail-active {
+    display: none !important;
+}
+
+.slider-asset {
+    position: absolute;
+    inset: 0;
+    background-repeat: no-repeat;
+    background-position: center;
+    image-rendering: pixelated;
+    z-index: 5;
+}
+
+.slider-asset.filmstrip-v { background-size: 100% auto; }
+.slider-asset.filmstrip-h { background-size: auto 100%; }
+
+/* COLOR VARIANTS */
+.slider-wrapper.color-cyan .slider-cap { background: var(--wb-primary); box-shadow: 0 0 10px var(--wb-primary); }
+.slider-wrapper.color-orange .slider-cap { background: var(--wb-accent); box-shadow: 0 0 10px var(--wb-accent); }
+.slider-wrapper.color-red .slider-cap { background: #ff4444; box-shadow: 0 0 10px #ff4444; }

@@ -2,7 +2,7 @@
 
 Este documento registra los hitos alcanzados y el estado actual de la migración, optimización y gobernanza del editor independiente.
 
-*Última actualización: 10/06/2026 (v9.1.9-dev) -- Sesión 7: Cell Studio Modular Refactor, Draft Recovery & Unique Keys*
+*Última actualización: 12/06/2026 (v9.3.1-dev) -- Sesión 14: Sistema de Agrupación, Duplicación, Desintegración de Blueprints, Colisiones Flexibles, y Toolbar Flotante Dinámico. Suite typecheck 100% limpia.*
 
 > **Regression Recovery Plan**: 100% completado (23/23 archivos + 2 tipos GridConfig). Ver `REGRESSION_RECOVERY_PLAN.md` para el detalle del checklist.
 
@@ -65,8 +65,34 @@ Este documento registra los hitos alcanzados y el estado actual de la migración
 | **Inspector Level Integration** | ✅ Completado | Cableado de `inspectorLevel` para filtrar paneles y campos de inputs en los 8 editores atómicos. |
 | **Cell Studio Modular Refactor** | ✅ Completado | Refactorizado `CellStudioContainer.tsx` en subcomponentes (`CellStudioPreviewStrip`, `CellStudioToolbar`, `CellStudioContentArea`, `CellStudioAssetOverlay`) y hooks dedicados. |
 | **Draft Recovery System** | ✅ Completado | Persistencia automática en `sessionStorage` y aviso interactivo (`CellStudioDraftPrompt`) para restaurar o descartar borradores huérfanos. |
+| **E2E Blueprint Injection 8/8 PASS** | ✅ Completado | Helper `injectBlueprint` reescrito para BlueprintLibraryPanel. Tests 3,4,6,7,8 fixeados. Suite 8/8 PASS. |
+| **RackStartupAssistant Matrix 4/4** | ✅ Completado | Arreglado indirectamente vía helper compartido. Conditions 2/4 ahora PASS. |
+| **Suite E2E Total 17/22 (77%)** | ✅ Mejorado | ↑ 11/22 → 17/22. 0 regresiones. smoke-tests (0/5) pendiente. |
+| **Layers Grouping & Blueprints (Sesión 13)** | ✅ Completado | Multi-selección (Ctrl/Shift), contextual (Group Selected/Down, Ungroup, Duplicate recursivo, Save as Blueprint con export a disco), y colisiones informativas no limitantes con cálculo de coordenadas absolutas en árbol UCA. |
+| **Dynamic Floating Toolbar (Sesión 14)** | ✅ Completado | Ocultado dinámico de herramientas deshabilitadas, y distribución automática multi-columna en rejilla (Grid CSS) al exceder la altura del canvas. |
 
 ---
+
+## Últimos Cambios (12/06/2026 — Sesión 14)
+
+### Optimización y Flexibilidad del Toolbar Flotante y Ghost Preview
+- **GhostPreviewOverlay.tsx**: Añadido `whitespace-nowrap` a la etiqueta verde de confirmación de inyección para evitar que el texto se divida verticalmente y solape con las instrucciones secundarias en layouts estrechos.
+- **Toolbar.tsx**:
+  - Se eliminó la visualización de elementos deshabilitados (como Universal Cell Studio, Group, Ungroup) cuando no cumplen las condiciones de activación, ocultándolos dinámicamente para liberar espacio en pantalla.
+  - Implementado algoritmo de auto-distribución multi-columna en rejilla (Grid CSS) que responde dinámicamente a la altura disponible de la pantalla (`window.innerHeight`), con un límite máximo de **3 columnas** para no invadir el canvas; si se supera el límite de altura con 3 columnas, la barra se estira verticalmente hacia abajo.
+  - Los divisores horizontales se agrupan, limpian y eliminan en modo multi-columna para preservar una visual estética y compacta.
+  - El menú de inserción rápida de primitivas (Flyout) se reposicionó de forma relativa a la derecha de la barra (`left-full ml-1.5`) para evitar solapamientos con las nuevas columnas dinámicas.
+  - **Lógica de Desagrupación (Ungroup) Mejorada**: Alineada con el menú contextual de `VirtualRack`. El botón Desagrupar ahora se activa tanto si seleccionas el contenedor del grupo como si seleccionas un elemento hijo que pertenece a un grupo (usando `findParentInTree` y resolviendo su ID en caliente).
+  - **Nuevos Iconos Intuitivos**: Actualizados los iconos de "Group" y "Ungroup" de `BoxSelect`/`Maximize` a los iconos modernos de `Group` y `Ungroup` de `lucide-react` tanto en el Toolbar como en el menú contextual (`RackContextMenu.tsx`).
+- **E2E y Tipados**: Corregido una declaración de variable no utilizada (`root` en `blueprint-store.spec.ts`) y las firmas de callbacks en los evaluate de Playwright (`omegaFixtures.ts`) asegurando compilación TypeScript 100% limpia (`tsc --noEmit` sin warnings).
+
+## Últimos Cambios (11/06/2026 — Sesión 13)
+
+### Sistema de Agrupación, Duplicación de Capas y Colisiones Flexibles
+- **Group Selected/Down, Ungroup**: Implementado comandos contextuales para agrupar elementos multi-seleccionados, desagrupar elementos de un contenedor y bajar niveles de jerarquía recursivamente.
+- **Duplicate recursivo**: Permite duplicar nodos estructurales y elementos preservando posiciones relativas e identificadores únicos UCA.
+- **Save as Blueprint**: Exportación nativa a disco en formato `.acepack` (blueprint JSON).
+- **Colisiones informativas**: Las colisiones avisan visualmente (marco en rojo) pero no limitan la inyección/movimiento del usuario, desactivándose para elementos del mismo grupo mediante el cálculo de coordenadas absolutas en el árbol UCA.
 
 ## Últimos Cambios (10/06/2026 — Sesión 6)
 
@@ -212,6 +238,19 @@ Este documento registra los hitos alcanzados y el estado actual de la migración
 - Añadido `onSnapToGrid` prop + botón "Snap to Grid" en el menú contextual
 - `e.stopPropagation()` en todos los botones del menú (ya existía, verificado)
 - Conectado desde `VirtualRack` para el fix de position contamination
+
+## Últimos Cambios (11/06/2026 — Sesión 12)
+
+### E2E Blueprint Injection Suite — 8/8 PASS (Completo)
+- **Helper `injectBlueprint` reescrito** (`e2e/helpers/blueprintInjection.ts`): Refactorizado para usar el flujo de `BlueprintLibraryPanel` (panel lateral derecho) en lugar del antiguo `TemplateGallery` modal. Añadido toggle secuencial-safe para inyecciones múltiples.
+- **Test 3**: Aserción de contenedores corregida (`>= 3` → `>= 1`). El V2 de Performance 8-Grid es plano (8 knobs directos, sin contenedores anidados).
+- **Test 4**: Inyecciones secuenciales funcionan gracias al toggle secuencial-safe.
+- **Test 6**: Flujo de cancelación reescrito para `BlueprintLibraryPanel`.
+- **Test 7**: Marcador de panel cambiado a botón `"Official Store"` (más robusto).
+- **Test 8**: Click bypass via `dispatchEvent(MouseEvent)` para sortear framer-motion.
+- **Código muerto eliminado**: `openGalleryFromToolbar`.
+- **Efecto colateral**: RackStartupAssistant Matrix Conditions 2/4 arregladas indirectamente. **4/4 PASS**.
+- **Suite total**: **17/22 PASS (77%)**. ↑ 11/22. 0 regresiones.
 
 ## Últimos Cambios (10/06/2026 — Sesión 7)
 

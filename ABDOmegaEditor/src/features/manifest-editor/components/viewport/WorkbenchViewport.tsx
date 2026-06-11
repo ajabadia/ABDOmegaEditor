@@ -5,7 +5,7 @@ import VirtualRack from './VirtualRack';
 import ViewportControls from './ViewportControls';
 import RulerOverlay from './RulerOverlay';
 import ViewportToolbar from './ViewportToolbar';
-import type { OMEGA_Manifest, LayoutContainer, OMEGA_Contract, HybridEntityUpdate, GridGuide } from '@/omega-ui-core/types/manifest';
+import type { OMEGA_Manifest, LayoutContainer, OMEGA_Contract, HybridEntityUpdate, GridGuide, OmegaNode } from '@/omega-ui-core/types/manifest';
 import { toggleGridField, updateGuides } from '../../utils/gridHelpers';
 import type { OmegaContract } from '@/services/wasmLoader';
 import type { AuditResult } from '@/services/auditService';
@@ -23,6 +23,8 @@ interface WorkbenchViewportProps {
   onSelectItem: (id: string | null) => void;
   onSelectMultiple: (ids: string[]) => void;
   updateItem: (id: string, updates: HybridEntityUpdate) => void;
+  /** Batch update multiple nodes atomically (Bug 1 fix) */
+  updateItems?: ((updatesMap: Record<string, Partial<OmegaNode>>) => void) | undefined;
   updateContainer?: ((id: string, updates: Partial<LayoutContainer>) => void) | undefined;
   onUpdateManifest?: UpdateManifestFn | undefined;
   auditResult: AuditResult;
@@ -57,6 +59,15 @@ interface WorkbenchViewportProps {
   onLinkWorkspace?: (() => void) | undefined;
   onCreateFromScratch?: (() => void) | undefined;
   isDirectoryLinked?: boolean | undefined;
+
+  // v9.2.1 — Interactive Ghost Preview Layer
+  ghostPosition?: { x: number; y: number } | null | undefined;
+  ghostSize?: { width: number; height: number } | undefined;
+  isGhostCollision?: boolean | undefined;
+  isGhostVisible?: boolean | undefined;
+  onGhostMouseMove?: ((clientX: number, clientY: number) => void) | undefined;
+  onGhostClick?: ((x: number, y: number) => void) | undefined;
+  onGhostCancel?: (() => void) | undefined;
 }
 
 
@@ -117,12 +128,20 @@ export function WorkbenchViewport({
   onToggleVisibility,
   onGroupSelected,
   onUngroupNode,
+  updateItems,
   activeTool,
   uiTheme,
   onOpenGallery,
   onLinkWorkspace,
   onCreateFromScratch,
-  isDirectoryLinked
+  isDirectoryLinked,
+  ghostPosition,
+  ghostSize,
+  isGhostCollision,
+  isGhostVisible,
+  onGhostMouseMove,
+  onGhostClick,
+  onGhostCancel
 }: WorkbenchViewportProps) {
   
   const grid = manifest.ui?.layout?.grid;
@@ -148,16 +167,43 @@ export function WorkbenchViewport({
 
   const sectionRef = useRef<HTMLElement>(null);
   
+  // Drag-to-pan state
+  const [isDraggingPan, setIsDraggingPan] = useState(false);
+  const dragStartRef = useRef<{ x: number; y: number } | null>(null);
+  const hasDraggedRef = useRef(false);
+
   // Marquee selection state
   const [marquee, setMarquee] = useState<{ startX: number; startY: number; currentX: number; currentY: number; sectionLeft: number; sectionTop: number } | null>(null);
   const didMarqueeRef = useRef(false);
 
-  // Marquee window-level mouse handlers
+  // Wheel zoom handler
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    if (viewMode !== 'rack' && viewMode !== 'orbital') return;
+    // Prevent default browser zoom/scroll
+    e.preventDefault();
+    // Smooth zoom step
+    const zoomStep = e.deltaY * -0.001;
+    handleZoom(zoomStep);
+  }, [viewMode, handleZoom]);
+
+  // Window-level mouse handlers for marquee and drag-to-pan
   useEffect(() => {
-    if (!marquee) return;
+    if (!marquee && !isDraggingPan) return;
+
     const handleMove = (e: MouseEvent) => {
-      setMarquee(prev => prev ? { ...prev, currentX: e.clientX, currentY: e.clientY } : null);
+      if (marquee) {
+        setMarquee(prev => prev ? { ...prev, currentX: e.clientX, currentY: e.clientY } : null);
+      } else if (isDraggingPan && dragStartRef.current) {
+        const dx = e.clientX - dragStartRef.current.x;
+        const dy = e.clientY - dragStartRef.current.y;
+        if (Math.abs(dx) > 4 || Math.abs(dy) > 4) {
+          hasDraggedRef.current = true;
+        }
+        handlePan(dx, dy);
+        dragStartRef.current = { x: e.clientX, y: e.clientY };
+      }
     };
+
     const handleUp = (e: MouseEvent) => {
       if (marquee) {
         const dx = Math.abs(e.clientX - marquee.startX);
@@ -194,15 +240,23 @@ export function WorkbenchViewport({
           }
         }
         setMarquee(null);
+      } else if (isDraggingPan) {
+        setIsDraggingPan(false);
+        dragStartRef.current = null;
+        if (!hasDraggedRef.current) {
+          // It was a simple click without dragging: deselect
+          onSelectItem(null);
+        }
       }
     };
+
     window.addEventListener('mousemove', handleMove);
     window.addEventListener('mouseup', handleUp);
     return () => {
       window.removeEventListener('mousemove', handleMove);
       window.removeEventListener('mouseup', handleUp);
     };
-  }, [marquee, multiSelectedIds, onSelectMultiple]);
+  }, [marquee, isDraggingPan, multiSelectedIds, onSelectMultiple, handlePan, onSelectItem]);
 
   const handleToggleRulers = useCallback(() => {
     setShowGuides(prev => !prev);
@@ -219,17 +273,30 @@ export function WorkbenchViewport({
   return (
     <section 
       ref={sectionRef}
-      className="flex-1 relative wb-bg overflow-hidden transition-colors duration-500"
+      className={`flex-1 relative wb-bg overflow-hidden transition-colors duration-500 ${isDraggingPan ? 'cursor-grabbing' : ''}`}
+      onWheel={handleWheel}
       onMouseDown={(e) => {
-        if (viewMode !== 'rack') return; // Marquee selection only on rack, not orbital
-        if (activeTool !== 'marquee') return; // Only when marquee/lasso tool is active
         if (isLiveMode) return;
         if (e.button !== 0) return;
         if ((e.target as HTMLElement).closest('[id^="uca-"]')) return;
         if ((e.target as HTMLElement).closest('.viewport-controls, .ruler-overlay, [data-toolbar]')) return;
+
         const rect = sectionRef.current?.getBoundingClientRect();
         if (!rect) return;
-        setMarquee({ startX: e.clientX, startY: e.clientY, currentX: e.clientX, currentY: e.clientY, sectionLeft: rect.left, sectionTop: rect.top });
+
+        // 1. Marquee selection (only in rack view with 'marquee' tool active)
+        if (viewMode === 'rack' && activeTool === 'marquee') {
+          setMarquee({ startX: e.clientX, startY: e.clientY, currentX: e.clientX, currentY: e.clientY, sectionLeft: rect.left, sectionTop: rect.top });
+          return;
+        }
+
+        // 2. Drag-to-pan (always in orbital view; in rack view only with 'select' tool active)
+        if (viewMode === 'orbital' || (viewMode === 'rack' && activeTool === 'select')) {
+          setIsDraggingPan(true);
+          dragStartRef.current = { x: e.clientX, y: e.clientY };
+          hasDraggedRef.current = false;
+          e.preventDefault();
+        }
       }}
       onClickCapture={(e) => { if (didMarqueeRef.current) { didMarqueeRef.current = false; e.stopPropagation(); } }}
       onClick={() => { if (didMarqueeRef.current) { didMarqueeRef.current = false; return; } }}
@@ -294,6 +361,7 @@ export function WorkbenchViewport({
               multiSelectedIds={multiSelectedIds}
               onSelectMultiple={onSelectMultiple}
               onUpdateItem={updateItem} 
+              onUpdateItems={updateItems} 
               zoom={zoom} 
               pan={pan}
               isLiveMode={isLiveMode} 
@@ -313,6 +381,13 @@ export function WorkbenchViewport({
               {...(onLinkWorkspace != null ? { onLinkWorkspace } : {})}
               {...(onCreateFromScratch != null ? { onCreateFromScratch } : {})}
               {...(isDirectoryLinked != null ? { isDirectoryLinked } : {})}
+              ghostPosition={ghostPosition}
+              ghostSize={ghostSize}
+              isGhostCollision={isGhostCollision}
+              isGhostVisible={isGhostVisible}
+              {...(onGhostMouseMove != null ? { onGhostMouseMove } : {})}
+              {...(onGhostClick != null ? { onGhostClick } : {})}
+              {...(onGhostCancel != null ? { onGhostCancel } : {})}
             />
           </ViewWrapper>
         )}

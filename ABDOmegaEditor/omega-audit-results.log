@@ -1,0 +1,61 @@
+﻿OMEGA SYSTEM AUDIT REPORT - 06/12/2026 00:47:47
+
+[PHASE:SUCCESS] [1/6 Structural Integrity]: Passed successfully with 0 errors and 303 warnings.
+--- WARNING DETAILS START ---
+
+[OMEGA ARCH-GUARD] Auditing architectural precedence (ADR-014)...
+
+=== ÔÜá´©Å MEDIUM RISK HALLUCINATIONS (53) ===
+[throw new Error] src\components\ui\contact\useContactForm.ts:55 -> throw new Error(result.error || t("error"));
+[ElementCatalog] src\features\manifest-editor\components\inspector\aesthetic\styles\library\GuildNavigator.tsx:4 -> import type { ElementCategory } from '@/omega-ui-core/governance/ElementCatalog'...
+[ElementCatalog] src\features\manifest-editor\components\inspector\aesthetic\styles\ModuleStyleLibrary.tsx:6 -> import { OMEGA_ELEMENT_CATALOG, type ElementCategory, getElementDefinition } fro...
+[allowedFragments] src\features\manifest-editor\components\inspector\attachments\AttachmentTypeAnchor.tsx:19 -> const allowedIds = hostDef?.allowedFragments || [];
+[ElementCatalog] src\features\manifest-editor\components\inspector\attachments\AttachmentTypeAnchor.tsx:7 -> import { OMEGA_ELEMENT_CATALOG, getElementDefinition } from '@/omega-ui-core/gov...
+[throw new Error] src\features\manifest-editor\components\inspector\BlueprintLibraryPanel.tsx:82 -> if (!res.ok) throw new Error(`Catalog fetch failed: ${res.status}`);
+[throw new Error] src\features\manifest-editor\components\inspector\BlueprintLibraryPanel.tsx:89 -> if (!bpRes.ok) throw new Error(`Blueprint fetch failed: ${bpRes.status}`);
+[ElementCatalog] src\features\manifest-editor\components\inspector\sections\AestheticSection.tsx:13 -> import { getElementDefinition } from '@/omega-ui-core/governance/ElementCatalog'...
+[ElementCatalog] src\features\manifest-editor\components\inspector\sections\LogicSection.tsx:11 -> import { OMEGA_ELEMENT_CATALOG } from '@/omega-ui-core/governance/ElementCatalog...
+[ElementCatalog] src\features\manifest-editor\components\inspector\sections\SpatialSection.tsx:11 -> import { getElementDefinition } from '@/omega-ui-core/governance/ElementCatalog'...
+[ElementCatalog] src\features\manifest-editor\components\inspector\shared\aesthetic\GovernanceRegistry.ts:1 -> import type { AestheticCapability } from "@/omega-ui-core/governance/ElementCata...
+[ElementCatalog] src\features\manifest-editor\components\inspector\shared\aesthetic\IdentityGovernance.tsx:5 -> import type { AestheticCapability } from '@/omega-ui-core/governance/ElementCata...
+[ElementCatalog] src\features\manifest-editor\components\inspector\shared\aesthetic\IdentityGovernance.tsx:6 -> import { OMEGA_ELEMENT_CATALOG } from '@/omega-ui-core/governance/ElementCatalog...
+[ElementCatalog] src\features\manifest-editor\components\inspector\shared\aesthetic\map.md:2 -> Componentes modulares de gobernanza est├®tica impulsados por el ElementCatalog.
+[reject] src\features\manifest-editor\components\inspector\shared\aesthetic\SequenceIngestionLab.tsx:42 -> return new Promise<HTMLImageElement>((resolve, reject) => {
+... and 38 more in this category.
+
+=== Ô£à LOW RISK HALLUCINATIONS (250) ===
+[validate] src\data\map.md:45 -> - **Schema Parity**: Any changes to instrument data structures MUST be reflected...
+[allowedFragments] src\omega-ui-core\governance\ElementCatalog.ts:10 -> * - 'capabilities' and 'allowedFragments' are soft suggestions for UI filtering.
+[allowedFragments] src\omega-ui-core\governance\ElementCatalog.ts:77 -> * `allowedFragments` is advisory only. Use it for editor UX suggestions (e.g. "+...
+[allowedFragments] src\omega-ui-core\governance\ElementCatalog.ts:80 -> allowedFragments?: string[]; // IDs of elements that can be attached to this hos...
+[allowedFragments] src\omega-ui-core\governance\ElementCatalog.ts:96 -> allowedFragments: ['rack-screw', 'label', 'illustration'],
+[allowedFragments] src\omega-ui-core\governance\ElementCatalog.ts:107 -> allowedFragments: ['label', 'illustration', 'led']
+[allowedFragments] src\omega-ui-core\governance\ElementCatalog.ts:117 -> allowedFragments: ['label', 'illustration', 'container', 'group', 'cell']
+[allowedFragments] src\omega-ui-core\governance\ElementCatalog.ts:129 -> allowedFragments: ['label', 'led', 'port', 'switch', 'stepper', 'graphic-fragmen...
+[allowedFragments] src\omega-ui-core\governance\ElementCatalog.ts:140 -> allowedFragments: ['label', 'led', 'port', 'graphic-fragment'],
+[allowedFragments] src\omega-ui-core\governance\ElementCatalog.ts:151 -> allowedFragments: ['label', 'led', 'port', 'graphic-fragment'],
+[allowedFragments] src\omega-ui-core\governance\ElementCatalog.ts:162 -> allowedFragments: ['label', 'led'],
+[allowedFragments] src\omega-ui-core\governance\ElementCatalog.ts:173 -> allowedFragments: ['label'],
+[allowedFragments] src\omega-ui-core\governance\ElementCatalog.ts:184 -> allowedFragments: ['label']
+[allowedFragments] src\omega-ui-core\governance\ElementCatalog.ts:194 -> allowedFragments: ['label']
+[allowedFragments] src\omega-ui-core\governance\ElementCatalog.ts:204 -> allowedFragments: ['label']
+... and 235 more in this category.
+
+[SUMMARY] Audit complete.
+- High-risk:   0
+- Medium-risk: 53
+- Low-risk:    250
+- JSON Report: docs/arch-audit-report.json
+- CSV Report:  docs/arch-audit-report.csv
+
+Ô£à ARCHITECTURAL INTEGRITY VERIFIED.
+--- WARNING DETAILS END ---
+
+
+[PHASE:SUCCESS] [2/6 Type Safety (TSC)   ]: Passed successfully with 0 errors and 0 warnings.
+
+[PHASE:SUCCESS] [3/6 Code Linting (ESL)  ]: Passed successfully with 0 errors and 0 warnings.
+OK: package.json exists.
+OK: tsconfig.json exists.
+OK: src/omega-ui-core/governance/ElementCatalog.ts exists.
+STATUS: ALL CHECKS PASSED

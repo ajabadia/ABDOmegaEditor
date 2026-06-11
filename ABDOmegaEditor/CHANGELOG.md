@@ -2,6 +2,17 @@
 
 All notable changes to the OMEGA Manifest Editor will be documented in this file.
 
+## [9.2.0] - 2026-06-11
+### Added
+- **Self-Contained Manifest (v9.2.0)**: Desugared visual properties from CSS variables, theme databases, and JS fallbacks. Implemented 100% portable lookups directly inside the manifest.
+- **Three-Level Resolution Chain**: Created `resolveNodeStyle()` to trace `node.style.variant` -> `ui.styles[cellRef]` -> `ui.palette` -> `ui.sizes` for hex-colors and pixel metrics.
+- **Distill Manifest Pipeline**: Chains legacy fossilization, style contraction, style/asset pruning, and SHA-256 deduplication to output clean production-ready synthesizer manifests.
+- **Interactive Pruning Guards**: Prompts the user with a breakdown of unused style variants and assets before purging them during distilled export.
+- **Double Saving Modes**: UI options for "Save Work Mode" (preserves all work styles/assets) and "Export Definitive Mode (Distilled)" (runs the distillation pipeline).
+- **Subtree Blueprint Packaging (v9.2.0)**: Implemented `exportCellAsBlueprint()` to build compressed `.acepack` bundles (zip files) containing `blueprint.json` (using UCA tree-based `extractSubtreeResources()`) and its local `/resources/` binaries.
+- **Unrestricted Blueprint Export**: Removed structural restrictions in `EntityIdentity.tsx` to allow exporting any selected UCA node or group directly.
+
+
 ## [8.2.0] - 2026-05-31
 ### Added
 - **Independent Viewport State**: Moved viewport tracking hook (`useViewport`) to the individual pane level (`WorkbenchPane.tsx`), enabling isolated zoom and scroll offsets per tab.

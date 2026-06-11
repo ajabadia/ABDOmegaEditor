@@ -62,14 +62,15 @@ export function StructuralNode({
   const parentIsDraggableContainer = !!(
     parentNode &&
     parentNode.id !== 'root' &&
+    parentNode.id !== manifest.ui?.tree?.id &&
     parentNode.kind !== 'rack' &&
-    (parentNode.kind === 'container' || parentNode.kind === 'face') &&
+    (parentNode.kind === 'container' || parentNode.kind === 'face' || parentNode.kind === 'group') &&
     !(debugContext?.lockedNodeIds?.includes(parentNode.id)) &&
     (parentNode.layout?.mode === 'absolute' || !parentNode.layout?.mode)
   );
 
-  const isLeafContainer = !node.children || node.children.length === 0;
-  const isDraggable = !debugContext?.isLiveMode && node.kind !== 'rack' && !debugContext?.lockedNodeIds?.includes(node.id) && !parentIsDraggableContainer;
+  const isRootNode = node.id === 'root' || node.id === manifest.ui?.tree?.id;
+  const isDraggable = !debugContext?.isLiveMode && node.kind !== 'rack' && !isRootNode && !debugContext?.lockedNodeIds?.includes(node.id) && !parentIsDraggableContainer;
 
   const handleClick = (e: React.MouseEvent) => {
     // Skip selection when tap originates from a child interactive node
@@ -80,8 +81,9 @@ export function StructuralNode({
     handleDebugClick(e);
   };
 
+  // Prevents framer-motion pan from propagating to parent containers (double-drag fix)
   // pan-based drag (no momentum → element lands exactly where pointer releases)
-  const panHandlers = (isDraggable && isLeafContainer) ? {
+  const panHandlers = isDraggable ? {
     onPanStart: handlePanStart,
     onPan: handlePan,
     onPanEnd: handlePanEnd,
@@ -101,6 +103,7 @@ export function StructuralNode({
       className={`uca-node uca-${node.kind} group`}
       onClick={handleClick}
       onTap={(e) => handleClick(e as unknown as React.MouseEvent)}
+      onPointerDown={isDraggable ? (e) => e.stopPropagation() : undefined}
       {...panHandlers}
       style={{
         position: 'absolute',
