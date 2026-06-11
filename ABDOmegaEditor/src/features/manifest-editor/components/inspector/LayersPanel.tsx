@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, createElement } from 'react';
 import { 
-  Search, Sliders, Radio, ListFilter, Box, ChevronRight, ChevronDown
+  Search, Sliders, Radio, ListFilter, ChevronRight, ChevronDown,
+  Folder, FolderOpen, Disc, ToggleLeft, Tv, Type
 } from 'lucide-react';
 import type { OMEGA_Manifest, OmegaNode } from '@/omega-ui-core/types/manifest';
 
@@ -24,6 +25,9 @@ interface LayersPanelProps {
   onDuplicateGroup?: ((id: string) => void) | undefined;
   onSaveGroupAsBlueprint?: ((id: string) => void) | undefined;
   onUngroupNode?: ((groupId: string) => void) | undefined;
+  onMoveNode?: ((sourceId: string, targetParentId: string, index?: number) => void) | undefined;
+  onMoveNodeUpDown?: ((nodeId: string, direction: 'up' | 'down') => void) | undefined;
+  onUpdateItem?: ((id: string, updates: Partial<OmegaNode>) => void) | undefined;
 }
 
 interface ContextMenuState {
@@ -32,6 +36,8 @@ interface ContextMenuState {
   nodeId: string;
   isGroup: boolean;
 }
+
+import { findParentInTree, findNodeInTree } from '@/features/manifest-editor/hooks/entities/ucaInspectorAdapter';
 
 function TreeNode({
   node,
@@ -48,6 +54,10 @@ function TreeNode({
   searchTerm,
   flatNodeIds,
   onContextMenu,
+  onUpdateItem,
+  onMoveNode,
+  findParentId,
+  tree,
 }: {
   node: OmegaNode;
   depth: number;
@@ -63,8 +73,16 @@ function TreeNode({
   searchTerm: string;
   flatNodeIds: string[];
   onContextMenu: (e: React.MouseEvent, nodeId: string, isGroup: boolean) => void;
+  onUpdateItem?: ((id: string, updates: Partial<OmegaNode>) => void) | undefined;
+  onMoveNode?: ((sourceId: string, targetParentId: string, index?: number) => void) | undefined;
+  findParentId: (id: string) => string | undefined;
+  tree: OmegaNode;
 }) {
   const [expanded, setExpanded] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState((node.meta?.label as string) || node.id);
+  const [dropIndicator, setDropIndicator] = useState<'top' | 'bottom' | 'inside' | null>(null);
+
   const hasChildren = node.children && node.children.length > 0;
   const isContainer = node.kind === 'container' || node.kind === 'rack' || node.kind === 'face' || node.kind === 'group';
   const isHidden = hiddenNodeIds.includes(node.id);
@@ -82,7 +100,21 @@ function TreeNode({
 
   if (!matchesSearch) return null;
 
-  const Icon = isContainer ? Box : node.kind === 'port' ? Radio : Sliders;
+  const getIcon = () => {
+    if (isContainer) {
+      return expanded ? FolderOpen : Folder;
+    }
+    if (node.kind === 'port') {
+      return Radio;
+    }
+    const type = node.cellRef?.toLowerCase() || '';
+    if (type === 'knob') return Disc;
+    if (type.includes('slider')) return Sliders;
+    if (type === 'switch' || type === 'button') return ToggleLeft;
+    if (type === 'display') return Tv;
+    if (type === 'label') return Type;
+    return Sliders;
+  };
   const indent = depth * 12;
 
   const handleNodeClick = (e: React.MouseEvent) => {
@@ -135,18 +167,103 @@ function TreeNode({
     onContextMenu(e, node.id, isContainer);
   };
 
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsEditing(true);
+    setEditValue((node.meta?.label as string) || node.id);
+  };
+
+  const handleRenameSubmit = () => {
+    setIsEditing(false);
+    const trimmed = editValue.trim();
+    if (trimmed && trimmed !== ((node.meta?.label as string) || node.id) && onUpdateItem) {
+      onUpdateItem(node.id, {
+        meta: {
+          ...node.meta,
+          label: trimmed
+        }
+      });
+    }
+  };
+
+  // Drag & Drop handlers
+  const handleDragStart = (e: React.DragEvent) => {
+    e.dataTransfer.setData('text/plain', node.id);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const rect = e.currentTarget.getBoundingClientRect();
+    const relativeY = e.clientY - rect.top;
+    const height = rect.height;
+
+    if (relativeY < height * 0.25) {
+      setDropIndicator('top');
+    } else if (relativeY > height * 0.75) {
+      setDropIndicator('bottom');
+    } else {
+      if (isContainer) {
+        setDropIndicator('inside');
+      } else {
+        setDropIndicator('bottom');
+      }
+    }
+  };
+
+  const handleDragLeave = () => {
+    setDropIndicator(null);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDropIndicator(null);
+    const sourceId = e.dataTransfer.getData('text/plain');
+    if (!sourceId || sourceId === node.id) return;
+
+    if (onMoveNode) {
+      if (dropIndicator === 'inside' && isContainer) {
+        onMoveNode(sourceId, node.id, 0);
+      } else {
+        const parentId = findParentId(node.id);
+        if (parentId) {
+          const parentNode = findNodeInTree(tree, parentId);
+          if (parentNode && parentNode.children) {
+            const currentIdx = parentNode.children.findIndex(c => c.id === node.id);
+            const targetIdx = dropIndicator === 'top' ? currentIdx : currentIdx + 1;
+            onMoveNode(sourceId, parentId, targetIdx);
+          }
+        }
+      }
+    }
+  };
+
   return (
     <div>
       <div style={{ paddingLeft: `${indent}px` }}>
         <div
           onClick={handleNodeClick}
           onContextMenu={handleContextMenu}
-          className={`flex items-center justify-between px-2 py-1 border rounded-xs cursor-pointer transition-all group ${
+          draggable={node.kind !== 'rack'}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          className={`flex items-center justify-between px-2 py-1 border rounded-xs cursor-pointer transition-all group relative ${
             isSelected
               ? 'bg-primary/10 border-primary/40 text-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.05)]'
               : 'wb-surface-subtle border-transparent hover:wb-surface-strong hover:wb-outline wb-text'
-          }`}
+          } ${dropIndicator === 'inside' ? 'ring-1 ring-primary/60 bg-primary/5' : ''}`}
         >
+          {dropIndicator === 'top' && (
+            <div className="absolute top-0 left-0 right-0 h-0.5 bg-primary shadow-[0_0_8px_rgba(var(--primary-rgb),0.8)] z-10 animate-pulse" />
+          )}
+          {dropIndicator === 'bottom' && (
+            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary shadow-[0_0_8px_rgba(var(--primary-rgb),0.8)] z-10 animate-pulse" />
+          )}
+
           <div className="flex items-center gap-1.5 overflow-hidden mr-2">
             {hasChildren ? (
               <button
@@ -158,13 +275,32 @@ function TreeNode({
             ) : (
               <span className="w-3.5 shrink-0" />
             )}
-            <Icon className={`w-3 h-3 shrink-0 ${isSelected ? 'text-primary' : 'wb-text-muted opacity-60'}`} />
-            <div className="flex flex-col overflow-hidden">
-              <span className="font-mono text-[8px] uppercase tracking-wider truncate leading-tight">{node.id}</span>
-              {(node.meta?.label as string) && (
-                <span className="text-[7px] opacity-50 uppercase tracking-widest truncate leading-tight">{node.meta?.label as string}</span>
-              )}
-            </div>
+            {createElement(getIcon(), { className: `w-3 h-3 shrink-0 ${isSelected ? 'text-primary' : 'wb-text-muted opacity-60'}` })}
+            {isEditing ? (
+              <input
+                type="text"
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+                onBlur={handleRenameSubmit}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleRenameSubmit();
+                  if (e.key === 'Escape') {
+                    setEditValue((node.meta?.label as string) || node.id);
+                    setIsEditing(false);
+                  }
+                }}
+                className="bg-black/80 border border-primary/50 text-[8px] font-mono uppercase px-1 py-0.5 rounded-xs text-white focus:outline-none max-w-[120px]"
+                autoFocus
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : (
+              <div className="flex flex-col overflow-hidden" onDoubleClick={handleDoubleClick}>
+                <span className="font-mono text-[8px] uppercase tracking-wider truncate leading-tight">{node.id}</span>
+                {(node.meta?.label as string) && (
+                  <span className="text-[7px] opacity-50 uppercase tracking-widest truncate leading-tight">{node.meta?.label as string}</span>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
@@ -213,6 +349,10 @@ function TreeNode({
               searchTerm={searchTerm}
               flatNodeIds={flatNodeIds}
               onContextMenu={onContextMenu}
+              onUpdateItem={onUpdateItem}
+              onMoveNode={onMoveNode}
+              findParentId={findParentId}
+              tree={tree}
             />
           ))}
         </div>
@@ -239,6 +379,9 @@ export default function LayersPanel({
   onDuplicateGroup,
   onSaveGroupAsBlueprint,
   onUngroupNode,
+  onMoveNode,
+  onMoveNodeUpDown,
+  onUpdateItem,
 }: LayersPanelProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
@@ -258,6 +401,12 @@ export default function LayersPanel({
     return ids;
   }, [tree]);
 
+  const findParentId = (targetId: string) => {
+    if (!tree) return undefined;
+    const parent = findParentInTree(tree, targetId);
+    return parent ? parent.id : undefined;
+  };
+
   const handleContextMenuTrigger = (e: React.MouseEvent, nodeId: string, isGroup: boolean) => {
     setContextMenu({
       x: e.clientX,
@@ -270,6 +419,21 @@ export default function LayersPanel({
   const closeContextMenu = () => {
     setContextMenu(null);
   };
+
+  // Alt + ArrowUp / ArrowDown keyboard shortcuts reordering
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.altKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+        if (selectedItemId && onMoveNodeUpDown) {
+          e.preventDefault();
+          e.stopPropagation();
+          onMoveNodeUpDown(selectedItemId, e.key === 'ArrowUp' ? 'up' : 'down');
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedItemId, onMoveNodeUpDown]);
 
   return (
     <div 
@@ -308,6 +472,10 @@ export default function LayersPanel({
             searchTerm={searchTerm}
             flatNodeIds={flatNodeIds}
             onContextMenu={handleContextMenuTrigger}
+            onUpdateItem={onUpdateItem}
+            onMoveNode={onMoveNode}
+            findParentId={findParentId}
+            tree={tree}
           />
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center py-10 opacity-30 gap-1.5">
@@ -363,10 +531,27 @@ export default function LayersPanel({
             </button>
           )}
 
+          {multiSelectedIds.length === 1 && onMoveNodeUpDown && (
+            <>
+              <button
+                onClick={() => { onMoveNodeUpDown(contextMenu.nodeId, 'up'); closeContextMenu(); }}
+                className="w-full text-left px-2 py-1.5 hover:bg-primary/20 hover:text-primary text-[8px] font-black uppercase tracking-widest text-white/80 transition-colors"
+              >
+                Move Up (Alt+▲)
+              </button>
+              <button
+                onClick={() => { onMoveNodeUpDown(contextMenu.nodeId, 'down'); closeContextMenu(); }}
+                className="w-full text-left px-2 py-1.5 hover:bg-primary/20 hover:text-primary text-[8px] font-black uppercase tracking-widest text-white/80 transition-colors"
+              >
+                Move Down (Alt+▼)
+              </button>
+            </>
+          )}
+
           {multiSelectedIds.length === 1 && !contextMenu.isGroup && onDuplicateItem && (
             <button
               onClick={() => { onDuplicateItem(contextMenu.nodeId); closeContextMenu(); }}
-              className="w-full text-left px-2 py-1.5 hover:bg-primary/20 hover:text-primary text-[8px] font-black uppercase tracking-widest text-white/80 transition-colors"
+              className="w-full text-left px-2 py-1.5 hover:bg-primary/20 hover:text-primary text-[8px] font-black uppercase tracking-widest text-white/80 transition-colors border-t border-white/5 pt-1"
             >
               Duplicate Layer
             </button>
@@ -375,7 +560,7 @@ export default function LayersPanel({
           {multiSelectedIds.length === 1 && contextMenu.isGroup && onDuplicateGroup && (
             <button
               onClick={() => { onDuplicateGroup(contextMenu.nodeId); closeContextMenu(); }}
-              className="w-full text-left px-2 py-1.5 hover:bg-primary/20 hover:text-primary text-[8px] font-black uppercase tracking-widest text-white/80 transition-colors"
+              className="w-full text-left px-2 py-1.5 hover:bg-primary/20 hover:text-primary text-[8px] font-black uppercase tracking-widest text-white/80 transition-colors border-t border-white/5 pt-1"
             >
               Duplicate Group
             </button>

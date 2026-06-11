@@ -31,6 +31,7 @@ import { findNodeInTree } from '../hooks/entities/ucaInspectorAdapter';
 import { manifestToTree } from '@/omega-ui-core/utils/ucaBridge';
 import { useDynamicFonts } from '@/features/manifest-editor/hooks/useDynamicFonts';
 import { useGhostPreview } from '@/features/manifest-editor/hooks/useGhostPreview';
+import { generateBlueprintThumbnail } from '@/omega-ui-core/utils/BlueprintThumbnailGenerator';
 import type { TabDiagnostics, Diagnostic } from '../types/diagnostics';
 import { createEmptyDiagnostics } from '../types/diagnostics';
 import { mergeDiagnostics } from '../utils/diagnosticUtils';
@@ -280,7 +281,12 @@ export default function WorkbenchContainer({
       defaultOverridePolicy: 'extendable',
     };
 
+    // ── S6: Generate SVG thumbnail ───────────────────────────────────
+    const thumbnailSvg = generateBlueprintThumbnail(blueprint.rootNode as unknown as import('@/omega-ui-core/types/manifest').OmegaNode);
+
     // 2. Register in userBlueprints state for immediate Library visibility
+    // Include thumbnail in blueprint metadata for UI display
+    blueprint.metadata = { thumbnail: thumbnailSvg };
     setUserBlueprints((prev) => [
       ...prev,
       {
@@ -831,6 +837,8 @@ export default function WorkbenchContainer({
               onUngroupNode={editor.ungroupNode}
               onGroupSelected={state.multiSelectedNodeIds.length >= 2 ? () => editor.groupSelected(state.multiSelectedNodeIds) : undefined}
               onGroupDown={editor.groupDown}
+              onMoveNode={editor.moveNode}
+              onMoveNodeUpDown={editor.moveNodeUpDown}
               onTogglePin={(id) => {
                 actions.setPinnedNode(id);
               }}

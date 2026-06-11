@@ -102,9 +102,11 @@ interface RightDockContainerProps {
   inspectorLevel?: 'simple' | 'medium' | 'advanced' | undefined;
   /** Navigation for compliance issues (locate in workbench) */
   onNavigate?: ((path: string) => void) | undefined;
-  activeSection?: string | undefined;
   onGroupSelected?: (() => void) | undefined;
   onGroupDown?: ((id: string) => void) | undefined;
+  onMoveNode?: ((sourceId: string, targetParentId: string, index?: number) => void) | undefined;
+  onMoveNodeUpDown?: ((nodeId: string, direction: 'up' | 'down') => void) | undefined;
+  activeSection?: string | undefined;
 }
 
 /**
@@ -214,6 +216,9 @@ export default function RightDockContainer(props: RightDockContainerProps) {
                     }
                   } : undefined}
                   onUngroupNode={props.onUngroupNode}
+                  onMoveNode={props.onMoveNode}
+                  onMoveNodeUpDown={props.onMoveNodeUpDown}
+                  onUpdateItem={props.onUpdateItem}
                 />
               </div>
             </DockPanel>

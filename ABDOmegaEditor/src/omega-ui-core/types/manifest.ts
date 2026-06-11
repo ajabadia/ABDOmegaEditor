@@ -456,6 +456,9 @@ export interface BlueprintDefinition {
   name: string;
   origin: 'user' | 'system' | 'library';
   rootNode: OmegaBlueprintNode;
+  metadata?: {
+    thumbnail?: string;
+  } | undefined;
   placeholders?: BlueprintPlaceholder[] | undefined;
   compatibility?: BlueprintCompatibility | undefined;
   description?: string | undefined;

@@ -272,6 +272,19 @@ export default function BlueprintLibraryPanel({
                   >
                     <div className="flex items-center gap-2 overflow-hidden mr-2">
                       {(() => {
+                        // S6: Use pre-generated thumbnail SVG from blueprint metadata when available
+                        const thumbSvg = bp.blueprint?.metadata?.thumbnail;
+                        if (thumbSvg) {
+                          // Safe encoding for SVG (handles non-ASCII characters)
+                          const encoded = encodeURIComponent(thumbSvg);
+                          return (
+                            <img
+                              src={`data:image/svg+xml;charset=utf-8,${encoded}`}
+                              alt={bp.label}
+                              className="w-10 h-7 shrink-0 rounded-xs"
+                            />
+                          );
+                        }
                         const thumbData = bp.blueprint ? blueprintDefToV2Data(bp.blueprint) : null;
                         return thumbData ? (
                           <BlueprintThumbnail data={thumbData} width={40} height={28} className="shrink-0" />
