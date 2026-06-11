@@ -25,27 +25,13 @@ export class ColorResolver {
     const resolveBase = (c: string): string => {
       if (c.startsWith('#') || c.startsWith('rgba') || c.startsWith('rgb')) return c;
 
-      // Era 7.2.3 Canonical Defaults
-      const defaults: Record<string, string> = {
-        primary: '#00f2ff',
-        secondary: '#ff8c00',
-        utility: '#a0a0a0',
-        feedback: '#32cd32',
-        surface: '#121416',
-        hardware: '#777777',
-        chassis: '#1a1a1a',
-        text: '#ffffff',
-        glow: '#00f2ff',
-        glass: 'rgba(255,255,255,0.05)',
-        warning: '#ff3300',
-        highlight: '#ffffff',
-        weak: '#555555'
-      };
-
       const palette = (manifest?.ui?.palette || {}) as Record<string, string | undefined>;
       const colors = (manifest?.ui?.colors || {}) as Record<string, string | undefined>;
-      const fullPalette: Record<string, string | undefined> = { ...defaults, ...palette, ...colors };
-      return fullPalette[c] || c;
+      
+      if (palette[c]) return palette[c]!;
+      if (colors[c]) return colors[c]!;
+      
+      return 'transparent';
     };
 
     const resolvedHex = resolveBase(baseColor);

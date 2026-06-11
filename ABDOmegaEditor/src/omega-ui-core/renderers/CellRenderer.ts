@@ -165,32 +165,43 @@ const COMP_RENDERER_MAP: Record<string, (node: OmegaNode, props: MasterRendererP
       inheritedSize: opt.inherited.size as number | undefined
     });
   },
-  'slider-v': (_node, props, opt) => renderSliderHTML({ 
-    ...props, 
-    type: 'slider-v', 
-    inheritedFont: opt.inherited.font as string | undefined,
-    inheritedSize: opt.inherited.size as number | undefined,
-    inheritedColor: opt.inherited.color as string | undefined,
-    assetUrl: opt.assetUrl,
-    frames: opt.assetDef?.frames,
-    orientation: opt.assetDef?.orientation
-  }),
-  'slider-h': (_node, props, opt) => renderSliderHTML({ 
-    ...props, 
-    type: 'slider-h', 
-    inheritedFont: opt.inherited.font as string | undefined,
-    inheritedSize: opt.inherited.size as number | undefined,
-    inheritedColor: opt.inherited.color as string | undefined,
-    assetUrl: opt.assetUrl,
-    frames: opt.assetDef?.frames,
-    orientation: opt.assetDef?.orientation
-  }),
-  'switch': (_node, props, opt) => renderSwitchHTML({ 
-    ...props, 
-    inheritedFont: opt.inherited.font as string | undefined,
-    inheritedSize: opt.inherited.size as number | undefined,
-    inheritedColor: opt.inherited.color as string | undefined,
-  }),
+  'slider-v': (node, props, opt) => {
+    const resolved = resolveNodeStyle(node, opt.manifest);
+    return renderSliderHTML({ 
+      ...props, 
+      type: 'slider-v', 
+      style: resolved.style,
+      inheritedFont: resolved.style.font || (opt.inherited.font as string | undefined),
+      inheritedSize: resolved.style.fontSize || (opt.inherited.size as number | undefined),
+      inheritedColor: resolved.style.fontColor || (opt.inherited.color as string | undefined),
+      assetUrl: opt.assetUrl,
+      frames: opt.assetDef?.frames,
+      orientation: opt.assetDef?.orientation
+    });
+  },
+  'slider-h': (node, props, opt) => {
+    const resolved = resolveNodeStyle(node, opt.manifest);
+    return renderSliderHTML({ 
+      ...props, 
+      type: 'slider-h', 
+      style: resolved.style,
+      inheritedFont: resolved.style.font || (opt.inherited.font as string | undefined),
+      inheritedSize: resolved.style.fontSize || (opt.inherited.size as number | undefined),
+      inheritedColor: resolved.style.fontColor || (opt.inherited.color as string | undefined),
+      assetUrl: opt.assetUrl,
+      frames: opt.assetDef?.frames,
+      orientation: opt.assetDef?.orientation
+    });
+  },
+  'switch': (node, props, opt) => {
+    const resolved = resolveNodeStyle(node, opt.manifest);
+    return renderSwitchHTML({ 
+      ...props, 
+      inheritedFont: resolved.style.font || (opt.inherited.font as string | undefined),
+      inheritedSize: resolved.style.fontSize || (opt.inherited.size as number | undefined),
+      inheritedColor: resolved.style.fontColor || (opt.inherited.color as string | undefined),
+    });
+  },
   'button': (node, props, opt) => {
     const resolved = resolveNodeStyle(node, opt.manifest);
     return renderStepperHTML({ 
@@ -260,12 +271,15 @@ const COMP_RENDERER_MAP: Record<string, (node: OmegaNode, props: MasterRendererP
       inheritedColor: resolved.style.fontColor || (opt.inherited.color as string | undefined),
     });
   },
-  'illustration': (node, _props, opt) => renderIllustrationHTML({ 
-    assetUrl: opt.assetUrl, 
-    size: (node.style?.width && node.style?.height) ? { width: node.style.width, height: node.style.height } : { width: 40, height: 40 }, 
-    variant: node.style?.variant || 'contain', 
-    id: node.id 
-  }),
+  'illustration': (node, _props, opt) => {
+    const resolved = resolveNodeStyle(node, opt.manifest);
+    return renderIllustrationHTML({ 
+      assetUrl: opt.assetUrl, 
+      size: (resolved.style.width && resolved.style.height) ? { width: resolved.style.width, height: resolved.style.height } : { width: 40, height: 40 }, 
+      variant: resolved.style.variant || 'contain', 
+      id: node.id 
+    });
+  },
   'label': (node, props, opt) => {
     const ps = props.style as Partial<OmegaStyleNode> | undefined;
     return AttachmentRenderer.renderAttachmentHTML({
