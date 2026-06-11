@@ -51,22 +51,7 @@ interface VirtualRackProps {
   isDirectoryLinked?: boolean | undefined;
 }
 
-/** Convert screen coordinates to rack-local coordinates, accounting for zoom/pan transform. */
-function screenToRackLocal(
-  clientX: number,
-  clientY: number,
-  rackEl: HTMLDivElement,
-  zoom: number,
-): { x: number; y: number } {
-  // getBoundingClientRect() returns the visual bounding box AFTER CSS transforms,
-  // so rect.left already includes translate(pan.x) and rect.width includes scale(zoom).
-  // Inverse: simply divide the offset by zoom to get rack-local coords.
-  const rect = rackEl.getBoundingClientRect();
-  return {
-    x: (clientX - rect.left) / zoom,
-    y: (clientY - rect.top) / zoom,
-  };
-}
+
 
 /** Snap a node's position to grid — writes layout: { pos } only (no spread). */
 function handleSnapToGrid(
@@ -83,34 +68,7 @@ function handleSnapToGrid(
   }
 }
 
-/** Find all node IDs whose bounding boxes intersect with the selection rectangle. */
-function findNodesInRect(
-  tree: OmegaNode | null | undefined,
-  selRect: { x1: number; y1: number; x2: number; y2: number },
-  hiddenIds: string[],
-): string[] {
-  if (!tree) return [];
-  const result: string[] = [];
-  const minX = Math.min(selRect.x1, selRect.x2);
-  const maxX = Math.max(selRect.x1, selRect.x2);
-  const minY = Math.min(selRect.y1, selRect.y2);
-  const maxY = Math.max(selRect.y1, selRect.y2);
 
-  const walk = (node: OmegaNode) => {
-    if (hiddenIds.includes(node.id)) return;
-    const nx = node.layout?.pos?.x ?? 0;
-    const ny = node.layout?.pos?.y ?? 0;
-    const nw = node.layout?.size?.width ?? 48;
-    const nh = node.layout?.size?.height ?? 48;
-    // AABB intersection
-    if (nx < maxX && nx + nw > minX && ny < maxY && ny + nh > minY) {
-      result.push(node.id);
-    }
-    node.children?.forEach(walk);
-  };
-  walk(tree);
-  return result;
-}
 
 /**
  * VirtualRack (v7.2.3) - Aseptic Orchestrator
@@ -154,13 +112,7 @@ export default function VirtualRack({
   const [activeDragOffset, setActiveDragOffset] = React.useState<{ x: number; y: number; draggedNodeId: string } | null>(null);
   const [isStartupDismissed, setIsStartupDismissed] = React.useState(false);
 
-  // MARQUEE SELECTION STATE
-  const [marquee, setMarquee] = React.useState<{
-    startX: number; startY: number;
-    currentX: number; currentY: number;
-  } | null>(null);
-  const marqueeStartRef = useRef<{ x: number; y: number } | null>(null);
-  const didMarqueeRef = useRef(false);
+
   
   // ASEPTIC LAYOUT & SIMULATION
   const { width, height, allElements } = useRackLayout(manifest);
@@ -228,17 +180,7 @@ export default function VirtualRack({
           transform: `translate(${pan?.x ?? 0}px, ${pan?.y ?? 0}px) scale(${zoom})`,
           transformOrigin: 'center center'
         }}
-        onMouseDown={(e) => {
-          if (isLiveMode || e.button !== 0) return;
-          // Only start marquee if clicking on empty space (not on a uca-node)
-          const target = e.target as HTMLElement;
-          if (target.closest('[id^="uca-"]')) return;
-          e.stopPropagation();
-          const local = screenToRackLocal(e.clientX, e.clientY, rackRef.current!, zoom);
-          marqueeStartRef.current = local;
-          setMarquee({ startX: local.x, startY: local.y, currentX: local.x, currentY: local.y });
-        }}
-        onClick={(e) => { e.stopPropagation(); if (!didMarqueeRef.current) { onSelectItem(null); } didMarqueeRef.current = false; }}
+        onClick={(e) => { e.stopPropagation(); onSelectItem(null); }}
         onContextMenu={(e) => {
           if (isLiveMode) return;
           e.preventDefault();
@@ -338,83 +280,17 @@ export default function VirtualRack({
 
         {activeInjectorPort && <SignalInjector portId={activeInjectorPort} onClose={() => setActiveInjectorPort(null)} />}
 
-        {/* MARQUEE SELECTION OVERLAY */}
-        {marquee && (() => {
-          const x1 = Math.min(marquee.startX, marquee.currentX);
-          const y1 = Math.min(marquee.startY, marquee.currentY);
-          const w = Math.abs(marquee.currentX - marquee.startX);
-          const h = Math.abs(marquee.currentY - marquee.startY);
-          if (w < 4 && h < 4) return null;
-          return (
-            <div
-              className="absolute pointer-events-none z-[200]"
-              style={{
-                left: `${x1}px`,
-                top: `${y1}px`,
-                width: `${w}px`,
-                height: `${h}px`,
-                border: '1.5px dashed rgba(0, 242, 255, 0.8)',
-                backgroundColor: 'rgba(0, 242, 255, 0.06)',
-                borderRadius: '2px',
-                transition: 'none',
-              }}
-            />
-          );
-        })()}
       </div>
 
-      {/* GLOBAL MOUSE HANDLERS for marquee drag */}
-      {marquee && (
-        <>
-          <div
-            className="fixed inset-0 z-[9998] cursor-crosshair"
-            onMouseMove={(e) => {
-              if (!rackRef.current) return;
-              const local = screenToRackLocal(e.clientX, e.clientY, rackRef.current, zoom);
-              setMarquee(prev => prev ? { ...prev, currentX: local.x, currentY: local.y } : null);
-            }}
-            onMouseUp={(e) => {
-              if (!rackRef.current || !marqueeStartRef.current) {
-                setMarquee(null);
-                marqueeStartRef.current = null;
-                return;
-              }
-              const end = screenToRackLocal(e.clientX, e.clientY, rackRef.current, zoom);
-              const start = marqueeStartRef.current;
-              const w = Math.abs(end.x - start.x);
-              const h = Math.abs(end.y - start.y);
-              let foundIds: string[] = [];
-
-              if (w > 4 || h > 4) {
-                // Find all nodes inside the selection rectangle
-                const rootTree = manifest.ui?.tree || manifestToTree(manifest, manifest.ui?.tree);
-                foundIds = findNodesInRect(rootTree, {
-                  x1: start.x, y1: start.y,
-                  x2: end.x, y2: end.y,
-                }, hiddenNodeIds);
-                if (foundIds.length > 0) {
-                  onSelectMultiple(foundIds);
-                  onSelectItem(foundIds[0]);
-                }
-              }
-
-              didMarqueeRef.current = foundIds.length > 0;
-              setMarquee(null);
-              marqueeStartRef.current = null;
-            }}
-          />
-        </>
-      )}
-
       {/* EMPTY-RACK STARTUP ASSISTANT (v9.1.7-dev, REGRESSION_RECOVERY_PLAN item 23) */}
-      {/* Only renders in ENGINEERING mode AND when the rack has no elements loaded. */}
+      {/* Only renders in ENGINEERING mode AND when the UCA tree has no elements loaded. */}
+      {/* Uses the tree directly (not legacy projections) so that synchronous mutations from injectBlueprint
+          are reflected immediately — fixes the async gap where cells render in DOM but the gate stays open. */}
       {(() => {
-        const isEmptyManifest = 
-          (!manifest.ui?.controls || manifest.ui.controls.length === 0) &&
-          (!manifest.ui?.jacks || manifest.ui.jacks.length === 0) &&
-          (!manifest.ui?.layout?.containers || manifest.ui.layout.containers.length === 0);
+        const tree = manifest.ui?.tree || manifestToTree(manifest, manifest.ui?.tree);
+        const treeHasContent = !!tree && !!tree.children && tree.children.length > 0;
 
-        if (!isLiveMode && isEmptyManifest && !isStartupDismissed) {
+        if (!isLiveMode && !treeHasContent && !isStartupDismissed) {
           return (
             <RackStartupAssistant
               onOpenGallery={onOpenGallery}

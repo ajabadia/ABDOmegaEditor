@@ -25,7 +25,8 @@ import { useAudit } from '@/features/manifest-editor/hooks/useAudit';
 import { useWorkbenchState, type WorkbenchTabType, type WorkbenchPaneId } from '@/features/manifest-editor/hooks/useWorkbenchState';
 import { useAuditNavigator } from '@/features/manifest-editor/hooks/useAuditNavigator';
 import { useWatchdog } from '@/features/manifest-editor/hooks/useWatchdog';
-import { adaptModuleTemplateToBlueprintDefinition } from '../utils/blueprintUtils';
+import { adaptModuleTemplateToBlueprintDefinition, adaptV2BlueprintToBlueprintDefinition } from '../utils/blueprintUtils';
+import type { V2BlueprintData } from '@/omega-ui-core/types';
 import { findNodeInTree } from '../hooks/entities/ucaInspectorAdapter';
 import { manifestToTree } from '@/omega-ui-core/utils/ucaBridge';
 import { useDynamicFonts } from '@/features/manifest-editor/hooks/useDynamicFonts';
@@ -84,8 +85,8 @@ export default function WorkbenchContainer({
     diagnostics: true
   });
 
-  const handleToggleRackSection = useCallback((section: 'identity' | 'essentialIdentity' | 'identityBranding' | 'globalUiSkin' | 'activeConstructionPlane' | 'moduleTaxonomy' | 'physicalEmulationProfile' | 'aestheticsGlobals' | 'aestheticsElements' | 'architecture' | 'diagnostics') => {
-    setRackSections(prev => ({ ...prev, [section]: !prev[section] }));
+  const handleToggleRackSection = useCallback((section: string) => {
+    setRackSections(prev => ({ ...prev, [section]: !((prev as Record<string, boolean>)[section]) }));
   }, []);
 
   // Phase 39 — recovered from backup MenuBar (View > Inspector Level)
@@ -95,7 +96,11 @@ export default function WorkbenchContainer({
 
   const handleOpenConfig = onOpenGovernance || (() => actions.toggleUIState('isConfigModalOpen'));
   const handleOpenAudit = onOpenAudit || (() => actions.toggleUIState('isAuditModalOpen'));
-  const handleOpenCellEditor = onOpenCellEditor || (() => actions.toggleUIState('isCellEditorOpen'));
+  const handleOpenCellEditor = onOpenCellEditor || (() => {
+    if (state.selectedNodeId) {
+      actions.setStudioMode(true, state.selectedNodeId);
+    }
+  });
 
   // 2. Core Data & Operations
   const editor = useManifestEditor(state, actions);
@@ -223,6 +228,15 @@ export default function WorkbenchContainer({
       console.error("[BLUEPRINT] Failed to adapt legacy template:", err);
     }
   }, [editor, setIsGalleryOpen]);
+
+  const handleSelectBlueprintFromPanel = useCallback((v2data: V2BlueprintData) => {
+    try {
+      const blueprint = adaptV2BlueprintToBlueprintDefinition(v2data);
+      editor.applyTemplate(blueprint);
+    } catch (err) {
+      console.error("[BLUEPRINT] Failed to adapt V2 blueprint:", err);
+    }
+  }, [editor]);
   
   const handleSelectItem = useCallback((id: string | null) => {
     actions.setSelectedNode(id);
@@ -557,13 +571,16 @@ export default function WorkbenchContainer({
                 onOpenAudit={handleOpenAudit}
                 onOpenConfig={handleOpenConfig}
                 onOpenCellStudio={() => {
-                  actions.setStudioMode(true, selectedItemId || undefined);
+                  if (selectedItemId) {
+                    actions.setStudioMode(true, selectedItemId);
+                  }
                 }}
                 onAddEntity={handleAddEntity}
                 isZenMode={state.isZenMode}
                 onToggleZen={actions.toggleZenMode}
                 activeTool={activeTool}
                 setActiveTool={setActiveTool}
+                selectedNodeId={selectedItemId}
               />
               {/* PRIMARY PANE COLUMN */}
               <div 
@@ -662,8 +679,7 @@ export default function WorkbenchContainer({
               onTriggerUpload={triggerUpload}
               onOpenConfig={handleOpenConfig}
               onOpenLibrary={() => setIsCellLibraryOpen(true)}
-              onSelectBlueprint={editor.blueprintInjection.startInjection}
-              onInsertBlueprint={editor.insertBlueprint}
+              onSelectBlueprint={handleSelectBlueprintFromPanel}
               exportSelectedAsBlueprint={editor.exportSelectedAsBlueprint}
               onTogglePin={(id) => {
                 actions.setPinnedNode(id);
