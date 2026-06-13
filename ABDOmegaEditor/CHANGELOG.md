@@ -2,6 +2,19 @@
 
 All notable changes to the OMEGA Manifest Editor will be documented in this file.
 
+## [9.3.2] - 2026-06-13
+### Added
+- **Alt+Click Ghost Preview**: BlueprintLibraryPanel now supports Alt+Click to enter ghost preview mode for positionable injection before placement.
+- **Tooltip on blueprint items**: Hovering over a blueprint shows "Click to inject · Alt+Click for ghost preview".
+
+### Fixed
+- **Blueprint injection regression**: `handleSelectBlueprintFromPanel` now injects directly via `editor.applyTemplate()` instead of entering ghost preview mode, restoring broken e2e blueprint injection flow.
+- **RackStartupAssistant overlay not dismissing**: Gate reinforced with `allElements.length > 0` fallback in `VirtualRack.tsx`.
+- **Submenu shortcuts not rendering**: `MenuBar.tsx` submenu items now display keyboard shortcuts (Ctrl+O, Ctrl+S, etc.).
+- **Framer-motion onClick suppression**: `CellNode.tsx` and `StructuralNode.tsx` now select on `onPointerDown` before framer-motion's pan gesture consumes the event.
+- **Dynamic import in e2e tests**: Replaced `await import()` with top-level imports in `rack-features.spec.ts` (ESM not supported in Playwright CommonJS).
+- **Flaky e2e selectors**: Updated `omega-project.spec.ts` to use `button:has-text()` for robust submenu button targeting.
+
 ## [9.2.0] - 2026-06-11
 ### Added
 - **Self-Contained Manifest (v9.2.0)**: Desugared visual properties from CSS variables, theme databases, and JS fallbacks. Implemented 100% portable lookups directly inside the manifest.

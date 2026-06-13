@@ -1,5 +1,6 @@
 import { test, expect } from './fixtures/omegaFixtures';
 import type { Page } from '@playwright/test';
+import { injectBlueprint } from './helpers/blueprintInjection';
 
 /**
  * OMEGA ERA 7.2.3 - RACK FEATURES E2E TEST SUITE
@@ -180,7 +181,6 @@ test.describe('RackStartupAssistant Matrix (v9.1.8-dev)', () => {
   test('Condition 2: inject blueprint → overlay hidden', async ({ rackPage }) => {
     await expect(rackPage.locator(OVERLAY)).toBeVisible({ timeout: 5000 });
 
-    const { injectBlueprint } = await import('./helpers/blueprintInjection');
     await injectBlueprint(rackPage);
 
     await expect(rackPage.locator(OVERLAY)).not.toBeVisible({ timeout: 5000 });
@@ -200,7 +200,6 @@ test.describe('RackStartupAssistant Matrix (v9.1.8-dev)', () => {
   test('Condition 4: inject then delete all → overlay reappears', async ({ rackPage }) => {
     await expect(rackPage.locator(OVERLAY)).toBeVisible({ timeout: 5000 });
 
-    const { injectBlueprint } = await import('./helpers/blueprintInjection');
     await injectBlueprint(rackPage);
     await expect(rackPage.locator(OVERLAY)).not.toBeVisible({ timeout: 5000 });
 

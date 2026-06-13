@@ -50,6 +50,8 @@ interface RightDockContainerProps {
   lockedNodeIds: string[];
   onToggleVisibility: (id: string) => void;
   onToggleLock: (id: string) => void;
+  onBatchSetVisibility?: ((ids: string[], hidden: boolean) => void) | undefined;
+  onBatchSetLocked?: ((ids: string[], locked: boolean) => void) | undefined;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
   onUpdateItem: (id: string, updates: Partial<ManifestEntity> | Partial<OmegaNode>) => void;
@@ -74,11 +76,14 @@ interface RightDockContainerProps {
   onOpenLibrary?: (() => void) | undefined;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onSelectBlueprint?: ((blueprint: any) => void) | undefined;
+  onAltClickBlueprint?: ((blueprint: any) => void) | undefined;
   onSelectUserBlueprint?: ((blueprint: BlueprintDefinition) => void) | undefined;
   userBlueprints?: Array<{ label: string; description: string | undefined; version: string | undefined; blueprint: BlueprintDefinition | undefined }> | undefined;
   exportSelectedAsBlueprint?: ((id: string) => void) | undefined;
   /** Called when user clicks "Save as Blueprint..." on a group */
   onSaveGroupAsBlueprint?: ((groupNode: import('@/omega-ui-core/types/rack').GroupNode) => void) | undefined;
+  /** Called from LayersPanel context menu with a nodeId (string) instead of full GroupNode */
+  onSaveGroupAsBlueprintFromNodeId?: ((id: string) => void) | undefined;
   /** Called when user clicks "Ungroup" to dissolve the selected group */
   onUngroupNode?: ((groupId: string) => void) | undefined;
   onTogglePin: (id: string | null) => void;
@@ -103,6 +108,8 @@ interface RightDockContainerProps {
   /** Navigation for compliance issues (locate in workbench) */
   onNavigate?: ((path: string) => void) | undefined;
   onGroupSelected?: (() => void) | undefined;
+  onBatchUngroup?: ((ids: string[]) => void) | undefined;
+  onBatchUndoGroup?: ((childIds: string[]) => void) | undefined;
   onGroupDown?: ((id: string) => void) | undefined;
   onMoveNode?: ((sourceId: string, targetParentId: string, index?: number) => void) | undefined;
   onMoveNodeUpDown?: ((nodeId: string, direction: 'up' | 'down') => void) | undefined;
@@ -125,6 +132,7 @@ export default function RightDockContainer(props: RightDockContainerProps) {
   const {
     windowStates, onToggleWindow, isCollapsed, onToggleCollapse,
     hiddenNodeIds, lockedNodeIds, onToggleVisibility, onToggleLock,
+    onBatchSetVisibility, onBatchSetLocked,
     manifest, selectedItem, selectedItemId, onSelectItem, pastHistory, onUndoTo,
     onRemoveItem, rackSections, onToggleRackSection, inspectorLevel
   } = props;
@@ -180,7 +188,8 @@ export default function RightDockContainer(props: RightDockContainerProps) {
                   onGroupDown={props.onGroupDown}
                   onDuplicateItem={props.onDuplicateItem}
                   onDuplicateGroup={props.onDuplicateItem}
-                  onSaveGroupAsBlueprint={props.onSaveGroupAsBlueprint ? (id: string) => {
+                  onSaveGroupAsBlueprint={props.onSaveGroupAsBlueprintFromNodeId || (props.onSaveGroupAsBlueprint ? (id: string) => {
+                    // Fallback: inline adapter for backward compatibility
                     const tree = manifest.ui?.tree;
                     if (!tree) return;
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -214,11 +223,15 @@ export default function RightDockContainer(props: RightDockContainerProps) {
                       // eslint-disable-next-line @typescript-eslint/no-explicit-any
                       props.onSaveGroupAsBlueprint!(groupNode as any);
                     }
-                  } : undefined}
+                  } : undefined)}
                   onUngroupNode={props.onUngroupNode}
                   onMoveNode={props.onMoveNode}
                   onMoveNodeUpDown={props.onMoveNodeUpDown}
                   onUpdateItem={props.onUpdateItem}
+                  onBatchSetVisibility={onBatchSetVisibility}
+                  onBatchSetLocked={onBatchSetLocked}
+                  onBatchUngroup={props.onBatchUngroup}
+                  onBatchUndoGroup={props.onBatchUndoGroup}
                 />
               </div>
             </DockPanel>
@@ -353,6 +366,7 @@ export default function RightDockContainer(props: RightDockContainerProps) {
               <div className="flex-1 overflow-hidden flex flex-col">
                 <BlueprintLibraryPanel
                   onSelectBlueprint={props.onSelectBlueprint || (() => {})}
+                  onAltClickBlueprint={props.onAltClickBlueprint}
                   onLoadAcepack={props.onLoadAcepack}
                   onSelectUserBlueprint={props.onSelectUserBlueprint}
                   userBlueprints={props.userBlueprints}

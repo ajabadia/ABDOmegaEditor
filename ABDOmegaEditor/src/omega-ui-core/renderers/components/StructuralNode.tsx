@@ -103,7 +103,13 @@ export function StructuralNode({
       className={`uca-node uca-${node.kind} group`}
       onClick={handleClick}
       onTap={(e) => handleClick(e as unknown as React.MouseEvent)}
-      onPointerDown={isDraggable ? (e) => e.stopPropagation() : undefined}
+      onPointerDown={(e) => {
+        // Select on pointerdown BEFORE framer-motion pan gesture can suppress click
+        handleClick(e as unknown as React.MouseEvent);
+        if (isDraggable) {
+          e.stopPropagation();
+        }
+      }}
       {...panHandlers}
       style={{
         position: 'absolute',

@@ -131,10 +131,17 @@ test.describe('Blueprint Injection', () => {
     const firstCell = rackPage.locator('.uca-node.uca-cell').first();
     await expect(firstCell).toBeVisible({ timeout: 5000 });
 
+    // Dispatch both pointerdown (for the new onPointerDown selection handler) and
+    // click (for the onTap/onClick fallback) to ensure selection via either path.
+    await firstCell.evaluate(el => {
+      el.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+    });
+    // Also dispatch click for backward compatibility with non-draggable nodes
     await firstCell.evaluate(el => {
       el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
     });
 
+    // The cell should now have a cyan selection outline (2px solid #00f2ff)
     await expect.poll(async () =>
       firstCell.evaluate(el => getComputedStyle(el).outline),
       { timeout: 5000, intervals: [100, 200, 500] }

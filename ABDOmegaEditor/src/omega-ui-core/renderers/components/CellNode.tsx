@@ -153,7 +153,13 @@ export function CellNode({
       className="uca-node uca-cell group"
       onClick={handleDebugClick}
       onTap={(e) => handleDebugClick(e as unknown as React.MouseEvent)}
-      onPointerDown={isDraggable ? (e) => e.stopPropagation() : undefined}
+      onPointerDown={(e) => {
+        // Select on pointerdown BEFORE framer-motion pan gesture can suppress click
+        handleDebugClick(e as unknown as React.MouseEvent);
+        if (isDraggable) {
+          e.stopPropagation();
+        }
+      }}
       {...panHandlers}
       style={{
         position: 'absolute',

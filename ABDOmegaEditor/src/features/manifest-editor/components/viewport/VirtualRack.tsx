@@ -6,19 +6,22 @@ import type { AuditResult } from '@/services/auditService';
 
 // Modular Components & Hooks
 import { SignalInjector } from '../rack/SignalInjector';
+import { ModulationLines } from '../rack/ModulationLines';
 import { RackHUD } from '../rack/RackHUD';
 import { useRackSimulation } from '@/features/manifest-editor/hooks/rack/useRackSimulation';
 import { useRackLayout } from '@/features/manifest-editor/hooks/rack/useRackLayout';
 import { CellRenderer } from '@/omega-ui-core/renderers/CellRenderer';
 import { UniversalRenderer } from '@/omega-ui-core/renderers/UniversalRenderer';
-import { manifestToTree } from '@/omega-ui-core/utils/ucaBridge';
 import { findNodeInTree, findParentInTree } from '@/omega-ui-core/uca/treeUtils';
 import { snapToGrid } from '@/omega-ui-core/uca/spatialConstraints';
 import { InjectionPreviewOverlay } from './InjectionPreviewOverlay';
 import { GhostPreviewOverlay } from './GhostPreviewOverlay';
+import type { GhostItem as AlignGhostItem } from '@/features/manifest-editor/utils/alignmentConstants';
+import AlignGhostOverlay from './AlignGhostOverlay';
 import RackContextMenu from './RackContextMenu';
 import RackStartupAssistant from './RackStartupAssistant';
- 
+import { inputSignalService } from '@/services/inputSignalService';
+
 interface VirtualRackProps {
   manifest: OMEGA_Manifest;
   selectedItemId: string | null;
@@ -61,6 +64,10 @@ interface VirtualRackProps {
   onGhostMouseMove?: ((clientX: number, clientY: number) => void) | undefined;
   onGhostClick?: ((x: number, y: number) => void) | undefined;
   onGhostCancel?: (() => void) | undefined;
+
+  // AlignGhostOverlay — ghost preview on alignment button hover
+  alignGhostItems?: AlignGhostItem[] | undefined;
+  alignGhostType?: string | undefined;
 }
 
 
@@ -71,7 +78,8 @@ function handleSnapToGrid(
   manifest: OMEGA_Manifest,
   onUpdateItem: (id: string, updates: HybridEntityUpdate) => void
 ) {
-  const rootTree = manifest.ui?.tree || manifestToTree(manifest, manifest.ui?.tree);
+  const rootTree = manifest.ui?.tree;
+  if (!rootTree) return;
   const node = findNodeInTree(rootTree, id);
   if (node && node.layout?.pos) {
     const gridConfig = manifest.ui?.layout?.grid || { spacingX: 24, spacingY: 24, snapMode: 'center', enabled: true, visible: true, showGuides: false };
@@ -122,7 +130,9 @@ export default function VirtualRack({
   isGhostVisible = false,
   onGhostMouseMove,
   onGhostClick,
-  onGhostCancel
+  onGhostCancel,
+  alignGhostItems,
+  alignGhostType
 }: VirtualRackProps) {
   const rackRef = useRef<HTMLDivElement>(null);
   const skin = manifest.ui?.skin || 'industrial';
@@ -169,6 +179,9 @@ export default function VirtualRack({
   // ASEPTIC LAYOUT & SIMULATION
   const { width, height, allElements } = useRackLayout(manifest);
   const { runtimeValues, activeInjectorPort, setActiveInjectorPort, updateValue } = useRackSimulation(allElements, isLiveMode, pushParameterUpdate);
+
+  // Active signal port IDs for modulation lines visualization
+  const activeSignalPortIds = Object.keys(inputSignalService.getAllActiveSignals());
 
   const grid = manifest.ui?.layout?.grid;
   const gridSpacingX = grid?.spacingX ?? 24;
@@ -311,7 +324,8 @@ export default function VirtualRack({
               return n;
             };
 
-            const rootTree = manifest.ui?.tree || manifestToTree(manifest, manifest.ui?.tree);
+            const rootTree = manifest.ui?.tree;
+            if (!rootTree) return null;
             const filteredTree = filterTree(rootTree, hiddenNodeIds);
 
             if (!filteredTree) return null;
@@ -347,6 +361,14 @@ export default function VirtualRack({
           })()}
         </div>
 
+        {/* MODULATION LINES OVERLAY (vR2) */}
+        {activeSignalPortIds.length > 0 && (
+          <ModulationLines
+            activePortIds={activeSignalPortIds}
+            containerRef={rackRef}
+          />
+        )}
+
         {/* BLUEPRINT STUDIO GHOST LAYER (Phase 11) */}
         {previewManifest && (
           <InjectionPreviewOverlay 
@@ -366,6 +388,17 @@ export default function VirtualRack({
           />
         )}
 
+        {/* ALIGNMENT GHOST PREVIEW — shown on hover over align buttons */}
+        {alignGhostItems && alignGhostItems.length > 0 && alignGhostType && (
+          <div data-ghost-overlay>
+            <AlignGhostOverlay
+              items={alignGhostItems}
+              alignType={alignGhostType}
+            />
+          </div>
+        )}
+
+        {/* SIMULATION SIGNAL INJECTOR (Overlay) */}
         {activeInjectorPort && <SignalInjector portId={activeInjectorPort} onClose={() => setActiveInjectorPort(null)} />}
 
       </div>
@@ -374,11 +407,15 @@ export default function VirtualRack({
       {/* Only renders in ENGINEERING mode AND when the UCA tree has no elements loaded. */}
       {/* Uses the tree directly (not legacy projections) so that synchronous mutations from injectBlueprint
           are reflected immediately — fixes the async gap where cells render in DOM but the gate stays open. */}
+      {/* v9.3.1 — Reinforced gate: checks both tree.children AND allElements (from useRackLayout) as
+          fallback. This ensures the overlay dismisses when cells appear via any code path (tree mutation,
+          legacy projections, or third-party integration). */}
       {(() => {
-        const tree = manifest.ui?.tree || manifestToTree(manifest, manifest.ui?.tree);
+        const tree = manifest.ui?.tree;
         const treeHasContent = !!tree && !!tree.children && tree.children.length > 0;
+        const layoutHasContent = allElements.length > 0;
 
-        if (!isLiveMode && !treeHasContent && !isStartupDismissed) {
+        if (!isLiveMode && !treeHasContent && !layoutHasContent && !isStartupDismissed) {
           return (
             <RackStartupAssistant
               onOpenGallery={onOpenGallery}
@@ -398,7 +435,8 @@ export default function VirtualRack({
       {contextMenu && (() => {
         const cmMultiCount = contextMenu.multiSelectedIds.length;
         const targetId = contextMenu.targetId;
-        const rootTree = manifest.ui?.tree || manifestToTree(manifest, manifest.ui?.tree);
+        const rootTree = manifest.ui?.tree;
+        if (!rootTree) return null;
 
         const getParentGroupId = (id: string): string | undefined => {
           const parent = findParentInTree(rootTree, id);

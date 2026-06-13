@@ -50,6 +50,8 @@ function blueprintDefToV2Data(bp: BlueprintDefinition): V2BlueprintData | null {
 
 interface BlueprintLibraryPanelProps {
   onSelectBlueprint: (blueprint: V2BlueprintData) => void;
+  /** Called when user Alt+clicks a blueprint to enter ghost preview mode for positioning */
+  onAltClickBlueprint?: ((blueprint: V2BlueprintData) => void) | undefined;
   /** Called when user wants to load a .acepack file from disk */
   onLoadAcepack?: (() => void) | undefined;
   /** Called when user clicks a user-imported blueprint to inject it */
@@ -65,6 +67,7 @@ interface BlueprintLibraryPanelProps {
  */
 export default function BlueprintLibraryPanel({
   onSelectBlueprint,
+  onAltClickBlueprint,
   onLoadAcepack,
   onSelectUserBlueprint,
   userBlueprints = []
@@ -205,7 +208,16 @@ export default function BlueprintLibraryPanel({
                 {filteredOfficial.map((bp) => (
                   <div
                     key={bp.id}
-                    onClick={() => bp.data && onSelectBlueprint(bp.data)}
+                    onClick={(e) => {
+                      if (!bp.data) return;
+                      if (e.altKey && onAltClickBlueprint) {
+                        e.preventDefault();
+                        onAltClickBlueprint(bp.data);
+                      } else {
+                        onSelectBlueprint(bp.data);
+                      }
+                    }}
+                    title={bp.data ? 'Click to inject · Alt+Click for ghost preview' : 'Blueprint data not available'}
                     className={`flex items-center justify-between px-2 py-1.5 border rounded-xs cursor-pointer transition-all wb-surface-subtle border-transparent hover:wb-surface-strong hover:wb-outline wb-text ${!bp.data ? 'opacity-40 cursor-not-allowed' : ''}`}
                   >
                     <div className="flex items-center gap-2 overflow-hidden mr-2">
@@ -267,7 +279,18 @@ export default function BlueprintLibraryPanel({
                 {filteredUser.map((bp, idx) => (
                   <div
                     key={`user-${idx}`}
-                    onClick={() => bp.blueprint && onSelectUserBlueprint?.(bp.blueprint)}
+                    onClick={(e) => {
+                      if (!bp.blueprint) return;
+                      if (e.altKey && onAltClickBlueprint) {
+                        e.preventDefault();
+                        // Convert BlueprintDefinition to V2BlueprintData for consistent API
+                        const thumbData = blueprintDefToV2Data(bp.blueprint);
+                        if (thumbData) onAltClickBlueprint(thumbData);
+                      } else {
+                        onSelectUserBlueprint?.(bp.blueprint);
+                      }
+                    }}
+                    title={bp.blueprint ? 'Click to inject · Alt+Click for ghost preview' : 'Blueprint data not available'}
                     className={`flex items-center justify-between px-2 py-1.5 border rounded-xs cursor-pointer transition-all wb-surface-subtle border-transparent hover:wb-surface-strong hover:wb-outline wb-text ${!bp.blueprint ? 'opacity-40 cursor-not-allowed' : ''}`}
                   >
                     <div className="flex items-center gap-2 overflow-hidden mr-2">

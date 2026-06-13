@@ -15,6 +15,7 @@ interface MenuBarProps {
   onTriggerUpload: (id: string) => void;
   onExportManifest: (mode: 'work' | 'distilled') => void;
   onExportPack: () => void;
+  onExportOmegaRack: () => void;
   onExportCAD: () => void;
   onExportContract: (format: 'ts' | 'cpp') => void;
   onDeploy: () => void;
@@ -30,6 +31,7 @@ interface MenuBarProps {
   onOpenConfig: () => void;
   onOpenCellEditor?: (() => void) | undefined;
   onOpenGallery?: (() => void) | undefined;
+  onImportDistilledJson?: (() => void) | undefined;
   onLinkDirectory?: (() => void) | undefined;
   isDirectoryLinked?: boolean | undefined;
   gridVisible?: boolean | undefined;
@@ -94,6 +96,8 @@ export default function MenuBar(props: MenuBarProps) {
           label: 'Load', 
           icon: FolderOpen, 
           submenu: [
+            { label: 'Open .omega Project', icon: Package, onClick: () => (window as unknown as { __omegaLoadProject?: () => void }).__omegaLoadProject?.(), shortcut: 'Ctrl+O' },
+            { label: 'Import Distilled .json', icon: FileCode, onClick: () => props.onImportDistilledJson?.() },
             { label: 'Ingest Module Folder', icon: FolderOpen, onClick: () => props.onTriggerUpload('folder-upload') },
             { label: 'WASM', icon: Cpu, onClick: () => props.onTriggerUpload('bulk-upload') },
             { label: 'Contract', icon: Database, onClick: () => props.onTriggerUpload('bulk-upload') },
@@ -111,9 +115,9 @@ export default function MenuBar(props: MenuBarProps) {
           label: 'Save', 
           icon: Package, 
           submenu: [
-            { label: 'Save Work Mode', icon: FileCode, onClick: () => props.onExportManifest('work'), shortcut: 'Ctrl+S' },
+            { label: 'Save Work Mode', icon: FileCode, onClick: () => props.onExportManifest('work') },
             { label: 'Export Definitive Mode (Distilled)', icon: FileCode, onClick: () => props.onExportManifest('distilled') },
-            { label: 'OmegaPack', icon: Package, onClick: props.onExportPack },
+            { label: 'OmegaPack', icon: Package, onClick: props.onExportPack, shortcut: 'Ctrl+S' },
           ]
         },
         {
@@ -123,6 +127,7 @@ export default function MenuBar(props: MenuBarProps) {
             // Phase 39 — recovered from backup
             { label: 'Cell as Blueprint JSON', icon: Download, onClick: props.onSaveCellAsBlueprint || (() => {}), disabled: !isSingleCellSelected },
             { label: 'Studio Render', icon: Camera, onClick: props.onGenerateMockup },
+            { label: 'Export to OMEGA Module Rack', icon: Package, onClick: props.onExportOmegaRack },
             { label: 'Industrial CAD Blueprint', icon: Layers, onClick: props.onExportCAD },
             { label: 'Tech Contract (TS)', icon: FileCode, onClick: () => props.onExportContract('ts') },
             { label: 'Engine Header (C++)', icon: FileCode, onClick: () => props.onExportContract('cpp') },
@@ -388,6 +393,11 @@ function MenuItem({ item, closeMenu }: { item: any, closeMenu: () => void }) {
                   )}
                   {sub.icon && <sub.icon className="w-3 h-3" />}
                   <span>{sub.label}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {sub.shortcut && (
+                    <span className="text-[7px] text-white/25 font-mono tracking-normal normal-case ml-4">{sub.shortcut}</span>
+                  )}
                 </div>
               </button>
             ))}

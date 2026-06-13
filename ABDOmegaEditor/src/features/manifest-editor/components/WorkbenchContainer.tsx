@@ -27,20 +27,29 @@ import { useAuditNavigator } from '@/features/manifest-editor/hooks/useAuditNavi
 import { useWatchdog } from '@/features/manifest-editor/hooks/useWatchdog';
 import { adaptModuleTemplateToBlueprintDefinition, adaptV2BlueprintToBlueprintDefinition } from '../utils/blueprintUtils';
 import type { V2BlueprintData, BlueprintDefinition } from '@/omega-ui-core/types';
-import { findNodeInTree } from '../hooks/entities/ucaInspectorAdapter';
-import { manifestToTree } from '@/omega-ui-core/utils/ucaBridge';
 import { useDynamicFonts } from '@/features/manifest-editor/hooks/useDynamicFonts';
 import { useGhostPreview } from '@/features/manifest-editor/hooks/useGhostPreview';
-import { generateBlueprintThumbnail } from '@/omega-ui-core/utils/BlueprintThumbnailGenerator';
-import type { TabDiagnostics, Diagnostic } from '../types/diagnostics';
+import { useFileDrop } from '@/features/manifest-editor/hooks/useFileDrop';
+import { useRackSections } from '@/features/manifest-editor/hooks/useRackSections';
+import { useTabDiagnostics } from '@/features/manifest-editor/hooks/useTabDiagnostics';
+import { useEntityCrud } from '@/features/manifest-editor/hooks/useEntityCrud';
+import { useExportOperations } from '@/features/manifest-editor/hooks/useExportOperations';
+import { useBatchUngroup } from '@/features/manifest-editor/hooks/useBatchUngroup';
+import { useCellBlueprint } from '@/features/manifest-editor/hooks/useCellBlueprint';
+import { useGroupBlueprint } from '@/features/manifest-editor/hooks/useGroupBlueprint';
+import type { Diagnostic } from '../types/diagnostics';
 import { createEmptyDiagnostics } from '../types/diagnostics';
 import { mergeDiagnostics } from '../utils/diagnosticUtils';
-import { structuralAuditor } from '../services/StructuralAuditor';
 import type { DocumentState } from '../types/document';
 import { toggleGridField } from '../utils/gridHelpers';
 
 // Services
-import { ContractService } from '@/services/contractService';
+import { Package } from 'lucide-react';
+import { isDistilledManifest, upgradeDistilledToWork, UPGRADE_WARNING } from '@/omega-ui-core/utils/upgradeDistilled';
+import { validateManifestSchema } from '@/omega-ui-core/utils/manifestValidator';
+import { unpackageProject } from '@/services/projectPackager';
+import { historyService } from '@/services/historyService';
+import { inputSignalService, type VirtualSignal } from '@/services/inputSignalService';
 
 // --- Components ---
 
@@ -67,30 +76,10 @@ export default function WorkbenchContainer({
   // 1. Workspace State
   const { state, actions, derived } = useWorkbenchState();
 
-  const [rackSections, setRackSections] = useState({
-    identity: true,
-    essentialIdentity: true,
-    identityBranding: true,
-    globalUiSkin: true,
-    activeConstructionPlane: true,
-    moduleTaxonomy: true,
-    physicalEmulationProfile: true,
-    aestheticsGlobals: true,
-    aestheticsElements: true,
-    architecture: true,
-    diagnostics: true
-  });
-
-  const handleToggleRackSection = useCallback((section: string) => {
-    setRackSections(prev => ({ ...prev, [section]: !((prev as Record<string, boolean>)[section]) }));
-  }, []);
+  const { rackSections, handleToggleRackSection } = useRackSections();
 
   // Phase 39 — recovered from backup MenuBar (View > Inspector Level)
-  const [inspectorLevel, setInspectorLevel] = useState<'simple' | 'medium' | 'advanced'>('medium');
-
-  // S7: User-imported blueprints (from .acepack files) — stored for User Library display + injection
-  const [userBlueprints, setUserBlueprints] = useState<Array<{ label: string; description: string | undefined; version: string | undefined; blueprint: BlueprintDefinition | undefined }>>([]);
-  const [inspectorActiveSection, setInspectorActiveSection] = useState<string | undefined>(undefined);
+  const [inspectorLevel, setInspectorLevel] = useState<'simple' | 'medium' | 'advanced'>('medium');  const [inspectorActiveSection, setInspectorActiveSection] = useState<string | undefined>(undefined);
 
   const [activeTool, setActiveTool] = useState<'select' | 'marquee' | 'add' | 'studio' | null>('select');
 
@@ -98,51 +87,20 @@ export default function WorkbenchContainer({
   const editor = useManifestEditor(state, actions);
   const { manifest, contract, updateManifest } = editor;
 
+  // S7: User blueprints — managed by useGroupBlueprint hook (stores imported + saved blueprints)
+  const {
+    userBlueprints,
+    handleSaveGroupAsBlueprint,
+    handleSaveGroupAsBlueprintFromNodeId,
+    addUserBlueprintEntry,
+  } = useGroupBlueprint(editor);
+
   // Phase 39 — recovered from backup MenuBar (File > Export > Cell as Blueprint JSON)
-  // Serializes the currently selected cell as a ModuleTemplate and registers it
-  // into `manifest.moduleTemplates` via `editor.registerTemplate`. Replaces the
-  // previous `() => setIsGalleryOpen(true)` proxy wiring. Uses `findNodeInTree` +
-  // `manifestToTree` to locate the cell, and reuses the canonical
-  // `useTemplateCRUD.registerTemplate` path so the new template is immediately
-  // usable from the gallery / blueprint injection pipeline.
-  const handleSaveCellAsBlueprint = useCallback(() => {
-    const selectedId = state.selectedNodeId;
-    if (!selectedId) {
-      editor.addLog('[ERROR] No cell selected to save as blueprint.');
-      return;
-    }
-
-    const tree = (manifest as OMEGA_Manifest).ui?.tree
-      || manifestToTree(manifest as OMEGA_Manifest, (manifest as OMEGA_Manifest).ui?.tree);
-    const selectedNode = findNodeInTree(tree, selectedId);
-    if (!selectedNode) {
-      editor.addLog(`[ERROR] Cell ${selectedId} not found in UCA tree.`);
-      return;
-    }
-
-    const blueprintId = `bp_${selectedNode.id}_${Date.now().toString(36)}`;
-    const labelFromMeta = typeof selectedNode.meta?.label === 'string'
-      ? (selectedNode.meta.label as string)
-      : null;
-    const template: ModuleTemplate = {
-      id: selectedNode.id,
-      label: labelFromMeta || selectedNode.id,
-      category: selectedNode.kind === 'face'
-        ? 'structure'
-        : selectedNode.kind === 'container' || selectedNode.kind === 'group'
-          ? 'composite'
-          : 'control',
-      baseNode: selectedNode,
-      description: `Cell captured from rack as blueprint ${blueprintId}`,
-      version: '1.0.0',
-      family: 'user-saved',
-      slots: [],
-    };
-
-    editor.registerTemplate(template);
-    // ── S1: Also export physical .acepack ─────────────────────────
-    editor.exportCellAsBlueprint?.(selectedId);
-  }, [manifest, state.selectedNodeId, editor]);
+  const { handleSaveCellAsBlueprint } = useCellBlueprint(
+    manifest as OMEGA_Manifest,
+    state.selectedNodeId,
+    editor,
+  );
 
   // Grid & Guides state derived from manifest
   const grid = (manifest as OMEGA_Manifest).ui?.layout?.grid;
@@ -159,7 +117,12 @@ export default function WorkbenchContainer({
 
   const { auditResult } = useAudit(manifest, contract);
   
-  // 3. Diff & History Operations (Consolidated in useWorkbenchState)
+  const { handleBatchUngroup, handleBatchUndoGroup } = useBatchUngroup(
+    manifest as OMEGA_Manifest,
+    updateManifest,
+    editor,
+  );
+
   const handleCompareWithHistory = useCallback((index: number) => {
     const diff = editor.compareWithHistory(index);
     if (diff) {
@@ -190,27 +153,10 @@ export default function WorkbenchContainer({
     }
   }, [state.blueprintGalleryOpen, actions]);
   
-  // 3. Diagnostics Surface (Phase 6.3 Aggregation)
-  const [tabDiagnostics, setTabDiagnostics] = useState<Record<string, TabDiagnostics>>({});
-
-  // Memoize Structural Diagnostics (Global)
-  const structuralDiagnostics = useMemo(() => 
-    structuralAuditor.extractDiagnostics(manifest as OMEGA_Manifest, { contract: contract as OMEGA_Contract }), 
-    [manifest, contract]
+  const { tabDiagnostics, structuralDiagnostics, handleDiagnosticsUpdate } = useTabDiagnostics(
+    manifest as OMEGA_Manifest,
+    contract as OMEGA_Contract,
   );
-
-  const handleDiagnosticsUpdate = useCallback((tabId: string, diagnosticsRaw: unknown) => {
-    const diagnostics = diagnosticsRaw as TabDiagnostics;
-    setTabDiagnostics(prev => {
-      const current = prev[tabId];
-      if (current && 
-          current.errorCount === diagnostics.errorCount && 
-          current.warningCount === diagnostics.warningCount &&
-          current.infoCount === diagnostics.infoCount) return prev;
-      
-      return { ...prev, [tabId]: diagnostics };
-    });
-  }, []);
 
   const handleApplyTemplate = useCallback((template: ModuleTemplate) => {
     try {
@@ -232,86 +178,222 @@ export default function WorkbenchContainer({
       if (!file) return;
       const result = await editor.handleBlueprintUpload(file);
       if (result) {
-        setUserBlueprints(prev => [...prev, result]);
+        addUserBlueprintEntry(result);
       }
     };
     input.click();
   }, [editor]);
+
+  // ── Restore .omega package or .json distilled manifest (shared between file picker and drag-and-drop) ──
+  const restoreOmegaPackage = useCallback(async (file: File) => {
+    try {
+      // ── Case 1: .json (potentially distilled manifest) ──
+      if (file.name.endsWith('.json')) {
+        const text = await file.text();
+        let parsed: unknown;
+        try {
+          parsed = JSON.parse(text);
+        } catch {
+          editor.addLog(`[ERROR] Invalid JSON file: ${file.name}`);
+          return;
+        }
+
+        if (isDistilledManifest(parsed)) {
+          editor.addLog(`[SYSTEM] Distilled manifest detected: ${file.name}. Upgrading to work format...`);
+          editor.addLog(`[WARN] ${UPGRADE_WARNING}`);
+
+          const upgraded = upgradeDistilledToWork(parsed);
+          const docId = editor.activeId;
+          editor.orchestrator.updateDocument(docId, { manifest: upgraded });
+          editor.addLog(`[OK] Manifest upgraded: ${upgraded.metadata?.name} v${upgraded.metadata?.version}`);
+          return;
+        }
+
+        // Not distilled — validate schema before loading
+        editor.addLog(`[INFO] Validating manifest schema: ${file.name}...`);
+        const validation = validateManifestSchema(parsed);
+        if (!validation.valid) {
+          editor.addLog(`[ERROR] Invalid manifest structure:\n  - ${validation.errors.join('\n  - ')}`);
+          editor.addLog('[INFO] Loading cancelled. The file does not match the OMEGA_Manifest schema.');
+          return;
+        }
+        const docId = editor.activeId;
+        editor.orchestrator.updateDocument(docId, { manifest: validation.manifest });
+        editor.addLog(`[OK] Manifest loaded: ${validation.manifest.metadata?.name || 'Untitled'} v${validation.manifest.metadata?.version || '?'}`);
+        return;
+      }
+
+      // ── Case 2: .omega (zip) — existing flow ──
+      editor.addLog(`[SYSTEM] Loading .omega project: ${file.name}...`);
+
+      // 1. Descomprimir el .omega
+      const pkg = await unpackageProject(file);
+
+      // 2. Confirmar con el usuario si hay cambios sin guardar
+      const docs = editor.orchestrator.documentsById as Record<string, DocumentState>;
+      const hasDirty = Object.values(docs).some(doc => doc.isDirty);
+      if (hasDirty && !confirm('Load .omega project? Unsaved changes will be lost.')) {
+        editor.addLog('[INFO] Load cancelled by user.');
+        return;
+      }
+
+      // 3. Restaurar el manifiesto
+      const docId = editor.activeId;
+      editor.orchestrator.updateDocument(docId, {
+        manifest: pkg.manifest,
+      });
+      editor.addLog(`[OK] Manifest restored: ${pkg.manifest.metadata?.name || 'Untitled'} v${pkg.manifest.metadata?.version || '?'}`);
+
+      // 4. Restaurar assets (extraResources)
+      if (pkg.assets.size > 0) {
+        const restoredAssets: { name: string; data: ArrayBuffer; type: string }[] = [];
+        for (const [name, buffer] of pkg.assets) {
+          const mimeType = name.endsWith('.svg') ? 'image/svg+xml'
+            : name.endsWith('.png') ? 'image/png'
+            : name.endsWith('.jpg') || name.endsWith('.jpeg') ? 'image/jpeg'
+            : 'application/octet-stream';
+          restoredAssets.push({ name, data: buffer, type: mimeType });
+        }
+        editor.orchestrator.updateDocument(docId, {
+          extraResources: restoredAssets,
+        });
+        editor.addLog(`[OK] Restored ${restoredAssets.length} assets from resources/.`);
+      }
+
+      // 5. Restaurar historial (undo/redo)
+      if (pkg.history.past.length > 0 || pkg.history.future.length > 0) {
+        const { past, future } = pkg.history;
+        historyService.restore({ past: past as import('@/features/manifest-editor/types/history').HistoryEntry[], future: future as import('@/features/manifest-editor/types/history').HistoryEntry[] });
+        editor.addLog(`[OK] History restored: ${pkg.history.past.length} past, ${pkg.history.future.length} future entries.`);
+      }
+
+      // 6. Restaurar WASM si existe
+      if (pkg.wasmBuffer) {
+        editor.orchestrator.updateDocument(docId, {
+          wasmBuffer: pkg.wasmBuffer,
+        });
+        editor.addLog('[OK] WASM binary restored.');
+      }
+
+      // 7. Restaurar estado de simulación (señales virtuales)
+      const simConfig = (pkg.project.editorState as Record<string, unknown> | undefined)?.simulationConfig;
+      if (simConfig && typeof simConfig === 'object' && !Array.isArray(simConfig)) {
+        inputSignalService.deserializeState(simConfig as Record<string, VirtualSignal>);
+        const signalCount = Object.keys(simConfig).length;
+        editor.addLog(`[OK] Simulation state restored: ${signalCount} active signal${signalCount !== 1 ? 's' : ''}.`);
+      }
+
+      editor.addLog(`[SUCCESS] Project loaded: ${file.name}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      editor.addLog(`[ERROR] Failed to load project: ${message}`);
+    }
+  }, [editor]);
+
+  // ── Import Distilled .json via file picker ──
+  const handleImportDistilledJson = useCallback(async () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.style.display = 'none';
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      editor.addLog(`[SYSTEM] Importing distilled manifest: ${file.name}...`);
+      await restoreOmegaPackage(file);
+      input.remove();
+    };
+    document.body.appendChild(input);
+    input.click();
+    input.remove();
+  }, [restoreOmegaPackage, editor]);
+
+  // ── Load .omega project via file picker ──
+  const handleLoadOmegaProject = useCallback(async () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.omega,.zip,.json';
+    input.style.display = 'none';
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      await restoreOmegaPackage(file);
+      input.remove();
+    };
+    // Attach to DOM temporarily so Playwright e2e tests can intercept filechooser
+    document.body.appendChild(input);
+    input.click();
+    input.remove();
+  }, [restoreOmegaPackage]);
+
+  // Exponer handleLoadOmegaProject para uso desde el menu (File > Open .omega)
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).__omegaLoadProject = handleLoadOmegaProject;
+    return () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (window as any).__omegaLoadProject;
+    };
+  }, [handleLoadOmegaProject]);
+
+  // ── Ctrl+O: Open .omega project ───────────────────────────────────
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'o' || e.key === 'O')) {
+        e.preventDefault();
+        e.stopPropagation();
+        handleLoadOmegaProject();
+      }
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [handleLoadOmegaProject]);
+
+  // ── Drag & Drop .omega ────────────────────────────────────────────
+  const handleFileDrop = useCallback(async (file: File) => {
+    if (file.name.endsWith('.omega')) {
+      editor.addLog(`[SYSTEM] Drop detected: ${file.name}`);
+      await restoreOmegaPackage(file);
+    } else if (file.name.endsWith('.json')) {
+      editor.addLog(`[SYSTEM] Drop detected: ${file.name} (JSON manifest)`);
+      await restoreOmegaPackage(file);
+    } else {
+      editor.addLog('[INFO] Drop ignored: no .omega or .json file detected.');
+    }
+  }, [restoreOmegaPackage, editor]);
+
+  const { isDragOver, dragHandlers } = useFileDrop(handleFileDrop);
 
   // S8: Inject a user-imported blueprint
   const handleSelectUserBlueprint = useCallback((blueprint: BlueprintDefinition) => {
     editor.applyTemplate(blueprint);
   }, [editor]);
 
-  /** Handle "Save as Blueprint..." from GroupEditor — converts group to BlueprintDefinition and registers it. */
-  const handleSaveGroupAsBlueprint = useCallback((groupNode: import('@/omega-ui-core/types/rack').GroupNode) => {
-    // 1. Create a BlueprintDefinition from the GroupNode
-    const blueprint: BlueprintDefinition = {
-      blueprintId: `bp_user_${groupNode.id}_${Date.now().toString(36)}`,
-      version: '1.0.0',
-      name: groupNode.label || 'Custom Composite Group',
-      description: 'User-defined grouped template',
-      origin: 'user',
-      rootNode: {
-        id: groupNode.id,
-        kind: 'container',
-        role: 'composite',
-        layout: {
-          pos: { x: groupNode.pos.x, y: groupNode.pos.y },
-          mode: 'absolute',
-        },
-        children: groupNode.children.map((child) => ({
-          id: child.id,
-          kind: 'cell' as const,
-          cellRef: child.type,
-          layout: {
-            pos: { x: child.pos.x, y: child.pos.y },
-            size: { width: child.size.width, height: child.size.height },
-          },
-          style: child.style as unknown as import('@/omega-ui-core/types/manifest').OmegaStyleNode,
-          bind: child.bind?.target,
-        })),
-      },
-      compatibility: {
-        allowedParentKinds: ['rack', 'container', 'group', 'face'],
-        deniedParentKinds: ['cell'],
-      },
-      autoWirePolicy: { mode: 'none' },
-      materializeSnapshot: false,
-      defaultOverridePolicy: 'extendable',
-    };
-
-    // ── S6: Generate SVG thumbnail ───────────────────────────────────
-    const thumbnailSvg = generateBlueprintThumbnail(blueprint.rootNode as unknown as import('@/omega-ui-core/types/manifest').OmegaNode);
-
-    // 2. Register in userBlueprints state for immediate Library visibility
-    // Include thumbnail in blueprint metadata for UI display
-    blueprint.metadata = { thumbnail: thumbnailSvg };
-    setUserBlueprints((prev) => [
-      ...prev,
-      {
-        label: blueprint.name,
-        description: blueprint.description,
-        version: blueprint.version,
-        blueprint,
-      },
-    ]);
-
-    // 3. Export physical .acepack via existing export pipeline
-    editor.exportCellAsBlueprint?.(groupNode.id);
-    editor.addLog(`[OK] Group '${blueprint.name}' exported to library and disk.`);
-  }, [editor]);
+  // Wrapper for LayersPanel path: converts nodeId string + tree to GroupNode
+  const handleSaveGroupFromId = useCallback((id: string) => {
+    handleSaveGroupAsBlueprintFromNodeId(id, (manifest as OMEGA_Manifest).ui?.tree);
+  }, [handleSaveGroupAsBlueprintFromNodeId, manifest]);
 
   // ── Ghost Preview: Interactive Blueprint Placement ────────────────
+  // Ghost preview hook (used for drag-and-drop blueprint placement, not panel clicks)
   const ghostPreview = useGhostPreview();
 
   const handleSelectBlueprintFromPanel = useCallback((v2data: V2BlueprintData) => {
     try {
       const blueprint = adaptV2BlueprintToBlueprintDefinition(v2data);
-      // Enter ghost preview mode instead of immediately injecting
-      ghostPreview.startGhostPreview(blueprint);
+      editor.applyTemplate(blueprint);
     } catch (err) {
       console.error("[BLUEPRINT] Failed to adapt V2 blueprint:", err);
+    }
+  }, [editor]);
+
+  // Alt+Click enters ghost preview mode for positionable injection
+  const handleAltClickBlueprintFromPanel = useCallback((v2data: V2BlueprintData) => {
+    try {
+      const blueprint = adaptV2BlueprintToBlueprintDefinition(v2data);
+      ghostPreview.startGhostPreview(blueprint);
+    } catch (err) {
+      console.error("[BLUEPRINT] Failed to adapt V2 blueprint for ghost preview:", err);
     }
   }, [ghostPreview]);
 
@@ -437,21 +519,17 @@ export default function WorkbenchContainer({
     }
   }, [activeTab?.type, manifest, updateManifest]);
   
-  const handleAddEntity = useCallback((type: 'control' | 'jack') => {
-    const id = editor.addEntity(type);
-    if (id) handleSelectItem(id);
-  }, [editor, handleSelectItem]);
+  const { handleAddEntity, handleDuplicateItem, handleRemoveItem } = useEntityCrud(
+    editor,
+    handleSelectItem,
+    selectedItemId,
+  );
   
-  const handleDuplicateItem = useCallback((id: string) => {
-    const newId = editor.duplicateItem(id);
-    if (newId) handleSelectItem(newId);
-  }, [editor, handleSelectItem]);
-  
-  const handleRemoveItem = useCallback((id: string) => {
-    editor.removeItem(id);
-    if (selectedItemId === id) handleSelectItem(null);
-  }, [editor, selectedItemId, handleSelectItem]);
-  
+  const { handleExportOmegaRack, handleExportContract } = useExportOperations(
+    manifest as OMEGA_Manifest,
+    editor,
+  );
+
   const onDeploy = useCallback(async () => {
     if (await editor.handleDeploy() === 'AUDIT_FAIL') {
       if (state.isRightPanelCollapsed) actions.toggleRightPanel();
@@ -462,10 +540,6 @@ export default function WorkbenchContainer({
   const onReset = useCallback(() => {
     editor.reset();
   }, [editor]);
-  
-  const handleExportContract = (format: 'ts' | 'cpp') => {
-    ContractService.downloadContract(manifest as OMEGA_Manifest, format);
-  };
   
   const triggerUpload = (id: string) => document.getElementById(id)?.click();
 
@@ -612,7 +686,26 @@ export default function WorkbenchContainer({
   };
 
   return (
-    <div className="h-screen flex flex-col wb-bg wb-text font-sans overflow-hidden select-none relative transition-colors duration-500" data-ui-theme={state.uiTheme}>
+    <div 
+        className="h-screen flex flex-col wb-bg wb-text font-sans overflow-hidden select-none relative transition-colors duration-500" 
+        data-ui-theme={state.uiTheme}
+        onDragEnter={dragHandlers.onDragEnter}
+        onDragOver={dragHandlers.onDragOver}
+        onDragLeave={dragHandlers.onDragLeave}
+        onDrop={dragHandlers.onDrop}
+      >
+      {/* ── DROP ZONE OVERLAY ── */}
+      {isDragOver && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-none">
+          <div className="absolute inset-0 bg-primary/10 backdrop-blur-sm" />
+          <div className="relative border-2 border-dashed border-primary/60 rounded-lg bg-[#0a0a0b]/90 px-16 py-12 text-center shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <Package className="w-14 h-14 mx-auto mb-4 text-primary/80" />
+            <p className="text-sm font-black uppercase tracking-widest text-primary">Drop .omega Project</p>
+            <p className="text-[10px] text-white/40 mt-2 font-mono tracking-normal normal-case">Release to restore manifest, assets &amp; history</p>
+          </div>
+        </div>
+      )}
+
       <HiddenFileHandlers onResourceUpload={editor.handleResourceUpload} setPendingFiles={actions.setPendingFiles} />
       
       {/* HEADER WRAPPER WITH ZEN HEIGHT TRANSITION */}
@@ -631,6 +724,7 @@ export default function WorkbenchContainer({
           }}
           onExportManifest={editor.exportManifest} 
           onExportPack={editor.exportOmegaPack}
+          onExportOmegaRack={handleExportOmegaRack}
           onExportCAD={() => editor.exportCADBlueprint()} onExportContract={handleExportContract}
           onLinkDirectory={editor.linkDirectory}
           isDirectoryLinked={editor.isDirectoryLinked}
@@ -646,6 +740,7 @@ export default function WorkbenchContainer({
           onOpenConfig={handleOpenConfig}
           onOpenCellEditor={handleOpenCellEditor}
           onOpenGallery={() => actions.toggleWindow('window_blueprints')}
+          onImportDistilledJson={handleImportDistilledJson}
           windowStates={{
             window_layers: state.window_layers,
             window_properties: state.window_properties,
@@ -807,6 +902,8 @@ export default function WorkbenchContainer({
               lockedNodeIds={state.lockedNodeIds}
               onToggleVisibility={actions.toggleNodeVisibility}
               onToggleLock={actions.toggleNodeLock}
+              onBatchSetVisibility={actions.batchSetVisibility}
+              onBatchSetLocked={actions.batchSetLocked}
               isCollapsed={state.isRightPanelCollapsed}
               onToggleCollapse={actions.toggleRightPanel}
               onUpdateItem={editor.updateItem}
@@ -829,13 +926,20 @@ export default function WorkbenchContainer({
               onOpenConfig={handleOpenConfig}
               onOpenLibrary={() => setIsCellLibraryOpen(true)}
               onSelectBlueprint={handleSelectBlueprintFromPanel}
+              onAltClickBlueprint={handleAltClickBlueprintFromPanel}
               onSelectUserBlueprint={handleSelectUserBlueprint}
               userBlueprints={userBlueprints}
               onLoadAcepack={handleLoadAcepack}
               exportSelectedAsBlueprint={editor.exportSelectedAsBlueprint}
               onSaveGroupAsBlueprint={handleSaveGroupAsBlueprint}
+              onSaveGroupAsBlueprintFromNodeId={handleSaveGroupFromId}
               onUngroupNode={editor.ungroupNode}
               onGroupSelected={state.multiSelectedNodeIds.length >= 2 ? () => editor.groupSelected(state.multiSelectedNodeIds) : undefined}
+              onBatchUngroup={state.multiSelectedNodeIds.some(id => {
+                const node = editor.findItem(id);
+                return node && 'kind' in node && (node.kind === 'group' || node.kind === 'container');
+              }) ? handleBatchUngroup : undefined}
+              onBatchUndoGroup={handleBatchUndoGroup}
               onGroupDown={editor.groupDown}
               onMoveNode={editor.moveNode}
               onMoveNodeUpDown={editor.moveNodeUpDown}
