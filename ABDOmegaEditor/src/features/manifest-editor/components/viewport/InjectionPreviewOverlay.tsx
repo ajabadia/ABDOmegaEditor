@@ -3,7 +3,6 @@
 import React from 'react';
 import type { OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
 import { UniversalRenderer } from '@/omega-ui-core/renderers/UniversalRenderer';
-import { manifestToTree } from '@/omega-ui-core/utils/ucaBridge';
 
 interface InjectionPreviewOverlayProps {
   previewManifest: OMEGA_Manifest;
@@ -23,7 +22,7 @@ export const InjectionPreviewOverlay: React.FC<InjectionPreviewOverlayProps> = (
   return (
     <div className="absolute inset-0 z-[60] pointer-events-none opacity-40 mix-blend-screen filter grayscale-[0.5] contrast-[0.8] brightness-[1.2]">
       <UniversalRenderer 
-        node={previewManifest.ui.tree || manifestToTree(previewManifest)} 
+        node={previewManifest.ui.tree!} 
         manifest={previewManifest} 
         catalog={previewManifest.moduleTemplates || {}}
         resolveAsset={resolveAsset}

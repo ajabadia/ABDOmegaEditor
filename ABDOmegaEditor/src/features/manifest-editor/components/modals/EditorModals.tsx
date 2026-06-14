@@ -1,6 +1,5 @@
 'use client';
 
-;
 import { AnimatePresence } from 'framer-motion';
 import IngestionModal from './IngestionModal';
 import HelpModal from './HelpModal';

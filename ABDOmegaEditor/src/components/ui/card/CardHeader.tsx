@@ -1,3 +1,8 @@
+/**
+ * @purpose Genera la cabecera de un componente de interfaz de usuario (UI) para mostrar información básica sobre un elemento en el editor de manifiestos OMEGA.
+ * @lastUpdated 2026-06-14T15:31:16.542Z
+ */
+
 
 interface CardHeaderProps {
   name: string;

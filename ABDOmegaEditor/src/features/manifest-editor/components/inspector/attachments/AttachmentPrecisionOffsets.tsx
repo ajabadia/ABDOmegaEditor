@@ -1,6 +1,10 @@
 'use client';
 
-;
+/**
+ * @purpose Gestiona un componente para ajustar desplazamientos verticales y horizontales de anclajes en el editor del manifiesto OMEGA.
+ * @lastUpdated 2026-06-14T16:42:21.323Z
+ */
+
 import { Move } from 'lucide-react';
 
 import type { Attachment } from '@/types/manifest';

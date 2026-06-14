@@ -1,3 +1,8 @@
+/**
+ * @purpose Proporciona un formulario para editar propiedades de un manifiesto de rack, incluyendo ID, nombre, autor, versión, dimensiones, separación de cuadrícula y piel.
+ * @lastUpdated 2026-06-14T16:48:26.119Z
+ */
+
 import type { RackManifest } from '../../../../../omega-ui-core/types/rack';
 
 export interface RackPropertiesEditorProps {

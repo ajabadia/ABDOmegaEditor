@@ -3,7 +3,6 @@
 import { useMemo } from 'react';
 import type { OMEGA_Manifest, ManifestEntity, OmegaNode } from '@/omega-ui-core/types/manifest';
 import { adaptNodeToManifestEntity, calculateWorldPosition } from '../entities/ucaInspectorAdapter';
-import { manifestToTree } from '@/omega-ui-core/utils/ucaBridge';
 
 /**
  * OMEGA ERA 7.2.3 - RACK LAYOUT ENGINE
@@ -18,7 +17,7 @@ export function useRackLayout(manifest: OMEGA_Manifest) {
  
   // 1. FLATTEN CANONICAL TREE (Sovereign Source)
   const allElements = useMemo(() => {
-    const tree = manifest.ui?.tree || manifestToTree(manifest, manifest.ui?.tree);
+    const tree = manifest.ui?.tree;
     if (!tree) return [];
 
     const entities: (ManifestEntity & { isJack: boolean })[] = [];

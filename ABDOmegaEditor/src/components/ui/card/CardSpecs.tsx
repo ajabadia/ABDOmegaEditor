@@ -1,3 +1,8 @@
+/**
+ * @purpose Renderiza especificaciones de instrumentos en una interfaz de usuario.
+ * @lastUpdated 2026-06-14T15:31:19.095Z
+ */
+
 
 interface SpecItem {
   label: string;

@@ -1,6 +1,10 @@
 'use client';
 
-;
+/**
+ * @purpose Renderiza un menú desplegable para seleccionar el tipo y posición de adjunto en el editor del manifiesto OMEGA.
+ * @lastUpdated 2026-06-14T16:42:42.255Z
+ */
+
 import { Activity } from 'lucide-react';
 
 import type { Attachment, AttachmentType } from '@/types/manifest';

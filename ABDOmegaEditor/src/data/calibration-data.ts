@@ -1,3 +1,8 @@
+/**
+ * @purpose Gestiona la configuración de calibración del editor de manifiesto OMEGA.
+ * @lastUpdated 2026-06-14T15:50:53.774Z
+ */
+
 export interface CalibrationParameter {
   id: string;
   name: string;

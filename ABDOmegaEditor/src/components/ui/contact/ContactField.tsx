@@ -1,3 +1,8 @@
+/**
+ * @purpose Renderiza un campo de contacto con opciones para ser un área de texto o un input simple.
+ * @lastUpdated 2026-06-14T15:31:20.511Z
+ */
+
 import { cn } from "@/lib/utils";
 
 interface ContactFieldProps {

@@ -1,11 +1,11 @@
-﻿OMEGA SYSTEM AUDIT REPORT - 06/12/2026 01:17:13
+﻿OMEGA SYSTEM AUDIT REPORT - 06/12/2026 08:37:25
 
-[PHASE:SUCCESS] [1/6 Structural Integrity]: Passed successfully with 0 errors and 303 warnings.
+[PHASE:SUCCESS] [1/6 Structural Integrity]: Passed successfully with 0 errors and 309 warnings.
 --- WARNING DETAILS START ---
 
 [OMEGA ARCH-GUARD] Auditing architectural precedence (ADR-014)...
 
-=== ÔÜá´©Å MEDIUM RISK HALLUCINATIONS (53) ===
+=== ÔÜá´©Å MEDIUM RISK HALLUCINATIONS (56) ===
 [throw new Error] src\components\ui\contact\useContactForm.ts:55 -> throw new Error(result.error || t("error"));
 [ElementCatalog] src\features\manifest-editor\components\inspector\aesthetic\styles\library\GuildNavigator.tsx:4 -> import type { ElementCategory } from '@/omega-ui-core/governance/ElementCatalog'...
 [ElementCatalog] src\features\manifest-editor\components\inspector\aesthetic\styles\ModuleStyleLibrary.tsx:6 -> import { OMEGA_ELEMENT_CATALOG, type ElementCategory, getElementDefinition } fro...
@@ -21,9 +21,9 @@
 [ElementCatalog] src\features\manifest-editor\components\inspector\shared\aesthetic\IdentityGovernance.tsx:6 -> import { OMEGA_ELEMENT_CATALOG } from '@/omega-ui-core/governance/ElementCatalog...
 [ElementCatalog] src\features\manifest-editor\components\inspector\shared\aesthetic\map.md:2 -> Componentes modulares de gobernanza est├®tica impulsados por el ElementCatalog.
 [reject] src\features\manifest-editor\components\inspector\shared\aesthetic\SequenceIngestionLab.tsx:42 -> return new Promise<HTMLImageElement>((resolve, reject) => {
-... and 38 more in this category.
+... and 41 more in this category.
 
-=== Ô£à LOW RISK HALLUCINATIONS (250) ===
+=== Ô£à LOW RISK HALLUCINATIONS (253) ===
 [validate] src\data\map.md:45 -> - **Schema Parity**: Any changes to instrument data structures MUST be reflected...
 [allowedFragments] src\omega-ui-core\governance\ElementCatalog.ts:10 -> * - 'capabilities' and 'allowedFragments' are soft suggestions for UI filtering.
 [allowedFragments] src\omega-ui-core\governance\ElementCatalog.ts:77 -> * `allowedFragments` is advisory only. Use it for editor UX suggestions (e.g. "+...
@@ -39,12 +39,12 @@
 [allowedFragments] src\omega-ui-core\governance\ElementCatalog.ts:184 -> allowedFragments: ['label']
 [allowedFragments] src\omega-ui-core\governance\ElementCatalog.ts:194 -> allowedFragments: ['label']
 [allowedFragments] src\omega-ui-core\governance\ElementCatalog.ts:204 -> allowedFragments: ['label']
-... and 235 more in this category.
+... and 238 more in this category.
 
 [SUMMARY] Audit complete.
 - High-risk:   0
-- Medium-risk: 53
-- Low-risk:    250
+- Medium-risk: 56
+- Low-risk:    253
 - JSON Report: docs/arch-audit-report.json
 - CSV Report:  docs/arch-audit-report.csv
 

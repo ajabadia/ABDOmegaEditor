@@ -1,3 +1,8 @@
+/**
+ * @purpose Renderiza una forma para editar propiedades de botón en el editor del manifiesto OMEGA, incluyendo campos comunes y ajustes de color y vinculación opcionales según el nivel del inspector.
+ * @lastUpdated 2026-06-14T16:45:53.750Z
+ */
+
 import type { ComponentNode } from '../../../../../omega-ui-core/types/rack';
 import { CommonFields } from './CommonFields';
 import { ColorInput } from './ColorInput';

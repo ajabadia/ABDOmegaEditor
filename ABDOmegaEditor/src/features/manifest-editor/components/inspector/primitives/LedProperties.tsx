@@ -1,3 +1,8 @@
+/**
+ * @purpose Proporciona un componente para editar propiedades LED en el editor del manifiesto OMEGA, permitiendo a los usuarios sobreescribir parámetros físicos y seleccionar estilos.
+ * @lastUpdated 2026-06-14T16:52:01.898Z
+ */
+
 import { Maximize, Circle } from 'lucide-react';
 import type { ManifestEntity, OMEGA_Manifest, Presentation } from '@/omega-ui-core/types/manifest';
 import StyleLibraryLink from '../shared/StyleLibraryLink';

@@ -1,6 +1,10 @@
 'use client';
 
-;
+/**
+ * @purpose Gestiona una lista de archivos de ingesta categorizados por tipo y proporciona controles para establecer archivos principales y alternar selecciones.
+ * @lastUpdated 2026-06-14T16:38:21.334Z
+ */
+
 import { FileCode, Binary, ScrollText, Image as ImageIcon, Check } from 'lucide-react';
 import type { IngestionFile } from '@/features/manifest-editor/hooks/useIngestionLogic';
 

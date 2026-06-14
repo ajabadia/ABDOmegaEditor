@@ -1,6 +1,10 @@
 'use client';
 
-;
+/**
+ * @purpose Proporciona un componente de navegación para seleccionar diferentes categorías en el editor del manifiesto OMEGA, permitiendo a los usuarios cambiar entre ver todos los elementos y categorías específicas.
+ * @lastUpdated 2026-06-14T16:39:54.564Z
+ */
+
 import type { ElementCategory } from '@/omega-ui-core/governance/ElementCatalog';
 
 interface GuildNavigatorProps {

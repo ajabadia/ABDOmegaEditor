@@ -1,3 +1,8 @@
+/**
+ * @purpose Mostrador de información de pista de audio en el editor de manifiestos OMEGA.
+ * @lastUpdated 2026-06-14T15:28:06.489Z
+ */
+
 import { Info } from "lucide-react";
 import { motion } from "framer-motion";
 import Image from "next/image";

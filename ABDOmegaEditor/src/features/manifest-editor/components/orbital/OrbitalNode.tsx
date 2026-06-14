@@ -1,6 +1,5 @@
 'use client';
  
-;
 import { motion } from 'framer-motion';
 import { IntegrityOverlay } from '@/features/manifest-editor/components/viewport/IntegrityOverlay';
 import type { OmegaNode, OMEGA_Contract } from '@/omega-ui-core/types/manifest';

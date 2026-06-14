@@ -1,3 +1,8 @@
+/**
+ * @purpose Renderiza un componente para editar nodos switch en el editor del manifiesto OMEGA, incluyendo campos comunes, entrada de color, selección de estados y opciones de vinculación.
+ * @lastUpdated 2026-06-14T16:49:03.686Z
+ */
+
 import type { ComponentNode } from '../../../../../omega-ui-core/types/rack';
 import { CommonFields } from './CommonFields';
 import { ColorInput } from './ColorInput';

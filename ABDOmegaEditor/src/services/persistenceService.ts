@@ -1,7 +1,6 @@
 /**
- * OMEGA ERA 7.2.3 - PERSISTENCE SERVICE (Phase 20.6)
- * Handles deterministic session recovery for the Canonical Graph.
- * Backend: localStorage (Initial Implementation)
+ * @purpose Servicio de persistencia que guarda y recupera el estado canónico del grafo OMEGA en localStorage
+ * @lastUpdated 2026-06-14T17:30:00.000Z
  */
 
 import { observabilityService } from './observabilityService';

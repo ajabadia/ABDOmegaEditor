@@ -1,4 +1,9 @@
 /**
+ * @purpose Define los temas visuales para el editor de manifiestos OMEGA.
+ * @lastUpdated 2026-06-14T15:50:40.465Z
+ */
+
+/**
  * OMEGA ERA 7.2.3 — THEME REGISTRY
  * Centralized aesthetic definitions for the Manifest Editor.
  * These are "Starters" that get baked into the manifest on save.

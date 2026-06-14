@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * @purpose Gestiona una galería de imágenes con navegación previa y siguiente.
+ * @lastUpdated 2026-06-14T15:49:57.124Z
+ */
+
+
 import * as React from "react";
 import { AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";

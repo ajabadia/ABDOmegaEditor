@@ -1,3 +1,8 @@
+/**
+ * @purpose Define las interfaces para los instrumentos en el editor OMEGA ABDOmegaEditor.
+ * @lastUpdated 2026-06-14T15:55:29.865Z
+ */
+
 export interface Instrument {
   id: string;
   name: string;

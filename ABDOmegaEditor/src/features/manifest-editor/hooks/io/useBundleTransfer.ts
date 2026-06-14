@@ -5,10 +5,13 @@ import JSZip from 'jszip';
 import type { OMEGA_Manifest, OmegaNode, CellTemplate, BlueprintDefinition } from '@/omega-ui-core/types/manifest';
 import type { ValidationIssue } from '@/types/validation';
 import { purgeUnusedStyles, getUsedResources } from '@/features/manifest-editor/utils/governanceUtils';
-import { congealSnapshot, manifestToTree } from '@/omega-ui-core/utils/ucaBridge';
+import { congealSnapshot } from '@/omega-ui-core/utils/ucaBridge';
 import { extractSubtreeResources } from '@/omega-ui-core/utils/StyleResolver';
+import { validateManifestSchema } from '@/omega-ui-core/utils/manifestValidator';
 import { findNodeInTree } from '@/omega-ui-core/utils/treeUtils';
 import { generateBlueprintThumbnail } from '@/omega-ui-core/utils/BlueprintThumbnailGenerator';
+import { historyService } from '@/services/historyService';
+import { inputSignalService } from '@/services/inputSignalService';
 
 export const useBundleTransfer = (
   manifest: OMEGA_Manifest,
@@ -144,7 +147,7 @@ export const useBundleTransfer = (
 
   const exportOmegaPack = useCallback(async () => {
     try {
-      addLog(`[SYSTEM] Preparing OmegaPack (.zip)...`);
+      addLog(`[SYSTEM] Preparing OmegaPack (.omega)...`);
       
       const zip = new JSZip();
       
@@ -165,6 +168,34 @@ export const useBundleTransfer = (
 
       const auditReport = `# OMEGA Audit Report\n\nModule ID: ${manifest.id}\nStatus: ${issues.length === 0 ? 'CERTIFIED' : 'DEGRADED'}\nIssues: ${issues.length}\nTimestamp: ${new Date().toISOString()}\n`;
       zip.file(`AUDIT_REPORT.md`, auditReport);
+
+      // ── .omega container: persist history for infinite undo/redo ──
+      const history = historyService.getHistory();
+      const hasHistory = history.past.length > 0 || history.future.length > 0;
+      if (hasHistory) {
+        zip.file('history.json', JSON.stringify(history, null, 2));
+        addLog(`[SYSTEM] History persisted: ${history.past.length} past, ${history.future.length} future entries.`);
+      }
+
+      // ── .omega container: project metadata + editor state ─────────
+      const projectMeta = {
+        name: manifest.metadata?.name || 'Untitled',
+        id: manifest.id,
+        schemaVersion: '10.0.0-omega',
+        version: manifest.metadata?.version || '1.0.0',
+        author: manifest.metadata?.author || '',
+        family: manifest.metadata?.family || 'utility',
+        exportedAt: new Date().toISOString(),
+        editorState: {
+          rackWidth: manifest.ui?.dimensions?.width || manifest.ui?.layout?.width || 800,
+          rackHeight: manifest.ui?.dimensions?.height || manifest.ui?.layout?.height || 600,
+          grid: manifest.ui?.layout?.grid || null,
+          skin: manifest.ui?.skin || null,
+          simulationConfig: inputSignalService.serializeState(),
+        },
+      };
+      zip.file('project.json', JSON.stringify(projectMeta, null, 2));
+      addLog(`[SYSTEM] Project metadata saved: ${projectMeta.name} v${projectMeta.version}.`);
 
       const { usedAssets } = getUsedResources(asepticManifest);
 
@@ -198,11 +229,11 @@ export const useBundleTransfer = (
       const url = URL.createObjectURL(content);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${manifest.id}.zip`;
+      a.download = `${manifest.metadata?.name || manifest.id}.omega`;
       a.click();
       URL.revokeObjectURL(url);
       
-      addLog(`[SUCCESS] OmegaPack exported: ${manifest.id}.zip`);
+      addLog(`[SUCCESS] OmegaPack exported: ${manifest.metadata?.name || manifest.id}.omega`);
       captureStableSnapshot();
     } catch (err) {
       addLog(`[ERROR] Failed to generate OmegaPack: ${err}`);
@@ -232,6 +263,26 @@ export const useBundleTransfer = (
       if (manifests.length > 0) {
         addLog(`[TRACE] Ingesting ${manifests.length} manifests...`);
         for (const m of manifests) {
+          // Validate .acemm manifest schema before ingesting
+          try {
+            const yamlText = await m.text();
+            const parsed = yaml.load(yamlText);
+            const validation = validateManifestSchema(parsed);
+            if (!validation.valid) {
+              addLog(`[ERROR] Invalid manifest '${m.name}':`);
+              for (const err of validation.errors) {
+                addLog(`  • ${err}`);
+              }
+              addLog(`[SKIP] File '${m.name}' omitted from ingestion.`);
+              continue;
+            }
+            addLog(`[OK] Manifest '${m.name}' schema validated.`);
+          } catch (parseErr: unknown) {
+            const parseMsg = parseErr instanceof Error ? parseErr.message : String(parseErr);
+            addLog(`[ERROR] Failed to parse '${m.name}': ${parseMsg}`);
+            addLog(`[SKIP] File '${m.name}' omitted from ingestion.`);
+            continue;
+          }
           await handleManifestUpload(m);
         }
       }
@@ -264,8 +315,11 @@ export const useBundleTransfer = (
       addLog(`[SYSTEM] Packaging cell ${nodeId} as blueprint (.acepack)...`);
 
       // 1. Locate node in UCA tree
-      const tree = (manifest as OMEGA_Manifest).ui?.tree
-        || manifestToTree(manifest as OMEGA_Manifest);
+      const tree = (manifest as OMEGA_Manifest).ui?.tree;
+      if (!tree) {
+        addLog('[ERROR] No UCA tree found in manifest.');
+        return;
+      }
       const rootNode = findNodeInTree(tree, nodeId);
       if (!rootNode) {
         addLog(`[ERROR] Cell ${nodeId} not found in UCA tree.`);

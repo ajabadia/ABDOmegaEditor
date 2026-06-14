@@ -1,6 +1,5 @@
 'use client';
 
-;
 import { Info, type LucideIcon } from 'lucide-react';
 
 interface InfoBlockProps {

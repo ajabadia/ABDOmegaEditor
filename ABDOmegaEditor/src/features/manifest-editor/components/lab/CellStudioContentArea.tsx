@@ -1,6 +1,5 @@
 'use client';
 
-;
 import { Box, ChevronUp, ChevronDown, Layout, Trash2 } from 'lucide-react';
 import { OMEGA_ELEMENT_CATALOG } from '@/omega-ui-core/governance/ElementCatalog';
 import type { ManifestEntity, OMEGA_Manifest } from '@/omega-ui-core/types/manifest';

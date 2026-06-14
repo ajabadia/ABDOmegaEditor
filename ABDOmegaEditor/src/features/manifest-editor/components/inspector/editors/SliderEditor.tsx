@@ -1,3 +1,8 @@
+/**
+ * @purpose Proporciona un componente editor de deslizador para el editor del manifiesto OMEGA que permite a los usuarios personalizar las propiedades del deslizador como orientación, color, activo, marcos y ajustes de vinculación según el nivel de inspector seleccionado.
+ * @lastUpdated 2026-06-14T16:48:48.353Z
+ */
+
 import type { ComponentNode, SliderOrientation } from '../../../../../omega-ui-core/types/rack';
 import { CommonFields } from './CommonFields';
 import { ColorInput } from './ColorInput';

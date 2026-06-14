@@ -1,6 +1,5 @@
 'use client';
 
-;
 import { Settings2, PlayCircle } from 'lucide-react';
 
 import type { ManifestEntity, TabName } from '@/types/manifest';

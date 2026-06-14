@@ -1,9 +1,6 @@
 /**
- * ⚠️ OMEGA UI CORE — MASTER ENGINE (Era 7.2.3)
- * ---------------------------------------------------------------------------
- * This is the SINGLE SOURCE OF TRUTH for OMEGA rendering.
- * It handles both architectural structures and primitive controls natively.
- * ---------------------------------------------------------------------------
+ * @purpose Renderizador maestro que despacha todos los tipos de celda OMEGA (rack, contenedor, knobs, ports, displays, switches, etc.) a sus renderizadores específicos
+ * @lastUpdated 2026-06-14T17:45:00.000Z
  */
 
 import { renderKnobHTML } from './KnobRenderer';

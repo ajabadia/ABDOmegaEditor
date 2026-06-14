@@ -1,6 +1,10 @@
 'use client';
 
-;
+/**
+ * @purpose Gestiona las propiedades de anclaje en el editor del manifiesto OMEGA.
+ * @lastUpdated 2026-06-14T16:41:36.006Z
+ */
+
 import AttachmentTypeAnchor from './attachments/AttachmentTypeAnchor';
 import AttachmentLogicFields from './attachments/AttachmentLogicFields';
 import AttachmentPrecisionOffsets from './attachments/AttachmentPrecisionOffsets';

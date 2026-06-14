@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * @purpose El archivo `useAudioPlayer.ts` proporciona un hook React que gestiona la reproducción de archivos de audio y permite controlar el estado de reproducción, tiempo actual y duración del audio, así como también maneja eventos de carga y seek en el progreso de reproducción.
+ * @lastUpdated 2026-06-14T15:28:10.492Z
+ */
+
+
 import * as React from "react";
 
 interface AudioTrack {

@@ -1,6 +1,5 @@
 'use client';
 
-;
 import CellStudioContainer from './lab/CellStudioContainer';
 import type { OMEGA_Manifest, ManifestEntity } from '@/omega-ui-core/types/manifest';
 

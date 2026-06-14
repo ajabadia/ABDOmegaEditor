@@ -1,5 +1,10 @@
 'use client';
 
+/**
+ * @purpose Gestiona y renderiza un componente para agregar mostrar y eliminar activos de fuentes personalizadas en el editor del manifiesto OMEGA.
+ * @lastUpdated 2026-06-14T16:41:00.592Z
+ */
+
 import React from 'react';
 import { Plus, Trash2, ShieldAlert } from 'lucide-react';
 import IndustrialButton from '@/features/manifest-editor/components/inspector/shared/IndustrialButton';

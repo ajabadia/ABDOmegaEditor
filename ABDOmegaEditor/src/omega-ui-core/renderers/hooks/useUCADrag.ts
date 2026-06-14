@@ -130,17 +130,31 @@ export function useUCADrag({
 
       if (isPartOfSelection && debugContext.multiSelectedIds && debugContext.multiSelectedIds.length > 0) {
         // Multi-drag: batch update all selected nodes atomically (Bug 1 fix)
+        // Bug 2 fix: snap the dragged node's delta uniformly, then apply that
+        // SAME delta to all selected nodes. Snapping each node independently
+        // breaks relative alignment because nodes at different positions snap
+        // to different grid lines.
         const updatesMap: Record<string, Partial<OmegaNode>> = {};
         const tree = manifest.ui?.tree;
         if (tree) {
+          // Compute uniform delta from the dragged node (this node)
+          const draggedOrigX = node.layout?.pos?.x || 0;
+          const draggedOrigY = node.layout?.pos?.y || 0;
+          const rawDraggedX = draggedOrigX + dx;
+          const rawDraggedY = draggedOrigY + dy;
+          const snappedDragged = gridConfig?.enabled
+            ? snapToGrid({ x: rawDraggedX, y: rawDraggedY }, gridConfig)
+            : { x: rawDraggedX, y: rawDraggedY };
+          const uniformDx = Math.round(snappedDragged.x) - draggedOrigX;
+          const uniformDy = Math.round(snappedDragged.y) - draggedOrigY;
+
           debugContext.multiSelectedIds.forEach((selectedId) => {
             const targetNode = findNodeInTree(tree, selectedId);
             if (targetNode && targetNode.layout?.pos) {
-              const rawX = (targetNode.layout.pos.x || 0) + dx;
-              const rawY = (targetNode.layout.pos.y || 0) + dy;
-              const snappedPos = gridConfig?.enabled ? snapToGrid({ x: rawX, y: rawY }, gridConfig) : { x: rawX, y: rawY };
+              const newX = (targetNode.layout.pos.x || 0) + uniformDx;
+              const newY = (targetNode.layout.pos.y || 0) + uniformDy;
               updatesMap[selectedId] = {
-                layout: { pos: { x: Math.round(snappedPos.x), y: Math.round(snappedPos.y) } }
+                layout: { pos: { x: Math.round(newX), y: Math.round(newY) } }
               };
             }
           });

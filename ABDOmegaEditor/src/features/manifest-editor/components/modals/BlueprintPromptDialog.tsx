@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
+import { X, Grid3X3 } from 'lucide-react';
 import type { BlueprintDefinition, BlueprintPlaceholderDefinition, BlueprintPlaceholderValues } from '@/omega-ui-core/types/manifest';
+import BlueprintPreview from '../preview/BlueprintPreview';
 
 interface BlueprintPromptDialogProps {
   isOpen: boolean;
@@ -146,36 +147,68 @@ export default function BlueprintPromptDialog({
               </button>
             </div>
 
-            {/* Content */}
-            <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
-              {blueprint.description && (
-                <p className="text-[11px] font-bold uppercase wb-text-muted leading-relaxed border-l-2 border-primary/30 pl-4 py-1">
-                  {blueprint.description}
-                </p>
-              )}
-
-              <div className="space-y-6 pt-2">
-                {(blueprint.placeholders || []).map((p) => (
-                  <div key={p.id} className="space-y-2">
-                    <div className="flex justify-between items-baseline">
-                      <label className="text-[9px] font-black uppercase tracking-widest wb-text">
-                        {p.label}
-                        {p.required && <span className="text-red-500 ml-1">*</span>}
-                      </label>
-                      <span className="text-[8px] wb-text-muted font-mono bg-black/20 border wb-outline px-1.5 py-0.5 rounded-xs">
-                        {p.valueType}
-                      </span>
+            {/* Content — two-column: preview + placeholders */}
+            <div className="flex-1 flex overflow-hidden">
+              {/* Left: Visual Preview */}
+              <div className="w-[320px] shrink-0 border-r wb-outline bg-black/10 p-4 overflow-hidden flex flex-col">
+                <div className="flex items-center gap-1.5 mb-3">
+                  <Grid3X3 className="w-3 h-3 text-primary/60" />
+                  <span className="text-[7px] font-black uppercase tracking-widest wb-text-muted opacity-60">
+                    Rack Preview
+                  </span>
+                </div>
+                <div className="flex-1 flex items-center justify-center min-h-0">
+                  <BlueprintPreview children={blueprint.rootNode.children} width={280} />
+                </div>
+                {/* Legend */}
+                <div className="mt-3 pt-3 border-t wb-outline flex flex-wrap gap-x-3 gap-y-1">
+                  {[['circle','Knob'],['dot','Port'],['bar-v','Slider'],['rect','Display'],['round-rect','Button'],['dash','Container']].map(([icon, label]) => (
+                    <div key={label} className="flex items-center gap-1">
+                      <svg width="8" height="8" viewBox="0 0 8 8" className="shrink-0">
+                        {icon === 'circle' && <circle cx="4" cy="4" r="2.5" fill="none" stroke="currentColor" strokeWidth="0.8" opacity="0.5" />}
+                        {icon === 'dot' && <circle cx="4" cy="4" r="1.5" fill="currentColor" opacity="0.4" />}
+                        {icon === 'bar-v' && <rect x="3" y="1" width="2" height="6" rx="0.5" fill="currentColor" opacity="0.4" />}
+                        {icon === 'rect' && <rect x="1" y="1.5" width="6" height="5" rx="0.5" fill="none" stroke="currentColor" strokeWidth="0.6" opacity="0.4" />}
+                        {icon === 'round-rect' && <rect x="1.5" y="2" width="5" height="4" rx="1" fill="none" stroke="currentColor" strokeWidth="0.6" opacity="0.4" />}
+                        {icon === 'dash' && <rect x="0.5" y="1" width="7" height="6" rx="1" fill="none" stroke="currentColor" strokeWidth="0.5" strokeDasharray="1.5,1" opacity="0.35" />}
+                      </svg>
+                      <span className="text-[5px] font-mono uppercase tracking-wider wb-text-muted opacity-40">{label}</span>
                     </div>
-                    
-                    {renderInput(p)}
-                    
-                    {p.description && (
-                      <p className="text-[8px] font-bold uppercase wb-text-muted opacity-60 leading-tight">
-                        {p.description}
-                      </p>
-                    )}
-                  </div>
-                ))}
+                  ))}
+                </div>
+              </div>
+
+              {/* Right: Placeholder form fields */}
+              <div className="flex-1 p-6 space-y-6 overflow-y-auto custom-scrollbar">
+                {blueprint.description && (
+                  <p className="text-[11px] font-bold uppercase wb-text-muted leading-relaxed border-l-2 border-primary/30 pl-4 py-1">
+                    {blueprint.description}
+                  </p>
+                )}
+
+                <div className="space-y-6 pt-2">
+                  {(blueprint.placeholders || []).map((p) => (
+                    <div key={p.id} className="space-y-2">
+                      <div className="flex justify-between items-baseline">
+                        <label className="text-[9px] font-black uppercase tracking-widest wb-text">
+                          {p.label}
+                          {p.required && <span className="text-red-500 ml-1">*</span>}
+                        </label>
+                        <span className="text-[8px] wb-text-muted font-mono bg-black/20 border wb-outline px-1.5 py-0.5 rounded-xs">
+                          {p.valueType}
+                        </span>
+                      </div>
+                      
+                      {renderInput(p)}
+                      
+                      {p.description && (
+                        <p className="text-[8px] font-bold uppercase wb-text-muted opacity-60 leading-tight">
+                          {p.description}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 

@@ -1,6 +1,5 @@
 'use client';
 
-;
 import { motion } from 'framer-motion';
 import { Shield, Info, Globe, Zap, X } from 'lucide-react';
 import IndustrialStatusSection from '../hub/IndustrialStatusSection';

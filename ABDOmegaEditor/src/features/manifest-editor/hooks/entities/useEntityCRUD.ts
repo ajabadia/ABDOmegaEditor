@@ -3,7 +3,7 @@
 import { useCallback } from 'react';
 import type { OMEGA_Manifest, ManifestEntity, OmegaNode, LayoutContainer, ComponentType, NodeRole } from '@/omega-ui-core/types/manifest';
 import { findNodeInTree, updateNodeInTree, findLegacyItem, applyUpdatesToNode, insertNodeInTree, getAllIdsInTree, removeNodesFromTree, findParentInTree, adaptManifestEntityToNode, adaptNodeToManifestEntity, calculateWorldPosition, removeNodeFromTree } from './ucaInspectorAdapter';
-import { treeToManifest, manifestToTree } from '@/omega-ui-core/utils/ucaBridge';
+import { treeToManifest } from '@/omega-ui-core/utils/ucaBridge';
 import { regenerateEntityId, cloneAndRegenerateNodeIds } from '../../utils/idManagement';
 import { getOccupiedBoxes, resolveFreePosition } from '@/omega-ui-core/utils/spatialUtils';
 
@@ -41,9 +41,11 @@ export const useEntityCRUD = (
   const findItem = useCallback((id: string): ManifestEntity | OmegaNode | undefined => {
     // 1. UCA Priority (Industrial Rule - Phase 4.2)
     if (manifest.ui?.useUCA !== false) {
-      const tree = manifest.ui?.tree || manifestToTree(manifest);
-      const ucaNode = findNodeInTree(tree, id);
-      if (ucaNode) return ucaNode;
+      const tree = manifest.ui?.tree;
+      if (tree) {
+        const ucaNode = findNodeInTree(tree, id);
+        if (ucaNode) return ucaNode;
+      }
     }
     
     // 2. Legacy Fallback
@@ -73,9 +75,8 @@ export const useEntityCRUD = (
   const updateItem = useCallback((id: string, updates: Partial<ManifestEntity> | Partial<OmegaNode>) => {
     updateManifest((latestManifest) => {
       const isUCA = latestManifest.ui?.useUCA !== false;
-      const currentTree = isUCA && latestManifest.ui?.tree
-        ? latestManifest.ui.tree
-        : manifestToTree(latestManifest, latestManifest.ui?.tree);
+      const currentTree = latestManifest.ui?.tree;
+      if (!currentTree) { addLog('[updateItem] No UCA tree.'); return {}; }
       const nodeInTree = findNodeInTree(currentTree, id);
 
       // Path A — Entity exists in the UCA tree: normalize and update in place.
@@ -224,9 +225,9 @@ export const useEntityCRUD = (
 
   const removeItem = useCallback((id: string) => {
     updateManifest((latestManifest) => {
-      const isUCA = latestManifest.ui?.useUCA !== false;
-      const currentTree = isUCA && latestManifest.ui?.tree ? latestManifest.ui.tree : manifestToTree(latestManifest, latestManifest.ui?.tree);
-      
+      const currentTree = latestManifest.ui?.tree;
+      if (!currentTree) return {};
+
       const removeNodeFromTree = (root: OmegaNode, targetId: string): OmegaNode => {
         if (root.children) {
           const nextChildren = root.children
@@ -686,10 +687,8 @@ export const useEntityCRUD = (
    */
   const updateItems = useCallback((updatesMap: Record<string, Partial<OmegaNode>>) => {
     updateManifest((latestManifest) => {
-      const isUCA = latestManifest.ui?.useUCA !== false;
-      const currentTree: OmegaNode = isUCA && latestManifest.ui?.tree
-        ? latestManifest.ui.tree
-        : manifestToTree(latestManifest, latestManifest.ui?.tree);
+      const currentTree = latestManifest.ui?.tree;
+      if (!currentTree) return {};
       let nextTree: OmegaNode = { ...currentTree };
 
       Object.entries(updatesMap).forEach(([id, updates]) => {

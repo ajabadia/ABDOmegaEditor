@@ -1,6 +1,5 @@
 'use client';
  
-;
 import { Paperclip } from 'lucide-react';
 import type { ManifestEntity, OMEGA_Manifest, Attachment, OmegaNode } from '@/omega-ui-core/types/manifest';
 import { useAttachmentsLogic } from '@/features/manifest-editor/hooks/useAttachmentsLogic';

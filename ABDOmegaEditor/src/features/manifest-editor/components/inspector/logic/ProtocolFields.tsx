@@ -1,6 +1,10 @@
 'use client';
- 
-;
+
+/**
+ * @purpose Gestiona una sección colapsable para editar ajustes del protocolo técnico en el editor de manifest OMEGA.
+ * @lastUpdated 2026-06-14T16:50:45.692Z
+ */
+
 import { Box } from 'lucide-react';
 import type { OmegaNode } from '@/omega-ui-core/types/manifest';
 

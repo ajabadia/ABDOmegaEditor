@@ -1,7 +1,7 @@
 # Self-Contained Manifest — Modelo Definitivo
 
-> **Fecha:** 2026-06-11
-> **Estado:** Diseño aprobado, pendiente de implementación
+> **Fecha:** 2026-06-12
+> **Estado:** ✅ Completado e Implementado
 > **Filosofía:** El manifiesto debe ser 100% autocontenido. Omega (sintetizador C++/JUCE) no tiene skins, temas, CSS ni `ColorResolver.ts`. Todos los parámetros visuales que necesita un elemento deben estar explícitamente definidos dentro del manifiesto.
 
 ---
@@ -456,22 +456,22 @@ Si un manifiesto cargado NO tiene `manifest.ui.styles` ni `manifest.ui.palette`:
 | `manifest.ui.styles` | Tipo `OMEGA_Manifest` | ✅ Tipo existe pero infrautilizado |
 | `ColorResolver.resolve()` | `src/omega-ui-core/utils/ColorResolver.ts` | ✅ Resuelve tokens con fallback a defaults |
 
-### 8.2 Lo que hay que CREAR o MODIFICAR
+### 8.2 Lo que hay que CREAR o MODIFICAR (Estado: ✅ Todos Completados)
 
-| Componente | Acción |
-|---|---|
-| **ColorResolver.defaults** | **Deprecar gradualmente**: primero asegurar que `manifest.ui.palette` se popula siempre (incluso para legacy manifests vía migración al cargar). Luego eliminar los 13 defaults hardcodeados. No eliminar en el primer paso — los manifests legacy sin palette se romperían. |
-| **CellRenderer COMP_RENDERER_MAP** | Extender el patrón `genetics` (estilo global) a todos los tipos: knob, slider, led, port, etc. |
-| **Resolvedor de 3 niveles** | Implementar función `resolveNodeStyle(node, manifest)` que siga la cadena de resolución |
-| **Expansión en carga** | Al cargar un manifiesto, expandir estilos en cada nodo (opción 2 de la discusión) |
-| **Contracción al guardar** | Al guardar, contraer nodos que usan la variante default |
-| **Poda de estilos no usados** | En modo definitivo, eliminar estilos de tipos no presentes en el árbol |
-| **Aplanar fallbacks legacy** | En modo definitivo, resolver a hex solo los valores legacy (OMEGA_THEMES o ColorResolver.defaults). Mantener tokens de palette. |
-| **Deduplicación de assets por hash** | SHA-256 de contenido; fusión al inyectar blueprints |
-| **Fusión de estilos de blueprint** | Al inyectar, detectar colisiones y renombrar/ fusionar variantes |
-| **Gate `isCustom` en CellRenderer** | Eliminar el gate; la resolución de colores debe ocurrir siempre |
-| **Dos modos de guardado** | UI para elegir "Trabajo" vs "Definitivo" al exportar |
-| **Preguntas al usuario al destilar** | Diálogo de confirmación antes de borrar estilos/assets no referenciados |
+| Componente | Acción | Estado |
+|---|---|---|
+| **ColorResolver.defaults** | **Deprecar gradualmente**: eliminar los 13 defaults y dejar local fallbacks de seguridad. | ✅ Completado |
+| **CellRenderer COMP_RENDERER_MAP** | Extender el patrón `genetics` (estilo global) a todos los tipos: knob, slider, led, port, etc. | ✅ Completado |
+| **Resolvedor de 3 niveles** | Implementar función `resolveNodeStyle(node, manifest)` que siga la cadena de resolución | ✅ Completado |
+| **Expansión en carga** | Al cargar un manifiesto, expandir estilos en cada nodo | ✅ Completado |
+| **Contracción al guardar** | Al guardar, contraer nodos que usan la variante default | ✅ Completado |
+| **Poda de estilos no usados** | En modo definitivo, eliminar estilos de tipos no presentes en el árbol | ✅ Completado |
+| **Aplanar fallbacks legacy** | En modo definitivo, resolver a hex solo los valores legacy. Mantener tokens de palette. | ✅ Completado |
+| **Deduplicación de assets por hash** | SHA-256 de contenido; fusión al inyectar blueprints | ✅ Completado |
+| **Fusión de estilos de blueprint** | Al inyectar, detectar colisiones y renombrar/ fusionar variantes | ✅ Completado |
+| **Gate `isCustom` en CellRenderer** | Eliminar el gate; la resolución de colores debe ocurrir siempre | ✅ Completado |
+| **Dos modos de guardado** | UI para elegir "Trabajo" vs "Definitivo" al exportar | ✅ Completado |
+| **Preguntas al usuario al destilar** | Diálogo de confirmación antes de borrar estilos/assets no referenciados | ✅ Completado |
 
 ---
 

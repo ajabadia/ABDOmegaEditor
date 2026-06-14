@@ -1,6 +1,5 @@
 'use client';
 
-;
 import { ExternalLink, Palette } from 'lucide-react';
 
 interface StyleLibraryLinkProps {

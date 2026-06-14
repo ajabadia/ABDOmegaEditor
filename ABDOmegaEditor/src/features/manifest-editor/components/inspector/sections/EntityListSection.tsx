@@ -1,6 +1,5 @@
 'use client';
 
-;
 import { Plus, Settings2, Zap, Layout, Copy, Trash2, Database } from 'lucide-react';
 import type { OMEGA_Manifest, LayoutContainer, ManifestEntity } from '@/types/manifest';
 

@@ -1,6 +1,5 @@
 'use client';
 
-;
 import type { TabName } from '@/types/manifest';
 
 interface TabSelectorProps {

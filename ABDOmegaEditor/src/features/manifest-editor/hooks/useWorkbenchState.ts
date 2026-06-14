@@ -143,6 +143,12 @@ export function useWorkbenchState() {
       toggleNodeLock: (nodeId: string) =>
         dispatch({ type: "TOGGLE_NODE_LOCK", payload: { nodeId } }),
 
+      batchSetVisibility: (nodeIds: string[], hidden: boolean) =>
+        dispatch({ type: "BATCH_SET_VISIBILITY", payload: { nodeIds, hidden } }),
+
+      batchSetLocked: (nodeIds: string[], locked: boolean) =>
+        dispatch({ type: "BATCH_SET_LOCK", payload: { nodeIds, locked } }),
+
       toggleHorizontalSplit: (paneId: "primary" | "secondary") =>
         dispatch({ type: "TOGGLE_HORIZONTAL_SPLIT", payload: { paneId } }),
 

@@ -1,3 +1,7 @@
+/**
+ * @purpose Proporciona una forma para editar propiedades comunes como ID, etiqueta, posición (X, Y) y tamaño (ancho, alto) en el editor del manifiesto OMEGA.
+ * @lastUpdated 2026-06-14T16:46:25.474Z
+ */
 
 interface CommonFieldsProps {
   id: string;

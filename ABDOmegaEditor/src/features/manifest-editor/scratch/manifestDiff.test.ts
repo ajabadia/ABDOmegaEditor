@@ -1,9 +1,10 @@
-import { calculateManifestDiff } from '../utils/manifestDiff';
-import type { OMEGA_Manifest, ManifestEntity, LayoutContainer } from '@/omega-ui-core/types/manifest';
-
 /**
+ * @jest-environment jsdom
+ *
  * Phase 9.2 - Unit Tests for Manifest Diff Engine
  */
+import { calculateManifestDiff } from '../utils/manifestDiff';
+import type { OMEGA_Manifest, ManifestEntity, LayoutContainer } from '@/omega-ui-core/types/manifest';
 
 const createMockEntity = (id: string, label: string): ManifestEntity => ({
   id,
@@ -18,9 +19,9 @@ const createMockEntity = (id: string, label: string): ManifestEntity => ({
     variant: 'industrial',
     offsetY: 0,
     offsetX: 0,
-    attachments: []
+    attachments: [],
   },
-  size: { width: 48, height: 48 }
+  size: { width: 48, height: 48 },
 });
 
 const createMockContainer = (id: string): LayoutContainer => ({
@@ -29,7 +30,7 @@ const createMockContainer = (id: string): LayoutContainer => ({
   pos: { x: 0, y: 0 },
   size: { width: 100, height: 100 },
   variant: 'default',
-  tab: 'MAIN'
+  tab: 'MAIN',
 });
 
 const BASE_MANIFEST: OMEGA_Manifest = {
@@ -46,73 +47,73 @@ const BASE_MANIFEST: OMEGA_Manifest = {
       width: 800,
       height: 600,
       planes: ['MAIN'],
-      containers: [createMockContainer('rack_A')]
-    }
-  }
+      containers: [createMockContainer('rack_A')],
+    },
+  },
 };
 
-export const runDiffTests = () => {
-  console.log('--- STARTING OMEGA DIFF ENGINE TESTS ---');
+describe('manifestDiff', () => {
+  it('should return 0 entries for identical manifests', () => {
+    const diff = calculateManifestDiff(BASE_MANIFEST, BASE_MANIFEST);
+    expect(diff.entries.length).toBe(0);
+  });
 
-  // Test 1: No Changes
-  const diff1 = calculateManifestDiff(BASE_MANIFEST, BASE_MANIFEST);
-  console.assert(diff1.entries.length === 0, 'Test 1 Failed: Should have 0 entries for identical manifests');
+  it('should detect added controls', () => {
+    const target: OMEGA_Manifest = {
+      ...BASE_MANIFEST,
+      ui: {
+        ...BASE_MANIFEST.ui!,
+        controls: [...(BASE_MANIFEST.ui!.controls || []), createMockEntity('knob_2', 'Resonance')],
+      },
+    };
+    const diff = calculateManifestDiff(BASE_MANIFEST, target);
+    expect(diff.summary.added).toBe(1);
+    expect(diff.entries[0].entityId).toBe('knob_2');
+  });
 
-  // Test 2: Added Control
-  const target2: OMEGA_Manifest = {
-    ...BASE_MANIFEST,
-    ui: {
-      ...BASE_MANIFEST.ui!,
-      controls: [
-        ...(BASE_MANIFEST.ui!.controls || []),
-        createMockEntity('knob_2', 'Resonance')
-      ]
-    }
-  };
-  const diff2 = calculateManifestDiff(BASE_MANIFEST, target2);
-  console.assert(diff2.summary.added === 1, 'Test 2 Failed: Should detect 1 added control');
-  console.assert(diff2.entries[0].entityId === 'knob_2', 'Test 2 Failed: Wrong entity ID');
+  it('should detect modified properties (label change)', () => {
+    const target: OMEGA_Manifest = {
+      ...BASE_MANIFEST,
+      ui: {
+        ...BASE_MANIFEST.ui!,
+        controls: [
+          { ...(BASE_MANIFEST.ui!.controls?.[0] || createMockEntity('knob_1', 'Frequency')), label: 'Cutoff' },
+        ],
+      },
+    };
+    const diff = calculateManifestDiff(BASE_MANIFEST, target);
+    expect(diff.summary.modified).toBe(1);
+    expect(diff.entries[0].fieldPath).toBe('label');
+    expect(diff.entries[0].before).toBe('Frequency');
+    expect(diff.entries[0].after).toBe('Cutoff');
+  });
 
-  // Test 3: Modified Property (Label)
-  const target3: OMEGA_Manifest = {
-    ...BASE_MANIFEST,
-    ui: {
-      ...BASE_MANIFEST.ui!,
-      controls: [
-        { ...(BASE_MANIFEST.ui!.controls?.[0] || createMockEntity('knob_1', 'Frequency')), label: 'Cutoff' }
-      ]
-    }
-  };
-  const diff3 = calculateManifestDiff(BASE_MANIFEST, target3);
-  console.assert(diff3.summary.modified === 1, 'Test 3 Failed: Should detect 1 modification');
-  console.assert(diff3.entries[0].fieldPath === 'label', 'Test 3 Failed: Should track "label" field');
-  console.assert(diff3.entries[0].before === 'Frequency' && diff3.entries[0].after === 'Cutoff', 'Test 3 Failed: Value mismatch');
+  it('should detect removed containers', () => {
+    const target: OMEGA_Manifest = {
+      ...BASE_MANIFEST,
+      ui: {
+        ...BASE_MANIFEST.ui!,
+        layout: { ...BASE_MANIFEST.ui!.layout!, containers: [] },
+      },
+    };
+    const diff = calculateManifestDiff(BASE_MANIFEST, target);
+    expect(diff.summary.removed).toBe(1);
+    expect(diff.entries[0].entityKind).toBe('container');
+  });
 
-  // Test 4: Removed Container
-  const target4: OMEGA_Manifest = {
-    ...BASE_MANIFEST,
-    ui: {
-      ...BASE_MANIFEST.ui!,
-      layout: { ...BASE_MANIFEST.ui!.layout!, containers: [] }
-    }
-  };
-  const diff4 = calculateManifestDiff(BASE_MANIFEST, target4);
-  console.assert(diff4.summary.removed === 1, 'Test 4 Failed: Should detect 1 removed container');
-  console.assert(diff4.entries[0].entityKind === 'container', 'Test 4 Failed: Should identify kind as "container"');
-
-  // Test 5: Identity check (Move)
-  const target5: OMEGA_Manifest = {
-    ...BASE_MANIFEST,
-    ui: {
-      ...BASE_MANIFEST.ui!,
-      controls: [
-        { ...(BASE_MANIFEST.ui!.controls?.[0] || createMockEntity('knob_1', 'Frequency')), pos: { x: 100, y: 100 } }
-      ]
-    }
-  };
-  const diff5 = calculateManifestDiff(BASE_MANIFEST, target5);
-  console.assert(diff5.summary.added === 0 && diff5.summary.removed === 0, 'Test 5 Failed: Should NOT detect add/remove for identity movement');
-  console.assert(diff5.summary.modified === 2, `Test 5 Failed: Should detect 2 modifications for X and Y move, got ${diff5.summary.modified}`);
-
-  console.log('--- ALL DIFF ENGINE TESTS PASSED ---');
-};
+  it('should NOT detect add/remove for identity movement (position changes)', () => {
+    const target: OMEGA_Manifest = {
+      ...BASE_MANIFEST,
+      ui: {
+        ...BASE_MANIFEST.ui!,
+        controls: [
+          { ...(BASE_MANIFEST.ui!.controls?.[0] || createMockEntity('knob_1', 'Frequency')), pos: { x: 100, y: 100 } },
+        ],
+      },
+    };
+    const diff = calculateManifestDiff(BASE_MANIFEST, target);
+    expect(diff.summary.added).toBe(0);
+    expect(diff.summary.removed).toBe(0);
+    expect(diff.summary.modified).toBe(2); // pos.x and pos.y
+  });
+});

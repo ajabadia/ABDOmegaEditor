@@ -1,6 +1,5 @@
 'use client';
 
-;
 import { AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
 import type { OMEGA_Manifest, OmegaStyleNode } from '@/types/manifest';
 

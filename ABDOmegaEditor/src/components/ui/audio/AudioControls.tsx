@@ -1,3 +1,8 @@
+/**
+ * @purpose Controlador de audio que permite reproducir o pausar un archivo de audio, navegar entre canciones y ajustar el volumen.
+ * @lastUpdated 2026-06-14T15:28:01.322Z
+ */
+
 import { Play, Pause, SkipBack, SkipForward, Volume2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 

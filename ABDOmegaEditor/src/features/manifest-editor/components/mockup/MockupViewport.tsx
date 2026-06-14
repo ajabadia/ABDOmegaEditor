@@ -2,7 +2,6 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import type { OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
 import { UniversalRenderer } from '@/omega-ui-core/renderers/UniversalRenderer';
-import { manifestToTree } from '@/omega-ui-core/utils/ucaBridge';
 
 
 interface MockupViewportProps {
@@ -54,7 +53,7 @@ export const MockupViewport = ({
         {/* UCA NATIVE ENGINE (Static Viewport) */}
         <div className="absolute inset-0 uca-native-layer">
           <UniversalRenderer 
-            node={manifest.ui.tree || manifestToTree(manifest, manifest.ui?.tree)} 
+            node={manifest.ui.tree!} 
             manifest={manifest} 
             catalog={manifest.moduleTemplates || {}}
             resolveAsset={resolveAsset}

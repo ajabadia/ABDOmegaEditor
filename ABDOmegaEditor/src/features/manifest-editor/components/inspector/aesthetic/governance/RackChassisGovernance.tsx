@@ -1,5 +1,10 @@
 'use client';
 
+/**
+ * @purpose Gestiona y renderiza los ajustes de gobernanza para hardware de carcasa de rack en el editor del manifiesto OMEGA, incluyendo conteo de tornillos, desplazamiento, selección de estilo y resolución de activos.
+ * @lastUpdated 2026-06-14T16:39:27.914Z
+ */
+
 import React from 'react';
 import { Settings, HardDrive, Layers } from 'lucide-react';
 import type { OMEGA_Manifest, StyleVariant } from '@/omega-ui-core/types/manifest';

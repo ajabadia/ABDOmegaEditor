@@ -1,43 +1,75 @@
-import { wasmRuntime } from './wasmRuntime';
-
 /**
- * PHASE 20.8 - DELTA BATCHING TEST
+ * PHASE 20.8 - DELTA BATCHING TEST (Jest)
+ *
  * Verifies that multiple updates to the same ID are coalesced
  * and that multiple IDs are sent in a single batch.
+ *
+ * NOTE: Do NOT call wasmRuntime.enableMockMode() in these tests.
+ * Mock mode causes setParameter to bypass the deltaBuffer entirely
+ * (stores values in mockValues instead). The buffer tests must run
+ * against the real deltaBuffer path.
+ *
+ * The WasmRuntime constructor starts a setInterval timer (16ms).
+ * We clear it in beforeEach to prevent background flushes from
+ * interfering with test assertions or causing RPC errors.
  */
-async function runBatchingTest() {
-  console.log('--- STARTING PHASE 20.8 BATCHING TEST ---');
-  wasmRuntime.enableMockMode();
+import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { wasmRuntime } from './wasmRuntime';
 
-  // 1. Coalescing Test: Same ID multiple times
-  console.log('[TEST] Updating ID: frequency 3 times...');
-  wasmRuntime.setParameter('osc1/frequency', 440);
-  wasmRuntime.setParameter('osc1/frequency', 880);
-  wasmRuntime.setParameter('osc1/frequency', 220);
+describe('WasmRuntime - Delta Batching', () => {
+  beforeEach(() => {
+    // Clear buffer before each test
+    // @ts-expect-error - access private for testing
+    wasmRuntime.deltaBuffer.clear();
+    // Stop the batch timer to prevent background flushes during tests
+    // @ts-expect-error - access private for testing
+    if (wasmRuntime.batchTimer != null) {
+      // @ts-expect-error - access private for testing
+      clearInterval(wasmRuntime.batchTimer);
+      // @ts-expect-error - access private for testing
+      wasmRuntime.batchTimer = null;
+    }
+  });
 
-  // 2. Aggregation Test: Multiple IDs
-  console.log('[TEST] Updating ID: gain...');
-  wasmRuntime.setParameter('osc1/gain', 0.5);
+  afterEach(() => {
+    // @ts-expect-error - access private for testing
+    wasmRuntime.deltaBuffer.clear();
+  });
 
-  // 3. Wait for flush timer (16ms + safety)
-  console.log('[TEST] Waiting for batch flush (20ms)...');
-  await new Promise(resolve => setTimeout(resolve, 20));
+  it('should buffer a single parameter update', () => {
+    wasmRuntime.setParameter('osc1/frequency', 440);
+    // @ts-expect-error - access private for testing
+    expect(wasmRuntime.deltaBuffer.size).toBe(1);
+    // @ts-expect-error - access private for testing
+    expect(wasmRuntime.deltaBuffer.get('osc1/frequency')).toBe(440);
+  });
 
-  // Note: Since wasmRuntime uses real bridge/observability in its imports,
-  // we look at the logs to confirm. In this test environment, we assume 
-  // the logic inside wasmRuntime.ts is correctly clearing the buffer.
+  it('should coalesce multiple updates to the same ID (keep latest value)', () => {
+    wasmRuntime.setParameter('osc1/frequency', 440);
+    wasmRuntime.setParameter('osc1/frequency', 880);
+    wasmRuntime.setParameter('osc1/frequency', 220);
+    // @ts-expect-error - access private for testing
+    expect(wasmRuntime.deltaBuffer.size).toBe(1);
+    // @ts-expect-error - access private for testing
+    expect(wasmRuntime.deltaBuffer.get('osc1/frequency')).toBe(220);
+  });
 
-  // @ts-expect-error - access private for testing
-  const bufferSize = wasmRuntime.deltaBuffer.size;
-  if (bufferSize === 0) {
-    console.log('[PASSED] Delta buffer flushed successfully.');
-  } else {
-    console.error(`[FAILED] Delta buffer still has ${bufferSize} items!`);
-    process.exit(1);
-  }
+  it('should aggregate multiple distinct IDs in the buffer', () => {
+    wasmRuntime.setParameter('osc1/frequency', 440);
+    wasmRuntime.setParameter('osc1/gain', 0.5);
+    wasmRuntime.setParameter('osc1/resonance', 0.3);
+    // @ts-expect-error - access private for testing
+    expect(wasmRuntime.deltaBuffer.size).toBe(3);
+  });
 
-  console.log('--- BATCHING TEST COMPLETE ---');
-  process.exit(0);
-}
-
-runBatchingTest();
+  it('should handle mixed coalescing and aggregation', () => {
+    wasmRuntime.setParameter('osc1/frequency', 440);
+    wasmRuntime.setParameter('osc1/frequency', 880);
+    wasmRuntime.setParameter('osc1/gain', 0.5);
+    wasmRuntime.setParameter('osc2/level', 0.7);
+    // @ts-expect-error - access private for testing
+    expect(wasmRuntime.deltaBuffer.size).toBe(3);
+    // @ts-expect-error - access private for testing
+    expect(wasmRuntime.deltaBuffer.get('osc1/frequency')).toBe(880);
+  });
+});

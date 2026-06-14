@@ -4,8 +4,8 @@ import { STORAGE_KEYS } from '@/features/manifest-editor/constants/storage';
 import { cloneAndRegenerateNodeIds } from '@/features/manifest-editor/utils/idManagement';
 
 /**
- * OMEGA Clipboard Service (v7.2.3)
- * Industrial cross-document copy/paste engine.
+ * @purpose Servicio de portapapeles industrial para copiar y pegar nodos/entidades con regeneración automática de IDs
+ * @lastUpdated 2026-06-14T17:45:00.000Z
  */
 export const ClipboardService = {
   copy: (item: OmegaNode | ManifestEntity) => {

@@ -1,3 +1,8 @@
+/**
+ * @purpose Proporciona un componente para editar propiedades de etiquetas en el editor del manifiesto OMEGA, incluyendo campos comunes y ajustes avanzados opcionales como tamaño y color de fuente.
+ * @lastUpdated 2026-06-14T16:47:49.375Z
+ */
+
 import type { ComponentNode } from '../../../../../omega-ui-core/types/rack';
 import { CommonFields } from './CommonFields';
 import { VariantSelect } from './VariantSelect';

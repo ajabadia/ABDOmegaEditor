@@ -1,3 +1,8 @@
+/**
+ * @purpose Componente que crea un pie de tarjeta con un botón enlazado a una ruta específica, que muestra el nombre del instrumento y el label asociado.
+ * @lastUpdated 2026-06-14T15:28:19.358Z
+ */
+
 import { ArrowUpRight } from "lucide-react";
 import { Link } from "@/i18n/routing";
 import { Button } from "../Button";

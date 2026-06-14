@@ -1,5 +1,10 @@
 'use client';
 
+/**
+ * @purpose Gestiona las interacciones del usuario para dividir un diseño horizontalmente arrastrando una división.
+ * @lastUpdated 2026-06-14T16:50:09.139Z
+ */
+
 import React, { useCallback } from 'react';
 
 interface HorizontalSplitDividerProps {

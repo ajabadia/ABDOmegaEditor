@@ -1,6 +1,5 @@
 'use client';
 
-;
 import { Maximize2, Minimize2, Move, LayoutGrid, Square } from 'lucide-react';
 
 import type { OmegaStyleNode } from '@/types/manifest';

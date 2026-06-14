@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * @purpose El archivo AudioShowcase.tsx es un componente de interfaz de usuario que muestra una presentación de audio para un instrumento específico en el editor de manifiestos OMEGA (ABDOmegaEditor).
+ * @lastUpdated 2026-06-14T15:28:13.122Z
+ */
+
+
 import * as React from "react";
 import { Activity } from "lucide-react";
 import { motion } from "framer-motion";

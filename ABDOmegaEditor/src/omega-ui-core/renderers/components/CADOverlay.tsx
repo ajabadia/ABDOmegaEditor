@@ -1,6 +1,5 @@
 'use client';
 
-;
 import type { OmegaNode, OMEGA_Manifest, GridConfig } from '../../types/manifest';
 import { getParentRect, getNodeSize, snapToGrid, clampChildToParent } from '../../uca/spatialConstraints';
 

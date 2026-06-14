@@ -1,6 +1,11 @@
 'use client';
 
-;
+/**
+ * @purpose Muestra las directrices de auditoría para los manifiestos OMEGA en un formato visualmente atractivo y organizado.
+ * @lastUpdated 2026-06-14T15:55:32.957Z
+ */
+
+
 import { Terminal } from 'lucide-react';
 
 export default function AuditGuidelines() {

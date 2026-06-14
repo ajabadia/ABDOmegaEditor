@@ -1,6 +1,10 @@
 'use client';
 
-;
+/**
+ * @purpose Renderiza un selector para elegir un contenedor de ancla arquitectónica en el editor del manifiesto OMEGA.
+ * @lastUpdated 2026-06-14T16:38:31.602Z
+ */
+
 import { Layout, Info, Box } from 'lucide-react';
 import type { ManifestEntity, LayoutContainer, Presentation } from '@/omega-ui-core/types/manifest';
 

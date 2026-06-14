@@ -1,6 +1,5 @@
 'use client';
 
-;
 import type { ManifestEntity, OMEGA_Manifest, Presentation } from '@/types/manifest';
 import IndustrialGovernanceConsole from './IndustrialGovernanceConsole';
 

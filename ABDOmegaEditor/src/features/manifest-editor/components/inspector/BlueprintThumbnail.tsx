@@ -1,5 +1,10 @@
 'use client';
 
+/**
+ * @purpose Proporciona una vista previa miniatura SVG del layout de un Grupo de Nodos con formas coloreadas que representan diferentes tipos de componentes.
+ * @lastUpdated 2026-06-14T16:43:20.542Z
+ */
+
 import type { V2BlueprintData } from '@/omega-ui-core/types';
 
 /**

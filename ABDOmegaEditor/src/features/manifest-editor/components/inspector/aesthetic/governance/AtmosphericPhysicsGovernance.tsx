@@ -1,6 +1,10 @@
 'use client';
 
-;
+/**
+ * @purpose Gestiona un sección colapsable para configurar física atmosférica y ajustes ambientales en el editor del manifiesto OMEGA.
+ * @lastUpdated 2026-06-14T16:38:52.934Z
+ */
+
 import { Sun, CornerRightDown } from 'lucide-react';
 import type { OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
 import InspectorCollapsible from '../../shared/InspectorCollapsible';

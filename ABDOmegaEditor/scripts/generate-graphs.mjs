@@ -7,6 +7,13 @@ const SRC_DIR = path.join(PROJECT_ROOT, 'src');
 const APP_DIR = path.join(PROJECT_ROOT, 'app');
 const OUTPUT_DIR = path.join(PROJECT_ROOT, 'docs', 'grafos');
 
+// Files that are expected to have no imports/dependents (framework entry points, ambient types, etc.)
+// These are excluded from the orphan list to reduce noise.
+const ORPHAN_EXCLUSIONS = [
+  'app/',                    // Next.js entry points (page.tsx, robots.ts, api/*, etc.)
+  'src/types/global.d.ts',   // Ambient global type declarations — discovered by TypeScript, not imported
+];
+
 // Ensure output directory exists
 if (fs.existsSync(OUTPUT_DIR)) {
   fs.rmSync(OUTPUT_DIR, { recursive: true, force: true });
@@ -68,8 +75,9 @@ function resolveImport(importPath, currentFileDir) {
       for (const targetPrefix of targetPrefixes) {
         // Try resolving by replacing aliasPrefix with targetPrefix
         const candidate = path.join(PROJECT_ROOT, importPath.replace(aliasPrefix, targetPrefix));
-        if (checkFileExistence(candidate)) {
-          return path.relative(PROJECT_ROOT, candidate).replace(/\\/g, '/');
+        const resolvedPath = checkFileExistence(candidate);
+        if (resolvedPath) {
+          return path.relative(PROJECT_ROOT, resolvedPath).replace(/\\/g, '/');
         }
       }
     }
@@ -204,13 +212,19 @@ for (const file of relativeFiles) {
 
 // Generate master GRAPH.md
 const orphans = [];
+const orphansExcluded = [];
 let totalConnections = 0;
 for (const file of relativeFiles) {
   const depsCount = dependencies.get(file)?.size || 0;
   const depsOfCount = dependents.get(file)?.size || 0;
   totalConnections += depsCount;
   if (depsCount === 0 && depsOfCount === 0) {
-    orphans.push(file);
+    const isExcluded = ORPHAN_EXCLUSIONS.some(pattern => file.startsWith(pattern));
+    if (isExcluded) {
+      orphansExcluded.push(file);
+    } else {
+      orphans.push(file);
+    }
   }
 }
 
@@ -283,6 +297,11 @@ ${mermaidGraph}
 Los archivos huérfanos **no tienen dependencias entrantes ni salientes** dentro del proyecto. Pueden ser componentes antiguos, scripts independientes, puntos de entrada no referenciados o código muerto:
 
 ${orphans.length === 0 ? '_No se detectaron archivos aislados._' : orphans.map(f => `- [\`${f}\`](file:///${path.join(PROJECT_ROOT, f).replace(/\\/g, '/')})`).join('\n')}
+
+> [!NOTE] Archivos excluidos del análisis
+> Los siguientes archivos son entry points del framework o declaraciones globales que **por diseño** no son importados por otros archivos:
+> \
+${orphansExcluded.map(f => `> - \`${f}\``).join('\n')}
 `;
 
 fs.writeFileSync(path.join(OUTPUT_DIR, 'GRAPH.md'), masterMd, 'utf8');

@@ -1,6 +1,10 @@
 'use client';
 
-;
+/**
+ * @purpose Renderiza un botón que alterna entre temas oscuro y claro en el editor del manifiesto OMEGA.
+ * @lastUpdated 2026-06-14T16:08:40.173Z
+ */
+
 import { Sun, Moon } from 'lucide-react';
 
 interface ThemeToggleProps {

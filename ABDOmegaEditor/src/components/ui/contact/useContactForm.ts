@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * @purpose Maneja el formulario de contacto para verificar la humanidad del usuario y enviar datos a la API.
+ * @lastUpdated 2026-06-14T15:31:25.300Z
+ */
+
+
 import { useState, useEffect } from "react";
 import type { FormEvent } from "react";
 import { useTranslations } from "next-intl";

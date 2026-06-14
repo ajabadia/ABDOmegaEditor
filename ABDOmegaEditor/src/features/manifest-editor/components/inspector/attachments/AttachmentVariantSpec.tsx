@@ -1,6 +1,10 @@
 'use client';
 
-;
+/**
+ * @purpose Gestiona un componente para especificar y actualizar variantes de anexos en el editor del manifiesto OMEGA.
+ * @lastUpdated 2026-06-14T16:42:52.690Z
+ */
+
 import { Box } from 'lucide-react';
 
 import type { Attachment } from '@/types/manifest';

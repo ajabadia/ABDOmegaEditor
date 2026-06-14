@@ -1,6 +1,11 @@
 'use client';
 
-;
+/**
+ * @purpose Muestra una lista de problemas de auditoría en un manifiesto OMEGA, categorizando y visualizando los errores según su tipo.
+ * @lastUpdated 2026-06-14T15:55:35.539Z
+ */
+
+
 import { 
   FileText, CheckCircle2 
 } from 'lucide-react';

@@ -1,6 +1,10 @@
 'use client';
 
-;
+/**
+ * @purpose Gestiona un sección desplegable para administrar el paleta del tema y ajustes de color en el editor de manifest OMEGA.
+ * @lastUpdated 2026-06-14T16:39:40.016Z
+ */
+
 import { Palette } from 'lucide-react';
 import type { OMEGA_Manifest } from '@/types/manifest';
 import InspectorCollapsible from '../../shared/InspectorCollapsible';

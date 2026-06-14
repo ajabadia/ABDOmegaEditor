@@ -1,6 +1,10 @@
 'use client';
 
-;
+/**
+ * @purpose Renderiza un elemento de ayuda desplegable para el editor del manifiesto OMEGA, mostrando contenido y subsecciones con animaciones.
+ * @lastUpdated 2026-06-14T16:37:46.078Z
+ */
+
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import type { HelpSection } from '../modals/helpData';

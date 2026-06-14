@@ -1,6 +1,5 @@
 'use client';
 
-;
 import { motion } from 'framer-motion';
 import { ScrollText, X, AlertTriangle, ChevronRight } from 'lucide-react';
 import { useIngestionLogic } from '@/features/manifest-editor/hooks/useIngestionLogic';

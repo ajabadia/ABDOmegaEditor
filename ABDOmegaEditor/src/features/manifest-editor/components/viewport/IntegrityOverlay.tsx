@@ -1,6 +1,5 @@
 'use client';
 
-;
 import { motion } from 'framer-motion';
 import type { OmegaNode } from '@/omega-ui-core/types/manifest';
 import type { AuditResult } from '@/services/auditService';

@@ -1,6 +1,10 @@
 'use client';
 
-;
+/**
+ * @purpose Proporciona una cabecera para adjuntos con botones para agregar fragmentos y acceder a información de ayuda.
+ * @lastUpdated 2026-06-14T16:42:31.449Z
+ */
+
 import { Paperclip, Info, Plus } from 'lucide-react';
 
 interface AttachmentsHeaderProps {

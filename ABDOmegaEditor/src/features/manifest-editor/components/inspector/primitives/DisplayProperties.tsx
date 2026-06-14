@@ -1,3 +1,8 @@
+/**
+ * @purpose Gestiona un componente para mostrar y actualizar propiedades de visualización como variante tecnológica y precisión UI visual en un editor de manifest OMEGA.
+ * @lastUpdated 2026-06-14T16:51:26.650Z
+ */
+
 import { Monitor, Hash } from 'lucide-react';
 import type { ManifestEntity, OMEGA_Manifest, Presentation } from '@/omega-ui-core/types/manifest';
 import StyleLibraryLink from '../shared/StyleLibraryLink';

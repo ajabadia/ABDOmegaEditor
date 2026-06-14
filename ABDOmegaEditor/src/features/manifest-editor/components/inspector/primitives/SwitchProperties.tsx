@@ -1,6 +1,5 @@
 'use client';
 
-;
 import { ToggleLeft, Palette } from 'lucide-react';
 
 import type { ManifestEntity, OMEGA_Manifest, Presentation } from '@/omega-ui-core/types/manifest';

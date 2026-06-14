@@ -1,6 +1,10 @@
 'use client';
- 
-;
+
+/**
+ * @purpose Renderiza un campo colapsable para seleccionar y vincular valores en un editor de manifest OMEGA, proporcionando opciones desde binds disponibles e indicando las ligas seleccionadas.
+ * @lastUpdated 2026-06-14T16:50:35.705Z
+ */
+
 import { Settings2 } from 'lucide-react';
 import type { OmegaNode } from '@/omega-ui-core/types/manifest';
 

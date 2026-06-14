@@ -1,3 +1,8 @@
+/**
+ * @purpose Componente que muestra una lista de pistas de audio y permite al usuario seleccionar una pista para reproducir.
+ * @lastUpdated 2026-06-14T15:28:04.934Z
+ */
+
 import { Play, Activity } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";

@@ -1,5 +1,4 @@
 import type { OMEGA_Manifest, ManifestEntity, OmegaNode, NodeKind, NodeRole } from '@/omega-ui-core/types/manifest';
-import { manifestToTree } from '@/omega-ui-core/utils/ucaBridge';
 import { moveChildInTree } from '@/omega-ui-core/utils/treeUtils';
 
 export type SelectionRef = 
@@ -107,8 +106,8 @@ export function findEditableItem(manifest: OMEGA_Manifest, id: string): { item: 
     return { item: legacyItem, ref: { source: 'legacy', id } };
   }
 
-  // 2. Try UCA deep search if it exists or use projection as fallback
-  const treeToSearch = manifest.ui?.tree || manifestToTree(manifest, manifest.ui?.tree);
+  // 2. Try UCA deep search
+  const treeToSearch = manifest.ui?.tree;
   if (treeToSearch) {
     const deepNode = findNodeInTree(treeToSearch, id);
     if (deepNode) {

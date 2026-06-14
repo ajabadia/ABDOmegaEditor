@@ -1,6 +1,10 @@
 'use client';
 
-;
+/**
+ * @purpose Gestiona y renderiza propiedades para seleccionar opciones en una interfaz de editor de manifiesto, incluyendo agregar, editar y aplicar presets.
+ * @lastUpdated 2026-06-14T16:52:33.635Z
+ */
+
 import { List, Plus, Trash2, Hash, Type, Zap } from 'lucide-react';
 import { INDUSTRIAL_PRESETS } from './presets';
 

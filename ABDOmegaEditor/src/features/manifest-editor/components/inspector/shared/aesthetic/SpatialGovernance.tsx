@@ -1,6 +1,5 @@
 'use client';
 
-;
 import { Maximize, Move, Layers } from 'lucide-react';
 import type { OmegaStyleNode } from '@/types/manifest';
 import InspectorCollapsible from '../InspectorCollapsible';

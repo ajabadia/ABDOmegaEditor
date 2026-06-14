@@ -1,10 +1,16 @@
 'use client';
 
+/**
+ * @purpose Hook que registra atajos de teclado globales del workbench: persistencia, clipboard, historial, agrupación y Cell Studio
+ * @lastUpdated 2026-06-14T17:45:00.000Z
+ */
+
 import { useEffect } from 'react';
 
 interface WorkbenchEditor {
   addLog: (msg: string) => void;
   exportManifest: (mode?: 'work' | 'distilled') => void;
+  exportOmegaPack: () => void;
   copyToClipboard: (id: string) => void;
   pasteFromClipboard: () => void;
   undo: () => void;
@@ -16,7 +22,8 @@ interface WorkbenchEditor {
 export function useWorkbenchShortcuts(
   editor: WorkbenchEditor,
   selectedItemId: string | null,
-  multiSelectedIds?: string[]
+  multiSelectedIds?: string[],
+  onOpenCellStudio?: () => void
 ) {
   useEffect(() => {
     const isInputFocused = () => {
@@ -34,11 +41,11 @@ export function useWorkbenchShortcuts(
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // 1. Persistence (Ctrl+S)
+      // 1. Persistence (Ctrl+S) — export .omega pack
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
-        editor.addLog("[INPUT] Cmd+S detected. Triggering persistence...");
-        editor.exportManifest('work');
+        editor.addLog("[INPUT] Ctrl+S detected. Exporting .omega pack...");
+        editor.exportOmegaPack();
       }
 
       // 2. Clipboard (Ctrl+C / Ctrl+V)
@@ -92,9 +99,19 @@ export function useWorkbenchShortcuts(
           }
         }
       }
+
+      // 5. Cell Studio (Ctrl+Shift+E)
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'e') {
+        if (!isInputFocused()) {
+          e.preventDefault();
+          if (onOpenCellStudio) {
+            onOpenCellStudio();
+          }
+        }
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [editor, selectedItemId]);
+  }, [editor, selectedItemId, multiSelectedIds, onOpenCellStudio]);
 }

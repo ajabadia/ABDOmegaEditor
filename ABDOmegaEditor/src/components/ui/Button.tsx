@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * @purpose Componente de interfaz de usuario que representa un botón personalizable con variantes de estilo y tamaño, así como una indicación de carga en proceso.
+ * @lastUpdated 2026-06-14T15:28:14.805Z
+ */
+
+
 import * as React from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";

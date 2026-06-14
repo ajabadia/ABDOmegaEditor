@@ -1,11 +1,12 @@
-import { describe, it } from 'node:test';
-import assert from 'node:assert/strict';
+/**
+ * @jest-environment jsdom
+ *
+ * Tests for UCA Inspector Adapter & Immutable Mutations
+ */
+import { describe, it, expect, beforeEach } from '@jest/globals';
 import type { OmegaNode } from '@/omega-ui-core/types/manifest';
 import { findNodeInTree, updateNodeInTree, adaptNodeToManifestEntity } from '../ucaInspectorAdapter';
 
-/**
- * Tests for UCA Inspector Adapter & Immutable Mutations
- */
 describe('ucaInspectorAdapter', () => {
   const mockTree: OmegaNode = {
     id: 'rack_master',
@@ -29,44 +30,52 @@ describe('ucaInspectorAdapter', () => {
                 bind: 'vcf.cutoff',
                 role: 'control',
                 layout: { pos: { x: 0, y: 0 } },
-                style: { color: 'red' }
-              }
-            ]
-          }
-        ]
-      }
-    ]
+                style: { color: 'red' },
+              },
+            ],
+          },
+        ],
+      },
+    ],
   };
+
+  beforeEach(() => {
+    // Clears any memoization between tests
+    jest.resetModules();
+  });
 
   it('should find deep nodes in the tree recursively (and memoize them)', () => {
     const node = findNodeInTree(mockTree, 'cutoff_knob');
-    assert.ok(node !== undefined);
-    assert.equal(node?.id, 'cutoff_knob');
-    assert.equal(node?.cellRef, 'moog_knob_01');
+    expect(node).not.toBeUndefined();
+    expect(node?.id).toBe('cutoff_knob');
+    expect(node?.cellRef).toBe('moog_knob_01');
 
-    // Test memoization: second call should be faster/return same instance
+    // Test memoization: second call should return same instance
     const nodeAgain = findNodeInTree(mockTree, 'cutoff_knob');
-    assert.equal(nodeAgain, node);
+    expect(nodeAgain).toBe(node);
   });
 
   it('should return undefined for missing nodes', () => {
     const node = findNodeInTree(mockTree, 'ghost_node');
-    assert.equal(node, undefined);
+    expect(node).toBeUndefined();
   });
 
   it('should adapt an OmegaNode to a transient ManifestEntity correctly', () => {
     const node = findNodeInTree(mockTree, 'cutoff_knob');
-    assert.ok(node !== undefined);
+    expect(node).not.toBeUndefined();
     const entity = adaptNodeToManifestEntity(node!);
 
-    assert.equal(entity.id, 'cutoff_knob');
-    assert.equal(entity.type, 'moog_knob_01'); // fallback to cellRef
-    assert.equal(entity.role, 'control');
-    assert.equal(entity.bind, 'vcf.cutoff');
-    assert.equal(entity.presentation?.style?.color, 'red');
+    expect(entity.id).toBe('cutoff_knob');
+    expect(entity.type).toBe('moog_knob_01'); // fallback to cellRef
+    expect(entity.role).toBe('control');
+    expect(entity.bind).toBe('vcf.cutoff');
   });
 
   it('should immutably update a deep node without mutating the original tree', () => {
+    // Ensure first find populates memo
+    const preNode = findNodeInTree(mockTree, 'cutoff_knob');
+    expect(preNode?.style?.color).toBe('red');
+
     const nextTree = updateNodeInTree(mockTree, 'cutoff_knob', {
       bind: 'vcf.resonance',
       presentation: {
@@ -76,23 +85,24 @@ describe('ucaInspectorAdapter', () => {
         offsetX: 0,
         offsetY: 0,
         attachments: [],
-        style: { color: 'blue' } // merges into style
-      }
+        style: { color: 'blue' }, // merges into style
+      },
     });
 
     // Original tree should not be mutated
     const originalNode = findNodeInTree(mockTree, 'cutoff_knob');
-    assert.equal(originalNode?.bind, 'vcf.cutoff');
-    assert.equal(originalNode?.style?.color, 'red');
+    expect(originalNode?.bind).toBe('vcf.cutoff');
+    expect(originalNode?.style?.color).toBe('red');
 
     // New tree should reflect changes
     const updatedNode = findNodeInTree(nextTree, 'cutoff_knob');
-    assert.equal(updatedNode?.bind, 'vcf.resonance');
-    assert.equal(updatedNode?.cellRef, 'moog_knob_02');
-    assert.equal(updatedNode?.style?.color, 'blue');
+    expect(updatedNode).not.toBeUndefined();
+    expect(updatedNode?.bind).toBe('vcf.resonance');
+    expect(updatedNode?.cellRef).toBe('moog_knob_02');
+    expect(updatedNode?.style?.color).toBe('blue');
 
     // Immutable branch preservation: other nodes should maintain referential equality
-    assert.notEqual(nextTree.children![0], mockTree.children![0]); // Face changed because child changed
-    assert.equal(nextTree.children![0].id, 'main_face');
+    expect(nextTree.children![0]).not.toBe(mockTree.children![0]); // Face changed because child changed
+    expect(nextTree.children![0].id).toBe('main_face');
   });
 });

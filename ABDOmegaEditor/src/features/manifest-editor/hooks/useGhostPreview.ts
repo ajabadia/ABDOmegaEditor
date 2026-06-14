@@ -97,10 +97,6 @@ export function useGhostPreview() {
     const occupied = getOccupiedBoxes(manifest);
     const hasCollision = occupied.some((box) => boxesIntersect(ghostBox, box));
     
-    if (typeof window !== 'undefined' && (window as unknown as { __OMEGA_ALIGN_DEBUG__?: boolean }).__OMEGA_ALIGN_DEBUG__) {
-      console.log('[COLLISION DEBUG] ghostBox:', ghostBox, 'hasCollision:', hasCollision, 'occupied:', occupied);
-    }
-    
     setIsCollision(hasCollision);
   }, []);
 

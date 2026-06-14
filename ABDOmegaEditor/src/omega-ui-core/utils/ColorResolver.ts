@@ -1,8 +1,8 @@
 import type { OMEGA_Manifest } from '../types/manifest';
 
 /**
- * OMEGA COLOR RESOLUTION ENGINE (Era 7.2.3)
- * The single source of truth for translating theme tokens to HEX across all renderers.
+ * @purpose Motor de resolución cromática que traduce tokens de color del manifiesto a valores HEX/RGBA para todos los renderizadores
+ * @lastUpdated 2026-06-14T17:30:00.000Z
  */
 export class ColorResolver {
   /**
@@ -31,7 +31,24 @@ export class ColorResolver {
       if (palette[c]) return palette[c]!;
       if (colors[c]) return colors[c]!;
       
-      return 'transparent';
+      // Safety fallbacks for canonical keys when not defined in the manifest
+      const fallbacks: Record<string, string> = {
+        primary: '#00f2ff',
+        secondary: '#ff8c00',
+        utility: '#a0a0a0',
+        feedback: '#32cd32',
+        surface: '#121416',
+        hardware: '#777777',
+        chassis: '#1a1a1a',
+        text: '#ffffff',
+        glow: '#00f2ff',
+        glass: 'rgba(255,255,255,0.05)',
+        warning: '#ff3300',
+        highlight: '#ffffff',
+        weak: '#555555'
+      };
+      
+      return fallbacks[c] || 'transparent';
     };
 
     const resolvedHex = resolveBase(baseColor);

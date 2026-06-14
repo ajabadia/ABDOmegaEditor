@@ -1,6 +1,10 @@
 'use client';
 
-;
+/**
+ * @purpose Renderiza campos de formulario para editar propiedades de adjuntos en el editor de manifest OMEGA, incluyendo opciones de vinculación dinámica y sobrecarga de texto/literal según tipo de adjunto.
+ * @lastUpdated 2026-06-14T16:42:09.005Z
+ */
+
 import { Link2, Type } from 'lucide-react';
 
 import type { Attachment } from '@/types/manifest';

@@ -1,6 +1,10 @@
 'use client';
- 
-;
+
+/**
+ * @purpose Gestiona la mapeo arquitectónico entre entidades y contenedores de disposición en el editor del manifiesto OMEGA.
+ * @lastUpdated 2026-06-14T16:44:27.952Z
+ */
+
 import { Layout, Box } from 'lucide-react';
 import type { ManifestEntity, LayoutContainer, OmegaNode } from '@/omega-ui-core/types/manifest';
 import { getInspectorModel, buildInspectorPatch } from '@/features/manifest-editor/hooks/entities/ucaInspectorModel';

@@ -1,7 +1,5 @@
 'use client';
 
-;
-
 import type { OmegaStyleNode } from '@/types/manifest';
 
 interface PrecisionGovernanceProps {

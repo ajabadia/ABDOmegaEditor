@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * @purpose El archivo CalibrationPanel.tsx es un componente de interfaz de usuario (UI) que proporciona una zona de calibración para ajustar parámetros y tablas de voltajes en el editor de manifiestos OMEGA (ABDOmegaEditor).
+ * @lastUpdated 2026-06-14T15:28:17.734Z
+ */
+
+
 import { useState } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, ChevronRight, Sliders, FileSpreadsheet } from "lucide-react";

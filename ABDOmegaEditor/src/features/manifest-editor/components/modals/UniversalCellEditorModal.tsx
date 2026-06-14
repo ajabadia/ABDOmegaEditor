@@ -1,6 +1,5 @@
 'use client';
 
-;
 import { AnimatePresence, motion } from 'framer-motion';
 import type { ManifestEntity, OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
 import CellStudioContainer from '../lab/CellStudioContainer';

@@ -1,3 +1,8 @@
+/**
+ * @purpose Presenta un desafío matemático que permite al usuario resolver una ecuación y verificar su respuesta con un valor calculado.
+ * @lastUpdated 2026-06-14T15:31:23.727Z
+ */
+
 import { Loader2 } from "lucide-react";
 
 interface MathChallengeProps {

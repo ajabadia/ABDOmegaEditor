@@ -1,7 +1,6 @@
 "use client";
 import { useEffect } from "react";
 import type { OMEGA_Manifest } from "@/omega-ui-core/types/manifest";
-import { manifestToTree } from "@/omega-ui-core/utils/ucaBridge";
 import { findNodeInTree } from "@/omega-ui-core/utils/treeUtils";
 /** * Hook extracted from VirtualRack. * Handles arrow key positioning for the selected node in the rack viewport. */ export function useRackKeyboardNav(
   selectedItemId: string | null,
@@ -17,8 +16,7 @@ import { findNodeInTree } from "@/omega-ui-core/utils/treeUtils";
       if (!arrows.includes(e.key)) return;
       if (!selectedItemId) return;
       e.preventDefault();
-      const tree =
-        manifest.ui?.tree || manifestToTree(manifest, manifest.ui?.tree);
+      const tree = manifest.ui?.tree;
       if (!tree) return;
       const node = findNodeInTree(tree, selectedItemId);
       if (!node || !node.layout?.pos || node.kind === "rack") return;

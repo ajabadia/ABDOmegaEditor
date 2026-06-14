@@ -1,3 +1,8 @@
+/**
+ * @purpose Gestiona una grilla de miniaturas de galería con animaciones y efectos de hover.
+ * @lastUpdated 2026-06-14T15:49:43.054Z
+ */
+
 import Image from "next/image";
 import { motion } from "framer-motion";
 

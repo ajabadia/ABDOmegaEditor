@@ -1,3 +1,8 @@
+/**
+ * @purpose Mostrador de metadatos de audio en un grid que se despliega o se oculta según sea necesario, mostrando información como el formato, frecuencia, bitrate y modo de los archivos de audio seleccionados.
+ * @lastUpdated 2026-06-14T15:28:03.265Z
+ */
+
 import { motion, AnimatePresence } from "framer-motion";
 
 interface AudioTrack {

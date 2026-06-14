@@ -3,7 +3,7 @@
 import { useState, useMemo, type KeyboardEvent } from 'react';
 import type { OmegaNode, OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
 import { ChevronRight, ChevronDown, Layers, LayoutPanelLeft, Container, Settings2, BoxSelect } from 'lucide-react';
-import { manifestToTree } from '@/omega-ui-core/utils/ucaBridge';
+
 
 interface TreeSectionProps {
   manifest: OMEGA_Manifest;
@@ -12,10 +12,26 @@ interface TreeSectionProps {
 }
 
 export default function TreeSection({ manifest, selectedItemId, onSelectItem }: TreeSectionProps) {
-  // Use persistent tree or project flat arrays
+  // Use persistent tree
   const rootNode = useMemo(() => {
-    return manifest.ui?.tree || manifestToTree(manifest);
+    return manifest.ui?.tree || null;
   }, [manifest]);
+
+  if (!rootNode) {
+    return (
+      <div className="flex flex-col h-full bg-black/20 rounded-sm border border-white/5 overflow-hidden">
+        <div className="px-3 py-2 border-b border-white/5 flex items-center justify-between bg-white/5">
+          <span className="text-[10px] font-bold tracking-widest text-white/70 uppercase flex items-center gap-1.5">
+            <Layers className="w-3 h-3 text-purple-400" />
+            Jerarquía UCA
+          </span>
+        </div>
+        <div className="flex-1 flex items-center justify-center text-[8px] text-white/30">
+          No UCA tree available
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full bg-black/20 rounded-sm border border-white/5 overflow-hidden">

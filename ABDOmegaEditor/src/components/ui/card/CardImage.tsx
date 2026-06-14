@@ -1,3 +1,8 @@
+/**
+ * @purpose Renderiza una imagen con categorización en un card de interfaz de usuario.
+ * @lastUpdated 2026-06-14T15:31:17.824Z
+ */
+
 import Image from "next/image";
 
 interface CardImageProps {

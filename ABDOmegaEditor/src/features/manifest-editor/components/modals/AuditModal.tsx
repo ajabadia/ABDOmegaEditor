@@ -1,6 +1,5 @@
 'use client';
 
-;
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ShieldCheck, ShieldAlert, ShieldX, Download } from 'lucide-react';
 import { AuditService } from '@/services/auditService';

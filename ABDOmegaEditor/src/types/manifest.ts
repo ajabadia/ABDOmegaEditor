@@ -1,7 +1,6 @@
 /**
- * OMEGA ERA 7.2.3 - MANIFEST TYPE PROXY
- * This file maintains compatibility with legacy imports.
- * The canonical contract now resides in @/omega-ui-core/types/manifest.
+ * @purpose Proxy de tipos que reexporta el contrato canónico de manifiesto OMEGA para mantener compatibilidad con imports legacy
+ * @lastUpdated 2026-06-14T17:45:00.000Z
  */
 
 export * from '@/omega-ui-core/types/manifest';

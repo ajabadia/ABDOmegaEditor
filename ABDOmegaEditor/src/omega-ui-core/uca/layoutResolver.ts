@@ -2,9 +2,8 @@ import type { OmegaNode } from '../types/manifest';
 import { getNodeSize } from './spatialConstraints';
 
 /**
- * resolveLayout
- * Phase 4.4.1: Advanced Layout Automation
- * Recursively calculates effective children positions for nodes with stacking modes.
+ * @purpose Resolvedor de layouts recursivo que calcula posiciones absolutas de hijos en modos stack-v, stack-h y absolute con justify/align/stretch
+ * @lastUpdated 2026-06-14T17:45:00.000Z
  */
 export function resolveLayout(node: OmegaNode, providedSize?: { width: number; height: number }): OmegaNode {
   const mode = node.layout?.mode || 'absolute';

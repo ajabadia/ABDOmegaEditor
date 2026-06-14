@@ -1,3 +1,8 @@
+/**
+ * @purpose Proporciona componentes del editor y sus props para su uso en el editor de manifest OMEGA.
+ * @lastUpdated 2026-06-14T16:47:20.875Z
+ */
+
 export { ComponentEditor } from './ComponentEditor';
 export type { KnobEditorProps } from './KnobEditor';
 export type { SliderEditorProps } from './SliderEditor';

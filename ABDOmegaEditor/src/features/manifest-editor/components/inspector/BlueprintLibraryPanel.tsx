@@ -1,5 +1,10 @@
 'use client';
 
+/**
+ * @purpose Gestiona un panel para seleccionar y administrar planos en el editor del manifiesto OMEGA, incluyendo opciones tanto del almacén oficial como de la biblioteca del usuario.
+ * @lastUpdated 2026-06-14T16:43:08.377Z
+ */
+
 import React, { useState } from 'react';
 import { Search, Zap, Package, Upload, BookOpen, HardDrive } from 'lucide-react';
 import type { V2BlueprintMeta, V2BlueprintData } from '@/omega-ui-core/types';

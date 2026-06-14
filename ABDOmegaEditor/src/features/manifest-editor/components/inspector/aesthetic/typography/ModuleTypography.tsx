@@ -1,6 +1,10 @@
 'use client';
- 
-;
+
+/**
+ * @purpose Gestiona y renderiza ajustes tipográficos para manifestos OMEGA, incluyendo activos de fuente, reemplazos globales y mapas abstractos.
+ * @lastUpdated 2026-06-14T16:41:27.212Z
+ */
+
 import { Type, ShieldAlert } from 'lucide-react';
 import type { OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
 import InspectorCollapsible from '../../shared/InspectorCollapsible';

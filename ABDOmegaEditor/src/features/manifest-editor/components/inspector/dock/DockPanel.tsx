@@ -1,5 +1,10 @@
 'use client';
 
+/**
+ * @purpose Renderiza un panel de muelle reutilizable para el editor del manifiesto OMEGA con título, icono y contenido personalizables.
+ * @lastUpdated 2026-06-14T16:45:13.297Z
+ */
+
 import React from 'react';
 import { X } from 'lucide-react';
 

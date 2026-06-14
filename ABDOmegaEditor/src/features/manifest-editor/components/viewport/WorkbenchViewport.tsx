@@ -9,7 +9,7 @@ import type { OMEGA_Manifest, LayoutContainer, OMEGA_Contract, HybridEntityUpdat
 import { toggleGridField, updateGuides } from '../../utils/gridHelpers';
 import type { OmegaContract } from '@/services/wasmLoader';
 import type { AuditResult } from '@/services/auditService';
-import type { UpdateManifestFn } from './ViewportToolbar';
+import type { UpdateManifestFn, GhostItem } from '@/features/manifest-editor/utils/alignmentConstants';
 
 import { HistoryPanel } from '../inspector/HistoryPanel';
 import type { HistoryEntry } from '../../types/document';
@@ -268,6 +268,15 @@ export function WorkbenchViewport({
     onUpdateManifest?.(updateGuides(manifest, newGuides));
   }, [manifest, onUpdateManifest]);
 
+  // ── Alignment Ghost Preview state ─────────────────────────────────
+  const [alignGhostItems, setAlignGhostItems] = useState<GhostItem[]>([]);
+  const [alignGhostType, setAlignGhostType] = useState<string>('');
+
+  const handleGhostPreviewChange = useCallback((items: GhostItem[] | null, alignType?: string) => {
+    setAlignGhostItems(items ?? []);
+    setAlignGhostType(alignType ?? '');
+  }, []);
+
   const TOOLBAR_H = 28;
   
   return (
@@ -279,7 +288,7 @@ export function WorkbenchViewport({
         if (isLiveMode) return;
         if (e.button !== 0) return;
         if ((e.target as HTMLElement).closest('[id^="uca-"]')) return;
-        if ((e.target as HTMLElement).closest('.viewport-controls, .ruler-overlay, [data-toolbar]')) return;
+        if ((e.target as HTMLElement).closest('.viewport-controls, .ruler-overlay, [data-toolbar], [data-ghost-overlay]')) return;
 
         const rect = sectionRef.current?.getBoundingClientRect();
         if (!rect) return;
@@ -352,6 +361,7 @@ export function WorkbenchViewport({
                 selectedIds={multiSelectedIds}
                 onUpdateItem={updateItem}
                 onUpdateManifest={onUpdateManifest ?? undefined}
+                onGhostPreviewChange={handleGhostPreviewChange}
               />
             )}
             <VirtualRack 
@@ -388,6 +398,8 @@ export function WorkbenchViewport({
               {...(onGhostMouseMove != null ? { onGhostMouseMove } : {})}
               {...(onGhostClick != null ? { onGhostClick } : {})}
               {...(onGhostCancel != null ? { onGhostCancel } : {})}
+              alignGhostItems={alignGhostItems}
+              alignGhostType={alignGhostType}
             />
           </ViewWrapper>
         )}

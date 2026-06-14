@@ -41,6 +41,7 @@ export function generateBlueprintThumbnail(
   const tx = (x: number) => offsetX + x * scale;
   const ty = (y: number) => offsetY + y * scale;
   const ts = (v: number) => v * scale;
+  const sw = (v: number) => Math.max(0.5, ts(v));
 
   // Collect all leaf shapes from subtree
   const shapes: string[] = [];
@@ -56,17 +57,17 @@ export function generateBlueprintThumbnail(
       case 'knob':
       case 'encoder':
       case 'pot':
-        shapes.push(`<circle cx="${cx + w / 2}" cy="${cy + h / 2}" r="${Math.min(w, h) / 2 * 0.7}" fill="none" stroke="#00f0ff" stroke-width="1.5" />`);
+        shapes.push(`<circle cx="${cx + w / 2}" cy="${cy + h / 2}" r="${Math.min(w, h) / 2 * 0.7}" fill="none" stroke="#00f0ff" stroke-width="${sw(1.5)}" />`);
         shapes.push(`<circle cx="${cx + w / 2}" cy="${cy + h / 2}" r="${Math.min(w, h) / 2 * 0.35}" fill="#00f0ff" opacity="0.3" />`);
         // Tick mark
-        shapes.push(`<line x1="${cx + w / 2}" y1="${cy + h / 2 - Math.min(w, h) / 2 * 0.7}" x2="${cx + w / 2}" y2="${cy + h / 2 - Math.min(w, h) / 2 * 0.35}" stroke="#00f0ff" stroke-width="1.5" />`);
+        shapes.push(`<line x1="${cx + w / 2}" y1="${cy + h / 2 - Math.min(w, h) / 2 * 0.7}" x2="${cx + w / 2}" y2="${cy + h / 2 - Math.min(w, h) / 2 * 0.35}" stroke="#00f0ff" stroke-width="${sw(1.5)}" />`);
         break;
       case 'port':
       case 'jack':
       case 'input':
       case 'output':
-        shapes.push(`<circle cx="${cx + w / 2}" cy="${cy + h / 2}" r="${Math.min(w, h) / 2 * 0.5}" fill="none" stroke="#ff6b35" stroke-width="1.5" />`);
-        shapes.push(`<circle cx="${cx + w / 2}" cy="${cy + h / 2}" r="2" fill="#ff6b35" />`);
+        shapes.push(`<circle cx="${cx + w / 2}" cy="${cy + h / 2}" r="${Math.min(w, h) / 2 * 0.5}" fill="none" stroke="#ff6b35" stroke-width="${sw(1.5)}" />`);
+        shapes.push(`<circle cx="${cx + w / 2}" cy="${cy + h / 2}" r="${Math.max(1, ts(2))}" fill="#ff6b35" />`);
         break;
       case 'led':
       case 'indicator':
@@ -74,42 +75,43 @@ export function generateBlueprintThumbnail(
         break;
       case 'display':
       case 'screen':
-        shapes.push(`<rect x="${cx + 2}" y="${cy + 2}" width="${w - 4}" height="${h - 4}" rx="3" fill="none" stroke="#00f0ff" stroke-width="1" opacity="0.6" />`);
+        shapes.push(`<rect x="${cx + 2}" y="${cy + 2}" width="${w - 4}" height="${h - 4}" rx="3" fill="none" stroke="#00f0ff" stroke-width="${sw(1)}" opacity="0.6" />`);
         // Simulated text lines
-        shapes.push(`<line x1="${cx + 6}" y1="${cy + h * 0.35}" x2="${cx + w - 6}" y2="${cy + h * 0.35}" stroke="#00f0ff" stroke-width="0.8" opacity="0.4" />`);
-        shapes.push(`<line x1="${cx + 6}" y1="${cy + h * 0.55}" x2="${cx + w - 12}" y2="${cy + h * 0.55}" stroke="#00f0ff" stroke-width="0.8" opacity="0.3" />`);
+        shapes.push(`<line x1="${cx + 6}" y1="${cy + h * 0.35}" x2="${cx + w - 6}" y2="${cy + h * 0.35}" stroke="#00f0ff" stroke-width="${sw(0.8)}" opacity="0.4" />`);
+        shapes.push(`<line x1="${cx + 6}" y1="${cy + h * 0.55}" x2="${cx + w - 12}" y2="${cy + h * 0.55}" stroke="#00f0ff" stroke-width="${sw(0.8)}" opacity="0.3" />`);
         break;
       case 'slider':
       case 'fader':
-        shapes.push(`<rect x="${cx + 2}" y="${cy + 2}" width="${w - 4}" height="${h - 4}" rx="2" fill="none" stroke="#00f0ff" stroke-width="1" opacity="0.5" />`);
+        shapes.push(`<rect x="${cx + 2}" y="${cy + 2}" width="${w - 4}" height="${h - 4}" rx="2" fill="none" stroke="#00f0ff" stroke-width="${sw(1)}" opacity="0.5" />`);
         // Thumb
         shapes.push(`<rect x="${cx + 4}" y="${cy + h * 0.3}" width="${w - 8}" height="${h * 0.15}" fill="#00f0ff" opacity="0.5" rx="1" />`);
         break;
       case 'switch':
-        shapes.push(`<rect x="${cx + w * 0.2}" y="${cy + h * 0.15}" width="${w * 0.6}" height="${h * 0.35}" rx="2" fill="none" stroke="#00f0ff" stroke-width="1.2" />`);
-        shapes.push(`<circle cx="${cx + w / 2}" cy="${cy + h * 0.7}" r="3" fill="#00f0ff" opacity="0.5" />`);
+        shapes.push(`<rect x="${cx + w * 0.2}" y="${cy + h * 0.15}" width="${w * 0.6}" height="${h * 0.35}" rx="2" fill="none" stroke="#00f0ff" stroke-width="${sw(1.2)}" />`);
+        shapes.push(`<circle cx="${cx + w / 2}" cy="${cy + h * 0.7}" r="${Math.max(1, ts(3))}" fill="#00f0ff" opacity="0.5" />`);
         break;
       case 'button':
       case 'push':
-        shapes.push(`<rect x="${cx + w * 0.15}" y="${cy + h * 0.15}" width="${w * 0.7}" height="${h * 0.7}" rx="4" fill="none" stroke="#00f0ff" stroke-width="1.2" />`);
+        shapes.push(`<rect x="${cx + w * 0.15}" y="${cy + h * 0.15}" width="${w * 0.7}" height="${h * 0.7}" rx="4" fill="none" stroke="#00f0ff" stroke-width="${sw(1.2)}" />`);
         break;
       case 'label':
-      case 'text':
+      case 'text': {
         const labelText = String(node.meta?.label || node.id || '?').slice(0, 8);
-        shapes.push(`<text x="${cx + w / 2}" y="${cy + h / 2 + 3}" fill="rgba(255,255,255,0.5)" font-family="monospace" font-size="${Math.max(5, ts(8))}" text-anchor="middle" dominant-baseline="middle">${labelText}</text>`);
+        shapes.push(`<text x="${cx + w / 2}" y="${cy + h / 2 + 3}" fill="rgba(255,255,255,0.5)" font-family="monospace" font-size="${Math.max(2.5, ts(8))}" text-anchor="middle" dominant-baseline="middle">${labelText}</text>`);
         break;
+      }
       case 'container':
       case 'face':
       case 'group':
-        shapes.push(`<rect x="${cx}" y="${cy}" width="${w}" height="${h}" rx="4" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.15)" stroke-width="1" stroke-dasharray="3,2" />`);
+        shapes.push(`<rect x="${cx}" y="${cy}" width="${w}" height="${h}" rx="4" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.15)" stroke-width="${sw(1)}" stroke-dasharray="3,2" />`);
         // Label for containers
         if (node.meta?.label) {
-          shapes.push(`<text x="${cx + 4}" y="${cy + 10}" fill="rgba(255,255,255,0.35)" font-family="monospace" font-size="${Math.max(4, ts(6))}" font-weight="bold">${String(node.meta.label).toUpperCase()}</text>`);
+          shapes.push(`<text x="${cx + 4}" y="${cy + 10}" fill="rgba(255,255,255,0.35)" font-family="monospace" font-size="${Math.max(2, ts(6))}" font-weight="bold">${String(node.meta.label).toUpperCase()}</text>`);
         }
         break;
       default:
         // Generic cell: draw a bordered box
-        shapes.push(`<rect x="${cx + 1}" y="${cy + 1}" width="${w - 2}" height="${h - 2}" rx="3" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1" />`);
+        shapes.push(`<rect x="${cx + 1}" y="${cy + 1}" width="${w - 2}" height="${h - 2}" rx="3" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="${sw(1)}" />`);
         break;
     }
 
@@ -119,13 +121,9 @@ export function generateBlueprintThumbnail(
     }
   };
 
-  // Start from root's children (the actual blueprint content)
-  if (rootNode.children?.length) {
-    rootNode.children.forEach(renderNode);
-  } else {
-    // Single node (no children) — render the root itself
-    renderNode(rootNode);
-  }
+  // Always render the root node FIRST (so container borders/labels appear),
+  // then children on top (via renderNode's own recursion).
+  renderNode(rootNode);
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}">
   <rect width="100%" height="100%" fill="rgba(8,8,8,0.95)" rx="6" />

@@ -1,6 +1,10 @@
 'use client';
 
-;
+/**
+ * @purpose Gestiona un componente de tarjeta para administrar adjuntos en un editor de manifestos OMEGA, incluyendo mostrar detalles de adjuntos, alternar expansión, eliminar adjuntos y actualizar propiedades de adjuntos.
+ * @lastUpdated 2026-06-14T16:41:53.099Z
+ */
+
 import { ShieldCheck, X, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AttachmentItem from '../AttachmentItem';

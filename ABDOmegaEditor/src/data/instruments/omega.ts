@@ -1,3 +1,8 @@
+/**
+ * @purpose Define y exporta los detalles del instrumento ABD OMEGA para su uso en el editor de manifiestos OMEGA (ABDOmegaEditor).
+ * @lastUpdated 2026-06-14T15:55:28.475Z
+ */
+
 import type { Instrument } from "./types";
 
 export const omega: Instrument = {

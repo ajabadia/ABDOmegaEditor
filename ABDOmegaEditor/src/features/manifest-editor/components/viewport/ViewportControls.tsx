@@ -1,6 +1,5 @@
 'use client';
 
-;
 import { Plus, Minus, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Maximize, Target, Ruler } from 'lucide-react';
 
 interface ViewportControlsProps {

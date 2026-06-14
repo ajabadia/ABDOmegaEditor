@@ -1,5 +1,10 @@
 'use client';
 
+/**
+ * @purpose Gestiona una barra de herramientas para alternar secciones en el editor del manifiesto OMEGA, clasificándolas en opciones esenciales y avanzadas.
+ * @lastUpdated 2026-06-14T16:45:28.078Z
+ */
+
 import React from 'react';
 import { Info, Cpu, LayoutGrid, Palette, Layout, Activity, Tag, Box, Layers } from 'lucide-react';
 

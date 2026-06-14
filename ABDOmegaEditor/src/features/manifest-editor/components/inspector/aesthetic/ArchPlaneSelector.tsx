@@ -1,6 +1,10 @@
 'use client';
- 
-;
+
+/**
+ * @purpose Renderiza un componente desplegable para seleccionar y actualizar la pestaña en la presentación de una entidad ArchPlane.
+ * @lastUpdated 2026-06-14T16:38:41.335Z
+ */
+
 import { Layers } from 'lucide-react';
 import type { ManifestEntity, TabName, Presentation } from '@/omega-ui-core/types/manifest';
 import InspectorCollapsible from '../shared/InspectorCollapsible';

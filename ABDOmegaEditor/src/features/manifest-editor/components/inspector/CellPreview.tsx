@@ -1,5 +1,10 @@
 'use client';
 
+/**
+ * @purpose Renderiza una vista previa del ítem OmegaNode con contenido desplegable y efecto de escaneo.
+ * @lastUpdated 2026-06-14T16:43:30.101Z
+ */
+
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, ChevronUp } from 'lucide-react';

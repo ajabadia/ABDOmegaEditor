@@ -1,3 +1,8 @@
+/**
+ * @purpose Visualizador de audio que representa gráficamente la música en juego mediante una serie de barras que se mueven y cambian de color según el estado de reproducción (isPlaying).
+ * @lastUpdated 2026-06-14T15:28:08.293Z
+ */
+
 import * as React from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";

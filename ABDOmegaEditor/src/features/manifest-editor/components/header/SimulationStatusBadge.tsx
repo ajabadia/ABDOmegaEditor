@@ -1,3 +1,8 @@
+/**
+ * @purpose Renderiza una insignia que muestra el estado actual de sincronización de simulación incluyendo un icono y etiqueta con tiempo de última sincronización y botón para forzar resincronización opcionalmente para estados de error.
+ * @lastUpdated 2026-06-14T16:08:33.092Z
+ */
+
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Activity, Zap, AlertTriangle, CheckCircle2, RefreshCw } from 'lucide-react';

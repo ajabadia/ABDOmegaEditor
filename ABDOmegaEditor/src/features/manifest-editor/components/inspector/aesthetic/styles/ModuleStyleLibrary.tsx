@@ -1,5 +1,10 @@
 'use client';
 
+/**
+ * @purpose Gestiona y renderiza una biblioteca para variantes de estilo en componentes del editor de manifestos OMEGA.
+ * @lastUpdated 2026-06-14T16:40:30.764Z
+ */
+
 import React from 'react';
 import { Palette, Plus } from 'lucide-react';
 import type { OMEGA_Manifest, StyleVariant } from '@/omega-ui-core/types/manifest';

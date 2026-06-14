@@ -1,6 +1,5 @@
 'use client';
 
-;
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, GitCompare, History } from 'lucide-react';
 import type { ManifestDiffResult, DiffEntry } from '../../types/diff';

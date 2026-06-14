@@ -1,6 +1,10 @@
 'use client';
 
-;
+/**
+ * @purpose Proporciona un panel que muestra información sobre el elemento seleccionado actualmente en el editor del manifiesto OMEGA, incluyendo diagnósticos y estado motor en vivo.
+ * @lastUpdated 2026-06-14T16:45:00.568Z
+ */
+
 import { Crosshair, Monitor } from 'lucide-react';
 import type { OMEGA_Manifest, OMEGA_Contract, ManifestEntity, OmegaNode } from '@/omega-ui-core/types/manifest';
 import DiagnosticBlock from '../DiagnosticBlock';

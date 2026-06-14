@@ -1,5 +1,11 @@
 'use client';
 
+/**
+ * @purpose Gestiona una navegación de secciones en un inspector.
+ * @lastUpdated 2026-06-14T15:50:01.781Z
+ */
+
+
 import React from 'react';
 
 export interface InspectorSection {

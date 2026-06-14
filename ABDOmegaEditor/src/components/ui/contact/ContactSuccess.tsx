@@ -1,3 +1,8 @@
+/**
+ * @purpose Mostrar un mensaje de éxito en el editor de manifiestos OMEGA con opciones para reiniciar y transmitir nuevo contenido.
+ * @lastUpdated 2026-06-14T15:31:22.124Z
+ */
+
 import { motion } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
 import { Button } from "../Button";

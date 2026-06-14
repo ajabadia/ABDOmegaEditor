@@ -1,3 +1,7 @@
+/**
+ * @purpose Proporciona un componente de entrada de color con una etiqueta, un campo de entrada para ingresar un color personalizado y un conjunto de paletas de colores predefinidas para seleccionar.
+ * @lastUpdated 2026-06-14T16:46:10.013Z
+ */
 
 interface ColorInputProps {
   label: string;

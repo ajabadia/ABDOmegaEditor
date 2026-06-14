@@ -1,6 +1,11 @@
 'use client';
 
-;
+/**
+ * @purpose Muestra un componente que muestra una tarjeta de inspección para problemas en manifiestos OMEGA, incluyendo recomendaciones técnicas y opciones para navegar a la ubicación del problema en el editor.
+ * @lastUpdated 2026-06-14T15:55:42.014Z
+ */
+
+
 import { motion } from 'framer-motion';
 import { 
   ShieldCheck, ShieldAlert, ShieldX, 

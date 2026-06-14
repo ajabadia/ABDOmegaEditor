@@ -1,6 +1,10 @@
 'use client';
 
-;
+/**
+ * @purpose Gestiona un componente para administrar estéticas globales en un editor de manifest OMEGA, incluyendo paleta de tema, textura física del faceplate y ajustes de física atmosférica.
+ * @lastUpdated 2026-06-14T16:39:08.343Z
+ */
+
 import { Layers } from 'lucide-react';
 import type { OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
 import InspectorCollapsible from '../../shared/InspectorCollapsible';

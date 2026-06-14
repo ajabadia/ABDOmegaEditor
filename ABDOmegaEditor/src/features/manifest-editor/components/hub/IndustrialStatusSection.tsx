@@ -1,6 +1,10 @@
 'use client';
 
-;
+/**
+ * @purpose Renderiza una sección que muestra métricas del estado industrial y la preparación del sistema con opciones de despliegue.
+ * @lastUpdated 2026-06-14T16:37:56.151Z
+ */
+
 import { motion } from 'framer-motion';
 import { Zap } from 'lucide-react';
 

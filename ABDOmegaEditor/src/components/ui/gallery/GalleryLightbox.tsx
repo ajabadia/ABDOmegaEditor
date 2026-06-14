@@ -1,3 +1,8 @@
+/**
+ * @purpose Mostrando información en un lightbox para una galería de imágenes con detalles y navegación.
+ * @lastUpdated 2026-06-14T15:31:32.421Z
+ */
+
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronLeft, ChevronRight, Info } from "lucide-react";

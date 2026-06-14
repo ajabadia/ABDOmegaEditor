@@ -9,6 +9,7 @@ import type { OMEGA_Manifest, OMEGA_Contract, HybridEntityUpdate, OmegaNode } fr
 import type { SimulationBridgeState } from '../../hooks/useSimulationBridge';
 import type { AuditResult } from '@/services/auditService';
 import type { DocumentOrchestrator } from '../../types/document';
+import type { UpdateManifestFn } from '@/features/manifest-editor/utils/alignmentConstants';
 import { useViewport } from '../../hooks/useViewport';
  
 interface WorkbenchPaneProps {
@@ -48,7 +49,7 @@ interface WorkbenchPaneProps {
   /** Batch update multiple nodes atomically (Bug 1 fix) */
   updateItems?: ((updatesMap: Record<string, Partial<OmegaNode>>) => void) | undefined;
   updateContainer: (id: string, updates: Record<string, unknown>) => void;
-  onUpdateManifest?: import('../viewport/ViewportToolbar').UpdateManifestFn | undefined;
+  onUpdateManifest?: UpdateManifestFn | undefined;
   auditResult: AuditResult;
   resolveAsset: (id: string | undefined) => string | undefined;
   

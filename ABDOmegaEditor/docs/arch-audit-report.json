@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-06-11T23:17:14.347Z",
+  "timestamp": "2026-06-12T06:37:25.811Z",
   "counts": {
     "high": 0,
-    "medium": 53,
-    "low": 250,
-    "total": 303
+    "medium": 56,
+    "low": 253,
+    "total": 309
   },
   "details": {
     "HIGH": [],
@@ -151,6 +151,24 @@
         "file": "src\\features\\manifest-editor\\components\\views\\SourceView.tsx",
         "line": 60,
         "content": "validate: true,",
+        "pattern": "validate"
+      },
+      {
+        "file": "src\\features\\manifest-editor\\components\\WorkbenchContainer.tsx",
+        "line": 47,
+        "content": "import { validateManifestSchema } from '@/omega-ui-core/utils/manifestValidator';",
+        "pattern": "validate"
+      },
+      {
+        "file": "src\\features\\manifest-editor\\components\\WorkbenchContainer.tsx",
+        "line": 273,
+        "content": "// Not distilled — validate schema before loading",
+        "pattern": "validate"
+      },
+      {
+        "file": "src\\features\\manifest-editor\\components\\WorkbenchContainer.tsx",
+        "line": 275,
+        "content": "const validation = validateManifestSchema(parsed);",
         "pattern": "validate"
       },
       {
@@ -576,6 +594,18 @@
         "pattern": "validate"
       },
       {
+        "file": "src\\omega-ui-core\\utils\\manifestValidator.ts",
+        "line": 9,
+        "content": "*   const result = validateManifestSchema(parsed);",
+        "pattern": "validate"
+      },
+      {
+        "file": "src\\omega-ui-core\\utils\\manifestValidator.ts",
+        "line": 42,
+        "content": "export function validateManifestSchema(obj: unknown): ValidationResult | ValidationError {",
+        "pattern": "validate"
+      },
+      {
         "file": "src\\omega-ui-core\\utils\\ucaPathResolver.ts",
         "line": 32,
         "content": "throw new Error(`[HPA] Node ${nodeId} not found in the provided tree context.`);",
@@ -610,6 +640,12 @@
         "line": 26,
         "content": "* Persists the validated canonical graph to disk.",
         "pattern": "validate"
+      },
+      {
+        "file": "src\\services\\projectPackager.ts",
+        "line": 199,
+        "content": "throw new Error('Invalid .omega: no manifest.json or .acemm found');",
+        "pattern": "throw new Error"
       },
       {
         "file": "src\\services\\rpc\\omegaRPCBridge.ts",

@@ -1,5 +1,10 @@
 'use client';
 
+/**
+ * @purpose Proporciona un componente para visualizar e interactuar con las diferencias entre dos archivos manifest en el editor de manifestos OMEGA.
+ * @lastUpdated 2026-06-14T16:51:04.887Z
+ */
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Minus, Edit2, AlertCircle, Hash, Box, Check, Zap } from 'lucide-react';

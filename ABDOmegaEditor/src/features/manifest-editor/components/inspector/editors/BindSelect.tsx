@@ -1,3 +1,7 @@
+/**
+ * @purpose Renderiza un componente select desplegable para vincular opciones en el editor del manifiesto OMEGA.
+ * @lastUpdated 2026-06-14T16:45:37.634Z
+ */
 
 interface BindSelectProps {
   value: string;

@@ -1,5 +1,10 @@
 'use client';
 
+/**
+ * @purpose Renderiza una barra vertical de iconos para alternar entre diferentes paneles en el editor del manifiesto OMEGA.
+ * @lastUpdated 2026-06-14T16:44:46.454Z
+ */
+
 import React from 'react';
 import { Layers, Sliders, Info, History, Settings, Zap, Terminal, Shield } from 'lucide-react';
 

@@ -1,3 +1,8 @@
+/**
+ * @purpose Proporciona un editor de componentes basado en el tipo de nodo seleccionado en el editor del manifiesto OMEGA.
+ * @lastUpdated 2026-06-14T16:46:36.715Z
+ */
+
 import type { ComponentNode, GroupNode, RackManifest } from '../../../../../omega-ui-core/types/rack';
 import { KnobEditor } from './KnobEditor';
 import { SliderEditor } from './SliderEditor';
@@ -19,7 +24,7 @@ interface ComponentEditorProps {
   onChange: (updates: Record<string, unknown>) => void;
   inspectorLevel?: 'simple' | 'medium' | 'advanced' | undefined;
   /** Called when user clicks "Save as Blueprint..." on a group */
-  onSaveGroupAsBlueprint?: ((groupNode: import('@/omega-ui-core/types/rack').GroupNode) => void) | undefined;
+  onSaveGroupAsBlueprint?: ((groupNode: import('@/omega-ui-core/types/rack').GroupNode, exposedParams?: import('@/features/manifest-editor/components/modals/ExposeParametersDialog').ExposedParam[]) => void) | undefined;
   /** Called when user clicks "Ungroup" to dissolve the selected group */
   onUngroupNode?: ((groupId: string) => void) | undefined;
 }

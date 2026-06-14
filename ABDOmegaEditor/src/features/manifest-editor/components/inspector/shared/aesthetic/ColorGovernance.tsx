@@ -1,6 +1,5 @@
 'use client';
 
-;
 import type { OMEGA_Manifest, OmegaStyleNode } from '@/omega-ui-core/types/manifest';
 import SmartColorPicker from '../SmartColorPicker';
 

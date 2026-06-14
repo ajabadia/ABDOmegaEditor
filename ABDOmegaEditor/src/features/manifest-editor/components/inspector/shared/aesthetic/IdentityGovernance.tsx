@@ -1,6 +1,5 @@
 'use client';
 
-;
 import { Fingerprint, Settings2 } from 'lucide-react';
 import type { AestheticCapability } from '@/omega-ui-core/governance/ElementCatalog';
 import { OMEGA_ELEMENT_CATALOG } from '@/omega-ui-core/governance/ElementCatalog';

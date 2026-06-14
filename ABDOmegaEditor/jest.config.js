@@ -11,16 +11,20 @@ const createJestConfig = nextJest({
 /** @type {import('jest').Config} */
 const customJestConfig = {
   // Use node environment since most tests are backend/service logic
+  // Hook tests use @jest-environment jsdom directive per file
   testEnvironment: 'node',
 
-  // Match both .test.ts and .spec.ts files
-  testMatch: ['**/*.test.ts', '**/*.spec.ts'],
+  // Match both .test.ts/.spec.ts and .test.tsx/.spec.tsx files
+  testMatch: ['**/*.test.ts', '**/*.spec.ts', '**/*.test.tsx', '**/*.spec.tsx'],
 
   // Exclude E2E tests (Playwright), node_modules, and legacy code
   testPathIgnorePatterns: ['/node_modules/', '/legacy/', '/e2e/'],
 
   // Verbose output for debugging
   verbose: true,
+
+  // Prevent 'React is not defined' errors with jsdom
+  injectGlobals: true,
 };
 
 module.exports = createJestConfig(customJestConfig);

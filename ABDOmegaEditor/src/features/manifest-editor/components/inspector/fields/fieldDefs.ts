@@ -1,5 +1,10 @@
 'use client';
 
+/**
+ * @purpose Define tipos y utilidades de campos para manejar campos de formulario en el editor del manifiesto OMEGA.
+ * @lastUpdated 2026-06-14T16:49:24.655Z
+ */
+
 import type { LucideIcon } from 'lucide-react';
 
 export type FieldType = 'input' | 'number' | 'textarea' | 'badge' | 'readonly' | 'grid-buttons';

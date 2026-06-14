@@ -1,6 +1,5 @@
 'use client';
 
-;
 import { Layers } from 'lucide-react';
 import type { OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
 import InspectorCollapsible from '@/features/manifest-editor/components/inspector/shared/InspectorCollapsible';

@@ -6,10 +6,10 @@ import {
   MousePointer2, Plus, Cpu, Sparkles, 
   Shield, Settings, Zap, Sliders, Radio,
   Maximize2, Minimize2,
-  Group, Ungroup
+  Group, Ungroup,
+  Disc, ToggleLeft, Lightbulb, Tv, Type, Volume2, Activity, CircleDot
 } from 'lucide-react';
 import { findParentInTree } from '@/omega-ui-core/uca/treeUtils';
-import { manifestToTree } from '@/omega-ui-core/utils/ucaBridge';
 import type { OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
  
 interface ToolbarProps {
@@ -19,7 +19,7 @@ interface ToolbarProps {
   onOpenAudit: () => void;
   onOpenConfig: () => void;
   onOpenCellStudio: () => void;
-  onAddEntity: (type: 'control' | 'jack') => void;
+  onAddEntity: (type: 'control' | 'jack', template?: Partial<import('@/omega-ui-core/types/manifest').ManifestEntity>) => void;
   isZenMode: boolean;
   onToggleZen: () => void;
   activeTool: 'select' | 'marquee' | 'add' | 'studio' | null;
@@ -73,7 +73,8 @@ export default function Toolbar({
   const targetGroupId = (() => {
     if (multiSelectedIds.length !== 1 || !manifest) return undefined;
     const selectedId = multiSelectedIds[0];
-    const rootTree = manifest.ui?.tree || manifestToTree(manifest, manifest.ui?.tree);
+    const rootTree = manifest.ui?.tree;
+    if (!rootTree) return undefined;
     
     // Check if the selected node itself is a group
     const item = findItem?.(selectedId);
@@ -152,11 +153,11 @@ export default function Toolbar({
             ? 'bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]' 
             : 'wb-text-muted hover:wb-text hover:bg-primary/10'
         }`}
-        title="Add Primitives (A)"
+        title="Add Primitives & Ports (A)"
       >
         <Plus className="w-4 h-4" />
       </button>
-
+ 
       {/* Plus flyout menu */}
       <AnimatePresence>
         {showAddMenu && (
@@ -164,34 +165,244 @@ export default function Toolbar({
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -10 }}
-            className="absolute left-full top-0 ml-1.5 w-36 wb-surface border wb-outline shadow-2xl p-1.5 rounded-xs flex flex-col gap-1 z-50 cursor-default"
+            className="absolute left-full top-0 ml-1.5 w-80 wb-surface border wb-outline shadow-2xl p-2 rounded-xs flex flex-col gap-2 z-50 cursor-default"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="text-[6px] font-black uppercase wb-text-muted px-1.5 pb-1 border-b wb-outline">Inject Primitive</div>
+            <div className="text-[7px] font-black uppercase text-primary/80 px-1.5 pb-1 border-b wb-outline tracking-wider">
+              Inject Component
+            </div>
             
-            <button
-              onClick={() => {
-                onAddEntity('control');
-                setShowAddMenu(false);
-                setActiveTool('select');
-              }}
-              className="w-full flex items-center gap-2 px-2 py-1.5 rounded-xs text-[8px] font-bold uppercase text-left hover:bg-primary/20 hover:text-primary transition-colors"
-            >
-              <Sliders className="w-3 h-3" />
-              <span>Param Control</span>
-            </button>
+            <div className="grid grid-cols-2 gap-3 p-1">
+              {/* Column 1: Primitives (Controls) */}
+              <div className="flex flex-col gap-1.5">
+                <div className="text-[6px] font-black uppercase wb-text-muted tracking-widest border-b border-white/5 pb-0.5 mb-1">
+                  Primitives
+                </div>
+                
+                <button
+                  onClick={() => {
+                    onAddEntity('control', { type: 'knob', size: { width: 36, height: 36 } });
+                    setShowAddMenu(false);
+                    setActiveTool('select');
+                  }}
+                  className="w-full flex items-center gap-2 px-1.5 py-1 rounded-xs text-[8px] font-bold uppercase text-left hover:bg-primary/20 hover:text-primary transition-colors"
+                >
+                  <Disc className="w-3 h-3 text-primary/70" />
+                  <span>Knob</span>
+                </button>
 
-            <button
-              onClick={() => {
-                onAddEntity('jack');
-                setShowAddMenu(false);
-                setActiveTool('select');
-              }}
-              className="w-full flex items-center gap-2 px-2 py-1.5 rounded-xs text-[8px] font-bold uppercase text-left hover:bg-primary/20 hover:text-primary transition-colors"
-            >
-              <Radio className="w-3 h-3" />
-              <span>Signal Port</span>
-            </button>
+                <button
+                  onClick={() => {
+                    onAddEntity('control', { type: 'slider-v', size: { width: 20, height: 64 } });
+                    setShowAddMenu(false);
+                    setActiveTool('select');
+                  }}
+                  className="w-full flex items-center gap-2 px-1.5 py-1 rounded-xs text-[8px] font-bold uppercase text-left hover:bg-primary/20 hover:text-primary transition-colors"
+                >
+                  <Sliders className="w-3 h-3 text-primary/70" />
+                  <span>Slider (V)</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    onAddEntity('control', { type: 'slider-h', size: { width: 64, height: 20 } });
+                    setShowAddMenu(false);
+                    setActiveTool('select');
+                  }}
+                  className="w-full flex items-center gap-2 px-1.5 py-1 rounded-xs text-[8px] font-bold uppercase text-left hover:bg-primary/20 hover:text-primary transition-colors"
+                >
+                  <Sliders className="w-3 h-3 text-primary/70 rotate-90" />
+                  <span>Slider (H)</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    onAddEntity('control', { type: 'button', size: { width: 24, height: 24 } });
+                    setShowAddMenu(false);
+                    setActiveTool('select');
+                  }}
+                  className="w-full flex items-center gap-2 px-1.5 py-1 rounded-xs text-[8px] font-bold uppercase text-left hover:bg-primary/20 hover:text-primary transition-colors"
+                >
+                  <CircleDot className="w-3 h-3 text-primary/70" />
+                  <span>Button</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    onAddEntity('control', { type: 'switch', size: { width: 24, height: 40 } });
+                    setShowAddMenu(false);
+                    setActiveTool('select');
+                  }}
+                  className="w-full flex items-center gap-2 px-1.5 py-1 rounded-xs text-[8px] font-bold uppercase text-left hover:bg-primary/20 hover:text-primary transition-colors"
+                >
+                  <ToggleLeft className="w-3 h-3 text-primary/70" />
+                  <span>Switch</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    onAddEntity('control', { type: 'led', size: { width: 14, height: 14 } });
+                    setShowAddMenu(false);
+                    setActiveTool('select');
+                  }}
+                  className="w-full flex items-center gap-2 px-1.5 py-1 rounded-xs text-[8px] font-bold uppercase text-left hover:bg-primary/20 hover:text-primary transition-colors"
+                >
+                  <Lightbulb className="w-3 h-3 text-primary/70" />
+                  <span>LED Light</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    onAddEntity('control', { type: 'display', size: { width: 80, height: 40 } });
+                    setShowAddMenu(false);
+                    setActiveTool('select');
+                  }}
+                  className="w-full flex items-center gap-2 px-1.5 py-1 rounded-xs text-[8px] font-bold uppercase text-left hover:bg-primary/20 hover:text-primary transition-colors"
+                >
+                  <Tv className="w-3 h-3 text-primary/70" />
+                  <span>Display</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    onAddEntity('control', { type: 'label', label: 'Label', size: { width: 60, height: 16 } });
+                    setShowAddMenu(false);
+                    setActiveTool('select');
+                  }}
+                  className="w-full flex items-center gap-2 px-1.5 py-1 rounded-xs text-[8px] font-bold uppercase text-left hover:bg-primary/20 hover:text-primary transition-colors"
+                >
+                  <Type className="w-3 h-3 text-primary/70" />
+                  <span>Label</span>
+                </button>
+              </div>
+              
+              {/* Column 2: Ports */}
+              <div className="flex flex-col gap-1.5">
+                <div className="text-[6px] font-black uppercase wb-text-muted tracking-widest border-b border-white/5 pb-0.5 mb-1">
+                  Signal Ports
+                </div>
+
+                {/* Audio Port */}
+                <div className="flex flex-col gap-1 p-1 bg-white/2 rounded-xs border border-white/5">
+                  <div className="text-[6px] font-black uppercase text-red-400 tracking-wider flex items-center gap-1">
+                    <Volume2 className="w-2.5 h-2.5" />
+                    <span>Audio</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-1">
+                    <button
+                      onClick={() => {
+                        onAddEntity('jack', { type: 'port', label: 'Audio In' });
+                        setShowAddMenu(false);
+                        setActiveTool('select');
+                      }}
+                      className="px-1 py-0.5 rounded-xs text-[7px] font-black uppercase text-center bg-white/5 text-white/70 hover:bg-red-500/20 hover:text-red-400 border border-white/5 transition-colors"
+                    >
+                      In
+                    </button>
+                    <button
+                      onClick={() => {
+                        onAddEntity('jack', { type: 'port', label: 'Audio Out' });
+                        setShowAddMenu(false);
+                        setActiveTool('select');
+                      }}
+                      className="px-1 py-0.5 rounded-xs text-[7px] font-black uppercase text-center bg-white/5 text-white/70 hover:bg-red-500/20 hover:text-red-400 border border-white/5 transition-colors"
+                    >
+                      Out
+                    </button>
+                  </div>
+                </div>
+
+                {/* CV Port */}
+                <div className="flex flex-col gap-1 p-1 bg-white/2 rounded-xs border border-white/5">
+                  <div className="text-[6px] font-black uppercase text-amber-400 tracking-wider flex items-center gap-1">
+                    <Zap className="w-2.5 h-2.5" />
+                    <span>CV</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-1">
+                    <button
+                      onClick={() => {
+                        onAddEntity('jack', { type: 'port', label: 'CV In' });
+                        setShowAddMenu(false);
+                        setActiveTool('select');
+                      }}
+                      className="px-1 py-0.5 rounded-xs text-[7px] font-black uppercase text-center bg-white/5 text-white/70 hover:bg-amber-500/20 hover:text-amber-400 border border-white/5 transition-colors"
+                    >
+                      In
+                    </button>
+                    <button
+                      onClick={() => {
+                        onAddEntity('jack', { type: 'port', label: 'CV Out' });
+                        setShowAddMenu(false);
+                        setActiveTool('select');
+                      }}
+                      className="px-1 py-0.5 rounded-xs text-[7px] font-black uppercase text-center bg-white/5 text-white/70 hover:bg-amber-500/20 hover:text-amber-400 border border-white/5 transition-colors"
+                    >
+                      Out
+                    </button>
+                  </div>
+                </div>
+
+                {/* Gate / Trig Port */}
+                <div className="flex flex-col gap-1 p-1 bg-white/2 rounded-xs border border-white/5">
+                  <div className="text-[6px] font-black uppercase text-emerald-400 tracking-wider flex items-center gap-1">
+                    <Activity className="w-2.5 h-2.5" />
+                    <span>Gate/Trig</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-1">
+                    <button
+                      onClick={() => {
+                        onAddEntity('jack', { type: 'port', label: 'Gate In' });
+                        setShowAddMenu(false);
+                        setActiveTool('select');
+                      }}
+                      className="px-1 py-0.5 rounded-xs text-[7px] font-black uppercase text-center bg-white/5 text-white/70 hover:bg-emerald-500/20 hover:text-emerald-400 border border-white/5 transition-colors"
+                    >
+                      In
+                    </button>
+                    <button
+                      onClick={() => {
+                        onAddEntity('jack', { type: 'port', label: 'Gate Out' });
+                        setShowAddMenu(false);
+                        setActiveTool('select');
+                      }}
+                      className="px-1 py-0.5 rounded-xs text-[7px] font-black uppercase text-center bg-white/5 text-white/70 hover:bg-emerald-500/20 hover:text-emerald-400 border border-white/5 transition-colors"
+                    >
+                      Out
+                    </button>
+                  </div>
+                </div>
+
+                {/* MIDI Port */}
+                <div className="flex flex-col gap-1 p-1 bg-white/2 rounded-xs border border-white/5">
+                  <div className="text-[6px] font-black uppercase text-purple-400 tracking-wider flex items-center gap-1">
+                    <Radio className="w-2.5 h-2.5" />
+                    <span>MIDI</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-1">
+                    <button
+                      onClick={() => {
+                        onAddEntity('jack', { type: 'port', label: 'MIDI In' });
+                        setShowAddMenu(false);
+                        setActiveTool('select');
+                      }}
+                      className="px-1 py-0.5 rounded-xs text-[7px] font-black uppercase text-center bg-white/5 text-white/70 hover:bg-purple-500/20 hover:text-purple-400 border border-white/5 transition-colors"
+                    >
+                      In
+                    </button>
+                    <button
+                      onClick={() => {
+                        onAddEntity('jack', { type: 'port', label: 'MIDI Out' });
+                        setShowAddMenu(false);
+                        setActiveTool('select');
+                      }}
+                      className="px-1 py-0.5 rounded-xs text-[7px] font-black uppercase text-center bg-white/5 text-white/70 hover:bg-purple-500/20 hover:text-purple-400 border border-white/5 transition-colors"
+                    >
+                      Out
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

@@ -3,8 +3,8 @@ import type { OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
 import { observabilityService } from './observabilityService';
 
 /**
- * OMEGA ERA 8.0.0 - INDUSTRIAL HISTORY ENGINE
- * Specialized service for semantic history management with branching support.
+ * @purpose Servicio del motor de historial industrial con soporte de branching, que gestiona undo/redo del manifiesto
+ * @lastUpdated 2026-06-14T17:45:00.000Z
  */
 class HistoryService {
   private history: HistoryEntry[] = [];
@@ -106,6 +106,16 @@ class HistoryService {
   clear() {
     this.history = [];
     this.future = [];
+  }
+
+  /**
+   * restore
+   * Replaces the entire history stack with a saved snapshot.
+   * Used when loading a .omega project from disk.
+   */
+  restore(history: { past: HistoryEntry[]; future: HistoryEntry[] }) {
+    this.history = history.past ? [...history.past] : [];
+    this.future = history.future ? [...history.future] : [];
   }
 }
 

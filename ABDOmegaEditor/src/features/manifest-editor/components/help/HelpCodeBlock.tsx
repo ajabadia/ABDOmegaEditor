@@ -1,5 +1,10 @@
 'use client';
 
+/**
+ * @purpose Renderiza un bloque de código con resaltado sintáctico y función de copiar para código C++/YAML en el editor del manifiesto OMEGA.
+ * @lastUpdated 2026-06-14T16:37:34.667Z
+ */
+
 import { useState } from 'react';
 import { Copy } from 'lucide-react';
 

@@ -1,5 +1,10 @@
 'use client';
 
+/**
+ * @purpose Gestiona un panel para administrar la historia de documentos con opciones para comparar y revertir a estados anteriores.
+ * @lastUpdated 2026-06-14T16:49:58.605Z
+ */
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { History, GitCompare, RotateCcw, Clock } from 'lucide-react';

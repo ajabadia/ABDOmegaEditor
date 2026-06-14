@@ -1,3 +1,8 @@
+/**
+ * @purpose Gestiona un componente para editar propiedades de visualización en el editor del manifiesto OMEGA, incluyendo campos de activos y marcos para ajustes avanzados y selección de vinculación para ajustes intermedios.
+ * @lastUpdated 2026-06-14T16:46:55.230Z
+ */
+
 import type { ComponentNode } from '../../../../../omega-ui-core/types/rack';
 import { CommonFields } from './CommonFields';
 import { BindSelect } from './BindSelect';

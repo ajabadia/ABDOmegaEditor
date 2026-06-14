@@ -1,6 +1,10 @@
 'use client';
 
-;
+/**
+ * @purpose Renderiza un selector desplegable para elegir una fuente de letra predeterminada global con opciones desde las fuentes disponibles.
+ * @lastUpdated 2026-06-14T16:41:12.172Z
+ */
+
 import { Shield } from 'lucide-react';
 
 interface GlobalFallbackSelectorProps {

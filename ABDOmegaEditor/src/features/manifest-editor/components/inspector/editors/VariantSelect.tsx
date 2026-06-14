@@ -1,3 +1,7 @@
+/**
+ * @purpose Renderiza un menú desplegable para seleccionar variantes según tipo de elemento en el editor del manifiesto OMEGA.
+ * @lastUpdated 2026-06-14T16:49:14.614Z
+ */
 
 const VARIANTS: Record<string, { id: string; label: string }[]> = {
   knob: [

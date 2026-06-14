@@ -1,6 +1,10 @@
 'use client';
 
-;
+/**
+ * @purpose Renderiza un bloque diagnóstico que muestra señales con iconos y estados.
+ * @lastUpdated 2026-06-14T16:44:35.734Z
+ */
+
 import { Activity, ShieldAlert, Zap } from 'lucide-react';
 
 interface DiagnosticSignal {

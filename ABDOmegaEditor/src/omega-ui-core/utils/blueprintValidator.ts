@@ -1,3 +1,8 @@
+/**
+ * @purpose Validador de grafos de blueprint que verifica unicidad de IDs, presencia de campos requeridos y emite errores/warnings estructurales
+ * @lastUpdated 2026-06-14T17:45:00.000Z
+ */
+
 import type { OmegaNode, OMEGA_Manifest } from '../types/manifest';
 
 export class BlueprintValidator {

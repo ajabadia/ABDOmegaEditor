@@ -1,6 +1,10 @@
 'use client';
 
-;
+/**
+ * @purpose Gestiona un componente de tarjeta para administrar propiedades del contenedor en el editor de manifestos OMEGA, incluyendo expandir/colapsar, actualizar etiquetas, alternar visibilidad y eliminar contenedores.
+ * @lastUpdated 2026-06-14T16:43:59.937Z
+ */
+
 import { ChevronDown, ChevronRight, Maximize, Minimize2, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { LayoutContainer, OMEGA_Manifest } from '@/types/manifest';

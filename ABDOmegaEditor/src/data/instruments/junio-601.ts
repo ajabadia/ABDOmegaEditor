@@ -1,3 +1,8 @@
+/**
+ * @purpose Define y exporta un instrumento musical llamado ABD JUNiO 601 con sus especificaciones técnicas y características en el editor OMEGA ABDOmegaEditor.
+ * @lastUpdated 2026-06-14T15:55:23.740Z
+ */
+
 import type { Instrument } from "./types";
 
 export const junio601: Instrument = {

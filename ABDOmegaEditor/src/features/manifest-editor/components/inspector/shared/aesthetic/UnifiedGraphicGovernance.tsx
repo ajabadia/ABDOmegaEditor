@@ -1,6 +1,5 @@
 'use client';
 
-;
 import { Image as ImageIcon, Film, Layers, Move, Maximize } from 'lucide-react';
 import { getElementDefinition } from '@/omega-ui-core/governance/ElementCatalog';
 import type { OMEGA_Manifest, OmegaStyleNode } from '@/omega-ui-core/types/manifest';

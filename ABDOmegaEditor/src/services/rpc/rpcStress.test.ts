@@ -1,16 +1,20 @@
-import { OmegaRPCBridge } from './omegaRPCBridge';
-import type { OmegaNode, OMEGA_Manifest } from '../../omega-ui-core/types/manifest';
-import type { SnapshotParams, DeltaPatch } from './rpcTypes';
-
 /**
  * OMEGA Phase 20.3 Stress Test
  * Validates ACK synchronization, delta buffering, and heartbeat health.
  */
+import { OmegaRPCBridge } from './omegaRPCBridge';
+import type { OmegaNode, OMEGA_Manifest } from '../../omega-ui-core/types/manifest';
+import type { SnapshotParams, DeltaPatch } from './rpcTypes';
 
-/**
- * OmegaTestBridge
- * Test-only subclass to expose protected members for stress validation.
- */
+// Mock BlueprintValidator and BlueprintResolver to accept minimal test graphs
+jest.mock('../../omega-ui-core/utils/blueprintValidator', () => ({
+  BlueprintValidator: { validate: jest.fn() },
+}));
+
+jest.mock('../../omega-ui-core/utils/blueprintResolver', () => ({
+  BlueprintResolver: { resolve: (g: unknown) => g },
+}));
+
 class OmegaTestBridge extends OmegaRPCBridge {
   public get mockWS(): MockWebSocket {
     return this.ws as unknown as MockWebSocket;
@@ -44,115 +48,112 @@ class MockWebSocket {
   send(data: string) {
     this.messagesSent.push(data);
     const parsed = JSON.parse(data);
-    
+
     if (this.autoAck) {
-        setTimeout(() => {
-            if (this.onmessage) {
-                this.onmessage({
-                  data: JSON.stringify({
-                    jsonrpc: '2.0',
-                    id: parsed.id,
-                    sessionId: parsed.sessionId,
-                    result: { success: true, hash: 'STABLE_HASH' }
-                  })
-                });
-              }
-        }, this.ackDelay);
+      setTimeout(() => {
+        if (this.onmessage) {
+          this.onmessage({
+            data: JSON.stringify({
+              jsonrpc: '2.0',
+              id: parsed.id,
+              sessionId: parsed.sessionId,
+              result: { success: true, hash: 'STABLE_HASH' },
+            }),
+          });
+        }
+      }, this.ackDelay);
     }
   }
 
   simulateHeartbeat(sessionId: string) {
     if (this.onmessage) {
-        this.onmessage({
-            data: JSON.stringify({
-                jsonrpc: '2.0',
-                sessionId: sessionId,
-                method: 'engine.heartbeat',
-                params: { cpu: 0.1 }
-            })
-        });
+      this.onmessage({
+        data: JSON.stringify({
+          jsonrpc: '2.0',
+          sessionId: sessionId,
+          method: 'engine.heartbeat',
+          params: { cpu: 0.1 },
+        }),
+      });
     }
   }
 }
 
-// Global WebSocket Mock (Industrial Root Fix)
 Object.defineProperty(globalThis, 'WebSocket', {
   value: MockWebSocket,
-  writable: true
+  writable: true,
 });
 
-async function runStressTest() {
-    console.log('--- STARTING PHASE 20.3 STRESS TEST ---');
-    
-    const bridge = new OmegaTestBridge('ws://stress-test');
-    bridge.connect((s) => { console.log(`[STATUS] -> ${s}`); });
+describe('OmegaRPCBridge — Stress Tests', () => {
+  let bridge: OmegaTestBridge;
 
+  beforeEach(() => {
+    bridge = new OmegaTestBridge('ws://stress-test');
+    bridge.connect(() => {});
     const ws = bridge.mockWS;
     ws.onopen!();
+  });
 
-    // TEST 1: DELTA BUFFERING DURING SLOW SNAPSHOT
-    console.log('\n[TEST 1: Delta Buffering during Slow Snapshot]');
-    ws.ackDelay = 500; // 500ms delay for ACK
-    
+  afterEach(() => {
+    bridge.disconnect();
+  });
+
+  it('should buffer deltas during slow snapshot sync', async () => {
+    const ws = bridge.mockWS;
+    ws.ackDelay = 500;
+
     const snapshot: SnapshotParams = {
-        manifestVersion: '7.2.3',
-        documentId: 'stress-doc',
-        graph: { id: 'root' } as OmegaNode,
-        modulations: []
+      manifestVersion: '7.2.3',
+      documentId: 'stress-doc',
+      graph: { id: 'root' } as OmegaNode,
+      modulations: [],
     };
 
-    // Start sync (async)
-    const dummyManifest = { id: 'stress-doc', ui: { tree: { id: 'root', kind: 'rack', layout: { pos: { x: 0, y: 0 } } } } } as unknown as OMEGA_Manifest;
+    const dummyManifest = {
+      id: 'stress-doc',
+      ui: { tree: { id: 'root', kind: 'rack', layout: { pos: { x: 0, y: 0 } } } },
+    } as unknown as OMEGA_Manifest;
+
+    // Start sync (async) — don't await yet
     const syncPromise = bridge.syncSnapshot(snapshot, dummyManifest);
-    console.log('Snapshot sync started. Status:', bridge.getStatus());
 
     // Push deltas while syncing
     bridge.applyDelta({ targetId: 'osc/freq', value: 100, type: 'parameter' });
     bridge.applyDelta({ targetId: 'osc/freq', value: 200, type: 'parameter' });
-    
-    console.log('Buffered Deltas count (expected 2):', bridge.currentDeltaBuffer.length);
-    if (bridge.currentDeltaBuffer.length === 2) {
-        console.log('✅ Deltas successfully buffered during sync.');
-    }
+
+    // Deltas should be buffered during sync
+    expect(bridge.currentDeltaBuffer.length).toBe(2);
 
     // Wait for ACK
     await syncPromise;
-    console.log('Snapshot sync finished. Status:', bridge.getStatus());
-    
-    // Check if deltas were flushed
-    console.log('Buffered Deltas count (expected 0):', bridge.currentDeltaBuffer.length);
-    if (bridge.currentDeltaBuffer.length === 0 && ws.messagesSent.length >= 3) {
-        console.log('✅ Deltas successfully flushed after ACK.');
-    }
 
-    // TEST 2: HEARTBEAT & DEGRADATION
-    console.log('\n[TEST 2: Heartbeat & Health Monitoring]');
-    console.log('Initial Status:', bridge.getStatus());
-    
-    // Wait for 4 seconds without heartbeat (Threshold is 3s)
-    console.log('Waiting for heartbeat timeout (4s)...');
-    await new Promise(r => setTimeout(r, 4000));
-    
-    console.log('Status after timeout (expected degraded):', bridge.getStatus());
-    if (bridge.getStatus() === 'degraded') {
-        console.log('✅ Heartbeat timeout detected degradation.');
-    } else {
-        console.error('❌ Heartbeat timeout NOT detected. Status:', bridge.getStatus());
-    }
+    // After sync, deltas should be flushed
+    expect(bridge.currentDeltaBuffer.length).toBe(0);
+    expect(ws.messagesSent.length).toBeGreaterThanOrEqual(3);
+  });
 
-    // Recover with heartbeat
-    console.log('Simulating heartbeat...');
-    ws.simulateHeartbeat(bridge.currentSessionId);
-    await new Promise(r => setTimeout(r, 500)); // Processing delay
-    
-    console.log('Status after heartbeat (expected in-sync):', bridge.getStatus());
-    if (bridge.getStatus() === 'in-sync') {
-        console.log('✅ Heartbeat recovered health status.');
-    }
+  it('should detect heartbeat timeout and recover', async () => {
+    jest.useFakeTimers();
 
+    // Reconnect with fake timers so the heartbeat monitor's setInterval
+    // uses the mocked timer (beforeEach created it with real timers)
     bridge.disconnect();
-    console.log('\n--- PHASE 20.3 STRESS TEST COMPLETE ---');
-    process.exit(0);
-}
+    bridge.connect(() => {});
+    const ws = bridge.mockWS;
+    ws.onopen!();
 
-runStressTest().catch(console.error);
+    // After connection it should be in-sync or syncing
+    const initialStatus = bridge.getStatus();
+    expect(initialStatus).toMatch(/syncing|in-sync/);
+
+    // Fast-forward past 4 seconds (threshold is 3s)
+    jest.advanceTimersByTime(4000);
+    expect(bridge.getStatus()).toBe('degraded');
+
+    // Simulate heartbeat to restore sync
+    ws.simulateHeartbeat(bridge.currentSessionId);
+    expect(bridge.getStatus()).toBe('in-sync');
+
+    jest.useRealTimers();
+  });
+});

@@ -4,7 +4,7 @@ import React from 'react';
 
 // Specialized Sections
 import type { ManifestEntity, OMEGA_Manifest, OMEGA_Modulation, LayoutContainer, ExtraResource, OmegaNode, HybridEntityUpdate } from '@/omega-ui-core/types/manifest';
-import { manifestToTree } from '@/omega-ui-core/utils/ucaBridge';
+
 
 // Specialized Sections
 import IdentitySection from '@/features/manifest-editor/components/inspector/sections/IdentitySection';
@@ -64,7 +64,7 @@ export interface PropertyPanelProps {
   onPin?: () => void;
   exportSelectedAsBlueprint?: ((id: string) => void) | undefined;
   /** Called when user clicks "Save as Blueprint..." on a group */
-  onSaveGroupAsBlueprint?: ((groupNode: import('@/omega-ui-core/types/rack').GroupNode) => void) | undefined;
+  onSaveGroupAsBlueprint?: ((groupNode: import('@/omega-ui-core/types/rack').GroupNode, exposedParams?: import('@/features/manifest-editor/components/modals/ExposeParametersDialog').ExposedParam[]) => void) | undefined;
   /** Called when user clicks "Ungroup" to dissolve the selected group */
   onUngroupNode?: ((groupId: string) => void) | undefined;
   visibleSections?: {
@@ -90,7 +90,7 @@ import { useDryRunSimulation } from '@/features/manifest-editor/hooks/useDryRunS
 
 export default function PropertyPanel(props: PropertyPanelProps) {
   const item = props.item;
-  const rootTree = props.manifest?.ui?.tree || (props.manifest ? manifestToTree(props.manifest, props.manifest.ui?.tree) : undefined);
+  const rootTree = props.manifest?.ui?.tree;
   
   const [activeSection, setActiveSection] = React.useState(props.activeSection || 'identity');
   const [prevActiveSection, setPrevActiveSection] = React.useState(props.activeSection);

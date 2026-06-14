@@ -3,7 +3,7 @@
 import { useCallback } from 'react';
 import type { OMEGA_Manifest, ModuleTemplate, OmegaNode } from '@/omega-ui-core/types/manifest';
 import { findNodeInTree } from './ucaInspectorAdapter';
-import { manifestToTree } from '@/omega-ui-core/utils/ucaBridge';
+
 
 /**
  * useTemplateCRUD (Phase 5.4)
@@ -85,7 +85,11 @@ export const useTemplateCRUD = (
   }, [manifest, updateManifest, addLog]);
 
   const exportSelectedAsBlueprint = useCallback((nodeId: string) => {
-    const tree = manifest.ui?.tree || manifestToTree(manifest);
+    const tree = manifest.ui?.tree;
+    if (!tree) {
+      addLog('[ERROR] No UCA tree found. Cannot export blueprint.');
+      return;
+    }
     const node = findNodeInTree(tree, nodeId);
     if (!node || (node.kind !== 'container' && node.kind !== 'face')) {
       addLog(`[ERROR] Solo se pueden exportar contenedores o módulos estructurales como blueprints.`);

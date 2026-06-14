@@ -1,5 +1,11 @@
 'use client';
 
+/**
+ * @purpose Presenta un formulario de contacto con validaciones y notificaciones para el editor de manifiestos OMEGA (ABDOmegaEditor).
+ * @lastUpdated 2026-06-14T15:31:27.253Z
+ */
+
+
 import { useTranslations } from "next-intl";
 import { Button } from "./Button";
 import { Send, AlertCircle, Loader2 } from "lucide-react";

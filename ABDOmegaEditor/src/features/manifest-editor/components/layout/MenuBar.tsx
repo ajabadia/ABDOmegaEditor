@@ -1,5 +1,10 @@
 'use client';
 
+/**
+ * @purpose Barra de menú principal del editor con secciones File, Edit, View, Window y Help y submenús jerárquicos animados
+ * @lastUpdated 2026-06-14T17:45:00.000Z
+ */
+
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -147,7 +152,7 @@ export default function MenuBar(props: MenuBarProps) {
         { label: 'Redo', icon: Redo2, onClick: props.onRedo, shortcut: 'Ctrl+Y' },
         { type: 'divider' },
         // Phase 39 — 'Document Timeline' removed (duplicate of View > History, which follows the VSCode convention)
-        { label: 'Universal Cell Laboratory', icon: Cpu, onClick: props.onOpenCellEditor || (() => {}), disabled: !isSingleCellSelected, highlight: 'deprecated' },
+        { label: 'Universal Cell Laboratory', icon: Cpu, onClick: props.onOpenCellEditor || (() => {}), disabled: !isSingleCellSelected, shortcut: 'Ctrl+Shift+E' },
         { label: 'Module Global Configuration', icon: Settings, onClick: props.onOpenConfig, highlight: 'deprecated' },
         { type: 'divider' },
         { label: 'Reset Workspace', icon: LogOut, onClick: props.onReset, shortcut: 'Ctrl+Shift+R' },

@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Header from './layout/Header';
 import WorkbenchFooter from './layout/WorkbenchFooter';
 import EditorModals from './modals/EditorModals';
-import ModulationGrid from './modulation/ModulationGrid';
+import VisualModulationMatrix from './modulation/VisualModulationMatrix';
 import { HiddenFileHandlers } from './shared/HiddenFileHandlers';
 import TemplateGallery from './gallery/TemplateGallery';
 import RightDockContainer from './inspector/RightDockContainer';
@@ -496,7 +496,7 @@ export default function WorkbenchContainer({
   }, [editor.orchestrator.documentsById]);
 
   // 6. Keyboard Shortcuts Modularized
-  useWorkbenchShortcuts(editor, selectedItemId, state.multiSelectedNodeIds);
+  useWorkbenchShortcuts(editor, selectedItemId, state.multiSelectedNodeIds, handleOpenCellEditor);
 
   // 7. Effects & Synchronization (Aseptic Sync)
   useEffect(() => {
@@ -957,10 +957,10 @@ export default function WorkbenchContainer({
         )}
 
         {state.showModGrid && (
-          <ModulationGrid 
-            manifest={manifest as OMEGA_Manifest} onAdd={editor.addModulation} 
-            onRemove={editor.removeModulation} onUpdate={editor.updateModulation} 
-            onClose={() => actions.toggleUIState('showModGrid')} 
+          <VisualModulationMatrix
+            manifest={manifest as OMEGA_Manifest} onAdd={editor.addModulation}
+            onRemove={editor.removeModulation} onUpdate={editor.updateModulation}
+            onClose={() => actions.toggleUIState('showModGrid')}
           />
         )}
       </main>

@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * @purpose Servicio de presentación de componentes emulados para el editor de manifiestos OMEGA.
+ * @lastUpdated 2026-06-14T15:31:30.014Z
+ */
+
+
 import React, { useState } from "react";
 import { 
   Activity, 

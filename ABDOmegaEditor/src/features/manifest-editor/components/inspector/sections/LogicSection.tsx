@@ -1,6 +1,5 @@
 'use client';
  
-;
 import { Box } from 'lucide-react';
 import type { OmegaNode } from '@/omega-ui-core/types/manifest';
 import { BindingField } from '@/features/manifest-editor/components/inspector/logic/BindingField';

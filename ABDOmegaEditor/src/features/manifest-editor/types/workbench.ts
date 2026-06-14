@@ -129,6 +129,8 @@ export type WorkbenchAction =
   | { type: "TOGGLE_WINDOW"; payload: { name: 'window_layers' | 'window_properties' | 'window_rack_properties' | 'window_blueprints' | 'window_compliance' | 'window_info' | 'window_history' | 'window_logs' } }
   | { type: "TOGGLE_NODE_VISIBILITY"; payload: { nodeId: string } }
   | { type: "TOGGLE_NODE_LOCK"; payload: { nodeId: string } }
+  | { type: "BATCH_SET_VISIBILITY"; payload: { nodeIds: string[]; hidden: boolean } }
+  | { type: "BATCH_SET_LOCK"; payload: { nodeIds: string[]; locked: boolean } }
   | { type: "SET_STUDIO_MODE"; payload: StudioModeState } // Phase 15 Action
   | { type: "SET_HELP_STATE"; payload: { isOpen: boolean; sectionId?: string | undefined } }
   | { type: "SET_UI_THEME"; payload: { theme: "light" | "dark" } }

@@ -1,6 +1,10 @@
 'use client';
- 
-;
+
+/**
+ * @purpose Gestiona un componente para seleccionar y actualizar estilos de puerto en el editor del manifiesto OMEGA.
+ * @lastUpdated 2026-06-14T16:52:10.767Z
+ */
+
 import { Palette } from 'lucide-react';
 import type { ManifestEntity, OMEGA_Manifest, Presentation, OmegaStyleNode } from '@/omega-ui-core/types/manifest';
 import StyleLibraryLink from '../shared/StyleLibraryLink';

@@ -329,6 +329,34 @@ export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction)
       };
     }
 
+    case "BATCH_SET_VISIBILITY": {
+      const { nodeIds, hidden } = action.payload;
+      const existing = new Set(state.hiddenNodeIds);
+      if (hidden) {
+        nodeIds.forEach(id => existing.add(id));
+      } else {
+        nodeIds.forEach(id => existing.delete(id));
+      }
+      return {
+        ...state,
+        hiddenNodeIds: Array.from(existing),
+      };
+    }
+
+    case "BATCH_SET_LOCK": {
+      const { nodeIds, locked } = action.payload;
+      const existing = new Set(state.lockedNodeIds);
+      if (locked) {
+        nodeIds.forEach(id => existing.add(id));
+      } else {
+        nodeIds.forEach(id => existing.delete(id));
+      }
+      return {
+        ...state,
+        lockedNodeIds: Array.from(existing),
+      };
+    }
+
     case "SET_STUDIO_MODE": {
       return {
         ...state,

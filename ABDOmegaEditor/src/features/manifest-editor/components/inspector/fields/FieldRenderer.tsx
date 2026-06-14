@@ -1,5 +1,10 @@
 'use client';
 
+/**
+ * @purpose Renderiza campos según definiciones y datos para edición en una interfaz de editor de manifiesto.
+ * @lastUpdated 2026-06-14T16:49:33.774Z
+ */
+
 import React from 'react';
 import type { FieldDef, FieldOption } from './fieldDefs';
 import { getFieldValue, buildPatch } from './fieldDefs';

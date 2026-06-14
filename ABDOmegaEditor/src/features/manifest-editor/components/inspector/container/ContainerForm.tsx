@@ -1,6 +1,10 @@
 'use client';
 
-;
+/**
+ * @purpose Renderiza un formulario para editar propiedades del contenedor en el editor de manifestos OMEGA, incluyendo selección de estilo, posición, tamaño, anclaje de etiqueta y asignación de plano arquitectónico.
+ * @lastUpdated 2026-06-14T16:44:16.158Z
+ */
+
 import { Move, Maximize2, Type, Layers } from 'lucide-react';
 import type { LayoutContainer, ContainerSizeUnit, OMEGA_Manifest } from '@/types/manifest';
 import TabSelector from '../shared/TabSelector';

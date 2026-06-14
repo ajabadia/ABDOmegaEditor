@@ -1,6 +1,5 @@
 'use client';
 
-;
 import { X } from 'lucide-react';
 import type { OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
 import AssetSelector from '../inspector/shared/AssetSelector';

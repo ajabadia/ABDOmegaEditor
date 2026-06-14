@@ -1,6 +1,10 @@
 'use client';
 
-;
+/**
+ * @purpose Renderiza una cabecera para un componente inspector en el editor del manifiesto OMEGA, mostrando información de módulo o entidad y proporcionando opciones para pinchar o cerrar el inspector.
+ * @lastUpdated 2026-06-14T16:50:23.024Z
+ */
+
 import { X, Package, Settings, Pin } from 'lucide-react';
 
 interface InspectorHeaderProps {

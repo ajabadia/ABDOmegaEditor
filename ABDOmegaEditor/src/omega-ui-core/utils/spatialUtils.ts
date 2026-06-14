@@ -43,11 +43,6 @@ export function getOccupiedBoxes(manifest: OMEGA_Manifest): CollisionBox[] {
     });
   }
   
-  // Debug log for checking collision detection boxes in the browser console
-  if (typeof window !== 'undefined' && (window as unknown as { __OMEGA_ALIGN_DEBUG__?: boolean }).__OMEGA_ALIGN_DEBUG__) {
-    console.log('[COLLISION DEBUG] Occupied boxes:', boxes);
-  }
-
   return boxes;
 }
 

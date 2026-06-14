@@ -1,6 +1,5 @@
 'use client';
 
-;
 import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import type { OMEGA_Manifest, OMEGA_Modulation } from '@/types/manifest';

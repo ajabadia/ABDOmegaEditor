@@ -1,6 +1,5 @@
 'use client';
 
-;
 import { CircleDot, Sun, Layers, Shield, Square } from 'lucide-react';
 import type { OMEGA_Manifest, OmegaStyleNode } from '@/omega-ui-core/types/manifest';
 import SmartColorPicker from '../SmartColorPicker';

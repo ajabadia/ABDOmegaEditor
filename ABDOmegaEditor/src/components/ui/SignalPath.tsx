@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * @purpose Gestiona y visualiza un camino de señales en tiempo real con nodos y conexiones dinámicas.
+ * @lastUpdated 2026-06-14T15:50:25.584Z
+ */
+
+
 import * as React from "react";
 import { motion } from "framer-motion";
 import { 

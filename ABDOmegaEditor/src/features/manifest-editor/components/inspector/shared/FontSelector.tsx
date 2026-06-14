@@ -1,6 +1,5 @@
 'use client';
  
-;
 import { Type } from 'lucide-react';
 import type { OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
 import { OMEGA_OFFICIAL_FONTS } from '@/omega-ui-core/typography/registry';

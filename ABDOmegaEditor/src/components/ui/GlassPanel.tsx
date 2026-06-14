@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * @purpose Gestiona y renderiza un panel con efecto de vidrio que responde a eventos de hover.
+ * @lastUpdated 2026-06-14T15:49:50.406Z
+ */
+
+
 import * as React from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";

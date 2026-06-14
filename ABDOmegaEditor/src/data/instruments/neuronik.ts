@@ -1,3 +1,8 @@
+/**
+ * @purpose Define y exporta un objeto que representa el instrumento NEURONiK con sus propiedades como ID, nombre, descripción, imágenes, categorías, especificaciones técnicas y ruta del signal path.
+ * @lastUpdated 2026-06-14T15:55:26.336Z
+ */
+
 import type { Instrument } from "./types";
 
 export const neuronik: Instrument = {

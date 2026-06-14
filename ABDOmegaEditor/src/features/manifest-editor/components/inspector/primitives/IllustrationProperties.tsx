@@ -1,6 +1,10 @@
 'use client';
 
-;
+/**
+ * @purpose Gestiona y renderiza propiedades para entidades de ilustración en el editor del manifiesto OMEGA, incluyendo dimensiones y modo de renderizado.
+ * @lastUpdated 2026-06-14T16:51:38.932Z
+ */
+
 import { Maximize2, Layers } from 'lucide-react';
 import type { ManifestEntity, OMEGA_Manifest, Presentation } from '@/omega-ui-core/types/manifest';
 import StyleLibraryLink from '../shared/StyleLibraryLink';

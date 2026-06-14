@@ -1,6 +1,10 @@
 'use client';
- 
-;
+
+/**
+ * @purpose Renderiza un componente desplegable para seleccionar y actualizar roles en un editor de manifestos OmegaNode.
+ * @lastUpdated 2026-06-14T16:50:54.259Z
+ */
+
 import { Layers } from 'lucide-react';
 import type { OmegaNode } from '@/omega-ui-core/types/manifest';
 

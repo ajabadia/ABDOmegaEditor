@@ -1,6 +1,5 @@
 'use client';
 
-;
 import { Palette } from 'lucide-react';
 import type { OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
 import { OMEGA_THEMES } from '@/constants/manifest-editor/themes';

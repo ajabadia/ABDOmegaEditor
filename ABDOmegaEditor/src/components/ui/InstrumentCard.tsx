@@ -1,6 +1,11 @@
 "use client";
 
-;
+/**
+ * @purpose Gestiona la visualización de información de instrumentos musicales en una tarjeta de interfaz de usuario.
+ * @lastUpdated 2026-06-14T15:50:10.009Z
+ */
+
+
 import { GlassPanel } from "./GlassPanel";
 import { type Instrument } from "@/data/instruments";
 import { useTranslations } from "next-intl";

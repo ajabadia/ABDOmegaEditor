@@ -1,3 +1,8 @@
+/**
+ * @purpose Constantes de manifiesto por defecto y función de normalización que garantiza la integridad estructural de cualquier manifiesto cargado
+ * @lastUpdated 2026-06-14T17:45:00.000Z
+ */
+
 import type { OMEGA_Manifest } from '../types/document';
 
 export const DEFAULT_MANIFEST: OMEGA_Manifest = {

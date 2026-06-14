@@ -1,6 +1,5 @@
 'use client';
 
-;
 import { Plus, Layout } from 'lucide-react';
 import type { LayoutContainer, OMEGA_Manifest } from '@/types/manifest';
 import { useContainerState } from '@/features/manifest-editor/hooks/useContainerState';

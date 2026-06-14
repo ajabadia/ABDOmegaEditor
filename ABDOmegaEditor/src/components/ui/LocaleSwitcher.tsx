@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * @purpose Gestiona el cambio de idioma entre inglés y español.
+ * @lastUpdated 2026-06-14T15:50:15.466Z
+ */
+
+
 import { useLocale } from "next-intl";
 import { useRouter, usePathname } from "@/i18n/routing";
 import { Languages } from "lucide-react";

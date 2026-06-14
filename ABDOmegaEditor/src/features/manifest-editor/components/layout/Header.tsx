@@ -15,6 +15,7 @@ interface HeaderProps {
   onRedo: () => void;
   onExportManifest: (mode: 'work' | 'distilled') => void;
   onExportPack: () => void;
+  onExportOmegaRack: () => void;
   onExportCAD: () => void;
   onExportContract: (format: 'ts' | 'cpp') => void;
   onGenerateMockup: () => void;
@@ -33,6 +34,7 @@ interface HeaderProps {
   onOpenConfig: () => void;
   onOpenCellEditor?: (() => void) | undefined;
   onOpenGallery?: (() => void) | undefined;
+  onImportDistilledJson?: (() => void) | undefined;
   onLinkDirectory?: (() => void) | undefined;
   isDirectoryLinked?: boolean;
   isSplit?: boolean;
@@ -77,6 +79,7 @@ export default function Header(props: HeaderProps) {
           onTriggerUpload={props.onTriggerUpload}
           onExportManifest={props.onExportManifest}
           onExportPack={props.onExportPack}
+          onExportOmegaRack={props.onExportOmegaRack}
           onExportCAD={props.onExportCAD}
           onExportContract={props.onExportContract}
           onDeploy={props.onDeploy}
@@ -92,6 +95,7 @@ export default function Header(props: HeaderProps) {
           onOpenConfig={props.onOpenConfig}
           onOpenCellEditor={props.onOpenCellEditor}
           onOpenGallery={props.onOpenGallery}
+          onImportDistilledJson={props.onImportDistilledJson}
           onLinkDirectory={props.onLinkDirectory}
           isDirectoryLinked={props.isDirectoryLinked}
           windowStates={props.windowStates}

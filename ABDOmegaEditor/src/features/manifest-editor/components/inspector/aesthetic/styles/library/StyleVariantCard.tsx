@@ -1,6 +1,10 @@
 'use client';
 
-;
+/**
+ * @purpose Gestiona un componente de tarjeta para mostrar y gestionar variantes de estilo en el editor del manifiesto OMEGA, incluyendo opciones para editar, copiar, eliminar, descargar e aplicar estilos.
+ * @lastUpdated 2026-06-14T16:40:20.728Z
+ */
+
 import { Copy, Trash2, CheckCircle2, Layout, Download } from 'lucide-react';
 
 interface StyleVariantCardProps {

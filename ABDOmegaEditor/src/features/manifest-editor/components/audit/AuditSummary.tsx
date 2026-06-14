@@ -1,5 +1,11 @@
 'use client';
 
+/**
+ * @purpose Muestra un resumen detallado del estado de cumplimiento y métricas de un manifiesto OMEGA, incluyendo calificaciones, indicadores de cumplimiento y detalles técnicos relevantes.
+ * @lastUpdated 2026-06-14T15:55:38.767Z
+ */
+
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { 

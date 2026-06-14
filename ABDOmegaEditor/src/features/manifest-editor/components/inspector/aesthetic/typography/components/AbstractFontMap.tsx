@@ -1,6 +1,10 @@
 'use client';
 
-;
+/**
+ * @purpose Gestiona un componente para administrar mapeos de fuentes abstractas en el editor del manifiesto OMEGA, permitiendo a los usuarios definir y actualizar etiquetas y familias de fuentes para punteros específicos.
+ * @lastUpdated 2026-06-14T16:40:48.210Z
+ */
+
 import { Layout } from 'lucide-react';
 
 interface AbstractFontMapProps {

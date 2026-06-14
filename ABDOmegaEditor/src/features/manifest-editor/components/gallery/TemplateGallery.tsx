@@ -1,6 +1,11 @@
 'use client';
 
-;
+/**
+ * @purpose Proporciona una galería modal para seleccionar plantillas de módulos con opciones de búsqueda y filtro.
+ * @lastUpdated 2026-06-14T16:00:47.285Z
+ */
+
+
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, Grid, Layout, Cpu, Box, ChevronRight, Sparkles } from 'lucide-react';
 import { useTemplateGallery } from '@/features/manifest-editor/hooks/useTemplateGallery';

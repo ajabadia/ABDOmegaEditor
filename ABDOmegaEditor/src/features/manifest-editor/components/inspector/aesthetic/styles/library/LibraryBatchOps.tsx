@@ -1,6 +1,10 @@
 'use client';
 
-;
+/**
+ * @purpose Renderiza un componente con botones para exportar e importar datos JSON en el editor del manifiesto OMEGA.
+ * @lastUpdated 2026-06-14T16:40:04.787Z
+ */
+
 import { Download, Upload } from 'lucide-react';
 
 interface LibraryBatchOpsProps {

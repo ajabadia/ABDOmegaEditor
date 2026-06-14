@@ -1,6 +1,10 @@
 'use client';
- 
-;
+
+/**
+ * @purpose Gestiona un componente para inspeccionar y editar ajustes de modulación en un editor de manifest OMEGA.
+ * @lastUpdated 2026-06-14T16:51:15.092Z
+ */
+
 import { Trash2, ArrowRight, Info } from 'lucide-react';
 import type { ManifestEntity, OMEGA_Modulation } from '@/omega-ui-core/types/manifest';
 

@@ -1,5 +1,10 @@
 'use client';
 
+/**
+ * @purpose Gestiona una sección para administrar activos lógicos en el editor del manifiesto OMEGA, incluyendo botones para subir diferentes tipos de activos y mostrar información contractual.
+ * @lastUpdated 2026-06-14T16:38:10.616Z
+ */
+
 import React from 'react';
 import { FolderOpen, ChevronRight, Zap, Database, Palette, CheckCircle, AlertTriangle } from 'lucide-react';
 
