@@ -201,4 +201,17 @@ Basado en análisis exhaustivo del código, ADRs y estado actual del editor.
 
 ---
 
-*Roadmap actualizado: 2026-06-15*
+*Roadmap actualizado: 2026-06-16*
+
+### Refactors Recientes — Componentes Reutilizables
+- [x] **ToolbarIconButton generalizado**: Nuevo prop `size='sm'|'md'` y `colorVariant='primary'|'accent'`. 31 tests.
+- [x] **ShortcutBadge extraído**: 9 instancias inline en WorkbenchFooter → componente reutilizable con 3 estados.
+- [x] **ModalCloseButton**: 10 botones de cierre inline en modales → componente reutilizable.
+- [x] **ModalActionButton**: 7 botones de acción secundaria en modales → componente reutilizable.
+- [x] **DockIconBar unificado**: DockIconStrip (8 botones) + DockRackSectionToolbar (11 botones) → un solo componente genérico con grupos. 30 tests.
+- [x] **DockPanelHeader extraído**: Header de DockPanel (8 instancias en RightDockContainer) → componente standalone con variants default/subtle. 10 tests.
+- [x] **Toolbar.tsx al 100% ToolbarIconButton**: addBtn (flyout), liveBtn (accent), zenBtn (shadow + icon condicional) migrados. 11/11 botones.
+
+---
+
+## 🎯 Hitos Completados (Post-Roadmap Original)

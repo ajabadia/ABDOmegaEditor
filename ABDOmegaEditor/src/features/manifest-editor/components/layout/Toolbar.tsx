@@ -150,17 +150,14 @@ export default function Toolbar({
 
   const addBtn = (
     <div key="add" className="relative">
-      <button
+      <ToolbarIconButton
+        icon={<Plus className="w-4 h-4" />}
+        active={activeTool === 'add'}
         onClick={() => handleSelectTool('add')}
-        className={`w-7 h-7 rounded-xs flex items-center justify-center transition-all ${
-          activeTool === 'add' 
-            ? 'bg-primary/20 text-primary border border-primary/20 tool-active-glow' 
-            : 'wb-text-muted hover:wb-text hover:bg-primary/10'
-        }`}
         title="Add Primitives & Ports (A)"
-      >
-        <Plus className="w-4 h-4" />
-      </button>
+        size="md"
+        className={activeTool === 'add' ? 'tool-active-glow' : ''}
+      />
  
       {/* Plus flyout menu */}
       <AnimatePresence>
@@ -492,37 +489,28 @@ export default function Toolbar({
   );
 
   const liveBtn = (
-    <button
+    <ToolbarIconButton
       key="live"
+      icon={<Zap className="w-3.5 h-3.5 fill-current" />}
+      active={isLiveMode}
       onClick={onToggleLive}
-      className={`w-7 h-7 rounded-xs flex items-center justify-center transition-all ${
-        isLiveMode 
-          ? 'bg-accent/20 text-accent border border-accent/20 tool-active-glow-accent' 
-          : 'wb-text-muted hover:wb-text hover:bg-primary/10'
-      }`}
       title={isLiveMode ? "HIL Engine: Live (Click to disconnect)" : "HIL Engine: Connect to WASM"}
-    >
-      <Zap className="w-3.5 h-3.5 fill-current" />
-    </button>
+      size="md"
+      colorVariant="accent"
+      className={isLiveMode ? 'tool-active-glow-accent' : ''}
+    />
   );
 
   const zenBtn = (
-    <button
+    <ToolbarIconButton
       key="zen"
+      icon={isZenMode ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+      active={isZenMode}
       onClick={onToggleZen}
-      className={`w-7 h-7 rounded-xs flex items-center justify-center transition-all ${
-        isZenMode 
-          ? 'bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]' 
-          : 'wb-text-muted hover:wb-text hover:bg-primary/10'
-      }`}
       title={isZenMode ? "Exit Zen Mode" : "Enter Zen Mode"}
-    >
-      {isZenMode ? (
-        <Minimize2 className="w-3.5 h-3.5" />
-      ) : (
-        <Maximize2 className="w-3.5 h-3.5" />
-      )}
-    </button>
+      size="md"
+      className={isZenMode ? 'shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]' : ''}
+    />
   );
 
   // Group buttons into list (only containing visible buttons)

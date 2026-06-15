@@ -2,6 +2,25 @@
 
 All notable changes to the OMEGA Manifest Editor will be documented in this file.
 
+## [9.5.0] - 2026-06-15
+### Added
+- **DockIconBar generic component**: Unifies DockIconStrip and DockRackSectionToolbar into a single reusable vertical icon bar. Supports groups with dividers, optional labels, per-group className, and customizable container styles. 30 unit tests + 5 snapshots.
+- **DockPanelHeader reusable header**: Extracted from DockPanel into standalone component with `default` and `subtle` variants. 10 unit tests + 2 snapshots.
+- **ToolbarIconButton colorVariant prop**: New `colorVariant='primary' | 'accent'` prop for accent-colored active state (used by liveBtn). 4 accent tests + 2 accent snapshots.
+
+### Refactored
+- **DockPanel.tsx**: ~10 lines removed — now uses `<DockPanelHeader>` internally. Removed unused `import { X }`.
+- **Toolbar.tsx**: 3 remaining inline buttons refactored to ToolbarIconButton — addBtn (flyout wrapper), liveBtn (colorVariant='accent'), zenBtn (conditional icon + shadow). **11/11 buttons now use ToolbarIconButton.**
+- **DockIconStrip.tsx**: Thin wrapper (~3 lines JSX) delegating to DockIconBar.
+- **DockRackSectionToolbar.tsx**: Thin wrapper (~7 lines JSX) with group configuration.
+
+### Tests
+- **ToolbarIconButton.spec.tsx**: +4 accent variant tests + 2 accent snapshots. 31 tests total.
+- **DockIconStrip.spec.tsx**: 15 tests + 3 snapshots (rendering, active/inactive, click handlers).
+- **DockRackSectionToolbar.spec.tsx**: 9 tests + 3 snapshots (groups, divider, active/inactive, mixed states).
+- **DockIconBar.spec.tsx**: 30 tests + 5 snapshots (groups, labels, className, active state, edge cases).
+- **DockPanelHeader.spec.tsx**: 10 tests + 2 snapshots (default/subtle variants, click handler).
+
 ## [9.4.0] - 2026-06-15
 ### Added
 - **Command Palette (Ctrl+K)**: Photoshop/VS Code-style fuzzy search palette for navigating nodes and executing menu actions. Searchable by name/ID, keyboard navigation (↑↓→Esc), Escape-to-clear, backdrop click to close. 35 unit tests.

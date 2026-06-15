@@ -1,12 +1,14 @@
 'use client';
 
 /**
- * @purpose Renderiza un panel de muelle reutilizable para el editor del manifiesto OMEGA con título, icono y contenido personalizables.
- * @lastUpdated 2026-06-14T16:45:13.297Z
+ * @purpose Renderiza un panel de carga reutilizable para el editor de manifesto OMEGA con título personalizable, icono y contenido.
+ * @purpose_en Renders a reusable dock panel for the OMEGA manifest editor with customizable title, icon, and content.
+ * @fingerprint exports:1,imports:2,sig:1mvqgv0
+ * @lastUpdated 2026-06-15T05:07:34.113Z
  */
 
 import React from 'react';
-import { X } from 'lucide-react';
+import { DockPanelHeader } from './DockPanelHeader';
 
 interface DockPanelProps {
   title: string;
@@ -31,22 +33,14 @@ export function DockPanel({
   width = 'w-[260px]',
   variant = 'default'
 }: DockPanelProps) {
-  const headerClass = variant === 'subtle'
-    ? 'px-3 py-2 wb-surface-subtle border-b wb-outline flex items-center justify-between cursor-pointer wb-text hover:bg-primary/10 transition-colors'
-    : 'px-3 py-2 bg-black/30 border-b wb-outline flex items-center justify-between cursor-pointer text-foreground/80 hover:text-foreground hover:bg-white/5 transition-colors';
-
   return (
     <div className={`${width} h-full flex flex-col overflow-hidden shrink-0`}>
-      <div
-        className={headerClass}
-        onClick={onClose}
-      >
-        <div className="flex items-center gap-2">
-          {icon}
-          <span className="text-[9px] font-black uppercase tracking-widest">{title}</span>
-        </div>
-        <X className="w-3 h-3 opacity-30 hover:opacity-100" />
-      </div>
+      <DockPanelHeader
+        title={title}
+        icon={icon}
+        onClose={onClose}
+        variant={variant}
+      />
       {children}
     </div>
   );

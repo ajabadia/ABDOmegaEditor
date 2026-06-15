@@ -1,6 +1,13 @@
 'use client';
 
 /**
+ * @purpose Renderiza una barra vertical de botones de iconos para paneles de dock con agrupación y etiquetas opcionales.
+ * @purpose_en Renders a vertical bar of icon buttons for dock panels with optional grouping and labels.
+ * @fingerprint exports:4,imports:2,sig:z6c5wr
+ * @lastUpdated 2026-06-15T08:24:58.012Z
+ */
+
+/**
  * DockIconBar — Barra de iconos vertical genérica para dock panels.
  * Unifica DockIconStrip y DockRackSectionToolbar en un solo componente reutilizable.
  *
