@@ -1,3 +1,9 @@
+/**
+ * @purpose Gestiona y coordina las operaciones del estado, entrada/salida, entidades, auditoria y acciones para el editor de manifesto OMEGA.
+ * @fingerprint exports:1,imports:13,sig:1nat5vp
+ * @lastUpdated 2026-06-14T20:35:01.653Z
+ */
+
 import { useState, useCallback } from 'react';
 import { useDocumentOrchestrator } from './useDocumentOrchestrator';
 import { useAuditEngine } from './useAuditEngine';
@@ -11,6 +17,7 @@ import { useBlueprintInjection } from './useBlueprintInjection';
 import { useDeployment } from './useDeployment';
 import { useHistoryActions } from './useHistoryActions';
 import { useClipboardActions } from './useClipboardActions';
+import { useToast } from '@/features/manifest-editor/components/ToastContainer';
 
 /**
  * OMEGA ERA 7.2.3 - MANIFEST EDITOR HOOK (ORCHESTRATOR)
@@ -48,7 +55,21 @@ export const useManifestEditor = (
   );
 
   // 2. Audit & Validation Engine
-  const { logs, addLog, issues } = useAuditEngine(manifest, contract);
+  const { logs, addLog: auditAddLog, issues } = useAuditEngine(manifest, contract);
+  const { showToast } = useToast();
+
+  // Bridge addLog → toast notifications for important levels
+  const addLog = useCallback((msg: string) => {
+    auditAddLog(msg);
+    const level = msg.match(/^\[([A-Z_]+)\]/)?.[1];
+    if (level === 'SUCCESS' || level === 'OK') {
+      showToast(msg.replace(/^\[[A-Z_]+\]\s*/, ''), 'success');
+    } else if (level === 'ERROR' || level === 'CRITICAL') {
+      showToast(msg.replace(/^\[[A-Z_]+\]\s*/, ''), 'error');
+    } else if (level === 'WARNING' || level === 'WARN') {
+      showToast(msg.replace(/^\[[A-Z_]+\]\s*/, ''), 'warning');
+    }
+  }, [auditAddLog, showToast]);
 
   // 3. Specialized Action Hooks (Offloaded Logic)
   

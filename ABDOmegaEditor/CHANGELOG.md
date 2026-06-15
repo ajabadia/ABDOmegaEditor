@@ -2,6 +2,15 @@
 
 All notable changes to the OMEGA Manifest Editor will be documented in this file.
 
+## [9.3.3] - 2026-06-15
+### Added
+- **Snap Visual Indicator**: Mini-map panel now shows an amber glow (`ring-2 ring-accent/40`) when it snaps to viewport edges during drag.
+- **Panel Clamping Tests**: 7 new unit tests covering mount-time clamp (4 extremes + normal), drag-time clamp (horizontal + vertical), and snap visual indicator (right edge, top edge, no-snap, mouseup clear, move-away clear, e.buttons guard).
+
+### Fixed
+- **Mini-map stuck behind toolbar**: Reduced vertical top clamp from `-80` to `-20` in both drag handler and mount clamp. The panel can no longer be dragged above the viewport's `overflow-hidden` boundary where the header becomes inaccessible.
+- **Stale closure in snap indicator**: Removed stale closure guard `if (isSnapped !== snapped)` that captured `isSnapped` as initial `false` forever. Now calls `setIsSnapped(snapped)` unconditionally.
+- **Inconsistent snap cleanup**: Added `setIsSnapped(false)` to the `e.buttons !== 1` guard so the amber glow clears when the mouse button is released mid-drag outside the window.
 ## [9.3.2] - 2026-06-13
 ### Added
 - **Alt+Click Ghost Preview**: BlueprintLibraryPanel now supports Alt+Click to enter ghost preview mode for positionable injection before placement.

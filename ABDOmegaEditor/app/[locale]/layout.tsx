@@ -1,8 +1,15 @@
+/**
+ * @purpose Renderiza un componente de disposición para ABDOmegaEditor utilizando NextIntlClientProvider para proporcionar mensajes específicos del lugar y valida los parámetros de lugar entrantes.
+ * @fingerprint exports:2,imports:5,sig:1nduqdy
+ * @lastUpdated 2026-06-14T19:09:21.834Z
+ */
+
 import {NextIntlClientProvider} from 'next-intl';
 import {getMessages} from 'next-intl/server';
 import {routing} from '@/i18n/routing';
 import {notFound} from 'next/navigation';
 import type { Metadata } from "next";
+import ToastProviderClient from '@/app/ToastProviderClient';
 
 export const metadata: Metadata = {
   title: "ABDSynths | High-End Virtual Instruments",
@@ -29,7 +36,9 @@ export default async function RootLayout({
  
   return (
     <NextIntlClientProvider messages={messages}>
-      {children}
+      <ToastProviderClient>
+        {children}
+      </ToastProviderClient>
     </NextIntlClientProvider>
   );
 }
