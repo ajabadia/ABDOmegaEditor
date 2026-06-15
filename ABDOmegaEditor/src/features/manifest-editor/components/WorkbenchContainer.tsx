@@ -1,10 +1,19 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+/**
+ * @purpose Renderiza el contenedor principal para la edición del manifest OMEGA, incluyendo cabecera, pie de página, modales, matriz de modulación visual, galería de plantillas, toolbar y componentes de espacio de trabajo.
+ * @purpose_en Renders the main container for the OMEGA manifest editor's workbench, including header, footer, modals, visual modulation matrix, template gallery, toolbar, and workspace components.
+ * @fingerprint exports:1,imports:40,sig:1xgqvee
+ * @lastUpdated 2026-06-15T07:07:54.169Z
+ */
+
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 // UI Components
 import Header from './layout/Header';
 import WorkbenchFooter from './layout/WorkbenchFooter';
+import CommandPalette from './layout/CommandPalette';
+import type { CommandPaletteAction, CommandPaletteNode } from './layout/CommandPalette';
 import EditorModals from './modals/EditorModals';
 import VisualModulationMatrix from './modulation/VisualModulationMatrix';
 import { HiddenFileHandlers } from './shared/HiddenFileHandlers';
@@ -19,7 +28,7 @@ import Toolbar from './layout/Toolbar';
 import { useWorkbenchShortcuts } from '@/features/manifest-editor/hooks/useWorkbenchShortcuts';
 
 // Types
-import type { ManifestEntity, ModuleTemplate, OMEGA_Manifest, OMEGA_Contract } from '@/omega-ui-core/types/manifest';
+import type { ManifestEntity, ModuleTemplate, OMEGA_Manifest, OMEGA_Contract, OmegaNode } from '@/omega-ui-core/types/manifest';
 import { useManifestEditor } from '@/features/manifest-editor/hooks/useManifestEditor';
 import { useAudit } from '@/features/manifest-editor/hooks/useAudit';
 import { useWorkbenchState, type WorkbenchTabType, type WorkbenchPaneId } from '@/features/manifest-editor/hooks/useWorkbenchState';
@@ -45,11 +54,7 @@ import { toggleGridField } from '../utils/gridHelpers';
 
 // Services
 import { Package } from 'lucide-react';
-import { isDistilledManifest, upgradeDistilledToWork, UPGRADE_WARNING } from '@/omega-ui-core/utils/upgradeDistilled';
-import { validateManifestSchema } from '@/omega-ui-core/utils/manifestValidator';
-import { unpackageProject } from '@/services/projectPackager';
-import { historyService } from '@/services/historyService';
-import { inputSignalService, type VirtualSignal } from '@/services/inputSignalService';
+import { useWorkbenchFileOperations } from '@/features/manifest-editor/hooks/useWorkbenchFileOperations';
 
 // --- Components ---
 
@@ -82,10 +87,29 @@ export default function WorkbenchContainer({
   const [inspectorLevel, setInspectorLevel] = useState<'simple' | 'medium' | 'advanced'>('medium');  const [inspectorActiveSection, setInspectorActiveSection] = useState<string | undefined>(undefined);
 
   const [activeTool, setActiveTool] = useState<'select' | 'marquee' | 'add' | 'studio' | null>('select');
+  const [showMiniMap, setShowMiniMap] = useState(true);
+  const handleToggleMiniMap = useCallback(() => {
+    setShowMiniMap(prev => !prev);
+  }, []);
+
+  // ── Command Palette (Ctrl+K) ────────────────────────────────────────
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
 
   // 2. Core Data & Operations
   const editor = useManifestEditor(state, actions);
   const { manifest, contract, updateManifest } = editor;
+
+  // ── Status Bar: dirty state, save timestamp ───────────────────────────
+  const docs = editor.orchestrator.documentsById as Record<string, DocumentState>;
+  const isDirty = Object.values(docs).some(doc => doc.isDirty);
+  const [lastSavedTime, setLastSavedTime] = useState<string | null>(null);
+  const prevIsDirty = useRef(isDirty);
+  useEffect(() => {
+    if (prevIsDirty.current && !isDirty) {
+      setLastSavedTime(new Date().toLocaleTimeString());
+    }
+    prevIsDirty.current = isDirty;
+  }, [isDirty]);
 
   // S7: User blueprints — managed by useGroupBlueprint hook (stores imported + saved blueprints)
   const {
@@ -94,6 +118,34 @@ export default function WorkbenchContainer({
     handleSaveGroupAsBlueprintFromNodeId,
     addUserBlueprintEntry,
   } = useGroupBlueprint(editor);
+
+  const { handleImportDistilledJson, handleLoadOmegaProject, handleFileDrop } = useWorkbenchFileOperations(editor);
+
+  // ── Ctrl+O: Open .omega project ───────────────────────────────────
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'o' || e.key === 'O')) {
+        e.preventDefault();
+        e.stopPropagation();
+        handleLoadOmegaProject();
+      }
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [handleLoadOmegaProject]);
+
+  // ── Ctrl+K: Command Palette ────────────────────────────────────────
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsCommandPaletteOpen(prev => !prev);
+      }
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, []);
 
   // Phase 39 — recovered from backup MenuBar (File > Export > Cell as Blueprint JSON)
   const { handleSaveCellAsBlueprint } = useCellBlueprint(
@@ -158,6 +210,19 @@ export default function WorkbenchContainer({
     contract as OMEGA_Contract,
   );
 
+  // ── Aggregate diagnostics for status bar ──────────────────────────────
+  const totalErrors = useMemo(() => {
+    const structural = structuralDiagnostics?.errorCount ?? 0;
+    const tab = Object.values(tabDiagnostics).reduce((sum, d) => sum + d.errorCount, 0);
+    return structural + tab;
+  }, [structuralDiagnostics, tabDiagnostics]);
+
+  const totalWarnings = useMemo(() => {
+    const structural = structuralDiagnostics?.warningCount ?? 0;
+    const tab = Object.values(tabDiagnostics).reduce((sum, d) => sum + d.warningCount, 0);
+    return structural + tab;
+  }, [structuralDiagnostics, tabDiagnostics]);
+
   const handleApplyTemplate = useCallback((template: ModuleTemplate) => {
     try {
       const blueprint = adaptModuleTemplateToBlueprintDefinition(template);
@@ -184,183 +249,6 @@ export default function WorkbenchContainer({
     input.click();
   }, [editor]);
 
-  // ── Restore .omega package or .json distilled manifest (shared between file picker and drag-and-drop) ──
-  const restoreOmegaPackage = useCallback(async (file: File) => {
-    try {
-      // ── Case 1: .json (potentially distilled manifest) ──
-      if (file.name.endsWith('.json')) {
-        const text = await file.text();
-        let parsed: unknown;
-        try {
-          parsed = JSON.parse(text);
-        } catch {
-          editor.addLog(`[ERROR] Invalid JSON file: ${file.name}`);
-          return;
-        }
-
-        if (isDistilledManifest(parsed)) {
-          editor.addLog(`[SYSTEM] Distilled manifest detected: ${file.name}. Upgrading to work format...`);
-          editor.addLog(`[WARN] ${UPGRADE_WARNING}`);
-
-          const upgraded = upgradeDistilledToWork(parsed);
-          const docId = editor.activeId;
-          editor.orchestrator.updateDocument(docId, { manifest: upgraded });
-          editor.addLog(`[OK] Manifest upgraded: ${upgraded.metadata?.name} v${upgraded.metadata?.version}`);
-          return;
-        }
-
-        // Not distilled — validate schema before loading
-        editor.addLog(`[INFO] Validating manifest schema: ${file.name}...`);
-        const validation = validateManifestSchema(parsed);
-        if (!validation.valid) {
-          editor.addLog(`[ERROR] Invalid manifest structure:\n  - ${validation.errors.join('\n  - ')}`);
-          editor.addLog('[INFO] Loading cancelled. The file does not match the OMEGA_Manifest schema.');
-          return;
-        }
-        const docId = editor.activeId;
-        editor.orchestrator.updateDocument(docId, { manifest: validation.manifest });
-        editor.addLog(`[OK] Manifest loaded: ${validation.manifest.metadata?.name || 'Untitled'} v${validation.manifest.metadata?.version || '?'}`);
-        return;
-      }
-
-      // ── Case 2: .omega (zip) — existing flow ──
-      editor.addLog(`[SYSTEM] Loading .omega project: ${file.name}...`);
-
-      // 1. Descomprimir el .omega
-      const pkg = await unpackageProject(file);
-
-      // 2. Confirmar con el usuario si hay cambios sin guardar
-      const docs = editor.orchestrator.documentsById as Record<string, DocumentState>;
-      const hasDirty = Object.values(docs).some(doc => doc.isDirty);
-      if (hasDirty && !confirm('Load .omega project? Unsaved changes will be lost.')) {
-        editor.addLog('[INFO] Load cancelled by user.');
-        return;
-      }
-
-      // 3. Restaurar el manifiesto
-      const docId = editor.activeId;
-      editor.orchestrator.updateDocument(docId, {
-        manifest: pkg.manifest,
-      });
-      editor.addLog(`[OK] Manifest restored: ${pkg.manifest.metadata?.name || 'Untitled'} v${pkg.manifest.metadata?.version || '?'}`);
-
-      // 4. Restaurar assets (extraResources)
-      if (pkg.assets.size > 0) {
-        const restoredAssets: { name: string; data: ArrayBuffer; type: string }[] = [];
-        for (const [name, buffer] of pkg.assets) {
-          const mimeType = name.endsWith('.svg') ? 'image/svg+xml'
-            : name.endsWith('.png') ? 'image/png'
-            : name.endsWith('.jpg') || name.endsWith('.jpeg') ? 'image/jpeg'
-            : 'application/octet-stream';
-          restoredAssets.push({ name, data: buffer, type: mimeType });
-        }
-        editor.orchestrator.updateDocument(docId, {
-          extraResources: restoredAssets,
-        });
-        editor.addLog(`[OK] Restored ${restoredAssets.length} assets from resources/.`);
-      }
-
-      // 5. Restaurar historial (undo/redo)
-      if (pkg.history.past.length > 0 || pkg.history.future.length > 0) {
-        const { past, future } = pkg.history;
-        historyService.restore({ past: past as import('@/features/manifest-editor/types/history').HistoryEntry[], future: future as import('@/features/manifest-editor/types/history').HistoryEntry[] });
-        editor.addLog(`[OK] History restored: ${pkg.history.past.length} past, ${pkg.history.future.length} future entries.`);
-      }
-
-      // 6. Restaurar WASM si existe
-      if (pkg.wasmBuffer) {
-        editor.orchestrator.updateDocument(docId, {
-          wasmBuffer: pkg.wasmBuffer,
-        });
-        editor.addLog('[OK] WASM binary restored.');
-      }
-
-      // 7. Restaurar estado de simulación (señales virtuales)
-      const simConfig = (pkg.project.editorState as Record<string, unknown> | undefined)?.simulationConfig;
-      if (simConfig && typeof simConfig === 'object' && !Array.isArray(simConfig)) {
-        inputSignalService.deserializeState(simConfig as Record<string, VirtualSignal>);
-        const signalCount = Object.keys(simConfig).length;
-        editor.addLog(`[OK] Simulation state restored: ${signalCount} active signal${signalCount !== 1 ? 's' : ''}.`);
-      }
-
-      editor.addLog(`[SUCCESS] Project loaded: ${file.name}`);
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err);
-      editor.addLog(`[ERROR] Failed to load project: ${message}`);
-    }
-  }, [editor]);
-
-  // ── Import Distilled .json via file picker ──
-  const handleImportDistilledJson = useCallback(async () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json';
-    input.style.display = 'none';
-    input.onchange = async (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (!file) return;
-      editor.addLog(`[SYSTEM] Importing distilled manifest: ${file.name}...`);
-      await restoreOmegaPackage(file);
-      input.remove();
-    };
-    document.body.appendChild(input);
-    input.click();
-    input.remove();
-  }, [restoreOmegaPackage, editor]);
-
-  // ── Load .omega project via file picker ──
-  const handleLoadOmegaProject = useCallback(async () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.omega,.zip,.json';
-    input.style.display = 'none';
-    input.onchange = async (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (!file) return;
-      await restoreOmegaPackage(file);
-      input.remove();
-    };
-    // Attach to DOM temporarily so Playwright e2e tests can intercept filechooser
-    document.body.appendChild(input);
-    input.click();
-    input.remove();
-  }, [restoreOmegaPackage]);
-
-  // Exponer handleLoadOmegaProject para uso desde el menu (File > Open .omega)
-  useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (window as any).__omegaLoadProject = handleLoadOmegaProject;
-    return () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      delete (window as any).__omegaLoadProject;
-    };
-  }, [handleLoadOmegaProject]);
-
-  // ── Ctrl+O: Open .omega project ───────────────────────────────────
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && (e.key === 'o' || e.key === 'O')) {
-        e.preventDefault();
-        e.stopPropagation();
-        handleLoadOmegaProject();
-      }
-    };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, [handleLoadOmegaProject]);
-
-  // ── Drag & Drop .omega ────────────────────────────────────────────
-  const handleFileDrop = useCallback(async (file: File) => {
-    if (file.name.endsWith('.omega')) {
-      editor.addLog(`[SYSTEM] Drop detected: ${file.name}`);
-      await restoreOmegaPackage(file);
-    } else if (file.name.endsWith('.json')) {
-      editor.addLog(`[SYSTEM] Drop detected: ${file.name} (JSON manifest)`);
-      await restoreOmegaPackage(file);
-    } else {
-      editor.addLog('[INFO] Drop ignored: no .omega or .json file detected.');
-    }
-  }, [restoreOmegaPackage, editor]);
 
   const { isDragOver, dragHandlers } = useFileDrop(handleFileDrop);
 
@@ -495,8 +383,7 @@ export default function WorkbenchContainer({
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [editor.orchestrator.documentsById]);
 
-  // 6. Keyboard Shortcuts Modularized
-  useWorkbenchShortcuts(editor, selectedItemId, state.multiSelectedNodeIds, handleOpenCellEditor);
+
 
   // 7. Effects & Synchronization (Aseptic Sync)
   useEffect(() => {
@@ -540,8 +427,97 @@ export default function WorkbenchContainer({
   const onReset = useCallback(() => {
     editor.reset();
   }, [editor]);
+
+  // 6. Keyboard Shortcuts Modularized
+  useWorkbenchShortcuts(
+    editor,
+    selectedItemId,
+    state.multiSelectedNodeIds,
+    handleOpenCellEditor,
+    {
+      onTabFocus: (type) => actions.openTab({ 
+        id: `tab-${type}`,
+        type: type as WorkbenchTabType, 
+        title: type.charAt(0).toUpperCase() + type.slice(1) 
+      }),
+      onToggleGrid: handleToggleGrid,
+      onToggleGuides: handleToggleGuides,
+      onToggleWindow: actions.toggleWindow,
+      onOpenHelp: () => actions.setHelpState(true),
+      onOpenAbout: () => actions.toggleUIState('isAboutModalOpen'),
+      onOpenConfig: handleOpenConfig,
+      onOpenAudit: handleOpenAudit,
+      onReset: onReset,
+      onRemoveItem: handleRemoveItem,
+      onDuplicateItem: handleDuplicateItem,
+      onSetTool: setActiveTool,
+      onOpenGallery: () => actions.toggleWindow('window_blueprints'),
+      onToggleMiniMap: handleToggleMiniMap,
+    }
+  );
   
   const triggerUpload = (id: string) => document.getElementById(id)?.click();
+
+  // ── Command palette: extract nodes from tree + legacy entities ────────
+  const commandNodes = useMemo((): CommandPaletteNode[] => {
+    const result: CommandPaletteNode[] = [];
+    const collect = (node: OmegaNode | undefined) => {
+      if (!node) return;
+      result.push({
+        id: node.id,
+        label: node.meta?.label as string || node.id,
+        kind: node.kind,
+      });
+      if (node.children) node.children.forEach(collect);
+    };
+    const tree = (manifest as OMEGA_Manifest)?.ui?.tree;
+    collect(tree);
+    // Also pick up legacy entities
+    const controls = (manifest as OMEGA_Manifest)?.ui?.controls || [];
+    const jacks = (manifest as OMEGA_Manifest)?.ui?.jacks || [];
+    const existingIds = new Set(result.map(n => n.id));
+    [...controls, ...jacks].forEach((e: ManifestEntity) => {
+      if (!existingIds.has(e.id)) {
+        result.push({ id: e.id, label: e.label || e.id, kind: 'control', type: e.type });
+        existingIds.add(e.id);
+      }
+    });
+    return result;
+  }, [manifest]);
+
+  // ── Command palette: action commands ──────────────────────────────────
+  const commandActions = useMemo((): CommandPaletteAction[] => [
+    { id: 'undo', label: 'Undo', category: 'Edit', shortcut: 'Ctrl+Z', onExecute: () => editor.undo() },
+    { id: 'redo', label: 'Redo', category: 'Edit', shortcut: 'Ctrl+Y', onExecute: () => editor.redo() },
+    { id: 'save-pack', label: 'Save OmegaPack', category: 'File', shortcut: 'Ctrl+S', onExecute: () => editor.exportOmegaPack() },
+    { id: 'save-distilled', label: 'Export Distilled Manifest', category: 'File', shortcut: 'Ctrl+Shift+S', onExecute: () => editor.exportManifest('distilled') },
+    { id: 'deploy', label: 'Deploy to Engine', category: 'File', onExecute: () => onDeploy() },
+    { id: 'view-orbital', label: 'Orbital View', category: 'View', shortcut: 'Ctrl+1', onExecute: () => actions.openTab({ id: 'tab-orbital', type: 'orbital', title: 'Orbital' }) },
+    { id: 'view-rack', label: 'Virtual Rack', category: 'View', shortcut: 'Ctrl+2', onExecute: () => actions.openTab({ id: 'tab-rack', type: 'rack', title: 'Rack' }) },
+    { id: 'view-source', label: 'Source Code', category: 'View', shortcut: 'Ctrl+3', onExecute: () => actions.openTab({ id: 'tab-source', type: 'source', title: 'Source' }) },
+    { id: 'view-history', label: 'History Timeline', category: 'View', shortcut: 'Ctrl+4', onExecute: () => actions.openTab({ id: 'tab-history', type: 'history', title: 'History' }) },
+    { id: 'toggle-grid', label: 'Toggle Grid', category: 'View', shortcut: 'Ctrl+Shift+G', onExecute: () => handleToggleGrid() },
+    { id: 'toggle-guides', label: 'Toggle Guides', category: 'View', shortcut: 'Ctrl+Shift+U', onExecute: () => handleToggleGuides() },
+    { id: 'window-layers', label: 'Layers Panel', category: 'Window', shortcut: 'Ctrl+Shift+L', onExecute: () => actions.toggleWindow('window_layers') },
+    { id: 'window-properties', label: 'Element Properties', category: 'Window', shortcut: 'Ctrl+Shift+P', onExecute: () => actions.toggleWindow('window_properties') },
+    { id: 'window-blueprints', label: 'Blueprints Library', category: 'Window', shortcut: 'Ctrl+Shift+B', onExecute: () => actions.toggleWindow('window_blueprints') },
+    { id: 'window-history', label: 'History Window', category: 'Window', shortcut: 'Ctrl+Shift+H', onExecute: () => actions.toggleWindow('window_history') },
+    { id: 'window-console', label: 'Console Logs', category: 'Window', shortcut: 'Ctrl+Shift+C', onExecute: () => actions.toggleWindow('window_logs') },
+    { id: 'window-compliance', label: 'Compliance (Audit)', category: 'Window', shortcut: 'Ctrl+Shift+A', onExecute: () => actions.toggleWindow('window_compliance') },
+    { id: 'window-info', label: 'Information', category: 'Window', shortcut: 'Ctrl+Shift+I', onExecute: () => actions.toggleWindow('window_info') },
+    { id: 'config', label: 'Module Global Configuration', category: 'Edit', onExecute: () => handleOpenConfig() },
+    { id: 'cell-studio', label: 'Universal Cell Laboratory', category: 'Edit', shortcut: 'Ctrl+Shift+E', onExecute: () => handleOpenCellEditor() },
+    { id: 'gallery', label: 'Blueprints Gallery', category: 'View', onExecute: () => actions.toggleWindow('window_blueprints') },
+    { id: 'audit', label: 'Compliance Audit', category: 'Window', onExecute: () => handleOpenAudit() },
+    { id: 'reset', label: 'Reset Workspace', category: 'Edit', shortcut: 'Ctrl+Shift+R', onExecute: () => onReset() },
+    { id: 'toggle-zen', label: 'Toggle Zen Mode', category: 'View', onExecute: () => actions.toggleZenMode() },
+    { id: 'help', label: 'Engineering Manual', category: 'Help', shortcut: 'F1', onExecute: () => actions.setHelpState(true) },
+    { id: 'about', label: 'About OMEGA', category: 'Help', onExecute: () => actions.toggleUIState('isAboutModalOpen') },
+  ], [editor, actions, onDeploy, handleToggleGrid, handleToggleGuides, handleOpenConfig, handleOpenCellEditor, handleOpenAudit, onReset]);
+
+  const handleCommandPaletteSelectNode = useCallback((nodeId: string) => {
+    handleSelectItem(nodeId);
+  }, [handleSelectItem]);
 
   const availableBinds = useMemo(() => {
     const c = contract as OMEGA_Contract | null;
@@ -614,6 +590,8 @@ export default function WorkbenchContainer({
       <WorkbenchPane 
         activeTool={activeTool}
         paneId={paneId}
+        showMiniMap={showMiniMap}
+        onToggleMiniMap={handleToggleMiniMap}
         tabs={paneTabs}
         activeTabId={activeId}
         isFocused={state.focusedPaneId === paneId}
@@ -759,6 +737,8 @@ export default function WorkbenchContainer({
           showGuides={showGuides}
           onToggleGrid={handleToggleGrid}
           onToggleGuides={handleToggleGuides}
+          miniMapVisible={showMiniMap}
+          onToggleMiniMap={handleToggleMiniMap}
           // Phase 39 — recovered from backup MenuBar
           selectedNodeId={state.selectedNodeId}
           multiSelectedIds={state.multiSelectedNodeIds}
@@ -993,6 +973,15 @@ export default function WorkbenchContainer({
         blueprintInjection={editor.blueprintInjection}
       />
 
+      {/* ── Command Palette ── */}
+      <CommandPalette
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        actions={commandActions}
+        nodes={commandNodes}
+        onSelectNode={handleCommandPaletteSelectNode}
+      />
+
       {!state.isZenMode && (
         <WorkbenchFooter 
           watchdogStatus={watchdog.status}
@@ -1010,6 +999,20 @@ export default function WorkbenchContainer({
             const nextMode = derived.isSplit ? 'single' : 'vertical';
             actions.setLayoutMode(nextMode);
           }}
+          isDirty={isDirty}
+          errorCount={totalErrors}
+          warningCount={totalWarnings}
+          lastSavedTime={lastSavedTime}
+          activeTool={activeTool}
+          historyPast={editor.orchestrator.documentsById[editor.activeId]?.history?.past || []}
+          historyFuture={editor.orchestrator.documentsById[editor.activeId]?.history?.future || []}
+          onUndo={editor.undo}
+          onRedo={editor.redo}
+          onUndoTo={editor.undoTo}
+          onCommandPaletteToggle={() => setIsCommandPaletteOpen(prev => !prev)}
+          onSave={() => editor.exportOmegaPack()}
+          showMiniMap={showMiniMap}
+          onToggleMiniMap={handleToggleMiniMap}
         />
       )}
     </div>
