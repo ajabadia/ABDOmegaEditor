@@ -108,6 +108,47 @@ Este documento centraliza los hitos de desarrollo a corto y mediano plazo para e
 
 ---
 
+### Era 9.8.0 — Mini-Map Avanzado: Filtros, Locked, Flotante + Drag & Drop
+- [x] **Filtro por tipo de nodo en Mini-Map:** Dropdown con checkboxes para ocultar/mostrar tipos (cell, group, container, layer, rack, etc.). Colores por tipo con círculos de color en el dropdown.
+- [x] **Indicador locked en Mini-Map:** Nodos bloqueados se renderizan con `opacity: 0.45` y overlay 🔒. Prop `lockedNodeIds` desde WorkbenchViewport.
+- [x] **Persistencia localStorage:** Estado `hiddenKinds` sobrevive a recargas de página.
+- [x] **URL query param sync:** `?hide=cell,group` compartible. URL tiene prioridad sobre localStorage en carga inicial.
+- [x] **Botón Clear all filters:** Reset en el dropdown de tipos. Solo visible cuando hay filtros activos.
+- [x] **Navigator flotante y arrastrable:** Posición cambiada de `bottom-[10px] left-[10px]` a `top-[40px] right-[10px]`. Panel arrastrable por el texto "Navigator" con `cursor-move`. Posición persistida en localStorage.
+- [x] **Doble-click en Navigator:** Resetea la posición del panel a su estado inicial.
+- [x] **Botón colapsado (EyeOff) arrastrable:** Misma lógica de drag que el texto Navigator. `transition-colors` en lugar de `transition-all` para evitar lag.
+- [x] **Indicador visual de arrastre:** Glow cyan + ring en el panel (expandido y colapsado) mientras se arrastra. `isDraggingVisual` state sincronizado con drag start/stop.
+- [x] **Botón Reset position en header:** Icono `RotateCcw` que resetea `panelOffset` a `{x:0, y:0}`.
+- [x] **Snap a bordes:** El panel expandido se adhiere a bordes del viewport (threshold 8px) al arrastrar: left, right, top, bottom. Funciona también en esquinas (snap multi-eje simultáneo).
+- [x] **Unit Tests (filtros):** 10 nuevos tests — render, toggle dropdown, color dots, filtrar/restaurar nodos, Clear all filters, accent styling.
+
+### Era 9.4.0 — Command Palette (Ctrl+K)
+- [x] **Command Palette (Ctrl+K):** Photoshop/VS Code-style fuzzy search palette. Search nodes by label/ID/kind, execute menu actions with visible shortcuts. Keyboard navigation (↑↓→Esc), Escape-to-clear, backdrop click to close.
+- [x] **Ctrl+K Badge in Footer:** Visual keyboard shortcut indicator next to Undo Timeline button in the footer status bar.
+- [x] **Command Palette Unit Tests:** 35 tests across 8 blocks — fuzzy search (prefix, subsequence, case-insensitive), keyboard navigation, empty state, edge cases. All passing.
+
+### Era 9.3.3 — Mini-Map Clamping Fix, Toast System, Test Suite
+- [x] **Mini-map top clamp fix:** `-80` → `-20` evita que el panel quede atascado detrás del toolbar.
+- [x] **Snap visual indicator:** Amber glow (`ring-2 ring-accent/40`) cuando el panel se adhiere a bordes.
+- [x] **Toast Notification System:** Sistema global de toasts con framer-motion (4 variantes). `ToastProvider`, `useToast`, `addLog` bridge.
+- [x] **Clamp Constants Refactor:** Magic numbers reemplazados por `PANEL_CSS_TOP`, `PANEL_CSS_RIGHT`, `PANEL_CLAMP_TOP_MAX`, `PANEL_CLAMP_MIN_VISIBLE_LEFT`, `PANEL_CLAMP_MIN_VISIBLE_BOTTOM`.
+- [x] **Top clamp limit indicator:** Cyan inset shadow en el panel cuando está en el límite superior.
+- [x] **Collapsed mode clamp fix:** `handleHeaderMouseDown` usa `containerWidth`/`containerHeight` como fallback cuando `panelRef.current` es null.
+- [x] **Exported positioning constants:** `PANEL_CSS_TOP` y `PANEL_CSS_RIGHT` exportados para verificación de consistencia.
+- [x] **60 unit tests:** Cobertura completa de clamping en los 4 ejes (mount + drag), collapsed mode, limit indicator, constant-Tailwind consistency.
+
+### Era 9.7.0 — Alignment Shortcuts UI/UX Audit & Proposals
+- [x] **Alignment Shortcuts — Resolución Colisiones:** Ctrl+Shift+L/H/R/B ahora priorizan alignment cuando ≥2 items. Panel toggles ceden cuando hay multi-selección. Archivos: `useWorkbenchShortcuts.ts`, `useAlignment.ts`, `alignmentConstants.ts`.
+- [x] **Ctrl+Alt+E — Distribute Evenly Both Axes:** Nuevo shortcut distribuye elementos uniformemente en ambos ejes simultáneamente. `computeDistributedBothPositions()` en `useAlignment.ts`.
+- [x] **Auditoría Global Shortcuts:** 49/49 shortcuts documentados en helpData.ts están implementados. 4 shortcuts faltantes añadidos (arrow keys nudge, Enter/Escape ghost).
+- [x] **Ctrl+Shift+A Movido a Window:** Antes en Help > deprecated (confuso), ahora en Window como panel toggle legítimo con `checked`/`onToggleWindow` consistente con los demás paneles.
+- [x] **MenuBar Indicadores Prioridad Alignment:** Badges ámbar →Align Left/Center Horizontally/Align Right/Align Bottom con tooltip cuando ≥2 items seleccionados. `ALIGNMENT_OVERRIDE` map + `hasMultiSelection` prop.
+- [x] **ViewportToolbar Tooltip Contextual:** Contador Sel: N ahora muestra qué shortcuts cambian con multi-selección.
+- [x] **Deprecated Tags Eliminados:** `highlight: 'deprecated'` quitado de 4 items funcionales (Link Workspace, Blueprints, Deploy, Module Global Configuration).
+- [x] **E2E Suite Completa:** 50/52 passed. 4 layers-panel-filters tests reparados (locator `button:has-text("Clear")` → `button[title*="Clear all filters"]`). 2 pre-existing blueprint-store failures.
+
+---
+
 ## 🚀 Próximos Pasos Reales
 
 Todas las fases de refinamiento del roadmap original (R1a, R1b, R1c, R2, R3, Tech Debt) y las features v9.6.x están **completamente implementadas**.
@@ -120,20 +161,44 @@ Todas las fases de refinamiento del roadmap original (R1a, R1b, R1c, R2, R3, Tec
 | ~~Virtual Scrolling LayersPanel~~ | ✅ **Completado en v9.6.0** — `react-window` |
 | ~~Testing: Shortcuts~~ | ✅ **Completado en v9.6.1** — 19 tests en `useWorkbenchShortcuts.spec.ts` |
 
-### Próximas Direcciones Posibles
+### Próximas Direcciones — Priorizadas
 
-### Opción A: Internacionalización (i18n)
-- Traducir UI a múltiples idiomas
-- **Esfuerzo:** 🔴 Grande
-- **Impacto:** 🟡 Medio
+Basado en análisis exhaustivo del código, ADRs y estado actual del editor.
 
-### Opción B: Testing & Calidad
-- Completar cobertura de tests para VisualModulationMatrix y VirtualScrolling LayersPanel
-- E2E tests más robustos con retry logic
-- **Esfuerzo:** 🟡 Medio
-- **Impacto:** 🟢 Alto
+| Prioridad | Mejora | Esfuerzo | Impacto | Descripción |
+|:---------:|--------|:--------:|:-------:|-------------|
+| **P1** | 🍞 **Toast Notification System** | 🟢 **Completado en v9.3.3** | 🟢 Alto | Sistema global de toasts animados (framer-motion) desde esquina superior derecha. `ToastProvider`, `useToast`, `addLog` bridge para notificaciones visuales. |
+| **P2** | 🔍 **Command Palette (Ctrl+K)** | 🟢 **Completado en v9.4.0** | 🟢 Alto | Paleta de comandos estilo VS Code/Linear: buscar nodos por nombre/ID, ejecutar acciones del menú, mostrar atajos. Ctrl+K badge en footer. 35 unit tests. |
+| **P3** | 📊 **Status Bar (dirty/validación)** | 🟢 Bajo | 🟡 Medio | Barra de estado inferior con indicador Modified/Saved, timestamp último guardado, conteo de errores de validación en vivo, estado watchdog. |
+| **P4** | 🎓 **Onboarding Walkthrough** | 🟡 Medio | 🟢 Alto | Tour interactivo paso a paso (como Linear/Figma) usando overlay modal existente. Guía de primeros pasos en el editor. |
+| **P5** | 🖼️ **Mini-Map del Rack** | 🟢 **Completado** | 🟢 Alto | Mini-mapa funcional en esquina superior derecha, arrastrable con el ratón. Filtro por tipo de nodo (cell, group, layer, rack) con checkboxes, persistencia localStorage + URL query params, indicador de locked, color legend en dropdown, botón Clear all filters, snap a bordes, reset position button, glow visual al arrastrar, botón colapsado arrastrable, doble-click para reset, top clamp fix (no stuck behind toolbar), top limit indicator (cyan inset glow), clamp constants refactor, collapsed mode clamp, constant Tailwind consistency. **60 unit tests pasando.** |
+| **P6** | ⏪ **Undo Timeline Visual** | 🟡 Medio | 🟡 Medio | Popover/timeline mostrando últimos N pasos del historial semántico. Similar a Photoshop history o Cursor branch. Extiende batchHistory existente. |
+| **P7** | 🎨 **Temas Visuales Adicionales** | 🟢 Bajo | 🟡 Medio | Extender ThemeToggle con selector de temas (Amber, Cyberpunk, High Contrast) que cambien variables CSS `--primary-rgb` y colores de acento. |
+| **P8** | 🔧 **Floating Toolbar Customizable** | 🟡 Medio | 🟡 Medio | Personalizar orden de herramientas en Toolbar flotante: arrastrar para reordenar, ocultar/mostrar, estado persistido en localStorage. |
+| **P9** | 📐 **Resizable Panels** | 🔴 Alto | 🟢 Alto | Splitters redimensionables entre paneles (inspector, layers, logs) usando react-resizable-panels. Layouts personalizados persistidos. |
+| **P10** | ♿ **Accesibilidad WCAG AA** | 🔴 Alto | 🟢 Alto | Auditoría de contraste, aria-label/role en todos los componentes interactivos, navegación completa por teclado (Tab, Enter, Escape). |
+| **P11** | 🔌 **Editor Visual de Conexiones** | 🔴 Alto | 🟢 Muy alto | Editar conexiones directamente en viewport: click puerto → arrastrar línea a destino. Curvas Bezier animadas como SynthEdit/V CV Rack. |
 
-### Opción C: Cleanup de deprecated tags en MenuBar
-- Quitar `highlight: 'deprecated'` de Link Workspace, Blueprints, Deploy, Compliance Report
-- **Esfuerzo:** 🟢 Pequeño
-- **Impacto:** 🟡 Medio
+### Próximas Direcciones — Priorizadas (Actualizado)
+
+| Prioridad | Mejora | Esfuerzo | Impacto | Descripción |
+|:---------:|--------|:--------:|:-------:|-------------|
+| **P3** | 📊 **Status Bar (dirty/validación)** | 🟢 Bajo | 🟡 Medio | Barra de estado inferior con indicador Modified/Saved, timestamp último guardado, conteo de errores de validación en vivo, estado watchdog. |
+| **P4** | 🎓 **Onboarding Walkthrough** | 🟡 Medio | 🟢 Alto | Tour interactivo paso a paso (como Linear/Figma) usando overlay modal existente. Guía de primeros pasos en el editor. |
+| **P6** | ⏪ **Undo Timeline Visual** | 🟡 Medio | 🟡 Medio | Popover/timeline mostrando últimos N pasos del historial semántico. Similar a Photoshop history o Cursor branch. Extiende batchHistory existente. |
+| **P7** | 🎨 **Temas Visuales Adicionales** | 🟢 Bajo | 🟡 Medio | Extender ThemeToggle con selector de temas (Amber, Cyberpunk, High Contrast) que cambien variables CSS `--primary-rgb` y colores de acento. |
+| **P8** | 🔧 **Floating Toolbar Customizable** | 🟡 Medio | 🟡 Medio | Personalizar orden de herramientas en Toolbar flotante: arrastrar para reordenar, ocultar/mostrar, estado persistido en localStorage. |
+| **P9** | 📐 **Resizable Panels** | 🔴 Alto | 🟢 Alto | Splitters redimensionables entre paneles (inspector, layers, logs) usando react-resizable-panels. Layouts personalizados persistidos. |
+| **P10** | ♿ **Accesibilidad WCAG AA** | 🔴 Alto | 🟢 Alto | Auditoría de contraste, aria-label/role en todos los componentes interactivos, navegación completa por teclado (Tab, Enter, Escape). |
+| **P11** | 🔌 **Editor Visual de Conexiones** | 🔴 Alto | 🟢 Muy alto | Editar conexiones directamente en viewport: click puerto → arrastrar línea a destino. Curvas Bezier animadas como SynthEdit/V CV Rack. |
+
+### Próximas Direcciones — Alternativas
+
+| Opción | Esfuerzo | Impacto | Notas |
+|:-------|:--------:|:-------:|-------|
+| 🌐 **Internacionalización (i18n)** | 🔴 Grande | 🟡 Medio | Traducir UI a múltiples idiomas. Bajo impacto porque el público es técnico/ingenieril. |
+| 🧪 **Testing & Calidad** | 🟡 Medio | 🟢 Alto | Completar cobertura para VisualModulationMatrix y VirtualScrolling LayersPanel. E2E tests con retry logic. |
+
+---
+
+*Roadmap actualizado: 2026-06-15*
