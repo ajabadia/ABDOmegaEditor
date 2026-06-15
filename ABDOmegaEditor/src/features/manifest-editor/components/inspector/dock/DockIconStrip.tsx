@@ -1,20 +1,17 @@
 'use client';
 
 /**
- * @purpose Renderiza una barra vertical de iconos para alternar entre diferentes paneles en el editor del manifiesto OMEGA.
- * @lastUpdated 2026-06-14T16:44:46.454Z
+ * @purpose Renderiza una barra vertical de iconos para cambiar entre diferentes paneles del editor de manifesto OMEGA.
+ * @purpose_en Renders a vertical bar of icons for toggling between different panels in the OMEGA manifest editor.
+ * @fingerprint exports:1,imports:2,sig:uytd87
+ * @lastUpdated 2026-06-15T05:07:20.787Z
  */
 
-import React from 'react';
 import { Layers, Sliders, Info, History, Settings, Zap, Terminal, Shield } from 'lucide-react';
+import { DockIconBar } from './DockIconBar';
+import type { DockIconBarButton } from './DockIconBar';
 
 type WindowId = 'window_layers' | 'window_rack_properties' | 'window_properties' | 'window_blueprints' | 'window_compliance' | 'window_info' | 'window_history' | 'window_logs';
-
-interface DockIconButton {
-  id: WindowId;
-  icon: React.ReactNode;
-  title: string;
-}
 
 interface DockIconStripProps {
   isCollapsed: boolean;
@@ -22,7 +19,7 @@ interface DockIconStripProps {
   onToggleWindow: (id: WindowId) => void;
 }
 
-const ICONS: DockIconButton[] = [
+const ICONS: DockIconBarButton[] = [
   { id: 'window_layers', icon: <Layers className="w-4 h-4" />, title: 'Layers' },
   { id: 'window_rack_properties', icon: <Settings className="w-4 h-4" />, title: 'Rack Properties' },
   { id: 'window_properties', icon: <Sliders className="w-4 h-4" />, title: 'Element Properties' },
@@ -37,24 +34,14 @@ const ICONS: DockIconButton[] = [
  * DockIconStrip — Barra de iconos vertical al estilo Photoshop.
  * Cada botón alterna la visibilidad de su panel correspondiente.
  * Extraído de RightDockContainer.tsx para reducir el monolito.
+ * Ahora es un wrapper thin de DockIconBar.
  */
 export function DockIconStrip({ isCollapsed, windowStates, onToggleWindow }: DockIconStripProps) {
   return (
-    <div className="w-10 wb-surface border-l wb-outline flex flex-col items-center py-3 gap-3 z-50 shrink-0 shadow-xl">
-      {ICONS.map(({ id, icon, title }) => (
-        <button
-          key={id}
-          onClick={() => onToggleWindow(id)}
-          className={`w-7 h-7 rounded-xs flex items-center justify-center transition-all ${
-            windowStates[id] && !isCollapsed
-              ? 'bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]'
-              : 'wb-text-muted hover:wb-text hover:bg-primary/10'
-          }`}
-          title={title}
-        >
-          {icon}
-        </button>
-      ))}
-    </div>
+    <DockIconBar
+      buttons={ICONS}
+      isActive={(id) => !!(windowStates[id] && !isCollapsed)}
+      onButtonClick={(id) => onToggleWindow(id as WindowId)}
+    />
   );
 }

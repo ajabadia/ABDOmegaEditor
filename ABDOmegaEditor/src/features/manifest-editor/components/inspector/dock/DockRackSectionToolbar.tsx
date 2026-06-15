@@ -1,12 +1,16 @@
 'use client';
 
 /**
- * @purpose Gestiona una barra de herramientas para alternar secciones en el editor del manifiesto OMEGA, clasificándolas en opciones esenciales y avanzadas.
- * @lastUpdated 2026-06-14T16:45:28.078Z
+ * @purpose Renderiza una barra de herramientas para activar secciones en el editor de manifesto OMEGA, clasificándolas en opciones esenciales y avanzadas.
+ * @purpose_en Renders a toolbar for toggling sections in the OMEGA manifest editor, categorizing them into essential and advanced options.
+ * @fingerprint exports:1,imports:2,sig:z6p3ve
+ * @lastUpdated 2026-06-15T05:07:40.584Z
  */
 
 import React from 'react';
 import { Info, Cpu, LayoutGrid, Palette, Layout, Activity, Tag, Box, Layers } from 'lucide-react';
+import { DockIconBar } from './DockIconBar';
+import type { DockIconBarButton } from './DockIconBar';
 
 // Granular section IDs — must match WorkbenchContainer rackSections and PropertyPanel visibleSections
 type SectionId =
@@ -48,41 +52,26 @@ const SECTIONS: RackSectionDef[] = [
   { id: 'diagnostics',             icon: <Activity className="w-4 h-4" />,    title: 'Toggle Diagnostics',                level: 'advanced' },
 ];
 
+const buttons: DockIconBarButton[] = SECTIONS.map(({ id, icon, title }) => ({ id, icon, title }));
+
+const essentialIds = SECTIONS.filter(s => s.level === 'essential').map(s => s.id);
+const advancedIds = SECTIONS.filter(s => s.level === 'advanced').map(s => s.id);
+
 export function DockRackSectionToolbar({
   rackSections,
   onToggleRackSection
 }: DockRackSectionToolbarProps) {
-  const essentialButtons = SECTIONS.filter(s => s.level === 'essential');
-  const advancedButtons = SECTIONS.filter(s => s.level === 'advanced');
-
-  const renderButton = ({ id, icon, title }: RackSectionDef) => (
-    <button
-      key={id}
-      onClick={() => onToggleRackSection(id)}
-      className={`w-7 h-7 rounded-xs flex items-center justify-center transition-all ${
-        rackSections[id] !== false
-          ? 'bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]'
-          : 'wb-text-muted hover:wb-text hover:bg-primary/10'
-      }`}
-      title={title}
-    >
-      {icon}
-    </button>
-  );
-
   return (
-    <div className="w-10 wb-surface border-l wb-outline flex flex-col items-center py-3 gap-3 z-45 shrink-0 animate-in slide-in-from-right duration-200 shadow-lg">
-      <div className="text-[5px] font-black uppercase text-foreground/45 tracking-widest text-center select-none pointer-events-none">RACK SECT</div>
-
-      <div className="flex flex-col items-center gap-1.5">
-        {essentialButtons.map(renderButton)}
-      </div>
-
-      <div className="w-5 h-px bg-white/10" />
-
-      <div className="flex flex-col items-center gap-1.5 overflow-y-auto max-h-[50vh]">
-        {advancedButtons.map(renderButton)}
-      </div>
-    </div>
+    <DockIconBar
+      buttons={buttons}
+      isActive={(id) => rackSections[id as SectionId] !== false}
+      onButtonClick={(id) => onToggleRackSection(id)}
+      label="RACK SECT"
+      groups={[
+        { id: 'essential', buttonIds: essentialIds },
+        { id: 'advanced', buttonIds: advancedIds, className: 'overflow-y-auto max-h-[50vh]' },
+      ]}
+      className="z-45 animate-in slide-in-from-right duration-200 shadow-lg"
+    />
   );
 }
