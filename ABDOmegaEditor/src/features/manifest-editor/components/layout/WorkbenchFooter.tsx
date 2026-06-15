@@ -7,6 +7,8 @@
 
 import { useRef, useState } from 'react';
 import { Layers, Cpu, FileCode, History, Columns, Save, AlertTriangle, Circle, Undo2, Map } from 'lucide-react';
+import ShortcutBadge from './ShortcutBadge';
+import ToolbarIconButton from './ToolbarIconButton';
 import UndoTimelinePopover from './UndoTimelinePopover';
 import type { HistoryEntry } from '@/features/manifest-editor/types/history';
 
@@ -112,51 +114,45 @@ const WorkbenchFooter = ({
       {/* CENTER: VIEW SELECTORS AND VERTICAL SPLIT */}
       <div className="flex items-center justify-center gap-1 shrink-0">
         <div className="flex items-center wb-surface border wb-outline rounded-xs p-0.5 pointer-events-auto h-5 bg-black/40">
-          <button 
+          <ToolbarIconButton
+            icon={<Layers className="w-2.5 h-2.5" />}
+            active={activeTabType === 'orbital'}
             onClick={() => onTabFocus?.('orbital')}
-            className={`flex items-center justify-center w-5 h-4 rounded-xs transition-all ${activeTabType === 'orbital' ? 'bg-primary/20 text-primary border border-primary/20' : 'wb-text-muted hover:wb-text'}`}
             title="Orbital View"
-          >
-            <Layers className="w-2.5 h-2.5" />
-          </button>
-          <button 
+          />
+          <ToolbarIconButton
+            icon={<Cpu className="w-2.5 h-2.5" />}
+            active={activeTabType === 'rack'}
             onClick={() => onTabFocus?.('rack')}
-            className={`flex items-center justify-center w-5 h-4 rounded-xs transition-all ${activeTabType === 'rack' ? 'bg-primary/20 text-primary border border-primary/20' : 'wb-text-muted hover:wb-text'}`}
             title="Virtual Rack"
-          >
-            <Cpu className="w-2.5 h-2.5" />
-          </button>
-          <button 
+          />
+          <ToolbarIconButton
+            icon={<FileCode className="w-2.5 h-2.5" />}
+            active={activeTabType === 'source'}
             onClick={() => onTabFocus?.('source')}
-            className={`flex items-center justify-center w-5 h-4 rounded-xs transition-all ${activeTabType === 'source' ? 'bg-primary/20 text-primary border border-primary/20' : 'wb-text-muted hover:wb-text'}`}
             title="Source View"
-          >
-            <FileCode className="w-2.5 h-2.5" />
-          </button>
-          <button 
+          />
+          <ToolbarIconButton
+            icon={<History className="w-2.5 h-2.5" />}
+            active={activeTabType === 'history'}
             onClick={() => onTabFocus?.('history')}
-            className={`flex items-center justify-center w-5 h-4 rounded-xs transition-all ${activeTabType === 'history' ? 'bg-primary/20 text-primary border border-primary/20' : 'wb-text-muted hover:wb-text'}`}
             title="Timeline / History"
-          >
-            <History className="w-2.5 h-2.5" />
-          </button>
+          />
           
           <div className="w-px h-3 bg-white/10 mx-1" />
           
-          <button 
-            onClick={onToggleSplit}
-            className={`flex items-center justify-center w-5 h-4 rounded-xs transition-all ${isSplit ? 'bg-primary/20 text-primary border border-primary/20' : 'wb-text-muted hover:wb-text'}`}
+          <ToolbarIconButton
+            icon={<Columns className="w-2.5 h-2.5" />}
+            active={isSplit}
+            onClick={() => onToggleSplit?.()}
             title="Toggle Split View (Vertical)"
-          >
-            <Columns className="w-2.5 h-2.5" />
-          </button>
-          <button 
-            onClick={onToggleMiniMap}
-            className={`flex items-center justify-center w-5 h-4 rounded-xs transition-all ${showMiniMap ? 'bg-primary/20 text-primary border border-primary/20' : 'wb-text-muted hover:wb-text'}`}
+          />
+          <ToolbarIconButton
+            icon={<Map className="w-2.5 h-2.5" />}
+            active={showMiniMap}
+            onClick={() => onToggleMiniMap?.()}
             title="Toggle Mini Map (Ctrl+Shift+M)"
-          >
-            <Map className="w-2.5 h-2.5" />
-          </button>
+          />
         </div>
       </div>
       
@@ -185,138 +181,84 @@ const WorkbenchFooter = ({
         {/* Shortcut badges — responsive: hide progressively on smaller screens */}
         <div className="flex items-center gap-1 shrink-0 overflow-hidden">
           {/* Undo (Ctrl+Z) — always visible */}
-          <button
-            onClick={() => { onUndo?.(); }}
+          <ShortcutBadge
+            keys={['Ctrl', 'Z']}
+            onClick={() => onUndo?.()}
+            active={hasUndo}
             disabled={!hasUndo}
-            className={`flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all ${
-              hasUndo
-                ? 'border-white/10 bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50'
-                : 'border-white/5 bg-transparent text-white/10 cursor-not-allowed'
-            }`}
             title="Undo (Ctrl+Z)"
-          >
-            <kbd className="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none">Ctrl</kbd>
-            <span className="text-white/20">+</span>
-            <kbd className="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none">Z</kbd>
-          </button>
+          />
 
           {/* Redo (Ctrl+Shift+Z) — hidden below md */}
-          <button
-            onClick={() => { onRedo?.(); }}
+          <ShortcutBadge
+            keys={['Ctrl', 'Shift', 'Z']}
+            onClick={() => onRedo?.()}
+            active={hasRedo}
             disabled={!hasRedo}
-            className={`hidden md:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all ${
-              hasRedo
-                ? 'border-white/10 bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50'
-                : 'border-white/5 bg-transparent text-white/10 cursor-not-allowed'
-            }`}
+            responsive="hidden md:flex"
             title="Redo (Ctrl+Shift+Z)"
-          >
-            <kbd className="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none">Ctrl</kbd>
-            <span className="text-white/20">+</span>
-            <kbd className="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none">Shift</kbd>
-            <span className="text-white/20">+</span>
-            <kbd className="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none">Z</kbd>
-          </button>
+          />
 
           {/* Command Palette (Ctrl+K) — always visible */}
-          <button
+          <ShortcutBadge
+            keys={['Ctrl', 'K']}
             onClick={() => onCommandPaletteToggle?.()}
-            className="flex items-center gap-1 px-1 py-0.5 rounded-xs border border-white/10 bg-white/5 text-[6px] font-mono font-bold tracking-wider text-white/30 hover:bg-white/10 hover:text-white/50 shrink-0 transition-all cursor-pointer"
             title="Command Palette (Ctrl+K)"
-          >
-            <kbd className="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none">Ctrl</kbd>
-            <span className="text-white/20">+</span>
-            <kbd className="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none">K</kbd>
-          </button>
+          />
 
           {/* Save (Ctrl+S) — hidden below md */}
-          <button
+          <ShortcutBadge
+            keys={['Ctrl', 'S']}
             onClick={() => onSave?.()}
-            className="hidden md:flex items-center gap-1 px-1 py-0.5 rounded-xs border border-white/10 bg-white/5 text-[6px] font-mono font-bold tracking-wider text-white/30 hover:bg-white/10 hover:text-white/50 shrink-0 transition-all cursor-pointer"
+            responsive="hidden md:flex"
             title="Save OmegaPack (Ctrl+S)"
-          >
-            <kbd className="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none">Ctrl</kbd>
-            <span className="text-white/20">+</span>
-            <kbd className="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none">S</kbd>
-          </button>
+          />
 
           {/* View: Orbital (Ctrl+1) — hidden below lg */}
-          <button
+          <ShortcutBadge
+            keys={['Ctrl', '1']}
             onClick={() => onTabFocus?.('orbital')}
-            className={`hidden lg:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all ${
-              activeTabType === 'orbital'
-                ? 'border-primary/30 bg-primary/10 text-primary'
-                : 'border-white/10 bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50'
-            }`}
+            active={activeTabType === 'orbital'}
+            responsive="hidden lg:flex"
             title="Orbital View (Ctrl+1)"
-          >
-            <kbd className="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none">Ctrl</kbd>
-            <span className="text-white/20">+</span>
-            <kbd className="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none">1</kbd>
-          </button>
+          />
 
           {/* View: Rack (Ctrl+2) — hidden below lg */}
-          <button
+          <ShortcutBadge
+            keys={['Ctrl', '2']}
             onClick={() => onTabFocus?.('rack')}
-            className={`hidden lg:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all ${
-              activeTabType === 'rack'
-                ? 'border-primary/30 bg-primary/10 text-primary'
-                : 'border-white/10 bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50'
-            }`}
+            active={activeTabType === 'rack'}
+            responsive="hidden lg:flex"
             title="Virtual Rack (Ctrl+2)"
-          >
-            <kbd className="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none">Ctrl</kbd>
-            <span className="text-white/20">+</span>
-            <kbd className="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none">2</kbd>
-          </button>
+          />
 
           {/* View: Source (Ctrl+3) — hidden below xl */}
-          <button
+          <ShortcutBadge
+            keys={['Ctrl', '3']}
             onClick={() => onTabFocus?.('source')}
-            className={`hidden xl:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all ${
-              activeTabType === 'source'
-                ? 'border-primary/30 bg-primary/10 text-primary'
-                : 'border-white/10 bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50'
-            }`}
+            active={activeTabType === 'source'}
+            responsive="hidden xl:flex"
             title="Source Code (Ctrl+3)"
-          >
-            <kbd className="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none">Ctrl</kbd>
-            <span className="text-white/20">+</span>
-            <kbd className="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none">3</kbd>
-          </button>
+          />
 
           {/* View: History (Ctrl+4) — hidden below xl */}
-          <button
+          <ShortcutBadge
+            keys={['Ctrl', '4']}
             onClick={() => onTabFocus?.('history')}
-            className={`hidden xl:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all ${
-              activeTabType === 'history'
-                ? 'border-primary/30 bg-primary/10 text-primary'
-                : 'border-white/10 bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50'
-            }`}
+            active={activeTabType === 'history'}
+            responsive="hidden xl:flex"
             title="History Timeline (Ctrl+4)"
-          >
-            <kbd className="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none">Ctrl</kbd>
-            <span className="text-white/20">+</span>
-            <kbd className="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none">4</kbd>
-          </button>
+          />
 
           {/* Mini Map (Ctrl+Shift+M) — hidden below xl, only in rack view */}
           {activeTabType === 'rack' && (
-            <button
-              onClick={onToggleMiniMap}
-              className={`hidden xl:flex items-center gap-1 px-1 py-0.5 rounded-xs border shrink-0 transition-all cursor-pointer text-[6px] font-mono font-bold tracking-wider ${
-                showMiniMap
-                  ? 'border-primary/30 bg-primary/10 text-primary hover:bg-primary/20'
-                  : 'border-white/10 bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50'
-              }`}
+            <ShortcutBadge
+              keys={['Ctrl', 'Shift', 'M']}
+              onClick={() => onToggleMiniMap?.()}
+              active={showMiniMap}
+              responsive="hidden xl:flex"
               title="Toggle Mini Map (Ctrl+Shift+M)"
-            >
-              <kbd className="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none">Ctrl</kbd>
-              <span className="text-white/20">+</span>
-              <kbd className="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none">Shift</kbd>
-              <span className="text-white/20">+</span>
-              <kbd className="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none">M</kbd>
-            </button>
+            />
           )}
         </div>
 
