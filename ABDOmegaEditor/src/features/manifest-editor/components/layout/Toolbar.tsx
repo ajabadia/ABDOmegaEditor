@@ -1,7 +1,15 @@
 'use client';
- 
+
+/**
+ * @purpose Renderiza una barra de herramientas para el editor de manifesto OMEGA con herramientas para seleccionar, agregar, agrupar y gestionar entidades en modo vivo.
+ * @purpose_en Renders a toolbar for the OMEGA manifest editor with tools for selecting, adding, grouping, and managing entities in live mode.
+ * @fingerprint exports:1,imports:5,sig:1yyblne
+ * @lastUpdated 2026-06-15T05:55:20.328Z
+ */
+
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ToolbarIconButton from './ToolbarIconButton';
 import { 
   MousePointer2, Plus, Cpu, Sparkles, 
   Shield, Settings, Zap, Sliders, Radio,
@@ -113,35 +121,31 @@ export default function Toolbar({
 
   // Define components for the buttons
   const selectBtn = (
-    <button
+    <ToolbarIconButton
       key="select"
+      icon={<MousePointer2 className="w-3.5 h-3.5 fill-current" />}
+      active={activeTool === 'select'}
       onClick={() => handleSelectTool('select')}
-      className={`w-7 h-7 rounded-xs flex items-center justify-center transition-all ${
-        activeTool === 'select' 
-          ? 'bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]' 
-          : 'wb-text-muted hover:wb-text hover:bg-primary/10'
-      }`}
       title="Select & Move Tool (V)"
-    >
-      <MousePointer2 className="w-3.5 h-3.5 fill-current" />
-    </button>
+      size="md"
+      className={activeTool === 'select' ? 'tool-active-glow' : ''}
+    />
   );
 
   const marqueeBtn = (
-    <button
+    <ToolbarIconButton
       key="marquee"
+      icon={
+        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2.5" strokeDasharray="3 3" />
+        </svg>
+      }
+      active={activeTool === 'marquee'}
       onClick={() => handleSelectTool('marquee')}
-      className={`w-7 h-7 rounded-xs flex items-center justify-center transition-all ${
-        activeTool === 'marquee' 
-          ? 'bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]' 
-          : 'wb-text-muted hover:wb-text hover:bg-primary/10'
-      }`}
       title="Marquee Selection Tool (M)"
-    >
-      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="3" width="18" height="18" rx="2.5" strokeDasharray="3 3" />
-      </svg>
-    </button>
+      size="md"
+      className={activeTool === 'marquee' ? 'tool-active-glow' : ''}
+    />
   );
 
   const addBtn = (
@@ -150,7 +154,7 @@ export default function Toolbar({
         onClick={() => handleSelectTool('add')}
         className={`w-7 h-7 rounded-xs flex items-center justify-center transition-all ${
           activeTool === 'add' 
-            ? 'bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]' 
+            ? 'bg-primary/20 text-primary border border-primary/20 tool-active-glow' 
             : 'wb-text-muted hover:wb-text hover:bg-primary/10'
         }`}
         title="Add Primitives & Ports (A)"
@@ -186,6 +190,7 @@ export default function Toolbar({
                     setActiveTool('select');
                   }}
                   className="w-full flex items-center gap-2 px-1.5 py-1 rounded-xs text-[8px] font-bold uppercase text-left hover:bg-primary/20 hover:text-primary transition-colors"
+                  title="Add Knob"
                 >
                   <Disc className="w-3 h-3 text-primary/70" />
                   <span>Knob</span>
@@ -198,6 +203,7 @@ export default function Toolbar({
                     setActiveTool('select');
                   }}
                   className="w-full flex items-center gap-2 px-1.5 py-1 rounded-xs text-[8px] font-bold uppercase text-left hover:bg-primary/20 hover:text-primary transition-colors"
+                  title="Add Vertical Slider"
                 >
                   <Sliders className="w-3 h-3 text-primary/70" />
                   <span>Slider (V)</span>
@@ -210,6 +216,7 @@ export default function Toolbar({
                     setActiveTool('select');
                   }}
                   className="w-full flex items-center gap-2 px-1.5 py-1 rounded-xs text-[8px] font-bold uppercase text-left hover:bg-primary/20 hover:text-primary transition-colors"
+                  title="Add Horizontal Slider"
                 >
                   <Sliders className="w-3 h-3 text-primary/70 rotate-90" />
                   <span>Slider (H)</span>
@@ -222,6 +229,7 @@ export default function Toolbar({
                     setActiveTool('select');
                   }}
                   className="w-full flex items-center gap-2 px-1.5 py-1 rounded-xs text-[8px] font-bold uppercase text-left hover:bg-primary/20 hover:text-primary transition-colors"
+                  title="Add Button"
                 >
                   <CircleDot className="w-3 h-3 text-primary/70" />
                   <span>Button</span>
@@ -234,6 +242,7 @@ export default function Toolbar({
                     setActiveTool('select');
                   }}
                   className="w-full flex items-center gap-2 px-1.5 py-1 rounded-xs text-[8px] font-bold uppercase text-left hover:bg-primary/20 hover:text-primary transition-colors"
+                  title="Add Switch"
                 >
                   <ToggleLeft className="w-3 h-3 text-primary/70" />
                   <span>Switch</span>
@@ -246,6 +255,7 @@ export default function Toolbar({
                     setActiveTool('select');
                   }}
                   className="w-full flex items-center gap-2 px-1.5 py-1 rounded-xs text-[8px] font-bold uppercase text-left hover:bg-primary/20 hover:text-primary transition-colors"
+                  title="Add LED Light"
                 >
                   <Lightbulb className="w-3 h-3 text-primary/70" />
                   <span>LED Light</span>
@@ -258,6 +268,7 @@ export default function Toolbar({
                     setActiveTool('select');
                   }}
                   className="w-full flex items-center gap-2 px-1.5 py-1 rounded-xs text-[8px] font-bold uppercase text-left hover:bg-primary/20 hover:text-primary transition-colors"
+                  title="Add Display"
                 >
                   <Tv className="w-3 h-3 text-primary/70" />
                   <span>Display</span>
@@ -270,6 +281,7 @@ export default function Toolbar({
                     setActiveTool('select');
                   }}
                   className="w-full flex items-center gap-2 px-1.5 py-1 rounded-xs text-[8px] font-bold uppercase text-left hover:bg-primary/20 hover:text-primary transition-colors"
+                  title="Add Label"
                 >
                   <Type className="w-3 h-3 text-primary/70" />
                   <span>Label</span>
@@ -410,79 +422,73 @@ export default function Toolbar({
   );
 
   const studioBtn = (
-    <button
+    <ToolbarIconButton
       key="studio"
+      icon={<Cpu className="w-3.5 h-3.5" />}
       onClick={() => handleSelectTool('studio')}
-      className="w-7 h-7 rounded-xs flex items-center justify-center transition-all wb-text-muted hover:wb-text hover:bg-primary/10"
       title="Universal Cell Laboratory (Studio)"
-    >
-      <Cpu className="w-3.5 h-3.5" />
-    </button>
+      size="md"
+    />
   );
 
   const groupBtn = (
-    <button
+    <ToolbarIconButton
       key="group"
+      icon={<Group className="w-3.5 h-3.5" />}
       onClick={() => {
         if (isGroupEnabled && onGroupSelected) {
           onGroupSelected(multiSelectedIds);
           setActiveTool('select');
         }
       }}
-      className="w-7 h-7 rounded-xs flex items-center justify-center transition-all wb-text-muted hover:wb-text hover:bg-primary/10"
       title={`Group ${multiSelectedIds.length} selected elements`}
-    >
-      <Group className="w-3.5 h-3.5" />
-    </button>
+      size="md"
+    />
   );
 
   const ungroupBtn = (
-    <button
+    <ToolbarIconButton
       key="ungroup"
+      icon={<Ungroup className="w-3.5 h-3.5" />}
       onClick={() => {
         if (isUngroupEnabled && onUngroupNode && targetGroupId) {
           onUngroupNode(targetGroupId);
           setActiveTool('select');
         }
       }}
-      className="w-7 h-7 rounded-xs flex items-center justify-center transition-all wb-text-muted hover:wb-text hover:bg-primary/10"
       title="Ungroup selected group"
-    >
-      <Ungroup className="w-3.5 h-3.5" />
-    </button>
+      size="md"
+    />
   );
 
   const blueprintsBtn = (
-    <button
+    <ToolbarIconButton
       key="blueprints"
+      icon={<Sparkles className="w-3.5 h-3.5" />}
       onClick={onOpenGallery}
-      className="w-7 h-7 rounded-xs flex items-center justify-center wb-text-muted hover:wb-text hover:bg-primary/10 transition-all"
       title="Blueprints & Templates (B)"
-    >
-      <Sparkles className="w-3.5 h-3.5" />
-    </button>
+      size="md"
+    />
   );
 
   const auditBtn = (
-    <button
+    <ToolbarIconButton
       key="audit"
+      icon={<Shield className="w-3.5 h-3.5" />}
       onClick={onOpenAudit}
-      className="w-7 h-7 rounded-xs flex items-center justify-center wb-text-muted hover:wb-text hover:bg-primary/10 transition-all"
       title="Compliance Auditor"
-    >
-      <Shield className="w-3.5 h-3.5" />
-    </button>
+      size="md"
+    />
   );
 
   const configBtn = (
-    <button
+    <ToolbarIconButton
       key="config"
+      icon={<Settings className="w-3.5 h-3.5" />}
       onClick={onOpenConfig}
-      className="w-7 h-7 rounded-xs flex items-center justify-center wb-text-muted hover:wb-text hover:bg-primary/10 transition-all"
       title="Module Signature & Governance"
-    >
-      <Settings className="w-3.5 h-3.5" />
-    </button>
+      size="md"
+    />
   );
 
   const liveBtn = (
@@ -491,7 +497,7 @@ export default function Toolbar({
       onClick={onToggleLive}
       className={`w-7 h-7 rounded-xs flex items-center justify-center transition-all ${
         isLiveMode 
-          ? 'bg-accent/20 text-accent border border-accent/20 shadow-[0_0_12px_rgba(var(--accent-rgb),0.1)]' 
+          ? 'bg-accent/20 text-accent border border-accent/20 tool-active-glow-accent' 
           : 'wb-text-muted hover:wb-text hover:bg-primary/10'
       }`}
       title={isLiveMode ? "HIL Engine: Live (Click to disconnect)" : "HIL Engine: Connect to WASM"}

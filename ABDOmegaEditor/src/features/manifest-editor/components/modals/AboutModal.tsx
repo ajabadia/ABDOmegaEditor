@@ -1,7 +1,16 @@
 'use client';
 
+/**
+ * @purpose Renderiza un modal para el conjunto de herramientas Omega Engineering, mostrando versión de editor, detalles del entorno y matriz de preparación del sistema.
+ * @purpose_en Renders a modal for the OMEGA Engineering Suite, displaying editor version, environment details, and system preparation matrix.
+ * @fingerprint exports:1,imports:4,sig:yd7cyw
+ * @lastUpdated 2026-06-15T06:29:20.097Z
+ */
+
 import { motion } from 'framer-motion';
-import { Shield, Info, Globe, Zap, X } from 'lucide-react';
+import ModalCloseButton from './ModalCloseButton';
+import ModalActionButton from './ModalActionButton';
+import { Shield, Info, Globe, Zap } from 'lucide-react';
 import IndustrialStatusSection from '../hub/IndustrialStatusSection';
 import type { OMEGA_Metric } from '@/types/manifest';
 
@@ -43,9 +52,7 @@ export default function AboutModal({ isOpen, onClose, metrics, sysReady, onDeplo
                 <p className="text-[8px] md:text-[9px] font-bold uppercase wb-text-muted tracking-widest mt-1 opacity-70">Industrial Governance ERA 7.2.3</p>
              </div>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-xs border wb-outline wb-text-muted hover:wb-text hover:bg-red-500/10 hover:border-red-500/30 transition-all">
-            <X className="w-4 h-4" />
-          </button>
+          <ModalCloseButton onClick={onClose} title="Close about" />
         </div>
  
         <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
@@ -84,12 +91,9 @@ export default function AboutModal({ isOpen, onClose, metrics, sysReady, onDeplo
 
         {/* FOOTER */}
         <div className="p-6 border-t wb-outline flex justify-end wb-surface-subtle shrink-0">
-          <button 
-            onClick={onClose} 
-            className="px-6 py-2.5 rounded-xs border wb-outline wb-text-muted hover:wb-text hover:bg-white/5 text-[9px] font-black uppercase tracking-widest transition-all duration-200"
-          >
+          <ModalActionButton onClick={onClose}>
             Dismiss View
-          </button>
+          </ModalActionButton>
         </div>
       </motion.div>
     </div>

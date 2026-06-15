@@ -1,4 +1,12 @@
-import { Camera, X } from 'lucide-react';
+/**
+ * @purpose Renderiza un encabezado para una simulación en el editor de manifesto OMEGA, mostrando el nombre de la simulación, la pestaña activa y proporcionando una opción para cerrar la simulación.
+ * @purpose_en Renders a header for a mockup in the OMEGA manifest editor, displaying the mockup name, active tab, and providing an option to close the mockup.
+ * @fingerprint exports:1,imports:1,sig:3butzh
+ * @lastUpdated 2026-06-15T06:28:52.098Z
+ */
+
+import ModalCloseButton from '../modals/ModalCloseButton';
+import { Camera } from 'lucide-react';
 
 interface MockupHeaderProps {
   name: string;
@@ -14,8 +22,6 @@ export const MockupHeader = ({ name, activeTab, onClose }: MockupHeaderProps) =>
       <div className="h-4 w-px wb-outline mx-2" />
       <span className="text-[9px] font-mono text-primary/80">{name.toUpperCase()} — {activeTab} PLANE</span>
     </div>
-    <button onClick={onClose} className="p-1.5 rounded-xs border wb-outline wb-text-muted hover:wb-text hover:bg-red-500/10 hover:border-red-500/30 transition-all">
-      <X className="w-4 h-4" />
-    </button>
+    <ModalCloseButton onClick={onClose} title="Close mockup" />
   </div>
 );

@@ -1,7 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona el estado y la renderización de un editor de estudio celular dentro del manifestador OMEGA, manejando interacciones del usuario, gestión de bocetos y procesos de finalización para entidades celulares.
+ * @purpose_en Manages the state and rendering of a cellular study editor within the OMEGA manifest editor, handling user interactions, draft management, and finalization processes for cellular entities.
+ * @fingerprint exports:1,imports:15,sig:1vyxp7w
+ * @lastUpdated 2026-06-15T05:51:27.664Z
+ */
+
 import { useState, useEffect, useMemo } from 'react';
-import { Database, Cpu, X } from 'lucide-react';
+import ModalCloseButton from '../modals/ModalCloseButton';
+import { Database, Cpu } from 'lucide-react';
 import { Box, Layers, Activity, Settings2 } from 'lucide-react';
 
 // Core Imports
@@ -228,9 +236,7 @@ export default function CellStudioContainer({
           </div>
         </div>
         {onClose && (
-          <button onClick={onClose} className="p-1.5 rounded-xs border wb-outline wb-text-muted hover:wb-text hover:bg-red-500/10 hover:border-red-500/30 transition-all cursor-pointer">
-            <X className="w-4 h-4" />
-          </button>
+          <ModalCloseButton onClick={onClose} title="Close cell studio" />
         )}
       </div>
 
@@ -288,12 +294,12 @@ export default function CellStudioContainer({
 
           {/* ACTION BAR */}
           <div className="p-6 border-t wb-outline wb-surface-subtle flex items-center justify-end gap-3 shrink-0">
-            <button onClick={() => navigator.clipboard.writeText(JSON.stringify({ behavior: state.behavior, recipe: state.recipe }, null, 2))} className="px-6 py-2.5 rounded-xs border wb-outline wb-text-muted hover:wb-text hover:bg-primary/5 text-[9px] font-black uppercase tracking-widest transition-all cursor-pointer">Copy DNA</button>
-            <button onClick={handleExport} className="px-6 py-2.5 rounded-xs border wb-outline wb-text-muted hover:wb-text hover:bg-primary/5 text-[9px] font-black uppercase tracking-widest transition-all cursor-pointer">Export Entity</button>
-            <button onClick={handleFreeze} className="px-6 py-2.5 rounded-xs bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2 cursor-pointer">
+            <button onClick={() => navigator.clipboard.writeText(JSON.stringify({ behavior: state.behavior, recipe: state.recipe }, null, 2))} title="Copy DNA to clipboard" className="px-6 py-2.5 rounded-xs border wb-outline wb-text-muted hover:wb-text hover:bg-primary/5 text-[9px] font-black uppercase tracking-widest transition-all cursor-pointer">Copy DNA</button>
+            <button onClick={handleExport} title="Export entity as JSON" className="px-6 py-2.5 rounded-xs border wb-outline wb-text-muted hover:wb-text hover:bg-primary/5 text-[9px] font-black uppercase tracking-widest transition-all cursor-pointer">Export Entity</button>
+            <button onClick={handleFreeze} title="Freeze as DNA template" className="px-6 py-2.5 rounded-xs bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2 cursor-pointer">
               <Database className="w-3.5 h-3.5" /> Freeze as DNA Template
             </button>
-            <button onClick={handleFinalize} className="px-8 py-2.5 rounded-xs bg-accent text-black hover:brightness-110 text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ml-4 shadow-[0_0_15px_rgba(var(--accent-rgb),0.25)] cursor-pointer">Finalize Cell</button>
+            <button onClick={handleFinalize} title="Save and finalize cell" className="px-8 py-2.5 rounded-xs bg-accent text-black hover:brightness-110 text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ml-4 shadow-[0_0_15px_rgba(var(--accent-rgb),0.25)] cursor-pointer">Finalize Cell</button>
           </div>
         </div>
       </div>

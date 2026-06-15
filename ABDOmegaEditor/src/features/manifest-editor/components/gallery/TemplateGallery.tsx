@@ -1,13 +1,17 @@
 'use client';
 
 /**
- * @purpose Proporciona una galería modal para seleccionar plantillas de módulos con opciones de búsqueda y filtro.
- * @lastUpdated 2026-06-14T16:00:47.285Z
+ * @purpose Renderiza una galería modal para seleccionar plantillas de módulos con opciones de búsqueda y filtrado.
+ * @purpose_en Renders a modal gallery for selecting module templates with search and filter options.
+ * @fingerprint exports:1,imports:4,sig:1gzvv1x
+ * @lastUpdated 2026-06-15T04:58:47.459Z
  */
 
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X, Grid, Layout, Cpu, Box, ChevronRight, Sparkles } from 'lucide-react';
+import ModalCloseButton from '../modals/ModalCloseButton';
+import ModalActionButton from '../modals/ModalActionButton';
+import { Search, Grid, Layout, Cpu, Box, ChevronRight, Sparkles } from 'lucide-react';
 import { useTemplateGallery } from '@/features/manifest-editor/hooks/useTemplateGallery';
 import type { ModuleTemplate } from '@/omega-ui-core/types/manifest';
 
@@ -49,9 +53,7 @@ export default function TemplateGallery({ onSelect, onClose }: TemplateGalleryPr
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-xs border wb-outline wb-text-muted hover:wb-text hover:bg-red-500/10 hover:border-red-500/30 transition-all">
-            <X className="w-4 h-4" />
-          </button>
+          <ModalCloseButton onClick={onClose} title="Close gallery" />
         </div>
 
         {/* SEARCH & FILTERS */}
@@ -183,12 +185,9 @@ export default function TemplateGallery({ onSelect, onClose }: TemplateGalleryPr
 
         {/* FOOTER */}
         <div className="p-6 border-t wb-outline flex justify-end wb-surface-subtle">
-          <button 
-            onClick={onClose}
-            className="px-6 py-2.5 rounded-xs border wb-outline wb-text-muted hover:wb-text hover:bg-white/5 text-[9px] font-black uppercase tracking-widest transition-all duration-200"
-          >
+          <ModalActionButton onClick={onClose}>
             Cancel Selection
-          </button>
+          </ModalActionButton>
         </div>
       </motion.div>
     </div>

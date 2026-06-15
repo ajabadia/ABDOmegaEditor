@@ -1,8 +1,16 @@
 'use client';
 
+/**
+ * @purpose Renderiza una modalidad que muestra documentación OMEGA con categorías de usuario y desarrollador, permitiendo a los usuarios expandir secciones para obtener información detallada.
+ * @purpose_en Renders a modal displaying OMEGA documentation with user and developer categories, allowing users to expand sections for detailed information.
+ * @fingerprint exports:1,imports:5,sig:1fwi2h3
+ * @lastUpdated 2026-06-15T06:31:07.332Z
+ */
+
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
+import ModalCloseButton from './ModalCloseButton';
+import ModalActionButton from './ModalActionButton';
 import { HELP_DATA } from './helpData';
 import { HelpSectionItem } from '../help/HelpSectionItem';
 
@@ -69,9 +77,7 @@ export default function HelpModal({ isOpen, onClose, initialSectionId }: HelpMod
               <h2 className="text-base font-black uppercase tracking-widest wb-text">Ingeniería OMEGA v7.2.3</h2>
               <p className="text-[8px] md:text-[9px] font-bold uppercase wb-text-muted tracking-widest mt-1 opacity-70">Unified Documentation System</p>
             </div>
-            <button onClick={onClose} className="p-1.5 rounded-xs border wb-outline wb-text-muted hover:wb-text hover:bg-red-500/10 hover:border-red-500/30 transition-all">
-              <X className="w-4 h-4" />
-            </button>
+            <ModalCloseButton onClick={onClose} title="Close help" />
           </div>
 
           <div ref={scrollRef} className="flex-1 overflow-y-auto p-8 space-y-4 custom-scrollbar">
@@ -101,12 +107,9 @@ export default function HelpModal({ isOpen, onClose, initialSectionId }: HelpMod
                  Guía SDK (Dev)
                </button>
             </div>
-            <button 
-              onClick={onClose} 
-              className="px-6 py-2.5 rounded-xs border wb-outline wb-text-muted hover:wb-text hover:bg-white/5 text-[9px] font-black uppercase tracking-widest transition-all duration-200"
-            >
+            <ModalActionButton onClick={onClose}>
               Dismiss View
-            </button>
+            </ModalActionButton>
           </div>
         </motion.div>
       </div>

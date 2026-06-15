@@ -1,7 +1,6 @@
 /**
- * ToolbarIconButton — Reusable icon toggle button for the OMEGA Workbench footer center toolbar.
- * Eliminates the 6× duplication of button markup in WorkbenchFooter (Orbital, Rack, Source,
- * History, Split View, Mini Map).
+ * ToolbarIconButton — Reusable icon toggle button for OMEGA Workbench toolbars.
+ * Used in WorkbenchFooter (size="sm") and Toolbar panel (size="md").
  */
 
 import React from 'react';
@@ -11,21 +10,37 @@ interface ToolbarIconButtonProps {
   active?: boolean;
   onClick?: () => void;
   title?: string;
+  /** 'sm' (w-5 h-4, footer) or 'md' (w-7 h-7, toolbar panel). Default 'sm'. */
+  size?: 'sm' | 'md';
+  /** Extra CSS classes appended to the button (e.g. tool-active-glow) */
+  className?: string;
 }
+
+const SIZE_CLASSES: Record<string, string> = {
+  sm: 'w-5 h-4',
+  md: 'w-7 h-7',
+};
+
+const HOVER_CLASSES: Record<string, string> = {
+  sm: '',
+  md: 'hover:bg-primary/10',
+};
 
 const ToolbarIconButton: React.FC<ToolbarIconButtonProps> = ({
   icon,
   active = false,
   onClick,
   title,
+  size = 'sm',
+  className,
 }) => (
   <button
     onClick={onClick}
-    className={`flex items-center justify-center w-5 h-4 rounded-xs transition-all ${
+    className={`flex items-center justify-center rounded-xs transition-all ${SIZE_CLASSES[size]} ${
       active
         ? 'bg-primary/20 text-primary border border-primary/20'
-        : 'wb-text-muted hover:wb-text'
-    }`}
+        : `wb-text-muted hover:wb-text ${HOVER_CLASSES[size]}`
+    } ${className ?? ''}`}
     title={title}
   >
     {icon}

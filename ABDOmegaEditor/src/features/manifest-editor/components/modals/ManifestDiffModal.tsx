@@ -1,7 +1,16 @@
 'use client';
 
+/**
+ * @purpose Renderiza un modal completo de pantalla completa para comparación y fusión detallada de archivos manifest.
+ * @purpose_en Renders a full-screen modal for detailed structural comparison and merging of manifest files.
+ * @fingerprint exports:1,imports:4,sig:1o071x6
+ * @lastUpdated 2026-06-15T06:31:14.278Z
+ */
+
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, GitCompare, History } from 'lucide-react';
+import ModalCloseButton from './ModalCloseButton';
+import ModalActionButton from './ModalActionButton';
+import { GitCompare, History } from 'lucide-react';
 import type { ManifestDiffResult, DiffEntry } from '../../types/diff';
 import { ManifestDiffViewer } from '../inspector/ManifestDiffViewer';
 
@@ -52,9 +61,7 @@ export default function ManifestDiffModal({ isOpen, onClose, diff, onMergeEntrie
                 </div>
               </div>
 
-              <button onClick={onClose} className="p-1.5 rounded-xs border wb-outline wb-text-muted hover:wb-text hover:bg-red-500/10 hover:border-red-500/30 transition-all">
-                <X className="w-4 h-4" />
-              </button>
+              <ModalCloseButton onClick={onClose} title="Close comparison" />
             </div>
 
             {/* Diff Body */}
@@ -69,12 +76,9 @@ export default function ManifestDiffModal({ isOpen, onClose, diff, onMergeEntrie
 
             {/* Footer */}
             <div className="p-6 border-t wb-outline flex justify-end gap-3 wb-surface-subtle">
-              <button
-                onClick={onClose}
-                className="px-6 py-2.5 rounded-xs border wb-outline wb-text-muted hover:wb-text hover:bg-white/5 text-[9px] font-black uppercase tracking-widest transition-all duration-200"
-              >
+              <ModalActionButton onClick={onClose}>
                 Dismiss View
-              </button>
+              </ModalActionButton>
               <button
                 onClick={() => diff && onMergeEntries?.(diff.entries)}
                 disabled={!diff || diff.entries.length === 0}

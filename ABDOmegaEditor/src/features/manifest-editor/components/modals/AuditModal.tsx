@@ -1,7 +1,16 @@
 'use client';
 
+/**
+ * @purpose Renderiza un modal para auditoría de manifestos OMEGA, mostrando resultados de inspección, problemas y pautas con opciones para deshacer o exportar el informe.
+ * @purpose_en Renders a modal for auditing OMEGA manifests, displaying inspection results, issues, and guidelines with options to dismiss or export the report.
+ * @fingerprint exports:1,imports:8,sig:fjx9gd
+ * @lastUpdated 2026-06-15T06:29:28.929Z
+ */
+
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ShieldCheck, ShieldAlert, ShieldX, Download } from 'lucide-react';
+import ModalCloseButton from './ModalCloseButton';
+import ModalActionButton from './ModalActionButton';
+import { ShieldCheck, ShieldAlert, ShieldX, Download } from 'lucide-react';
 import { AuditService } from '@/services/auditService';
 import type { AuditResult } from '@/services/auditService';
 import type { OMEGA_Manifest } from '@/types/manifest';
@@ -70,9 +79,7 @@ export default function AuditModal({ isOpen, onClose, onNavigate, audit, manifes
               </div>
             </div>
             
-            <button onClick={onClose} className="p-1.5 rounded-xs border wb-outline wb-text-muted hover:wb-text hover:bg-red-500/10 hover:border-red-500/30 transition-all">
-              <X className="w-4 h-4" />
-            </button>
+            <ModalCloseButton onClick={onClose} title="Close inspection" />
           </div>
 
           <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-8 flex flex-col md:flex-row gap-6 md:gap-12 bg-transparent">
@@ -86,10 +93,10 @@ export default function AuditModal({ isOpen, onClose, onNavigate, audit, manifes
 
           {/* FOOTER */}
           <div className="p-6 border-t wb-outline flex justify-end gap-3 wb-surface-subtle shrink-0">
-             <button onClick={onClose} className="px-6 py-2.5 rounded-xs border wb-outline wb-text-muted hover:wb-text hover:bg-white/5 text-[9px] font-black uppercase tracking-widest transition-all duration-200">
+             <ModalActionButton onClick={onClose}>
                Dismiss Inspection
-             </button>
-             <button onClick={handleDownload} className="px-6 py-2.5 rounded-xs bg-primary/20 border border-primary/40 text-primary hover:bg-primary/30 text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shadow-[0_0_20px_var(--wb-bloom)]">
+             </ModalActionButton>
+             <button onClick={handleDownload} title="Download certification report" className="px-6 py-2.5 rounded-xs bg-primary/20 border border-primary/40 text-primary hover:bg-primary/30 text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shadow-[0_0_20px_var(--wb-bloom)]">
                <Download className="w-3.5 h-3.5" />
                Export Certification
              </button>

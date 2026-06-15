@@ -57,7 +57,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for all props set (
       class="flex items-center wb-surface border wb-outline rounded-xs p-0.5 pointer-events-auto h-5 bg-black/40"
     >
       <button
-        class="flex items-center justify-center w-5 h-4 rounded-xs transition-all wb-text-muted hover:wb-text"
+        class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
         title="Orbital View"
       >
         <svg
@@ -85,7 +85,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for all props set (
         </svg>
       </button>
       <button
-        class="flex items-center justify-center w-5 h-4 rounded-xs transition-all bg-primary/20 text-primary border border-primary/20"
+        class="flex items-center justify-center rounded-xs transition-all w-5 h-4 bg-primary/20 text-primary border border-primary/20 "
         title="Virtual Rack"
       >
         <svg
@@ -154,7 +154,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for all props set (
         </svg>
       </button>
       <button
-        class="flex items-center justify-center w-5 h-4 rounded-xs transition-all wb-text-muted hover:wb-text"
+        class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
         title="Source View"
       >
         <svg
@@ -185,7 +185,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for all props set (
         </svg>
       </button>
       <button
-        class="flex items-center justify-center w-5 h-4 rounded-xs transition-all wb-text-muted hover:wb-text"
+        class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
         title="Timeline / History"
       >
         <svg
@@ -216,7 +216,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for all props set (
         class="w-px h-3 bg-white/10 mx-1"
       />
       <button
-        class="flex items-center justify-center w-5 h-4 rounded-xs transition-all bg-primary/20 text-primary border border-primary/20"
+        class="flex items-center justify-center rounded-xs transition-all w-5 h-4 bg-primary/20 text-primary border border-primary/20 "
         title="Toggle Split View (Vertical)"
       >
         <svg
@@ -245,7 +245,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for all props set (
         </svg>
       </button>
       <button
-        class="flex items-center justify-center w-5 h-4 rounded-xs transition-all bg-primary/20 text-primary border border-primary/20"
+        class="flex items-center justify-center rounded-xs transition-all w-5 h-4 bg-primary/20 text-primary border border-primary/20 "
         title="Toggle Mini Map (Ctrl+Shift+M)"
       >
         <svg
@@ -636,7 +636,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for clean state wit
       class="flex items-center wb-surface border wb-outline rounded-xs p-0.5 pointer-events-auto h-5 bg-black/40"
     >
       <button
-        class="flex items-center justify-center w-5 h-4 rounded-xs transition-all wb-text-muted hover:wb-text"
+        class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
         title="Orbital View"
       >
         <svg
@@ -664,7 +664,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for clean state wit
         </svg>
       </button>
       <button
-        class="flex items-center justify-center w-5 h-4 rounded-xs transition-all bg-primary/20 text-primary border border-primary/20"
+        class="flex items-center justify-center rounded-xs transition-all w-5 h-4 bg-primary/20 text-primary border border-primary/20 "
         title="Virtual Rack"
       >
         <svg
@@ -733,7 +733,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for clean state wit
         </svg>
       </button>
       <button
-        class="flex items-center justify-center w-5 h-4 rounded-xs transition-all wb-text-muted hover:wb-text"
+        class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
         title="Source View"
       >
         <svg
@@ -764,7 +764,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for clean state wit
         </svg>
       </button>
       <button
-        class="flex items-center justify-center w-5 h-4 rounded-xs transition-all wb-text-muted hover:wb-text"
+        class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
         title="Timeline / History"
       >
         <svg
@@ -795,7 +795,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for clean state wit
         class="w-px h-3 bg-white/10 mx-1"
       />
       <button
-        class="flex items-center justify-center w-5 h-4 rounded-xs transition-all wb-text-muted hover:wb-text"
+        class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
         title="Toggle Split View (Vertical)"
       >
         <svg
@@ -824,7 +824,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for clean state wit
         </svg>
       </button>
       <button
-        class="flex items-center justify-center w-5 h-4 rounded-xs transition-all bg-primary/20 text-primary border border-primary/20"
+        class="flex items-center justify-center rounded-xs transition-all w-5 h-4 bg-primary/20 text-primary border border-primary/20 "
         title="Toggle Mini Map (Ctrl+Shift+M)"
       >
         <svg
@@ -1213,7 +1213,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for default state (
       class="flex items-center wb-surface border wb-outline rounded-xs p-0.5 pointer-events-auto h-5 bg-black/40"
     >
       <button
-        class="flex items-center justify-center w-5 h-4 rounded-xs transition-all wb-text-muted hover:wb-text"
+        class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
         title="Orbital View"
       >
         <svg
@@ -1241,7 +1241,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for default state (
         </svg>
       </button>
       <button
-        class="flex items-center justify-center w-5 h-4 rounded-xs transition-all bg-primary/20 text-primary border border-primary/20"
+        class="flex items-center justify-center rounded-xs transition-all w-5 h-4 bg-primary/20 text-primary border border-primary/20 "
         title="Virtual Rack"
       >
         <svg
@@ -1310,7 +1310,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for default state (
         </svg>
       </button>
       <button
-        class="flex items-center justify-center w-5 h-4 rounded-xs transition-all wb-text-muted hover:wb-text"
+        class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
         title="Source View"
       >
         <svg
@@ -1341,7 +1341,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for default state (
         </svg>
       </button>
       <button
-        class="flex items-center justify-center w-5 h-4 rounded-xs transition-all wb-text-muted hover:wb-text"
+        class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
         title="Timeline / History"
       >
         <svg
@@ -1372,7 +1372,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for default state (
         class="w-px h-3 bg-white/10 mx-1"
       />
       <button
-        class="flex items-center justify-center w-5 h-4 rounded-xs transition-all wb-text-muted hover:wb-text"
+        class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
         title="Toggle Split View (Vertical)"
       >
         <svg
@@ -1401,7 +1401,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for default state (
         </svg>
       </button>
       <button
-        class="flex items-center justify-center w-5 h-4 rounded-xs transition-all bg-primary/20 text-primary border border-primary/20"
+        class="flex items-center justify-center rounded-xs transition-all w-5 h-4 bg-primary/20 text-primary border border-primary/20 "
         title="Toggle Mini Map (Ctrl+Shift+M)"
       >
         <svg
@@ -1758,7 +1758,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for dirty state wit
       class="flex items-center wb-surface border wb-outline rounded-xs p-0.5 pointer-events-auto h-5 bg-black/40"
     >
       <button
-        class="flex items-center justify-center w-5 h-4 rounded-xs transition-all wb-text-muted hover:wb-text"
+        class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
         title="Orbital View"
       >
         <svg
@@ -1786,7 +1786,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for dirty state wit
         </svg>
       </button>
       <button
-        class="flex items-center justify-center w-5 h-4 rounded-xs transition-all bg-primary/20 text-primary border border-primary/20"
+        class="flex items-center justify-center rounded-xs transition-all w-5 h-4 bg-primary/20 text-primary border border-primary/20 "
         title="Virtual Rack"
       >
         <svg
@@ -1855,7 +1855,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for dirty state wit
         </svg>
       </button>
       <button
-        class="flex items-center justify-center w-5 h-4 rounded-xs transition-all wb-text-muted hover:wb-text"
+        class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
         title="Source View"
       >
         <svg
@@ -1886,7 +1886,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for dirty state wit
         </svg>
       </button>
       <button
-        class="flex items-center justify-center w-5 h-4 rounded-xs transition-all wb-text-muted hover:wb-text"
+        class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
         title="Timeline / History"
       >
         <svg
@@ -1917,7 +1917,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for dirty state wit
         class="w-px h-3 bg-white/10 mx-1"
       />
       <button
-        class="flex items-center justify-center w-5 h-4 rounded-xs transition-all wb-text-muted hover:wb-text"
+        class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
         title="Toggle Split View (Vertical)"
       >
         <svg
@@ -1946,7 +1946,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for dirty state wit
         </svg>
       </button>
       <button
-        class="flex items-center justify-center w-5 h-4 rounded-xs transition-all bg-primary/20 text-primary border border-primary/20"
+        class="flex items-center justify-center rounded-xs transition-all w-5 h-4 bg-primary/20 text-primary border border-primary/20 "
         title="Toggle Mini Map (Ctrl+Shift+M)"
       >
         <svg
@@ -2357,7 +2357,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for error watchdog 
       class="flex items-center wb-surface border wb-outline rounded-xs p-0.5 pointer-events-auto h-5 bg-black/40"
     >
       <button
-        class="flex items-center justify-center w-5 h-4 rounded-xs transition-all wb-text-muted hover:wb-text"
+        class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
         title="Orbital View"
       >
         <svg
@@ -2385,7 +2385,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for error watchdog 
         </svg>
       </button>
       <button
-        class="flex items-center justify-center w-5 h-4 rounded-xs transition-all bg-primary/20 text-primary border border-primary/20"
+        class="flex items-center justify-center rounded-xs transition-all w-5 h-4 bg-primary/20 text-primary border border-primary/20 "
         title="Virtual Rack"
       >
         <svg
@@ -2454,7 +2454,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for error watchdog 
         </svg>
       </button>
       <button
-        class="flex items-center justify-center w-5 h-4 rounded-xs transition-all wb-text-muted hover:wb-text"
+        class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
         title="Source View"
       >
         <svg
@@ -2485,7 +2485,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for error watchdog 
         </svg>
       </button>
       <button
-        class="flex items-center justify-center w-5 h-4 rounded-xs transition-all wb-text-muted hover:wb-text"
+        class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
         title="Timeline / History"
       >
         <svg
@@ -2516,7 +2516,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for error watchdog 
         class="w-px h-3 bg-white/10 mx-1"
       />
       <button
-        class="flex items-center justify-center w-5 h-4 rounded-xs transition-all wb-text-muted hover:wb-text"
+        class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
         title="Toggle Split View (Vertical)"
       >
         <svg
@@ -2545,7 +2545,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for error watchdog 
         </svg>
       </button>
       <button
-        class="flex items-center justify-center w-5 h-4 rounded-xs transition-all bg-primary/20 text-primary border border-primary/20"
+        class="flex items-center justify-center rounded-xs transition-all w-5 h-4 bg-primary/20 text-primary border border-primary/20 "
         title="Toggle Mini Map (Ctrl+Shift+M)"
       >
         <svg
@@ -2885,7 +2885,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for saved with time
       class="flex items-center wb-surface border wb-outline rounded-xs p-0.5 pointer-events-auto h-5 bg-black/40"
     >
       <button
-        class="flex items-center justify-center w-5 h-4 rounded-xs transition-all wb-text-muted hover:wb-text"
+        class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
         title="Orbital View"
       >
         <svg
@@ -2913,7 +2913,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for saved with time
         </svg>
       </button>
       <button
-        class="flex items-center justify-center w-5 h-4 rounded-xs transition-all bg-primary/20 text-primary border border-primary/20"
+        class="flex items-center justify-center rounded-xs transition-all w-5 h-4 bg-primary/20 text-primary border border-primary/20 "
         title="Virtual Rack"
       >
         <svg
@@ -2982,7 +2982,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for saved with time
         </svg>
       </button>
       <button
-        class="flex items-center justify-center w-5 h-4 rounded-xs transition-all wb-text-muted hover:wb-text"
+        class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
         title="Source View"
       >
         <svg
@@ -3013,7 +3013,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for saved with time
         </svg>
       </button>
       <button
-        class="flex items-center justify-center w-5 h-4 rounded-xs transition-all wb-text-muted hover:wb-text"
+        class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
         title="Timeline / History"
       >
         <svg
@@ -3044,7 +3044,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for saved with time
         class="w-px h-3 bg-white/10 mx-1"
       />
       <button
-        class="flex items-center justify-center w-5 h-4 rounded-xs transition-all wb-text-muted hover:wb-text"
+        class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
         title="Toggle Split View (Vertical)"
       >
         <svg
@@ -3073,7 +3073,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for saved with time
         </svg>
       </button>
       <button
-        class="flex items-center justify-center w-5 h-4 rounded-xs transition-all bg-primary/20 text-primary border border-primary/20"
+        class="flex items-center justify-center rounded-xs transition-all w-5 h-4 bg-primary/20 text-primary border border-primary/20 "
         title="Toggle Mini Map (Ctrl+Shift+M)"
       >
         <svg

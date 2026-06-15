@@ -1,0 +1,28 @@
+/**
+ * ModalCloseButton — Reusable close button for OMEGA manifest modals.
+ * Eliminates the 10× duplication of the close button pattern:
+ *   <button onClick={onClose} title="Close XYZ"
+ *     className="p-1.5 rounded-xs border wb-outline wb-text-muted
+ *       hover:wb-text hover:bg-red-500/10 hover:border-red-500/30 transition-all">
+ *     <X className="w-4 h-4" />
+ *   </button>
+ */
+
+import { X } from 'lucide-react';
+
+interface ModalCloseButtonProps {
+  onClick: () => void;
+  title?: string;
+}
+
+export default function ModalCloseButton({ onClick, title }: ModalCloseButtonProps) {
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      className="p-1.5 rounded-xs border wb-outline wb-text-muted hover:wb-text hover:bg-red-500/10 hover:border-red-500/30 transition-all"
+    >
+      <X className="w-4 h-4" />
+    </button>
+  );
+}

@@ -1,7 +1,16 @@
 'use client';
 
+/**
+ * @purpose Renderiza un modal para seleccionar y confirmar archivos para su ingestión en el editor de manifesto OMEGA.
+ * @purpose_en Renders a modal for selecting and confirming files for ingestion in the OMEGA manifest editor.
+ * @fingerprint exports:1,imports:5,sig:1lqvimz
+ * @lastUpdated 2026-06-15T06:31:11.008Z
+ */
+
 import { motion } from 'framer-motion';
-import { ScrollText, X, AlertTriangle, ChevronRight } from 'lucide-react';
+import ModalCloseButton from './ModalCloseButton';
+import ModalActionButton from './ModalActionButton';
+import { ScrollText, AlertTriangle, ChevronRight } from 'lucide-react';
 import { useIngestionLogic } from '@/features/manifest-editor/hooks/useIngestionLogic';
 import type { IngestionFile } from '@/features/manifest-editor/hooks/useIngestionLogic';
 import IngestionFileList from '../ingestion/IngestionFileList';
@@ -36,9 +45,7 @@ export default function IngestionModal({ files, onConfirm, onCancel }: Ingestion
               <p className="text-[8px] md:text-[9px] font-bold uppercase wb-text-muted tracking-widest mt-1 opacity-70">OMEGA Era 7.2.3 • Asset Synchronization</p>
             </div>
           </div>
-          <button onClick={onCancel} className="p-1.5 rounded-xs border wb-outline wb-text-muted hover:wb-text hover:bg-red-500/10 hover:border-red-500/30 transition-all">
-            <X className="w-4 h-4" />
-          </button>
+          <ModalCloseButton onClick={onCancel} title="Cancel ingestion" />
         </div>
 
         {/* CONTENT */}
@@ -57,12 +64,9 @@ export default function IngestionModal({ files, onConfirm, onCancel }: Ingestion
 
         {/* FOOTER */}
         <div className="p-6 border-t wb-outline flex justify-end gap-3 wb-surface-subtle">
-          <button 
-            onClick={onCancel} 
-            className="px-6 py-2.5 rounded-xs border wb-outline wb-text-muted hover:wb-text hover:bg-white/5 text-[9px] font-black uppercase tracking-widest transition-all duration-200"
-          >
+          <ModalActionButton onClick={onCancel}>
             Abort Ingestion
-          </button>
+          </ModalActionButton>
           <button 
             onClick={handleConfirm}
             disabled={!ingestionList.some((i: IngestionFile) => i.selected)}

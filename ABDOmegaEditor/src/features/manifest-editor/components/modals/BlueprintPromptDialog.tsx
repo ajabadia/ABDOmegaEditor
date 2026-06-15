@@ -1,8 +1,17 @@
 'use client';
 
+/**
+ * @purpose Renderiza una dialogo modal para que los usuarios ingresen valores para construir un modulo basado en definiciones de plantilla.
+ * @purpose_en Renders a modal dialog for users to input values for assembling a module based on blueprint definitions.
+ * @fingerprint exports:1,imports:5,sig:1elwm2w
+ * @lastUpdated 2026-06-15T06:29:34.873Z
+ */
+
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Grid3X3 } from 'lucide-react';
+import ModalCloseButton from './ModalCloseButton';
+import ModalActionButton from './ModalActionButton';
+import { Grid3X3 } from 'lucide-react';
 import type { BlueprintDefinition, BlueprintPlaceholderDefinition, BlueprintPlaceholderValues } from '@/omega-ui-core/types/manifest';
 import BlueprintPreview from '../preview/BlueprintPreview';
 
@@ -142,9 +151,7 @@ export default function BlueprintPromptDialog({
                   </p>
                 </div>
               </div>
-              <button onClick={onClose} className="p-1.5 rounded-xs border wb-outline wb-text-muted hover:wb-text hover:bg-red-500/10 hover:border-red-500/30 transition-all">
-                <X className="w-4 h-4" />
-              </button>
+              <ModalCloseButton onClick={onClose} title="Close blueprint dialog" />
             </div>
 
             {/* Content — two-column: preview + placeholders */}
@@ -214,12 +221,9 @@ export default function BlueprintPromptDialog({
 
             {/* Footer */}
             <div className="p-6 wb-surface-subtle border-t wb-outline flex justify-end items-center gap-4">
-              <button
-                onClick={onClose}
-                className="px-6 py-2.5 rounded-xs border wb-outline wb-text-muted hover:wb-text hover:bg-white/5 text-[9px] font-black uppercase tracking-widest transition-all duration-200"
-              >
+              <ModalActionButton onClick={onClose}>
                 Cancel
-              </button>
+              </ModalActionButton>
               <button
                 onClick={handleConfirm}
                 className="px-6 py-2.5 rounded-xs bg-primary/20 border border-primary/40 text-primary text-[9px] font-black uppercase tracking-widest hover:bg-primary/30 active:scale-[0.98] transition-all flex items-center gap-2 shadow-[0_0_20px_var(--wb-bloom)]"
