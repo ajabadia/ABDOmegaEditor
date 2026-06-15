@@ -1,0 +1,614 @@
+/**
+ * @jest-environment jsdom
+ *
+ * Tests for UndoTimelinePopover component — History timeline popover (v9.4.0)
+ */
+import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { createRef } from 'react';
+import UndoTimelinePopover from '../UndoTimelinePopover';
+import type { HistoryEntry } from '@/features/manifest-editor/types/history';
+
+// ── Helpers ─────────────────────────────────────────────────────────────
+
+const createEntry = (
+  overrides: { id: string } & Partial<HistoryEntry>
+): HistoryEntry => ({
+  type: overrides.type ?? 'CONTENT_CHANGE',
+  label: overrides.label ?? 'Untitled change',
+  timestamp: overrides.timestamp ?? Date.now(),
+  correlationId: overrides.correlationId ?? 'corr-1',
+  manifest: { version: '1.0', modules: [], contracts: [] } as any,
+  ...overrides,
+});
+
+/** Return a ref with a mock element that has getBoundingClientRect */
+function createTriggerRef() {
+  const ref = createRef<HTMLButtonElement>();
+  const el = document.createElement('button');
+  el.getBoundingClientRect = () => ({
+    top: 500,
+    left: 800,
+    right: 900,
+    bottom: 520,
+    width: 100,
+    height: 20,
+    x: 800,
+    y: 500,
+    toJSON: () => {},
+  });
+  (ref as any).current = el;
+  return ref;
+}
+
+// ── Base props ──────────────────────────────────────────────────────────
+
+const BASE_PROPS = {
+  past: [] as HistoryEntry[],
+  future: [] as HistoryEntry[],
+  onUndoTo: () => {},
+  onUndo: () => {},
+  onRedo: () => {},
+  isOpen: true,
+  onClose: () => {},
+  triggerRef: createTriggerRef(),
+};
+
+// ── Rendering: closed / open / empty ────────────────────────────────────
+
+describe('UndoTimelinePopover — render states', () => {
+  it('should return null when isOpen is false', () => {
+    const { container } = render(<UndoTimelinePopover {...BASE_PROPS} isOpen={false} />);
+    expect(container.innerHTML).toBe('');
+  });
+
+  it('should render the popover when isOpen is true', () => {
+    render(<UndoTimelinePopover {...BASE_PROPS} />);
+    expect(screen.getByText('History')).toBeTruthy();
+  });
+
+  it('should show "No history yet" when past and future are empty', () => {
+    render(<UndoTimelinePopover {...BASE_PROPS} />);
+    expect(screen.getByText('No history yet')).toBeTruthy();
+  });
+
+  it('should not show "No history yet" when past has entries', () => {
+    render(
+      <UndoTimelinePopover
+        {...BASE_PROPS}
+        past={[createEntry({ id: 'e1', label: 'Added module' })]}
+      />
+    );
+    expect(screen.queryByText('No history yet')).toBeNull();
+  });
+
+  it('should not show "No history yet" when future has entries', () => {
+    render(
+      <UndoTimelinePopover
+        {...BASE_PROPS}
+        future={[createEntry({ id: 'e1', label: 'Redo change' })]}
+      />
+    );
+    expect(screen.queryByText('No history yet')).toBeNull();
+  });
+
+  it('should render the step count in the header', () => {
+    render(
+      <UndoTimelinePopover
+        {...BASE_PROPS}
+        past={[createEntry({ id: 'e1' }), createEntry({ id: 'e2' })]}
+        future={[createEntry({ id: 'e3' })]}
+      />
+    );
+    expect(screen.getByText('3 steps')).toBeTruthy();
+  });
+
+  it('should show singular "step" when total is 1', () => {
+    render(
+      <UndoTimelinePopover
+        {...BASE_PROPS}
+        past={[createEntry({ id: 'e1' })]}
+      />
+    );
+    expect(screen.getByText('1 step')).toBeTruthy();
+  });
+});
+
+// ── Past entries ────────────────────────────────────────────────────────
+
+describe('UndoTimelinePopover — past entries', () => {
+  it('should render past entries in reverse order (newest first)', () => {
+    const past = [
+      createEntry({ id: 'e1', label: 'First change', timestamp: 1000 }),
+      createEntry({ id: 'e2', label: 'Second change', timestamp: 2000 }),
+      createEntry({ id: 'e3', label: 'Third change', timestamp: 3000 }),
+    ];
+    render(<UndoTimelinePopover {...BASE_PROPS} past={past} />);
+
+    const entries = screen.getAllByText(/change/);
+    expect(entries[0]?.textContent).toBe('Third change');
+    expect(entries[1]?.textContent).toBe('Second change');
+    expect(entries[2]?.textContent).toBe('First change');
+  });
+
+  it('should mark the current (newest) entry with bold text', () => {
+    const past = [
+      createEntry({ id: 'e1', label: 'Old' }),
+      createEntry({ id: 'e2', label: 'Current' }),
+    ];
+    render(<UndoTimelinePopover {...BASE_PROPS} past={past} />);
+
+    const currentEl = screen.getByText('Current');
+    expect(currentEl.className).toContain('font-bold');
+    expect(currentEl.className).toContain('text-primary');
+  });
+
+  it('should disable click on the current entry (newest)', () => {
+    const past = [createEntry({ id: 'e1', label: 'Only entry' })];
+    render(<UndoTimelinePopover {...BASE_PROPS} past={past} />);
+
+    const buttons = screen.getAllByRole('button');
+    const onlyBtn = buttons.find(
+      (btn) => btn.textContent?.includes('Only entry')
+    ) as HTMLButtonElement | undefined;
+    expect(onlyBtn).toBeTruthy();
+    expect(onlyBtn!.disabled).toBe(true);
+  });
+
+  it('should call onUndoTo with original index and close when clicking a non-current past entry', () => {
+    const onUndoTo = jest.fn();
+    const onClose = jest.fn();
+    const past = [
+      createEntry({ id: 'e1', label: 'Old change', timestamp: 1000 }),
+      createEntry({ id: 'e2', label: 'Current state', timestamp: 2000 }),
+    ];
+    render(
+      <UndoTimelinePopover
+        {...BASE_PROPS}
+        past={past}
+        onUndoTo={onUndoTo}
+        onClose={onClose}
+      />
+    );
+
+    // 'Old change' → reversed index 1 → original index 0
+    fireEvent.click(screen.getByText('Old change'));
+    expect(onUndoTo).toHaveBeenCalledWith(0);
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('should render the label or fallback type name when label is empty', () => {
+    const past = [createEntry({ id: 'e1', label: '', type: 'SNAPSHOT' })];
+    render(<UndoTimelinePopover {...BASE_PROPS} past={past} />);
+    expect(screen.getByText('SNAPSHOT')).toBeTruthy();
+  });
+
+  it('should render timestamps using relative time', () => {
+    const past = [createEntry({ id: 'e1', label: 'Recent', timestamp: Date.now() - 3000 })];
+    render(<UndoTimelinePopover {...BASE_PROPS} past={past} />);
+    expect(screen.getByText('just now')).toBeTruthy();
+  });
+
+  it('should render "Xs ago" for recent entries', () => {
+    const past = [createEntry({ id: 'e1', label: 'Seconds ago', timestamp: Date.now() - 15000 })];
+    render(<UndoTimelinePopover {...BASE_PROPS} past={past} />);
+    expect(screen.getByText('15s ago')).toBeTruthy();
+  });
+});
+
+// ── Future entries ──────────────────────────────────────────────────────
+
+describe('UndoTimelinePopover — future (redo) entries', () => {
+  it('should render future entries with reduced opacity', () => {
+    const future = [createEntry({ id: 'e1', label: 'Future change' })];
+    const { container } = render(
+      <UndoTimelinePopover {...BASE_PROPS} future={future} />
+    );
+
+    const futureContainer = container.querySelector('.opacity-50');
+    expect(futureContainer).toBeTruthy();
+    expect(futureContainer?.textContent).toContain('Future change');
+  });
+
+  it('should show "Redo" divider when both past and future have entries', () => {
+    const past = [createEntry({ id: 'e1', label: 'Past change' })];
+    const future = [createEntry({ id: 'e2', label: 'Future change' })];
+    render(<UndoTimelinePopover {...BASE_PROPS} past={past} future={future} />);
+
+    // 2 elements contain "Redo": divider span + footer button
+    const redoElements = screen.getAllByText('Redo');
+    expect(redoElements.length).toBe(2);
+  });
+
+  it('should not show "Redo" divider when only future has entries (no past)', () => {
+    const future = [createEntry({ id: 'e2', label: 'Future change' })];
+    const { container } = render(
+      <UndoTimelinePopover {...BASE_PROPS} past={[]} future={future} />
+    );
+
+    // Only footer button has "Redo" — 1 element, not 2 (no divider)
+    const redoElements = screen.getAllByText('Redo');
+    expect(redoElements.length).toBe(1);
+
+    // Ensure the divider wrapper div is not rendered
+    const dividers = container.querySelectorAll('.flex.items-center.gap-2.px-3.py-1');
+    expect(dividers.length).toBe(0);
+  });
+
+  it('should not show "Redo" divider when only past has entries (no future)', () => {
+    const past = [createEntry({ id: 'e1', label: 'Past change' })];
+    const { container } = render(
+      <UndoTimelinePopover {...BASE_PROPS} past={past} future={[]} />
+    );
+
+    // Only footer button has "Redo" — 1 element
+    const redoElements = screen.getAllByText('Redo');
+    expect(redoElements.length).toBe(1);
+
+    // No future container at all
+    const futureContainer = container.querySelector('.opacity-50');
+    expect(futureContainer).toBeNull();
+
+    // No divider
+    const dividers = container.querySelectorAll('.flex.items-center.gap-2.px-3.py-1');
+    expect(dividers.length).toBe(0);
+  });
+
+  it('should call onRedo and close when clicking a future entry', () => {
+    const onRedo = jest.fn();
+    const onClose = jest.fn();
+    const future = [createEntry({ id: 'e1', label: 'Future change' })];
+    render(
+      <UndoTimelinePopover
+        {...BASE_PROPS}
+        future={future}
+        onRedo={onRedo}
+        onClose={onClose}
+      />
+    );
+
+    fireEvent.click(screen.getByText('Future change'));
+    expect(onRedo).toHaveBeenCalledTimes(1);
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ── Footer buttons (Undo / Redo) ────────────────────────────────────────
+
+/** Helper: get the footer Undo button via accessible name */
+function getUndoBtn(): HTMLButtonElement {
+  return screen.getByRole('button', { name: /Undo/i }) as HTMLButtonElement;
+}
+
+/** Helper: get the footer Redo button via accessible name */
+function getRedoBtn(): HTMLButtonElement {
+  return screen.getByRole('button', { name: /Redo/i }) as HTMLButtonElement;
+}
+
+describe('UndoTimelinePopover — footer undo/redo buttons', () => {
+  it('should render Undo and Redo buttons in the footer', () => {
+    render(<UndoTimelinePopover {...BASE_PROPS} />);
+    expect(getUndoBtn()).toBeTruthy();
+    expect(getRedoBtn()).toBeTruthy();
+  });
+
+  it('should disable Undo when past is empty', () => {
+    render(<UndoTimelinePopover {...BASE_PROPS} past={[]} />);
+    expect(getUndoBtn().disabled).toBe(true);
+  });
+
+  it('should enable Undo when past has entries', () => {
+    render(
+      <UndoTimelinePopover
+        {...BASE_PROPS}
+        past={[createEntry({ id: 'e1' })]}
+      />
+    );
+    expect(getUndoBtn().disabled).toBe(false);
+  });
+
+  it('should disable Redo when future is empty', () => {
+    render(<UndoTimelinePopover {...BASE_PROPS} future={[]} />);
+    expect(getRedoBtn().disabled).toBe(true);
+  });
+
+  it('should enable Redo when future has entries', () => {
+    render(
+      <UndoTimelinePopover
+        {...BASE_PROPS}
+        future={[createEntry({ id: 'e1' })]}
+      />
+    );
+    expect(getRedoBtn().disabled).toBe(false);
+  });
+
+  it('should call onUndo and close when clicking Undo button', () => {
+    const onUndo = jest.fn();
+    const onClose = jest.fn();
+    render(
+      <UndoTimelinePopover
+        {...BASE_PROPS}
+        past={[createEntry({ id: 'e1' })]}
+        onUndo={onUndo}
+        onClose={onClose}
+      />
+    );
+    fireEvent.click(getUndoBtn());
+    expect(onUndo).toHaveBeenCalledTimes(1);
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('should call onRedo and close when clicking Redo button', () => {
+    const onRedo = jest.fn();
+    const onClose = jest.fn();
+    render(
+      <UndoTimelinePopover
+        {...BASE_PROPS}
+        future={[createEntry({ id: 'e1' })]}
+        onRedo={onRedo}
+        onClose={onClose}
+      />
+    );
+    fireEvent.click(getRedoBtn());
+    expect(onRedo).toHaveBeenCalledTimes(1);
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ── Click outside & Escape ──────────────────────────────────────────────
+
+describe('UndoTimelinePopover — dismiss behavior', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('should call onClose when pressing Escape', () => {
+    const onClose = jest.fn();
+    render(<UndoTimelinePopover {...BASE_PROPS} onClose={onClose} />);
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('should call onClose when clicking outside the popover (on document mousedown)', () => {
+    const onClose = jest.fn();
+    render(<UndoTimelinePopover {...BASE_PROPS} onClose={onClose} />);
+
+    // Flush the setTimeout(0) that attaches the mousedown listener
+    jest.advanceTimersByTime(0);
+    fireEvent.mouseDown(document.body);
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('should not call onClose when clicking inside the popover', () => {
+    const onClose = jest.fn();
+    const { container } = render(
+      <UndoTimelinePopover {...BASE_PROPS} onClose={onClose} />
+    );
+
+    const popoverEl = container.firstChild as HTMLElement;
+    jest.advanceTimersByTime(0);
+    fireEvent.mouseDown(popoverEl);
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('should not call onClose when clicking on the trigger element', () => {
+    const onClose = jest.fn();
+    render(<UndoTimelinePopover {...BASE_PROPS} onClose={onClose} />);
+
+    jest.advanceTimersByTime(0);
+    const triggerEl = BASE_PROPS.triggerRef.current!;
+    fireEvent.mouseDown(triggerEl);
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('should not attach listeners when isOpen is false', () => {
+    const onClose = jest.fn();
+    render(
+      <UndoTimelinePopover {...BASE_PROPS} isOpen={false} onClose={onClose} />
+    );
+
+    jest.advanceTimersByTime(0);
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(onClose).not.toHaveBeenCalled();
+  });
+});
+
+// ── Event types ─────────────────────────────────────────────────────────
+
+describe('UndoTimelinePopover — event types', () => {
+  it('should render a CONTENT_CHANGE entry with an SVG icon', () => {
+    const past = [createEntry({ id: 'e1', type: 'CONTENT_CHANGE' })];
+    const { container } = render(
+      <UndoTimelinePopover {...BASE_PROPS} past={past} />
+    );
+
+    const entryBtn = container.querySelector('button');
+    const svg = entryBtn?.querySelector('svg');
+    expect(svg).toBeTruthy();
+  });
+
+  it('should render multiple event types in the same list', () => {
+    const past = [
+      createEntry({ id: 'e1', type: 'CONTENT_CHANGE', label: 'Edit' }),
+      createEntry({ id: 'e2', type: 'UI_SELECTION', label: 'Select' }),
+      createEntry({ id: 'e3', type: 'UI_PINNING', label: 'Pin' }),
+      createEntry({ id: 'e4', type: 'MODE_CHANGE', label: 'Mode' }),
+    ];
+    render(<UndoTimelinePopover {...BASE_PROPS} past={past} />);
+
+    expect(screen.getByText('Edit')).toBeTruthy();
+    expect(screen.getByText('Select')).toBeTruthy();
+    expect(screen.getByText('Pin')).toBeTruthy();
+    expect(screen.getByText('Mode')).toBeTruthy();
+  });
+
+  it('should render a SNAPSHOT entry', () => {
+    const past = [createEntry({ id: 'e1', type: 'SNAPSHOT', label: 'Snapshot' })];
+    render(<UndoTimelinePopover {...BASE_PROPS} past={past} />);
+    expect(screen.getByText('Snapshot')).toBeTruthy();
+  });
+
+  it('should render a RECOVERY_POINT entry', () => {
+    const past = [createEntry({ id: 'e1', type: 'RECOVERY_POINT', label: 'Recovery' })];
+    render(<UndoTimelinePopover {...BASE_PROPS} past={past} />);
+    expect(screen.getByText('Recovery')).toBeTruthy();
+  });
+
+  it('should render an entry with a default icon for unknown types', () => {
+    const past = [
+      createEntry({ id: 'e1', type: 'UI_SELECTION' as any, label: 'Custom' }),
+    ];
+    render(<UndoTimelinePopover {...BASE_PROPS} past={past} />);
+    expect(screen.getByText('Custom')).toBeTruthy();
+  });
+});
+
+// ── Positioning ─────────────────────────────────────────────────────────
+
+describe('UndoTimelinePopover — positioning', () => {
+  it('should set bottom and right style based on triggerRef bounding rect', () => {
+    const { container } = render(<UndoTimelinePopover {...BASE_PROPS} />);
+    const popoverEl = container.firstChild as HTMLElement;
+    expect(popoverEl).toBeTruthy();
+    expect(popoverEl.style.bottom).toBeTruthy();
+    expect(popoverEl.style.right).toBeTruthy();
+  });
+
+  it('should not set position when isOpen is false', () => {
+    const { container } = render(
+      <UndoTimelinePopover {...BASE_PROPS} isOpen={false} />
+    );
+    expect(container.innerHTML).toBe('');
+  });
+});
+
+// ── Proportional style classification ──────────────────────────────────
+
+describe('UndoTimelinePopover — proportional dimensions', () => {
+  it('should have w-[280px] and max-h-[340px] classes', () => {
+    const { container } = render(<UndoTimelinePopover {...BASE_PROPS} />);
+    const popoverEl = container.firstChild as HTMLElement;
+    expect(popoverEl.className).toContain('w-[280px]');
+    expect(popoverEl.className).toContain('max-h-[340px]');
+  });
+});
+
+// ── Edge cases ──────────────────────────────────────────────────────────
+
+describe('UndoTimelinePopover — edge cases', () => {
+  it('should handle very large numbers of entries without crashing', () => {
+    const past = Array.from({ length: 50 }, (_, i) =>
+      createEntry({ id: `e${i}`, label: `Change ${i}` })
+    );
+    render(<UndoTimelinePopover {...BASE_PROPS} past={past} />);
+    expect(screen.getByText('50 steps')).toBeTruthy();
+    expect(screen.getByText('Change 49')).toBeTruthy();
+    expect(screen.getByText('Change 0')).toBeTruthy();
+  });
+
+  it('should handle entries with missing optional fields gracefully', () => {
+    const minimalEntry = {
+      id: 'minimal',
+      type: 'CONTENT_CHANGE' as const,
+      label: 'Minimal',
+      timestamp: Date.now(),
+      correlationId: '',
+      manifest: {} as any,
+    };
+    render(
+      <UndoTimelinePopover
+        {...BASE_PROPS}
+        past={[minimalEntry]}
+        future={[minimalEntry]}
+      />
+    );
+    // Both past and future entries render with label 'Minimal'
+    expect(screen.getAllByText('Minimal').length).toBe(2);
+    expect(screen.getByText('2 steps')).toBeTruthy();
+  });
+
+  it('should render all entries as buttons with role="button"', () => {
+    const past = [
+      createEntry({ id: 'e1', label: 'First' }),
+      createEntry({ id: 'e2', label: 'Second' }),
+      createEntry({ id: 'e3', label: 'Third' }),
+    ];
+    render(<UndoTimelinePopover {...BASE_PROPS} past={past} />);
+    const buttons = screen.getAllByRole('button');
+    // 3 past entries + 2 footer buttons (Undo + Redo) = 5
+    expect(buttons.length).toBe(5);
+  });
+
+  it('should render footer buttons when there are no entries', () => {
+    render(<UndoTimelinePopover {...BASE_PROPS} />);
+    const undoBtn = screen.getByRole('button', { name: /Undo/i }) as HTMLButtonElement;
+    const redoBtn = screen.getByRole('button', { name: /Redo/i }) as HTMLButtonElement;
+    expect(undoBtn).toBeTruthy();
+    expect(redoBtn).toBeTruthy();
+    expect(undoBtn.disabled).toBe(true);
+    expect(redoBtn.disabled).toBe(true);
+  });
+});
+
+// ── Snapshot tests ──────────────────────────────────────────────────────
+
+describe('UndoTimelinePopover — snapshots', () => {
+  it('should match snapshot for empty state', () => {
+    const { container } = render(<UndoTimelinePopover {...BASE_PROPS} />);
+    expect(container.firstChild).toMatchSnapshot();
+  });
+
+  it('should match snapshot with past entries only', () => {
+    const past = [
+      createEntry({ id: 'e1', type: 'CONTENT_CHANGE', label: 'Edited module', timestamp: Date.now() - 120000 }),
+      createEntry({ id: 'e2', type: 'UI_SELECTION', label: 'Selected node', timestamp: Date.now() - 60000 }),
+      createEntry({ id: 'e3', type: 'UI_PINNING', label: 'Pinned parameter', timestamp: Date.now() - 30000 }),
+    ];
+    const { container } = render(
+      <UndoTimelinePopover {...BASE_PROPS} past={past} />
+    );
+    expect(container.firstChild).toMatchSnapshot();
+  });
+
+  it('should match snapshot with past and future entries', () => {
+    const past = [
+      createEntry({ id: 'e1', label: 'Current state', timestamp: Date.now() - 10000 }),
+    ];
+    const future = [
+      createEntry({ id: 'e2', type: 'CONTENT_CHANGE', label: 'Future change', timestamp: Date.now() - 5000 }),
+      createEntry({ id: 'e3', type: 'MODE_CHANGE', label: 'Mode switch', timestamp: Date.now() - 2000 }),
+    ];
+    const { container } = render(
+      <UndoTimelinePopover {...BASE_PROPS} past={past} future={future} />
+    );
+    expect(container.firstChild).toMatchSnapshot();
+  });
+
+  it('should match snapshot with all event types in one list', () => {
+    const past = ([
+      'CONTENT_CHANGE',
+      'UI_SELECTION',
+      'UI_PINNING',
+      'UI_LAYOUT_RATIO',
+      'MODE_CHANGE',
+      'SNAPSHOT',
+      'RECOVERY_POINT',
+    ] as const).map((type, i) =>
+      createEntry({
+        id: `e${i}`,
+        type,
+        label: type.replace(/_/g, ' '),
+        timestamp: Date.now() - i * 60000,
+      })
+    );
+    const { container } = render(
+      <UndoTimelinePopover {...BASE_PROPS} past={past} />
+    );
+    expect(container.firstChild).toMatchSnapshot();
+  });
+});

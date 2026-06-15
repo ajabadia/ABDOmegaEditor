@@ -1,3 +1,10 @@
+/**
+ * @purpose Gestiona tipos y interfaces para el manejo del estado y las acciones del panel de trabajo en el editor de manifesto OMEGA.
+ * @purpose_en Manages types and interfaces for managing the state and actions of the workbench in the OMEGA manifest editor.
+ * @fingerprint exports:12,imports:2,sig:nylon8
+ * @lastUpdated 2026-06-15T09:19:53.144Z
+ */
+
 import type { LucideIcon } from "lucide-react";
 import type { TabDiagnostics } from "./diagnostics";
 
@@ -75,6 +82,7 @@ export interface WorkbenchState {
   isAuditModalOpen: boolean;
   isAboutModalOpen: boolean;
   isCellEditorOpen: boolean;
+  isOnboardingOpen: boolean;
   studioMode: StudioModeState; // Phase 15 - Isolated Studio
   isRightPanelCollapsed: boolean;
   isZenMode: boolean;
@@ -123,7 +131,7 @@ export type WorkbenchAction =
   | { type: "SET_PINNED_NODE"; payload: { nodeId: string | null } }
   | { type: "SET_EXPANDED_NODE_IDS"; payload: { nodeIds: string[] } }
   | { type: "CAPTURE_TAB_VIEW_STATE"; payload: { tabId: string; viewState: Partial<WorkbenchTabViewState> } }
-  | { type: "TOGGLE_UI_STATE"; payload: { key: keyof Pick<WorkbenchState, 'showLogs' | 'isLiveMode' | 'showModGrid' | 'mockupOpen' | 'blueprintGalleryOpen' | 'isAuditModalOpen' | 'isAboutModalOpen' | 'isCellEditorOpen' | 'isDiffModalOpen'>, value?: boolean } }
+  | { type: "TOGGLE_UI_STATE"; payload: { key: keyof Pick<WorkbenchState, 'showLogs' | 'isLiveMode' | 'showModGrid' | 'mockupOpen' | 'blueprintGalleryOpen' | 'isAuditModalOpen' | 'isAboutModalOpen' | 'isCellEditorOpen' | 'isDiffModalOpen' | 'isOnboardingOpen'>, value?: boolean } }
   | { type: "TOGGLE_RIGHT_PANEL" }
   | { type: "TOGGLE_ZEN_MODE" }
   | { type: "TOGGLE_WINDOW"; payload: { name: 'window_layers' | 'window_properties' | 'window_rack_properties' | 'window_blueprints' | 'window_compliance' | 'window_info' | 'window_history' | 'window_logs' } }

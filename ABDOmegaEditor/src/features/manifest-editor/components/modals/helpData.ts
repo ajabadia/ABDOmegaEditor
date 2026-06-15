@@ -1,4 +1,11 @@
 /**
+ * @purpose Gestiona y exporta datos para el editor de manifesto OMEGA, incluyendo secciones y subsecciones con títulos, contenido, parámetros técnicos y categorías.
+ * @purpose_en Manages and exports data for the OMEGA manifest editor, including sections and subsections with titles, content, technical parameters, and categories.
+ * @fingerprint exports:3,imports:0,sig:1d89dtk
+ * @lastUpdated 2026-06-15T06:31:01.968Z
+ */
+
+/**
  * OMEGA ERA 7.2.3 - MANUAL DE INGENIERÍA Y SDK
  * Estructura de Datos Unificada, Completa y Autoportante
  */
@@ -274,6 +281,135 @@ export const HELP_DATA: HelpSection[] = [
       }
     ]
   },
+  // --- SECCIÓN DE ATAJOS DE TECLADO ---
+  {
+    id: 'keyboard_shortcuts',
+    title: 'Keyboard Shortcuts',
+    icon: '⌨️',
+    category: 'user',
+    content: 'OMEGA Editor soporta atajos de teclado para acelerar tu flujo de trabajo. Los atajos están organizados por categoría y siguen el estándar de VS Code (Ctrl+Shift+Letra para toggle de paneles).',
+    subsections: [
+      {
+        id: 'ks_file',
+        title: 'File & Persistencia',
+        content: 'Atajos para operaciones de archivo y exportación:',
+        technical_params: [
+          'Ctrl+O — Abrir proyecto .omega',
+          'Ctrl+S — Guardar OmegaPack',
+          'Ctrl+Shift+S — Exportar Modo Definitivo (Distilled)',
+        ]
+      },
+      {
+        id: 'ks_command_palette',
+        title: 'Búsqueda Universal',
+        content: 'Accede a cualquier comando o nodo del editor:',
+        technical_params: [
+          'Ctrl+K — Command Palette (buscar cualquier comando o nodo)',
+        ]
+      },
+      {
+        id: 'ks_edit',
+        title: 'Edición e Historia',
+        content: 'Atajos para edición general y navegación del historial:',
+        technical_params: [
+          'Ctrl+Z — Deshacer (Undo)',
+          'Ctrl+Y — Rehacer (Redo)',
+          'Ctrl+Shift+Z — Rehacer (Redo alternativo)',
+          'Ctrl+C — Copiar elemento seleccionado',
+          'Ctrl+V — Pegar elemento',
+          'Ctrl+D — Duplicar elemento seleccionado',
+          'Ctrl+G — Agrupar selección (Group)',
+          'Ctrl+Shift+Alt+G — Desagrupar (Ungroup)',
+        ]
+      },
+      {
+        id: 'ks_view',
+        title: 'Vistas (Tab Switching)',
+        content: 'Cambia rápidamente entre las vistas principales del editor:',
+        technical_params: [
+          'Ctrl+1 — Orbital View',
+          'Ctrl+2 — Virtual Rack',
+          'Ctrl+3 — Source Code',
+          'Ctrl+4 — History Tab',
+        ]
+      },
+      {
+        id: 'ks_view_toggles',
+        title: 'Overlays de Vista',
+        content: 'Activa o desactiva elementos visuales del viewport:',
+        technical_params: [
+          'Ctrl+Shift+G — Toggle Grid (cuadrícula)',
+          'Ctrl+Shift+U — Toggle Guides (guías)',
+          'Ctrl+Shift+M — Toggle Mini Map',
+        ]
+      },
+      {
+        id: 'ks_windows',
+        title: 'Paneles (Window Toggles)',
+        content: 'Abre o cierra los paneles laterales del editor. Sigue la convención VS Code:',
+        technical_params: [
+          'Ctrl+Shift+L — Layers Panel',
+          'Ctrl+Shift+P — Element Properties',
+          'Ctrl+Shift+Alt+R — Rack Properties',
+          'Ctrl+Shift+B — Blueprints Library',
+          'Ctrl+Shift+I — Information Panel',
+          'Ctrl+Shift+H — History Panel',
+          'Ctrl+Shift+C — Console / Logs',
+          'Ctrl+Shift+A — Compliance (Audit)',
+        ]
+      },
+      {
+        id: 'ks_tools',
+        title: 'Acciones Especiales',
+        content: 'Atajos para acciones del editor y manipulación de capas:',
+        technical_params: [
+          'V — Select Tool',
+          'M — Marquee (selección múltiple)',
+          'A — Add mode (añadir primitivas)',
+          'B — Blueprints Gallery',
+          'Ctrl+Shift+E — Universal Cell Laboratory',
+          'Ctrl+Shift+R — Reset Workspace',
+          'Delete / Backspace — Eliminar nodo seleccionado',
+          'Alt+↑/↓ — Mover capa arriba/abajo (LayersPanel)',
+          'Ctrl+Shift+Alt+H — Toggle Hidden filter (LayersPanel)',
+          'Ctrl+Shift+Alt+L — Toggle Locked filter (LayersPanel)',
+          'Ctrl+Shift+Alt+A — Toggle Audit filter (LayersPanel)',
+          'Ctrl+Shift+Alt+T — Toggle Templates filter (LayersPanel)',
+          'Ctrl+Shift+Alt+C — Clear all filters (LayersPanel)',
+          'Ctrl+Shift+Alt+0-8 — Filter by component type (0=All, 1=Knob, 2=Port, 3=Slider, 4=Display, 5=Container, 6=Label, 7=Switch, 8=Button)',
+          '↑/↓/←/→ — Nudge selected node 1px (Rack viewport)',
+          'Shift+↑/↓/←/→ — Nudge selected node by grid spacing (Rack viewport)',
+          'Enter — Confirm ghost preview (blueprint placement)',
+          'Escape — Cancel ghost preview / close context menu',
+        ]
+      },
+      {
+        id: 'ks_alignment',
+        title: 'Alineación (Align Shortcuts)',
+        content: 'Con múltiples elementos seleccionados (≥2), usa Ctrl+Shift + letra:',
+        technical_params: [
+          'Ctrl+Shift+L — Align Left (Alinear izquierda)',
+          'Ctrl+Shift+H — Center Horizontally (Centrar horizontal)',
+          'Ctrl+Shift+R — Align Right (Alinear derecha)',
+          'Ctrl+Shift+T — Align Top (Alinear arriba)',
+          'Ctrl+Shift+M — Center Vertically (Centrar vertical)',
+          'Ctrl+Shift+B — Align Bottom (Alinear abajo)',
+          'Ctrl+Shift+V — Distribute Vertically (Distribuir vertical)',
+          'Ctrl+Shift+D — Distribute Horizontally (Distribuir horizontal)',
+          'Ctrl+Alt+E — Distribute Evenly both axes (Distribuir uniforme ambos ejes)',
+        ]
+      },
+      {
+        id: 'ks_help',
+        title: 'Ayuda',
+        content: 'Acceso rápido a documentación e información del sistema:',
+        technical_params: [
+          'F1 — Engineering Manual (esta ayuda)',
+        ]
+      },
+    ]
+  },
+
   // --- SECCIONES DE DESARROLLADOR (SDK COMPLETO Y COPIABLE) ---
   {
     id: 'sdk_core',

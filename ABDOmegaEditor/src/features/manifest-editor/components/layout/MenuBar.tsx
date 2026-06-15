@@ -1,8 +1,10 @@
 'use client';
 
 /**
- * @purpose Barra de menú principal del editor con secciones File, Edit, View, Window y Help y submenús jerárquicos animados
- * @lastUpdated 2026-06-14T17:45:00.000Z
+ * @purpose Renderiza un menú de barra con secciones y submenús para operaciones de archivo, configuración de visualización, control de ventanas y recursos de ayuda en el editor de manifesto OMEGA.
+ * @purpose_en Renders a menu bar with various sections and submenus for file operations, view settings, window controls, and help resources in the OMEGA manifest editor.
+ * @fingerprint exports:1,imports:4,sig:yyyvhk
+ * @lastUpdated 2026-06-15T06:34:52.753Z
  */
 
 import { useState, useRef, useEffect } from 'react';
@@ -11,7 +13,7 @@ import {
   FileCode, Package, Layers, Camera, Zap, FolderOpen, 
   Cpu, Database, Image as ImageIcon, LogOut, Undo2, 
   Redo2, Terminal, HelpCircle, Shield, ChevronRight, Settings, Layout, History,
-  Check, Sliders, Grid3X3, Ruler, Download
+  Check, Sliders, Grid3X3, Ruler, Download, Map
 } from 'lucide-react';
 
 import type { OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
@@ -35,6 +37,7 @@ interface MenuBarProps {
   onOpenAbout: () => void;
   onOpenConfig: () => void;
   onOpenCellEditor?: (() => void) | undefined;
+  onToggleTour?: (() => void) | undefined;
   onOpenGallery?: (() => void) | undefined;
   onImportDistilledJson?: (() => void) | undefined;
   onLinkDirectory?: (() => void) | undefined;
@@ -43,6 +46,8 @@ interface MenuBarProps {
   onToggleGrid?: (() => void) | undefined;
   showGuides?: boolean | undefined;
   onToggleGuides?: (() => void) | undefined;
+  miniMapVisible?: boolean | undefined;
+  onToggleMiniMap?: (() => void) | undefined;
   windowStates?: { window_layers: boolean; window_properties: boolean; window_rack_properties: boolean; window_blueprints: boolean; window_compliance: boolean; window_info: boolean; window_history: boolean; window_logs: boolean } | undefined;
   onToggleWindow?: ((name: 'window_layers' | 'window_properties' | 'window_rack_properties' | 'window_blueprints' | 'window_compliance' | 'window_info' | 'window_history' | 'window_logs') => void) | undefined;
   // Phase 39 — recovered from backup
@@ -228,7 +233,15 @@ export default function MenuBar(props: MenuBarProps) {
           label: 'Layers',
           icon: Layers,
           checked: props.windowStates?.window_layers,
-          onClick: () => props.onToggleWindow?.('window_layers')
+          onClick: () => props.onToggleWindow?.('window_layers'),
+          shortcut: 'Ctrl+Shift+L'
+        },
+        {
+          label: 'Mini Map',
+          icon: Map,
+          checked: props.miniMapVisible,
+          onClick: () => props.onToggleMiniMap?.(),
+          shortcut: 'Ctrl+Shift+M'
         },
         {
           label: 'Rack Properties',
@@ -284,6 +297,7 @@ export default function MenuBar(props: MenuBarProps) {
       label: 'Help',
       items: [
         { label: 'Engineering Manual', icon: HelpCircle, onClick: props.onHelp },
+        { label: 'Guided Tour', icon: HelpCircle, onClick: () => props.onToggleTour?.() },
         { label: 'Compliance Report', icon: Shield, onClick: props.onOpenAudit, highlight: 'deprecated' },
         { type: 'divider' },
         { label: 'About OMEGA', icon: Shield, onClick: props.onOpenAbout },

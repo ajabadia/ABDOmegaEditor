@@ -2,6 +2,13 @@
 
 All notable changes to the OMEGA Manifest Editor will be documented in this file.
 
+## [9.6.0] - 2026-06-16
+### Added
+- **Status Bar (P3) completado**: WorkbenchFooter con indicador dirty/validation verificado y marcado como completado en roadmap. Indicador Modified/Saved con timestamp, conteo de errores/warnings de validación en vivo, estado watchdog, indicador de herramienta activa.
+- **Integration tests para Status Bar**: 7 nuevos tests de integración cubriendo combinaciones dirty + errors + watchdog (dirty+connected+errors, dirty+offline+worst-case, clean+idle+ideal, dirty+connected+marquee, etc.). 45 tests total para WorkbenchFooter.
+- **Onboarding Walkthrough (P4)**: Interactive guided tour with 7 steps (Welcome, Header & Menu Bar, Tool Palette, Work Canvas, Inspector Panel, Status Bar, Keyboard Shortcuts). Auto-opens on first visit via localStorage. Highlights target elements with animated glow ring. Accessible anytime via Command Palette (Ctrl+K > Help > "Take a Guided Tour").
+- **isOnboardingOpen state**: Added to workbench state management with TOGGLE_UI_STATE support for open/close control.
+
 ## [9.5.0] - 2026-06-15
 ### Added
 - **DockIconBar generic component**: Unifies DockIconStrip and DockRackSectionToolbar into a single reusable vertical icon bar. Supports groups with dividers, optional labels, per-group className, and customizable container styles. 30 unit tests + 5 snapshots.

@@ -1,3 +1,10 @@
+/**
+ * @purpose Renderiza el componente de cabecera para el editor de manifesto OMEGA, incluyendo menús, identidad del sistema y botones de control.
+ * @purpose_en Renders the header component for the OMEGA manifest editor, including menus, system identity, and control buttons.
+ * @fingerprint exports:1,imports:8,sig:qitjrq
+ * @lastUpdated 2026-06-15T05:54:43.223Z
+ */
+
 import { Shield } from 'lucide-react';
 
 import type { AuditResult } from '@/services/auditService';
@@ -33,6 +40,7 @@ interface HeaderProps {
   onOpenAbout: () => void;
   onOpenConfig: () => void;
   onOpenCellEditor?: (() => void) | undefined;
+  onToggleTour?: (() => void) | undefined;
   onOpenGallery?: (() => void) | undefined;
   onImportDistilledJson?: (() => void) | undefined;
   onLinkDirectory?: (() => void) | undefined;
@@ -46,6 +54,8 @@ interface HeaderProps {
   showGuides?: boolean;
   onToggleGrid?: (() => void) | undefined;
   onToggleGuides?: (() => void) | undefined;
+  miniMapVisible?: boolean;
+  onToggleMiniMap?: (() => void) | undefined;
   rackSections?: {
     identity: boolean;
     essentialIdentity: boolean;
@@ -94,6 +104,7 @@ export default function Header(props: HeaderProps) {
           onOpenAbout={props.onOpenAbout}
           onOpenConfig={props.onOpenConfig}
           onOpenCellEditor={props.onOpenCellEditor}
+          onToggleTour={props.onToggleTour}
           onOpenGallery={props.onOpenGallery}
           onImportDistilledJson={props.onImportDistilledJson}
           onLinkDirectory={props.onLinkDirectory}
@@ -106,6 +117,8 @@ export default function Header(props: HeaderProps) {
           showGuides={props.showGuides}
           onToggleGrid={props.onToggleGrid}
           onToggleGuides={props.onToggleGuides}
+          miniMapVisible={props.miniMapVisible}
+          onToggleMiniMap={props.onToggleMiniMap}
           selectedNodeId={props.selectedNodeId}
           multiSelectedIds={props.multiSelectedIds}
           onSaveCellAsBlueprint={props.onSaveCellAsBlueprint}

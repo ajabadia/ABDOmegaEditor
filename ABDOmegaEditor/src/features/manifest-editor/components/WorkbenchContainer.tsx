@@ -3,8 +3,8 @@
 /**
  * @purpose Renderiza el contenedor principal para la edición del manifest OMEGA, incluyendo cabecera, pie de página, modales, matriz de modulación visual, galería de plantillas, toolbar y componentes de espacio de trabajo.
  * @purpose_en Renders the main container for the OMEGA manifest editor's workbench, including header, footer, modals, visual modulation matrix, template gallery, toolbar, and workspace components.
- * @fingerprint exports:1,imports:40,sig:1xgqvee
- * @lastUpdated 2026-06-15T07:07:54.169Z
+ * @fingerprint exports:1,imports:42,sig:26jhk4
+ * @lastUpdated 2026-06-15T09:19:34.266Z
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -17,6 +17,8 @@ import type { CommandPaletteAction, CommandPaletteNode } from './layout/CommandP
 import EditorModals from './modals/EditorModals';
 import VisualModulationMatrix from './modulation/VisualModulationMatrix';
 import { HiddenFileHandlers } from './shared/HiddenFileHandlers';
+import OnboardingWalkthrough from './shared/OnboardingWalkthrough';
+import { isTourCompleted } from './shared/OnboardingWalkthrough';
 import TemplateGallery from './gallery/TemplateGallery';
 import RightDockContainer from './inspector/RightDockContainer';
 import WorkbenchPane from './workspace/WorkbenchPane';
@@ -94,6 +96,13 @@ export default function WorkbenchContainer({
 
   // ── Command Palette (Ctrl+K) ────────────────────────────────────────
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+
+  // ── Onboarding Walkthrough (auto-open on first visit) ────────────────
+  useEffect(() => {
+    if (!isTourCompleted() && !state.isOnboardingOpen) {
+      actions.toggleUIState('isOnboardingOpen');
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // 2. Core Data & Operations
   const editor = useManifestEditor(state, actions);
@@ -513,6 +522,7 @@ export default function WorkbenchContainer({
     { id: 'toggle-zen', label: 'Toggle Zen Mode', category: 'View', onExecute: () => actions.toggleZenMode() },
     { id: 'help', label: 'Engineering Manual', category: 'Help', shortcut: 'F1', onExecute: () => actions.setHelpState(true) },
     { id: 'about', label: 'About OMEGA', category: 'Help', onExecute: () => actions.toggleUIState('isAboutModalOpen') },
+    { id: 'tour', label: 'Take a Guided Tour', category: 'Help', onExecute: () => actions.toggleUIState('isOnboardingOpen') },
   ], [editor, actions, onDeploy, handleToggleGrid, handleToggleGuides, handleOpenConfig, handleOpenCellEditor, handleOpenAudit, onReset]);
 
   const handleCommandPaletteSelectNode = useCallback((nodeId: string) => {
@@ -717,6 +727,7 @@ export default function WorkbenchContainer({
           onOpenAbout={() => actions.toggleUIState('isAboutModalOpen')}
           onOpenConfig={handleOpenConfig}
           onOpenCellEditor={handleOpenCellEditor}
+          onToggleTour={() => actions.toggleUIState('isOnboardingOpen')}
           onOpenGallery={() => actions.toggleWindow('window_blueprints')}
           onImportDistilledJson={handleImportDistilledJson}
           windowStates={{
@@ -1015,6 +1026,12 @@ export default function WorkbenchContainer({
           onToggleMiniMap={handleToggleMiniMap}
         />
       )}
+
+      {/* ── Onboarding Walkthrough ── */}
+      <OnboardingWalkthrough
+        isOpen={state.isOnboardingOpen}
+        onClose={() => actions.toggleUIState('isOnboardingOpen')}
+      />
     </div>
   );
 }

@@ -194,6 +194,120 @@ describe('WorkbenchFooter — active tool', () => {
   });
 });
 
+// ── Integration: dirty + errors + watchdog combinations ────────────────
+
+describe('WorkbenchFooter — integration (dirty + errors + watchdog)', () => {
+  it('should show dirty+connected+errors (no warnings)', () => {
+    render(
+      <WorkbenchFooter
+        isDirty={true}
+        errorCount={3}
+        warningCount={0}
+        watchdogStatus="connected"
+      />
+    );
+    expect(screen.getByText('Modified')).toBeTruthy();
+    expect(screen.getByText('WATCHDOG SYNC ACTIVE')).toBeTruthy();
+    expect(screen.getByText('3 errors')).toBeTruthy();
+    expect(screen.queryByText(/warning/)).toBeNull();
+    expect(screen.queryByText(/Saved/)).toBeNull();
+  });
+
+  it('should show dirty+connected+warnings only (no errors)', () => {
+    render(
+      <WorkbenchFooter
+        isDirty={true}
+        errorCount={0}
+        warningCount={2}
+        watchdogStatus="connected"
+      />
+    );
+    expect(screen.getByText('Modified')).toBeTruthy();
+    expect(screen.getByText('WATCHDOG SYNC ACTIVE')).toBeTruthy();
+    expect(screen.getByText('2 warnings')).toBeTruthy();
+    expect(screen.queryByText(/error/)).toBeNull();
+  });
+
+  it('should show dirty+watchdog offline+errors (worst case)', () => {
+    render(
+      <WorkbenchFooter
+        isDirty={true}
+        errorCount={5}
+        warningCount={3}
+        watchdogStatus="error"
+      />
+    );
+    expect(screen.getByText('Modified')).toBeTruthy();
+    expect(screen.getByText('WATCHDOG OFFLINE')).toBeTruthy();
+    expect(screen.getByText('5 errors')).toBeTruthy();
+    expect(screen.getByText('3 warnings')).toBeTruthy();
+  });
+
+  it('should show clean+watchdog idle+no errors (ideal state)', () => {
+    render(
+      <WorkbenchFooter
+        isDirty={false}
+        errorCount={0}
+        warningCount={0}
+        watchdogStatus="idle"
+      />
+    );
+    expect(screen.getByText('Saved')).toBeTruthy();
+    expect(screen.getByText('Aseptic Standard')).toBeTruthy();
+    expect(screen.queryByText(/error|warning|Modified/)).toBeNull();
+  });
+
+  it('should show dirty+watchdog idle+no errors (modified but no validation issues)', () => {
+    render(
+      <WorkbenchFooter
+        isDirty={true}
+        errorCount={0}
+        warningCount={0}
+        watchdogStatus="idle"
+      />
+    );
+    expect(screen.getByText('Modified')).toBeTruthy();
+    expect(screen.getByText('Aseptic Standard')).toBeTruthy();
+    expect(screen.queryByText(/error|warning/)).toBeNull();
+    expect(screen.queryByText(/Saved/)).toBeNull();
+  });
+
+  it('should show clean (just saved)+watchdog connected+errors (saved but validation issues)', () => {
+    render(
+      <WorkbenchFooter
+        isDirty={false}
+        lastSavedTime="10:30:00"
+        errorCount={2}
+        warningCount={0}
+        watchdogStatus="connected"
+        watchdogTime="10:30:01"
+      />
+    );
+    expect(screen.getByText('Saved')).toBeTruthy();
+    expect(screen.getByText(/10:30:00/)).toBeTruthy();
+    expect(screen.getByText('WATCHDOG SYNC ACTIVE')).toBeTruthy();
+    expect(screen.getByText('2 errors')).toBeTruthy();
+  });
+
+  it('should show dirty+connected+no errors+active tool (marquee)', () => {
+    render(
+      <WorkbenchFooter
+        isDirty={true}
+        errorCount={0}
+        warningCount={0}
+        watchdogStatus="connected"
+        watchdogTime="10:00:00"
+        activeTool="marquee"
+      />
+    );
+    expect(screen.getByText('Modified')).toBeTruthy();
+    expect(screen.getByText('WATCHDOG SYNC ACTIVE')).toBeTruthy();
+    expect(screen.getByText(/10:00:00/)).toBeTruthy();
+    expect(screen.getByText('[M] Marquee')).toBeTruthy();
+    expect(screen.queryByText(/error|warning/)).toBeNull();
+  });
+});
+
 // ── Edge cases ──────────────────────────────────────────────────────────
 
 describe('WorkbenchFooter — edge cases', () => {

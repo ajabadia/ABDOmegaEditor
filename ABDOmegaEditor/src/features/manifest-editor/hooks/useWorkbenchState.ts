@@ -1,5 +1,12 @@
 "use client";
 
+/**
+ * @purpose Gestiona y coordina el estado del tablero de trabajo en el editor de manifesto OMEGA, incluyendo comunicación RPC, persistencia y acciones de interfaz de usuario.
+ * @purpose_en Manages and coordinates the state of the workbench in the OMEGA manifest editor, including RPC communication, persistence, and UI actions.
+ * @fingerprint exports:1,imports:8,sig:115eryb
+ * @lastUpdated 2026-06-15T09:19:44.689Z
+ */
+
 import { useCallback, useMemo, useReducer, useRef, useEffect, useState } from "react";
 import type { 
   WorkbenchState, 
@@ -104,7 +111,7 @@ export function useWorkbenchState() {
           payload: { tabId, viewState },
         }),
 
-      toggleUIState: (key: keyof Pick<WorkbenchState, 'showLogs' | 'isLiveMode' | 'showModGrid' | 'mockupOpen' | 'blueprintGalleryOpen' | 'isAuditModalOpen' | 'isAboutModalOpen' | 'isCellEditorOpen'>) =>
+      toggleUIState: (key: keyof Pick<WorkbenchState, 'showLogs' | 'isLiveMode' | 'showModGrid' | 'mockupOpen' | 'blueprintGalleryOpen' | 'isAuditModalOpen' | 'isAboutModalOpen' | 'isCellEditorOpen' | 'isOnboardingOpen'>) =>
         dispatch({ type: "TOGGLE_UI_STATE", payload: { key } }),
 
       setHelpState: (isOpen: boolean, sectionId?: string) =>
