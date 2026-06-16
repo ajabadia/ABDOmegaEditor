@@ -1,6 +1,11 @@
 /**
- * @purpose Proporciona una forma para editar propiedades comunes como ID, etiqueta, posición (X, Y) y tamaño (ancho, alto) en el editor del manifiesto OMEGA.
- * @lastUpdated 2026-06-14T16:46:25.474Z
+ * @purpose Renderiza una forma para editar propiedades comunes como ID, etiqueta, posición (X, Y) y tamaño (ancho, alto) en el editor de manifesto OMEGA.
+ * @purpose_en Renders a form for editing common properties such as ID, label, position (X, Y), and size (width, height) in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:0,sig:lh9q60
+ * @lastUpdated 2026-06-15T11:29:36.513Z
  */
 
 interface CommonFieldsProps {

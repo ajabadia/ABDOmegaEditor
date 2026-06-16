@@ -1,6 +1,11 @@
 /**
- * @purpose Gestiona una grilla de miniaturas de galería con animaciones y efectos de hover.
- * @lastUpdated 2026-06-14T15:49:43.054Z
+ * @purpose Gestiona un layout de grid para mostrar thumbnails de galería con efectos de animación y hover.
+ * @purpose_en Manages a grid layout for displaying gallery thumbnails with animations and hover effects.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:2,sig:11t6ny0
+ * @lastUpdated 2026-06-15T10:51:48.651Z
  */
 
 import Image from "next/image";

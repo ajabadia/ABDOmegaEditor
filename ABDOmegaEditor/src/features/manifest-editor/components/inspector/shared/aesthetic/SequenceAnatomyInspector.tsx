@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Renderiza un componente para inspeccionar y editar las propiedades estéticas de la anatomía de secuencia en un editor de manifesto OMEGA.
+ * @purpose_en Renders a component for inspecting and editing aesthetic properties of sequence anatomy in an OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:3,sig:103dwd1
+ * @lastUpdated 2026-06-15T11:41:05.913Z
+ */
+
 import React from 'react';
 import { Lock, Unlock, ChevronDown, ChevronRight, RefreshCw } from 'lucide-react';
 
@@ -24,6 +34,7 @@ export default function SequenceAnatomyInspector({ values, onChange }: SequenceA
         <div className="flex justify-end">
           <button 
             onClick={() => setIsUnlocked(!isUnlocked)}
+            aria-label={isUnlocked ? 'Lock registry protection' : 'Unlock registry protection'}
             className={`px-2 py-0.5 rounded flex items-center gap-1.5 transition-all ${isUnlocked ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-accent/10 text-accent/60 border border-accent/20'}`}
           >
             {isUnlocked ? <Unlock className="w-2 h-2" /> : <Lock className="w-2 h-2" />}
@@ -35,6 +46,7 @@ export default function SequenceAnatomyInspector({ values, onChange }: SequenceA
       <div className="border border-white/5 rounded bg-black/20 overflow-hidden">
         <button 
           onClick={() => setIsExpanded(!isExpanded)}
+          aria-label={isExpanded ? 'Collapse technical anatomy' : 'Expand technical anatomy'}
           className="w-full px-3 py-2 bg-white/5 flex items-center justify-between hover:bg-white/10 transition-colors"
         >
           <div className="flex items-center gap-2">
@@ -54,6 +66,7 @@ export default function SequenceAnatomyInspector({ values, onChange }: SequenceA
               </div>
               <input 
                 type="range" min="1" max="256" step="1"
+                aria-label="Total frames"
                 value={values.frames || 1}
                 disabled={!canEditAnatomy}
                 onChange={(e) => onChange({ frames: parseInt(e.target.value) })}
@@ -87,6 +100,7 @@ export default function SequenceAnatomyInspector({ values, onChange }: SequenceA
               <label className="text-[8px] font-black uppercase text-white/40 block">Native W</label>
               <input 
                 type="number" 
+                aria-label="Native width"
                 value={values.frameWidth || 48}
                 disabled={!canEditAnatomy}
                 onChange={(e) => onChange({ frameWidth: parseInt(e.target.value) })}
@@ -97,6 +111,7 @@ export default function SequenceAnatomyInspector({ values, onChange }: SequenceA
               <label className="text-[8px] font-black uppercase text-white/40 block">Native H</label>
               <input 
                 type="number" 
+                aria-label="Native height"
                 value={values.frameHeight || 48}
                 disabled={!canEditAnatomy}
                 onChange={(e) => onChange({ frameHeight: parseInt(e.target.value) })}
@@ -173,6 +188,7 @@ export default function SequenceAnatomyInspector({ values, onChange }: SequenceA
            </div>
            <input 
               type="range" min="0" max="100" step="1"
+              aria-label="Validation scrub"
               value={(values.testValue ?? 0.75) * 100}
               onChange={(e) => onChange({ testValue: parseInt(e.target.value) / 100 })}
               className="w-full accent-accent bg-white/10 h-1 rounded-full appearance-none cursor-pointer"

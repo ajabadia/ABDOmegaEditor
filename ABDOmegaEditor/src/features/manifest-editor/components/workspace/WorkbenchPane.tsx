@@ -1,11 +1,21 @@
 'use client';
 
+/**
+ * @purpose Renderiza una pestaña de trabajo para el editor de manifesto OMEGA, mostrando pestañas con diferentes vistas y maneja interacciones del usuario como selección de pestañas, cierre y diagnósticos.
+ * @purpose_en Renders a workbench pane for the OMEGA manifest editor, displaying tabs with different views and handling user interactions such as tab selection, closing, and diagnostics.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:0,imports:11,sig:1a2d5e3
+ * @lastUpdated 2026-06-15T22:05:37.637Z
+ */
+
 import React, { useEffect } from 'react';
 import type { WorkbenchPaneId, WorkbenchTab } from '../../types/workbench';
 import MultiTabHeader from '../layout/MultiTabHeader';
 import { WorkbenchViewport } from '../viewport/WorkbenchViewport';
 import { SourceView } from '../views/SourceView';
-import type { OMEGA_Manifest, OMEGA_Contract, HybridEntityUpdate, OmegaNode } from '@/omega-ui-core/types/manifest';
+import type { OMEGA_Manifest, OMEGA_Contract, OMEGA_Modulation, HybridEntityUpdate, OmegaNode } from '@/omega-ui-core/types/manifest';
 import type { SimulationBridgeState } from '../../hooks/useSimulationBridge';
 import type { AuditResult } from '@/services/auditService';
 import type { DocumentOrchestrator } from '../../types/document';
@@ -71,7 +81,7 @@ interface WorkbenchPaneProps {
   onGroupSelected?: (ids: string[]) => void;
   onUngroupNode?: (groupId: string) => void;
   activeTool?: 'select' | 'marquee' | 'add' | 'studio' | null | undefined;
-  uiTheme?: string | undefined;
+  uiTheme?: 'dark' | 'light' | 'amber' | 'cyberpunk' | 'high-contrast' | undefined;
 
   // v9.1.7-dev — RackStartupAssistant wiring (REGRESSION_RECOVERY_PLAN.md item 23)
   onOpenGallery?: (() => void) | undefined;
@@ -87,6 +97,12 @@ interface WorkbenchPaneProps {
   onGhostMouseMove?: ((clientX: number, clientY: number) => void) | undefined;
   onGhostClick?: ((x: number, y: number) => void) | undefined;
   onGhostCancel?: (() => void) | undefined;
+  showMiniMap?: boolean | undefined;
+  onToggleMiniMap?: (() => void) | undefined;
+
+  // P11 — Visual Connection Editor
+  onAddModulation?: ((mod: OMEGA_Modulation) => void) | undefined;
+  onRemoveModulation?: ((id: string) => void) | undefined;
 }
  
 const WorkbenchPane = React.memo((props: WorkbenchPaneProps) => {
@@ -168,6 +184,8 @@ const WorkbenchPane = React.memo((props: WorkbenchPaneProps) => {
             activeTool={props.activeTool}
             uiTheme={props.uiTheme}
             viewMode={activeTab.type as 'orbital' | 'rack' | 'source' | 'history'} 
+            showMiniMap={props.showMiniMap}
+            onToggleMiniMap={props.onToggleMiniMap}
             manifest={tabManifest} 
             contract={tabContract}
             selectedItemId={props.selectedItemId} 
@@ -211,6 +229,8 @@ const WorkbenchPane = React.memo((props: WorkbenchPaneProps) => {
             {...(props.onGhostMouseMove != null ? { onGhostMouseMove: props.onGhostMouseMove } : {})}
             {...(props.onGhostClick != null ? { onGhostClick: props.onGhostClick } : {})}
             {...(props.onGhostCancel != null ? { onGhostCancel: props.onGhostCancel } : {})}
+            {...(props.onAddModulation != null ? { onAddModulation: props.onAddModulation } : {})}
+            {...(props.onRemoveModulation != null ? { onRemoveModulation: props.onRemoveModulation } : {})}
           />
         )}
 

@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona auditorías completas de manifestos OMEGA y genera informes de certificación basados en los resultados del auditoría.
+ * @purpose_en Manages full audits of OMEGA manifests and generates certification reports based on audit results.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Business Service
+ * @complexity Medium
+ * @fingerprint exports:2,imports:4,sig:a7kx05
+ * @lastUpdated 2026-06-15T16:56:37.123Z
+ */
+
 import type { OMEGA_Manifest, OMEGA_Contract } from '@/omega-ui-core/types/manifest';
 import { ValidationService } from './validationService';
 import type { OmegaContract } from './wasmLoader';

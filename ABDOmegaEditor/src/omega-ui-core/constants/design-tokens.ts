@@ -1,4 +1,14 @@
 /**
+ * @purpose Gestiona tokens de diseño inmutables para la gobernanza industrial en el editor de manifesto OMEGA.
+ * @purpose_en Manages immutable design tokens for industrial governance in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification Data/Constants
+ * @complexity Low
+ * @fingerprint exports:2,imports:0,sig:29psuq
+ * @lastUpdated 2026-06-15T15:17:55.778Z
+ */
+
+/**
  * OMEGA ERA 7.2.3 - INDUSTRIAL DESIGN TOKENS
  * Immutable base constants for industrial governance.
  */

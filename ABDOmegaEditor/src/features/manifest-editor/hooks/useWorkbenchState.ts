@@ -1,10 +1,13 @@
 "use client";
 
 /**
- * @purpose Gestiona y coordina el estado del tablero de trabajo en el editor de manifesto OMEGA, incluyendo comunicación RPC, persistencia y acciones de interfaz de usuario.
+ * @purpose Gestiona y coordina el estado del tablero de trabajo en el editor de manifesto OMEGA, incluyendo comunicación RPC, persistencia y acciones de UI.
  * @purpose_en Manages and coordinates the state of the workbench in the OMEGA manifest editor, including RPC communication, persistence, and UI actions.
- * @fingerprint exports:1,imports:8,sig:115eryb
- * @lastUpdated 2026-06-15T09:19:44.689Z
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Custom Hook
+ * @complexity Medium
+ * @fingerprint exports:1,imports:8,sig:0fo57t
+ * @lastUpdated 2026-06-15T20:49:55.322Z
  */
 
 import { useCallback, useMemo, useReducer, useRef, useEffect, useState } from "react";
@@ -111,13 +114,13 @@ export function useWorkbenchState() {
           payload: { tabId, viewState },
         }),
 
-      toggleUIState: (key: keyof Pick<WorkbenchState, 'showLogs' | 'isLiveMode' | 'showModGrid' | 'mockupOpen' | 'blueprintGalleryOpen' | 'isAuditModalOpen' | 'isAboutModalOpen' | 'isCellEditorOpen' | 'isOnboardingOpen'>) =>
+      toggleUIState: (key: keyof Pick<WorkbenchState, 'showLogs' | 'isLiveMode' | 'showModGrid' | 'mockupOpen' | 'blueprintGalleryOpen' | 'isAboutModalOpen' | 'isCellEditorOpen' | 'isOnboardingOpen'>) =>
         dispatch({ type: "TOGGLE_UI_STATE", payload: { key } }),
 
       setHelpState: (isOpen: boolean, sectionId?: string) =>
         dispatch({ type: "SET_HELP_STATE", payload: { isOpen, sectionId } }),
 
-      setUiTheme: (theme: "dark" | "light") =>
+      setUiTheme: (theme: "dark" | "light" | "amber" | "cyberpunk" | "high-contrast") =>
         dispatch({ type: "SET_UI_THEME", payload: { theme } }),
         
       setPendingFiles: (files: File[]) =>

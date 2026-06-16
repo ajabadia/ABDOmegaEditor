@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona una sección para el diseño de contenedores en un editor de manifesto OMEGA, incluyendo agregar, actualizar y eliminar contenedores con tarjetas colapsibles.
+ * @purpose_en Manages a section for container layout in an OMEGA manifest editor, including adding, updating, and deleting containers with collapsible cards.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:7,sig:yrvtnq
+ * @lastUpdated 2026-06-15T11:38:20.968Z
+ */
+
 import { Plus, Layout } from 'lucide-react';
 import type { LayoutContainer, OMEGA_Manifest } from '@/types/manifest';
 import { useContainerState } from '@/features/manifest-editor/hooks/useContainerState';

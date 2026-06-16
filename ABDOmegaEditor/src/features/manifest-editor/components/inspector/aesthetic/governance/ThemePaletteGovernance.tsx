@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona un sección desplegable para administrar el paleta del tema y ajustes de color en el editor de manifest OMEGA.
- * @lastUpdated 2026-06-14T16:39:40.016Z
+ * @purpose Gestiona una sección colapsable para editar el paleta de temas y configuraciones de color en el editor de manifesto OMEGA.
+ * @purpose_en Manages a collapsible section for editing theme palette and color settings in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:4,sig:19s1yrz
+ * @lastUpdated 2026-06-15T11:04:13.672Z
  */
 
 import { Palette } from 'lucide-react';

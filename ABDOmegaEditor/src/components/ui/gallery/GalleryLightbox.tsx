@@ -1,6 +1,11 @@
 /**
- * @purpose Mostrando información en un lightbox para una galería de imágenes con detalles y navegación.
- * @lastUpdated 2026-06-14T15:31:32.421Z
+ * @purpose Gestiona un componente de galería de imagen ligera para mostrar detalles de imágenes y navegación dentro del ABDOmegaEditor.
+ * @purpose_en Manages a lightbox gallery component for displaying image details and navigation within the ABDOmegaEditor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:4,sig:ang6pq
+ * @lastUpdated 2026-06-15T10:51:44.707Z
  */
 
 import Image from "next/image";
@@ -43,6 +48,7 @@ export function GalleryLightbox({
       <motion.button
         className="absolute top-8 right-8 text-white/20 hover:text-white transition-colors z-[150] p-2 hover:bg-white/5 rounded-full"
         onClick={() => setSelectedIndex(null)}
+        aria-label="Close lightbox"
       >
         <X size={32} />
       </motion.button>
@@ -54,12 +60,14 @@ export function GalleryLightbox({
           <button
             onClick={(e) => { e.stopPropagation(); handlePrev(); }}
             className="p-4 bg-white/2 border border-white/5 text-white/30 rounded-full hover:bg-primary/20 hover:text-primary hover:border-primary transition-all pointer-events-auto backdrop-blur-sm"
+            aria-label="Previous image"
           >
             <ChevronLeft size={32} />
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); handleNext(); }}
             className="p-4 bg-white/2 border border-white/5 text-white/30 rounded-full hover:bg-primary/20 hover:text-primary hover:border-primary transition-all pointer-events-auto backdrop-blur-sm"
+            aria-label="Next image"
           >
             <ChevronRight size={32} />
           </button>
@@ -142,6 +150,7 @@ export function GalleryLightbox({
                   "w-2 h-2 rounded-full transition-all",
                   i === selectedIndex ? "bg-primary w-8" : "bg-white/20 hover:bg-white/40"
                 )}
+                aria-label={`Go to slide ${i + 1}`}
               />
             ))}
           </div>

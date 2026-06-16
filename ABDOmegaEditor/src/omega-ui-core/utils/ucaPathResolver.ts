@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona la resolución y validación de rutas para nodos y puertos en las utilidades centrales del editor de manifesto OMEGA.
+ * @purpose_en Manages the resolution and validation of paths for nodes and ports in the OMEGA manifest editor's central utilities.
+ * @refactorable false
+ * @classification Helper Utility
+ * @complexity Low
+ * @fingerprint exports:2,imports:1,sig:1rasuep
+ * @lastUpdated 2026-06-15T16:56:27.073Z
+ */
+
 import type { OmegaNode, UCA_Port } from '../types/manifest';
 
 export interface PathResolutionResult {

@@ -1,8 +1,11 @@
 /**
  * @purpose Gestiona el estado del trabajobench en el editor de manifesto OMEGA, maneja operaciones de tab y pane, cambios de layout y hidratación desde estados externos.
- * @purpose_en Manages state for the workbench in the OMEGA manifest editor, handling tab and pane operations, layout changes, and hydration from external states.
- * @fingerprint exports:2,imports:2,sig:if4kdz
- * @lastUpdated 2026-06-15T09:19:49.608Z
+ * @purpose_en Manages the state for the workbench in the OMEGA manifest editor, handling tab and pane operations, layout changes, and hydration from external states.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Custom Hook
+ * @complexity Medium
+ * @fingerprint exports:2,imports:2,sig:4one9p
+ * @lastUpdated 2026-06-15T20:50:00.506Z
  */
 
 import type { 
@@ -76,7 +79,7 @@ export const createInitialState = (): WorkbenchState => {
     helpState: { isOpen: false },
     mockupOpen: false,
     blueprintGalleryOpen: false,
-    isAuditModalOpen: false,
+    // isAuditModalOpen removed — use CompliancePanel in right dock instead
     isAboutModalOpen: false,
     isCellEditorOpen: false,
     isOnboardingOpen: false,

@@ -1,6 +1,11 @@
 /**
- * @purpose Renderiza un menú desplegable para seleccionar variantes según tipo de elemento en el editor del manifiesto OMEGA.
- * @lastUpdated 2026-06-14T16:49:14.614Z
+ * @purpose Renderiza un menú desplegable para seleccionar variantes según el tipo de elemento en el editor de manifesto OMEGA.
+ * @purpose_en Renders a dropdown menu for selecting variants based on the type of element in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:0,sig:1lhp7k8
+ * @lastUpdated 2026-06-15T11:30:38.637Z
  */
 
 const VARIANTS: Record<string, { id: string; label: string }[]> = {

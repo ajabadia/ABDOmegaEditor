@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Muestra un resumen detallado del estado de cumplimiento y métricas de un manifiesto OMEGA, incluyendo calificaciones, indicadores de cumplimiento y detalles técnicos relevantes.
- * @lastUpdated 2026-06-14T15:55:38.767Z
+ * @purpose Renderiza un resumen detallado de los resultados del auditoría de una manifestación OMEGA, incluyendo puntuación de calidad, estado de cumplimiento y métricas relevantes.
+ * @purpose_en Renders a detailed summary of an OMEGA manifest's audit results, including quality score, compliance status, and relevant metrics.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:5,sig:144wxsa
+ * @lastUpdated 2026-06-15T10:53:13.970Z
  */
 
 

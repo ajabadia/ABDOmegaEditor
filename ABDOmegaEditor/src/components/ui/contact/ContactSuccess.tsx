@@ -1,6 +1,11 @@
 /**
- * @purpose Mostrar un mensaje de éxito en el editor de manifiestos OMEGA con opciones para reiniciar y transmitir nuevo contenido.
- * @lastUpdated 2026-06-14T15:31:22.124Z
+ * @purpose Renderiza una notificacion de exito en el editor de manifesto OMEGA con opciones para resetear y transmitir contenido nuevo.
+ * @purpose_en Renders a success message in the OMEGA manifest editor with options to reset and transmit new content.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:3,sig:21wi98
+ * @lastUpdated 2026-06-16T17:35:46.591Z
  */
 
 import { motion } from "framer-motion";
@@ -38,6 +43,7 @@ export function ContactSuccess({ onReset, t }: ContactSuccessProps) {
         variant="outline" 
         onClick={onReset}
         className="px-8 border-white/10"
+        aria-label={t('newTransmission')}
       >
         {t("newTransmission")}
       </Button>

@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona tokens de diseño y resuelve colores, fuentes y estilos para componentes en el editor de manifesto OMEGA.
+ * @purpose_en Manages design tokens and resolves colors, fonts, and styles for components in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Custom Hook
+ * @complexity Medium
+ * @fingerprint exports:2,imports:3,sig:u4qlkh
+ * @lastUpdated 2026-06-15T15:18:04.939Z
+ */
+
 import { useMemo, useCallback } from 'react';
 import type { OMEGA_Manifest, ManifestEntity, OmegaStyleNode } from '../types/manifest';
 import { DESIGN_TOKENS } from '../constants/design-tokens';

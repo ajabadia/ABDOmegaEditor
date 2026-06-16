@@ -1,4 +1,14 @@
 /**
+ * @purpose Rendra componentes basados en filmstrip con cortado de cuadros, mapeo de orientación y posicionamiento basado en estado.
+ * @purpose_en Renders filmstrip-based components (Sequence Layer) with frame clipping, orientation mapping, and state-based positioning.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:2,imports:0,sig:lb7v0a
+ * @lastUpdated 2026-06-15T16:09:12.776Z
+ */
+
+/**
  * ⚠️ OMEGA UI CORE — SEQUENCE RENDERER (Era 7.2.3)
  * ---------------------------------------------------------------------------
  * Specialized renderer for filmstrip-based components (Sequence Layer).

@@ -1,8 +1,13 @@
 import type { OMEGA_Manifest } from '../types/manifest';
 
 /**
- * @purpose Motor de resolución cromática que traduce tokens de color del manifiesto a valores HEX/RGBA para todos los renderizadores
- * @lastUpdated 2026-06-14T17:30:00.000Z
+ * @purpose Gestiona tokens de color desde una manifestación OMEGA para resolverlos en valores HEX/RGBA para renderizar.
+ * @purpose_en Manages tokens of color from an OMEGA manifest to resolve them into HEX/RGBA values for rendering.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Helper Utility
+ * @complexity Low
+ * @fingerprint exports:1,imports:1,sig:12e39bd
+ * @lastUpdated 2026-06-15T16:55:40.709Z
  */
 export class ColorResolver {
   /**

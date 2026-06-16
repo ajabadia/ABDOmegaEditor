@@ -1,5 +1,15 @@
 'use client';
- 
+
+/**
+ * @purpose Renderiza una sección para editar propiedades lógicas de nodos manifesto en el editor de manifesto OMEGA, incluyendo campos de vinculación, seleccionadores de rol, ajustes de protocolo y botones para seleccionar componentes.
+ * @purpose_en Renders a section for editing logic properties of manifest nodes in the OMEGA manifest editor, including binding fields, role selectors, protocol adjustments, and component picker buttons.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:7,sig:1vznvmt
+ * @lastUpdated 2026-06-15T11:39:29.779Z
+ */
+
 import { Box } from 'lucide-react';
 import type { OmegaNode } from '@/omega-ui-core/types/manifest';
 import { BindingField } from '@/features/manifest-editor/components/inspector/logic/BindingField';

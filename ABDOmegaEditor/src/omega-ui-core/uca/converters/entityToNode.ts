@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona un ManifestEntity plano en una node formal UCA OmegaNode para su renderizado en el editor de manifestos OMEGA.
+ * @purpose_en Converts a flat ManifestEntity into a formal UCA OmegaNode for rendering in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification Helper Utility
+ * @complexity Low
+ * @fingerprint exports:1,imports:1,sig:1pi7u7e
+ * @lastUpdated 2026-06-15T16:11:03.830Z
+ */
+
 import type { ManifestEntity, OmegaNode, NodeRole } from '../../types/manifest';
 
 /**

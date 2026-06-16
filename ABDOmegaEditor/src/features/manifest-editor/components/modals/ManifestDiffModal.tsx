@@ -1,16 +1,20 @@
 'use client';
 
 /**
- * @purpose Renderiza un modal completo de pantalla completa para comparación y fusión detallada de archivos manifest.
+ * @purpose Renderiza un modal completo de pantalla completa para comparación y fusión detallada de archivos manifestos.
  * @purpose_en Renders a full-screen modal for detailed structural comparison and merging of manifest files.
- * @fingerprint exports:1,imports:4,sig:1o071x6
- * @lastUpdated 2026-06-15T06:31:14.278Z
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:7,sig:1lvbbmv
+ * @lastUpdated 2026-06-15T20:49:04.380Z
  */
 
 import { motion, AnimatePresence } from 'framer-motion';
 import ModalCloseButton from './ModalCloseButton';
 import ModalActionButton from './ModalActionButton';
 import { GitCompare, History } from 'lucide-react';
+import { useFocusTrap } from '@/features/manifest-editor/hooks/useFocusTrap';
 import type { ManifestDiffResult, DiffEntry } from '../../types/diff';
 import { ManifestDiffViewer } from '../inspector/ManifestDiffViewer';
 
@@ -26,10 +30,17 @@ interface ManifestDiffModalProps {
  * Full-screen modal for detailed structural comparison.
  */
 export default function ManifestDiffModal({ isOpen, onClose, diff, onMergeEntries }: ManifestDiffModalProps) {
+  const focusTrapRef = useFocusTrap(isOpen);
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8">
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8"
+          ref={focusTrapRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Structural Comparison"
+        >
           {/* Backdrop */}
           <motion.div 
             initial={{ opacity: 0 }}

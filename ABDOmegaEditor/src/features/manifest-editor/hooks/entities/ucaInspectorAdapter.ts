@@ -1,3 +1,13 @@
+/**
+ * @purpose Adapta entidades manifestadas legado a nodos Omega modernos y viceversa para compatibilidad en el editor de manifesto OMEGA.
+ * @purpose_en Adapts legacy manifest entities to modern Omega nodes and vice versa for compatibility in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Helper Utility
+ * @complexity Low
+ * @fingerprint exports:14,imports:2,sig:1oo0trg
+ * @lastUpdated 2026-06-15T13:10:18.636Z
+ */
+
 import type { OMEGA_Manifest, ManifestEntity, OmegaNode, NodeKind, NodeRole } from '@/omega-ui-core/types/manifest';
 import { moveChildInTree } from '@/omega-ui-core/utils/treeUtils';
 

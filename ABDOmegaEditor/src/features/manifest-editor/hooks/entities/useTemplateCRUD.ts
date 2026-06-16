@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona nodos basados en plantillas para su inyección en el árbol UCA dentro del editor de manifesto OMEGA.
+ * @purpose_en Manages template-based nodes for injection into the UCA tree within the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Custom Hook
+ * @complexity Medium
+ * @fingerprint exports:1,imports:3,sig:pt06b9
+ * @lastUpdated 2026-06-15T13:10:46.388Z
+ */
+
 import { useCallback } from 'react';
 import type { OMEGA_Manifest, ModuleTemplate, OmegaNode } from '@/omega-ui-core/types/manifest';
 import { findNodeInTree } from './ucaInspectorAdapter';

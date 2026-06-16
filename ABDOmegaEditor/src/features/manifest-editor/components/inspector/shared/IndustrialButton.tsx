@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Renderiza un componente botón estándar personalizable para el Editor Manifesto OMEGA con estilos y funcionalidad personalizables.
+ * @purpose_en Renders a standardized button component for the OMEGA Manifest Editor with customizable styles and functionality.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:1,sig:1rhk8vs
+ * @lastUpdated 2026-06-15T11:49:39.789Z
+ */
+
 import type { LucideIcon } from 'lucide-react';
 
 interface IndustrialButtonProps {
@@ -45,6 +55,7 @@ export default function IndustrialButton({
   return (
     <button 
       onClick={onClick}
+      aria-label={title || label}
       className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
       title={title}
     >

@@ -1,3 +1,13 @@
+/**
+ * @purpose Valida los datos manifest y contrato de OMEGA utilizando esquemas y reglas industriales.
+ * @purpose_en Validates OMEGA manifest and contract data using schemas and industrial rules.
+ * @refactorable false
+ * @classification Business Service
+ * @complexity Low
+ * @fingerprint exports:1,imports:5,sig:1sr5m5k
+ * @lastUpdated 2026-06-15T17:03:34.201Z
+ */
+
 import type { OMEGA_Manifest, OMEGA_Contract } from '@/omega-ui-core/types/manifest';
 import type { OmegaContract } from './wasmLoader';
 import type { ValidationIssue } from '@/types/validation';

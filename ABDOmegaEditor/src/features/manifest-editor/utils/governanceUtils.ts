@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona y optimiza recursos en archivos manifest OMEGA eliminando tipos de elementos, variantes, activos y guildas no utilizados para reducir el tamaño del archivo y mejorar el rendimiento.
+ * @purpose_en Manages and optimizes resources in OMEGA manifest files by identifying used element types, variants, assets, and guilds, then purges unused ones to reduce file size and improve performance.
+ * @refactorable false (contains only static declarations/types/constants)
+ * @classification Helper Utility
+ * @complexity Medium
+ * @fingerprint exports:4,imports:3,sig:9iw9v8
+ * @lastUpdated 2026-06-15T15:17:12.251Z
+ */
+
 import type { OMEGA_Manifest, StyleVariant } from '@/omega-ui-core/types/manifest';
 import type { ElementCategory } from '@/omega-ui-core/governance/ElementCatalog';
 import { OMEGA_ELEMENT_CATALOG } from '@/omega-ui-core/governance/ElementCatalog';

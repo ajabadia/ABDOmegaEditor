@@ -1,4 +1,14 @@
 /**
+ * @purpose Gestiona descripciones visuales de alta fidelidad para renderizaciones fotorealistas basadas en datos manifestados de OMEGA.
+ * @purpose_en Generates high-fidelity visual descriptions for photorealistic renders based on OMEGA manifest data.
+ * @refactorable false
+ * @classification Business Service
+ * @complexity Low
+ * @fingerprint exports:1,imports:1,sig:1gkivbc
+ * @lastUpdated 2026-06-15T17:00:29.975Z
+ */
+
+/**
  * OMEGA Studio Mockup Service (v7.2.3)
  * Prepares high-fidelity visual descriptions for photorealistic renders.
  */

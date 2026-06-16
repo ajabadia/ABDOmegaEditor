@@ -1,3 +1,13 @@
+/**
+ * @purpose Valida el gráfico de modulación para dependencias circulares y devuelve una lista de problemas de validación para cualquier ciclo detectado.
+ * @purpose_en Validates the modulation graph for circular dependencies and returns a list of validation issues for any detected cycles.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Helper Utility
+ * @complexity Medium
+ * @fingerprint exports:1,imports:3,sig:1olqat0
+ * @lastUpdated 2026-06-15T16:54:49.756Z
+ */
+
 import type { OMEGA_Manifest } from '../../types/manifest';
 import type { ValidationIssue } from '../../types/validation';
 import { parsePath } from './pathResolver';

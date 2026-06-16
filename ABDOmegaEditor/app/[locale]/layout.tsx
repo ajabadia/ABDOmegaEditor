@@ -1,7 +1,11 @@
 /**
- * @purpose Renderiza un componente de disposición para ABDOmegaEditor utilizando NextIntlClientProvider para proporcionar mensajes específicos del lugar y valida los parámetros de lugar entrantes.
- * @fingerprint exports:2,imports:5,sig:1nduqdy
- * @lastUpdated 2026-06-14T19:09:21.834Z
+ * @purpose Gestiona un componente de diseño para ABDOmegaEditor utilizando NextIntlClientProvider para proporcionar mensajes localizados y valida los parámetros de ubicación de entrada.
+ * @purpose_en Manages a layout component for ABDOmegaEditor using NextIntlClientProvider to provide localized messages and validates input location parameters.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:2,imports:6,sig:1dq668p
+ * @lastUpdated 2026-06-15T17:04:31.345Z
  */
 
 import {NextIntlClientProvider} from 'next-intl';

@@ -1,8 +1,11 @@
 /**
- * @purpose Renderiza el componente de cabecera para el editor de manifesto OMEGA, incluyendo menús, identidad del sistema y botones de control.
+ * @purpose Renderiza el componente de encabezado para el editor de manifesto OMEGA, incluyendo menús, identidad del sistema y botones de control.
  * @purpose_en Renders the header component for the OMEGA manifest editor, including menus, system identity, and control buttons.
- * @fingerprint exports:1,imports:8,sig:qitjrq
- * @lastUpdated 2026-06-15T05:54:43.223Z
+ * @refactorable true (contains too many props and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:8,sig:42y7wp
+ * @lastUpdated 2026-06-15T12:47:42.839Z
  */
 
 import { Shield } from 'lucide-react';
@@ -10,7 +13,7 @@ import { Shield } from 'lucide-react';
 import type { AuditResult } from '@/services/auditService';
 import { ComplianceBadge } from '../shared/ComplianceBadge';
  
-import ThemeToggle from '../header/ThemeToggle';
+import ThemeSelector from '../header/ThemeToggle';
 import MenuBar from './MenuBar';
 import { SimulationStatusBadge } from '@/features/manifest-editor/components/header/SimulationStatusBadge';
 import type { SimulationBridgeState } from '@/features/manifest-editor/hooks/useSimulationBridge';
@@ -32,8 +35,8 @@ interface HeaderProps {
   activeTabType: 'orbital' | 'rack' | 'source' | 'history';
   onTabFocus: (type: 'orbital' | 'rack' | 'source' | 'history') => void;
   onHelp: () => void;
-  uiTheme: 'dark' | 'light';
-  setUiTheme: (theme: 'dark' | 'light') => void;
+  uiTheme: 'dark' | 'light' | 'amber' | 'cyberpunk' | 'high-contrast';
+  setUiTheme: (theme: 'dark' | 'light' | 'amber' | 'cyberpunk' | 'high-contrast') => void;
   audit: AuditResult;
   onOpenAudit: () => void;
   onTriggerUpload: (id: string) => void;
@@ -147,7 +150,7 @@ export default function Header(props: HeaderProps) {
           <ComplianceBadge audit={props.audit} onClick={props.onOpenAudit} />
         </div>
         <div className="h-6 w-px wb-outline opacity-20 mx-1" />
-        <ThemeToggle uiTheme={props.uiTheme} setUiTheme={props.setUiTheme} />
+        <ThemeSelector uiTheme={props.uiTheme} setUiTheme={props.setUiTheme} />
 
         {props.simulationBridge && (
           <SimulationStatusBadge 

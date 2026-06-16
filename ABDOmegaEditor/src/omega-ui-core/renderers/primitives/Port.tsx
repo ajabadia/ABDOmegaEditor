@@ -1,3 +1,13 @@
+/**
+ * @purpose Renderiza un componente de puerto para el editor de manifesto OMEGA, mostrando colores y valores de señal según las propiedades de entrada.
+ * @purpose_en Renders a port component for the OMEGA manifest editor, displaying signal colors and values based on input properties.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:2,imports:2,sig:679ppu
+ * @lastUpdated 2026-06-15T16:08:51.858Z
+ */
+
 import React from 'react';
 import type { ComponentStyle, BindConfig } from '../../types/rack';
 

@@ -29,10 +29,10 @@ describe('WorkbenchFooter — rendering', () => {
 
   it('should render all 4 view selector buttons', () => {
     render(<WorkbenchFooter />);
-    expect(screen.getByTitle('Orbital View')).toBeTruthy();
-    expect(screen.getByTitle('Virtual Rack')).toBeTruthy();
-    expect(screen.getByTitle('Source View')).toBeTruthy();
-    expect(screen.getByTitle('Timeline / History')).toBeTruthy();
+    expect(screen.getByTitle('Orbital View (Ctrl+1)')).toBeTruthy();
+    expect(screen.getByTitle('Virtual Rack (Ctrl+2)')).toBeTruthy();
+    expect(screen.getByTitle('Source View (Ctrl+3)')).toBeTruthy();
+    expect(screen.getByTitle('Timeline / History (Ctrl+4)')).toBeTruthy();
   });
 
   it('should render the split toggle button', () => {

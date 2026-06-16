@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Renderiza una cabecera para un componente inspector en el editor del manifiesto OMEGA, mostrando información de módulo o entidad y proporcionando opciones para pinchar o cerrar el inspector.
- * @lastUpdated 2026-06-14T16:50:23.024Z
+ * @purpose Renderiza un encabezado para el componente inspector en el editor de manifesto OMEGA, mostrando información de módulo o entidad y proporcionando opciones para pinchar o cerrar el inspector.
+ * @purpose_en Renders a header for an inspector component in the OMEGA manifest editor, displaying module or entity information and providing options to pin or close the inspector.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:1,sig:1l31ky6
+ * @lastUpdated 2026-06-15T11:31:13.203Z
  */
 
 import { X, Package, Settings, Pin } from 'lucide-react';
@@ -36,6 +41,7 @@ export default function InspectorHeader({ id, isModule, isPinned, onPin, onClose
             onClick={onPin}
             className={`p-1.5 rounded-xs transition-all ${isPinned ? 'text-primary bg-primary/20 shadow-[0_0_10px_rgba(var(--primary-rgb),0.2)]' : 'text-white/20 hover:text-white/40 hover:bg-white/5'}`}
             title={isPinned ? "Unpin Node" : "Pin Node to Reference View"}
+            aria-label={isPinned ? "Unpin Node" : "Pin Node to Reference View"}
           >
             <Pin className={`w-3.5 h-3.5 ${isPinned ? 'fill-current' : ''}`} />
           </button>
@@ -45,6 +51,8 @@ export default function InspectorHeader({ id, isModule, isPinned, onPin, onClose
           <button 
             onClick={onClose}
             className="p-1.5 hover:wb-surface-hover rounded-xs wb-text-muted hover:wb-text transition-all"
+            title="Close inspector"
+            aria-label="Close inspector"
           >
             <X className="w-4 h-4" />
           </button>

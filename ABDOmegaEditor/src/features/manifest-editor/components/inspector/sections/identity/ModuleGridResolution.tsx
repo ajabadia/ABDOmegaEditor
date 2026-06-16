@@ -1,3 +1,13 @@
+/**
+ * @purpose Renderiza una sección colapsable para configurar la resolución del saltado de grid en el editor de manifesto OMEGA.
+ * @purpose_en Renders a collapsible section for configuring grid snapping resolution in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:5,sig:q3nfr3
+ * @lastUpdated 2026-06-15T11:38:49.683Z
+ */
+
 import { LayoutGrid } from 'lucide-react';
 import type { OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
 import InspectorCollapsible from '@/features/manifest-editor/components/inspector/shared/InspectorCollapsible';

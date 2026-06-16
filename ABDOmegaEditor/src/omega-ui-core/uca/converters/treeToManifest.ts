@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona el convertido de estructura de árbol UCA a arrays legados para uso en el editor de manifesto OMEGA.
+ * @purpose_en ** Converts a UCA tree structure into legacy arrays for use in the OMEGA manifest editor.
+ * @refactorable ** true (contains too many state variables and UI parts)
+ * @classification ** Helper Utility
+ * @complexity ** Medium
+ * @fingerprint exports:1,imports:1,sig:h67dim
+ * @lastUpdated 2026-06-15T16:54:00.462Z
+ */
+
 import type { OMEGA_Manifest, OmegaNode, LayoutContainer, ManifestEntity } from '../../types/manifest';
 
 /**

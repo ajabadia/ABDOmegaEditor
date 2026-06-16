@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona la herencia de tipografía según categorías de componentes dentro de un manifesto OMEGA.
+ * @purpose_en Manages the inheritance of typography according to component categories within an OMEGA manifest.
+ * @refactorable false
+ * @classification Helper Utility
+ * @complexity Low
+ * @fingerprint exports:2,imports:1,sig:1fzxzny
+ * @lastUpdated 2026-06-15T16:09:54.298Z
+ */
+
 import type { OMEGA_Manifest } from '../../types/manifest';
  
 /**

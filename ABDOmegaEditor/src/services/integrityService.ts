@@ -1,4 +1,14 @@
 /**
+ * @purpose Gestiona hashes SHA-256 para objetos y manifestos mediante normalización canónica para garantizar verificaciones de integridad.
+ * @purpose_en Calculates SHA-256 hashes for objects and manifests using canonical normalization to ensure integrity checks.
+ * @refactorable false
+ * @classification Business Service
+ * @complexity Low
+ * @fingerprint exports:1,imports:1,sig:1om943k
+ * @lastUpdated 2026-06-15T17:00:23.406Z
+ */
+
+/**
  * OMEGA Integrity Service (v7.2.3)
  * Provides cryptographic hashing for manifest firmware integrity checks.
  */

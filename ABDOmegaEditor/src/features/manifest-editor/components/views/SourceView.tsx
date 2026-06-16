@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Renderiza un componente Editor de Monaco para visualizar y editar el código fuente de manifesto con resaltado sintáctico, diagnósticos y selección.
+ * @purpose_en Renders a Monaco Editor component for visualizing and editing manifest source code with syntax highlighting, diagnostics, and selection features.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:5,sig:3vjki6
+ * @lastUpdated 2026-06-15T13:02:13.690Z
+ */
+
 import { useEffect, useMemo, useRef } from 'react';
 import Editor, { type OnMount } from '@monaco-editor/react';
 import type * as Monaco from 'monaco-editor';

@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona las restricciones espaciales y lógica para nodos en el editor de manifesto OMEGA.
+ * @purpose_en Manages spatial constraints and logic for nodes in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification Helper Utility
+ * @complexity Low
+ * @fingerprint exports:5,imports:1,sig:rov4e3
+ * @lastUpdated 2026-06-15T16:54:10.870Z
+ */
+
 import type { OmegaNode, OMEGA_Manifest, GridConfig } from '../types/manifest';
   
 /**

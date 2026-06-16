@@ -1,5 +1,15 @@
 'use client';
- 
+
+/**
+ * @purpose Gestiona una sección para personalizar la piel y estilo de un editor de manifesto OMEGA, incluyendo configuraciones globales y biblioteca de elementos.
+ * @purpose_en Manages a section for customizing the skin and style of an OMEGA manifest editor, including global settings and element library.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:8,sig:jnjng4
+ * @lastUpdated 2026-06-15T11:38:26.736Z
+ */
+
 import React from 'react';
 import { Layers, Box, Palette, Type, Sun, ChevronDown, ChevronRight } from 'lucide-react';
 import type { OMEGA_Manifest, StyleVariant } from '@/omega-ui-core/types/manifest';
@@ -70,6 +80,7 @@ export default function CustomSkinSection({ manifest, onUpdate, resolveAsset, ac
             <button
               key={tab.id}
               onClick={() => setLocalActiveTab(tab.id)}
+              aria-label={`Switch to ${tab.label} tab`}
               className={`flex-1 flex items-center justify-center gap-2 py-3 px-2 transition-all duration-300 relative group ${
                 activeTab === tab.id 
                   ? 'bg-primary/10 text-foreground' 
@@ -141,6 +152,7 @@ export default function CustomSkinSection({ manifest, onUpdate, resolveAsset, ac
                                    }
                                  });
                                }}
+                               aria-label={`Select ${style.label} faceplate`}
                                className={`
                                  p-1.5 border rounded-xs flex flex-col gap-1 items-center transition-all group
                                  ${isActive ? 'bg-primary/15 border-primary text-primary shadow-none' : 'wb-surface border wb-outline hover:border-primary/40'}

@@ -1,3 +1,13 @@
+/**
+ * @purpose Renderiza una sección para editar las dimensiones del chasis, unidades de montaje y especificaciones de potencia en un editor de manifesto OMEGA.
+ * @purpose_en Renders a section for editing chassis dimensions, mounting units, and power specifications in an OMEGA manifest editor.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:3,sig:15x0wa4
+ * @lastUpdated 2026-06-15T11:39:40.849Z
+ */
+
 import type { OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
 import { FieldRenderer } from '../../fields';
 import type { FieldDef } from '../../fields';

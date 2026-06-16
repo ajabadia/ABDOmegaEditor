@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona un sección colapsable para configurar física atmosférica y ajustes ambientales en el editor del manifiesto OMEGA.
- * @lastUpdated 2026-06-14T16:38:52.934Z
+ * @purpose Gestiona una sección colapsable para configurar física atmosférica y ajustes ambientales en el editor de manifesto OMEGA.
+ * @purpose_en ** Manages a collapsible section for configuring atmospheric physics and environmental settings in the OMEGA manifest editor.
+ * @refactorable ** true (contains too many state variables and UI parts)
+ * @classification ** UI Component
+ * @complexity ** Medium
+ * @fingerprint exports:1,imports:4,sig:1tgx8xg
+ * @lastUpdated 2026-06-15T11:03:54.969Z
  */
 
 import { Sun, CornerRightDown } from 'lucide-react';
@@ -94,6 +99,7 @@ export default function AtmosphericPhysicsGovernance({ manifest, onUpdate, resol
                          type="range" min="0" max="360" value={lighting.shadowAngle} 
                          onChange={(e) => updateLighting({ shadowAngle: parseInt(e.target.value) })}
                          className="flex-1 h-1 bg-outline/20 rounded-full appearance-none cursor-pointer accent-accent"
+                         aria-label="Light angle in degrees"
                        />
                        <CornerRightDown className="w-4 h-4 text-accent" style={{ transform: `rotate(${lighting.shadowAngle}deg)` }} />
                     </div>
@@ -109,6 +115,7 @@ export default function AtmosphericPhysicsGovernance({ manifest, onUpdate, resol
                       type="range" min="0" max="1" step="0.05" value={lighting.ambientIntensity ?? 0.5} 
                       onChange={(e) => updateLighting({ ambientIntensity: parseFloat(e.target.value) })}
                       className="w-full h-1 bg-outline/20 rounded-full appearance-none cursor-pointer accent-accent"
+                      aria-label="Ambient light intensity"
                     />
                  </div>
               </div>
@@ -130,6 +137,7 @@ export default function AtmosphericPhysicsGovernance({ manifest, onUpdate, resol
                       type="range" min="0" max="1" step="0.05" value={lighting.surfaceGrain ?? 0} 
                       onChange={(e) => updateLighting({ surfaceGrain: parseFloat(e.target.value) })}
                       className="w-full h-1 bg-outline/20 rounded-full appearance-none cursor-pointer accent-accent"
+                      aria-label="Industrial surface grain"
                     />
                  </div>
 
@@ -143,6 +151,7 @@ export default function AtmosphericPhysicsGovernance({ manifest, onUpdate, resol
                       type="range" min="0" max="1" step="0.05" value={lighting.specularIntensity ?? 0.2} 
                       onChange={(e) => updateLighting({ specularIntensity: parseFloat(e.target.value) })}
                       className="w-full h-1 bg-outline/20 rounded-full appearance-none cursor-pointer accent-accent"
+                      aria-label="Edge reflection specular intensity"
                     />
                  </div>
               </div>
@@ -164,6 +173,7 @@ export default function AtmosphericPhysicsGovernance({ manifest, onUpdate, resol
                          type="range" min="0" max="1" step="0.05" value={lighting.opacity ?? 1} 
                          onChange={(e) => updateLighting({ opacity: parseFloat(e.target.value) })}
                          className="w-full h-1 bg-outline/20 rounded-full appearance-none cursor-pointer accent-accent"
+                         aria-label="Global opacity"
                        />
                     </div>
 
@@ -176,6 +186,7 @@ export default function AtmosphericPhysicsGovernance({ manifest, onUpdate, resol
                          type="range" min="0" max="20" value={lighting.globalBlur ?? 0} 
                          onChange={(e) => updateLighting({ globalBlur: parseInt(e.target.value) })}
                          className="w-full h-1 bg-outline/20 rounded-full appearance-none cursor-pointer accent-accent"
+                         aria-label="Backdrop blur in pixels"
                        />
                     </div>
                  </div>

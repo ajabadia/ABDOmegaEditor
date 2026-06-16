@@ -1,6 +1,11 @@
 /**
- * @purpose Gestiona la configuración de calibración del editor de manifiesto OMEGA.
- * @lastUpdated 2026-06-14T15:50:53.774Z
+ * @purpose Gestiona parámetros y categorías de edición del manifest OMEGA.
+ * @purpose_en Manages calibration parameters and categories for the OMEGA manifest editor.
+ * @refactorable true (contains multiple related but distinct data structures and configurations)
+ * @classification Data/Constants
+ * @complexity Low
+ * @fingerprint exports:5,imports:0,sig:1cx9rvw
+ * @lastUpdated 2026-06-15T10:52:32.603Z
  */
 
 export interface CalibrationParameter {

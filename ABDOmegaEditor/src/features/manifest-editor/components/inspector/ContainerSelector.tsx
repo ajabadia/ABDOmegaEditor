@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona la mapeo arquitectónico entre entidades y contenedores de disposición en el editor del manifiesto OMEGA.
- * @lastUpdated 2026-06-14T16:44:27.952Z
+ * @purpose Gestiona mapeo arquitectónico entre entidades y contenedores de diseño en el editor de manifesto OMEGA.
+ * @purpose_en Manages architectural mapping between entities and layout containers in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:4,sig:1ca0gac
+ * @lastUpdated 2026-06-15T11:06:17.977Z
  */
 
 import { Layout, Box } from 'lucide-react';

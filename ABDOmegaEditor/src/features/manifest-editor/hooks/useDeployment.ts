@@ -1,7 +1,18 @@
 'use client';
 
+/**
+ * @purpose Gestiona lógica de despliegue para manifestos OMEGA, incluyendo verificaciones de integridad y registro.
+ * @purpose_en Manages deployment logic for OMEGA manifests, including integrity checks and logging.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Custom Hook
+ * @complexity Medium
+ * @fingerprint exports:1,imports:5,sig:17jw18y
+ * @lastUpdated 2026-06-15T13:12:39.608Z
+ */
+
 import { useCallback } from 'react';
 import type { OMEGA_Manifest, OMEGA_Contract } from '@/omega-ui-core/types/manifest';
+import { toast } from '@/features/manifest-editor/utils/toast';
 import type { OmegaContract } from '@/services/wasmLoader';
 import type { ValidationIssue } from '@/types/validation';
 
@@ -33,6 +44,7 @@ export const useDeployment = ({
   const handleDeploy = useCallback(async () => {
     if (issues.length > 0) {
       addLog(`[WARNING] Deployment blocked by ${issues.length} audit violations.`);
+      toast.warning(`Deployment blocked by ${issues.length} audit violation(s)`);
       return 'AUDIT_FAIL';
     }
 
@@ -65,6 +77,7 @@ export const useDeployment = ({
       const result = await wasmRuntime.deployManifest(manifest);
       
       if (result.success) {
+        toast.success('Deployment successful');
         addLog(`[SUCCESS] Hot-Swap injection complete.`);
         addLog(`[SYSTEM] Engine Fingerprint: ${hashAtStart.slice(0, 16)}...`);
         addLog(`[SYSTEM] Simulation synchronized.`);
@@ -79,6 +92,7 @@ export const useDeployment = ({
       }
     } catch (err) {
       addLog(`[CRITICAL] Deployment failed: ${err}`);
+      toast.error(`Deployment failed: ${err instanceof Error ? err.message : String(err)}`);
     }
   }, [addLog, manifest, issues, contract, captureStableSnapshot, activeId, orchestrator]);
 

@@ -1,4 +1,14 @@
 /**
+ * @purpose Proporciona información sobre el tamaño y el color de las cadenas de strings industriales.
+ * @purpose_en Parses industrial variant strings to extract size and color information.
+ * @refactorable false
+ * @classification Helper Utility
+ * @complexity Low
+ * @fingerprint exports:2,imports:0,sig:1ysjqqm
+ * @lastUpdated 2026-06-15T16:09:58.273Z
+ */
+
+/**
  * OMEGA Variant Parser (Era 7.2.3)
  * Unified logic to extract size and color information from industrial variant strings.
  */

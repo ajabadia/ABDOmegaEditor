@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona el arrastre de una plantilla dentro de un manifest OMEGA, resolviendo conflictos de estilo y combinándose con estilos existentes.
+ * @purpose_en Manages the injection of a blueprint into an OMEGA manifest, resolving style conflicts and merging with existing styles.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Business Service
+ * @complexity Medium
+ * @fingerprint exports:1,imports:3,sig:q6xsd5
+ * @lastUpdated 2026-06-15T16:56:21.674Z
+ */
+
 import type { OMEGA_Manifest, OmegaNode, BlueprintDefinition, CellTemplate, StyleVariant, OmegaStyleNode } from '../types/manifest';
 import type { BlueprintInjectionRequest, BlueprintInjectionResult } from '../types/blueprint';
 import { manifestToTree, treeToManifest } from './ucaBridge';

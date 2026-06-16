@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Renderiza un componente con botones para exportar e importar datos JSON en el editor del manifiesto OMEGA.
- * @lastUpdated 2026-06-14T16:40:04.787Z
+ * @purpose Renderiza un componente con botones para exportar e importar datos JSON en el editor de manifesto OMEGA.
+ * @purpose_en Renders a component with buttons for exporting and importing JSON data in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:1,sig:eh8ke2
+ * @lastUpdated 2026-06-15T11:04:23.914Z
  */
 
 import { Download, Upload } from 'lucide-react';
@@ -17,6 +22,7 @@ export default function LibraryBatchOps({ onExport, onImport }: LibraryBatchOpsP
     <div className="flex items-center gap-2 pt-2">
       <button 
         onClick={onExport} 
+        aria-label="Export style library as JSON"
         className="flex-1 flex items-center justify-center gap-2 py-2 bg-black/40 border wb-outline rounded-xs hover:bg-primary/5 group transition-all"
       >
         <Download className="w-3 h-3 wb-text-muted group-hover:text-primary" />
@@ -24,6 +30,7 @@ export default function LibraryBatchOps({ onExport, onImport }: LibraryBatchOpsP
       </button>
       <button 
         onClick={onImport} 
+        aria-label="Import style library from JSON"
         className="flex-1 flex items-center justify-center gap-2 py-2 bg-black/40 border wb-outline rounded-xs hover:bg-primary/5 group transition-all"
       >
         <Upload className="w-3 h-3 wb-text-muted group-hover:text-primary" />

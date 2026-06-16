@@ -1,3 +1,13 @@
+/**
+ * @purpose Valida un manifest OMEGA contra las reglas industriales y devuelve problemas de validación.
+ * @purpose_en ** Validates an OMEGA manifest against industrial rules and returns validation issues.
+ * @refactorable ** true (contains too many state variables and UI parts)
+ * @classification ** Business Service
+ * @complexity ** Medium
+ * @fingerprint exports:1,imports:4,sig:pi4khm
+ * @lastUpdated 2026-06-15T17:03:24.031Z
+ */
+
 import type { OMEGA_Manifest, ManifestEntity, OmegaNode, OMEGA_Contract } from '@/omega-ui-core/types/manifest';
 import type { ValidationIssue } from '@/types/validation';
 import type { OmegaContract } from '../wasmLoader';

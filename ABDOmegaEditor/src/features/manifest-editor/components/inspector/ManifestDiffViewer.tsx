@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Proporciona un componente para visualizar e interactuar con las diferencias entre dos archivos manifest en el editor de manifestos OMEGA.
- * @lastUpdated 2026-06-14T16:51:04.887Z
+ * @purpose Renderiza un componente para visualizar y interactuar con las diferencias entre dos archivos manifest en el editor de manifesto OMEGA.
+ * @purpose_en Renders a component for visualizing and interacting with differences between two manifest files in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:4,sig:biot6l
+ * @lastUpdated 2026-06-15T11:31:28.469Z
  */
 
 import React from 'react';
@@ -64,6 +69,7 @@ export const ManifestDiffViewer: React.FC<ManifestDiffViewerProps> = ({ diff, on
         {onApplyAll && (
           <button
             onClick={() => onApplyAll(diff.entries)}
+            aria-label="Apply all changes"
             className="flex items-center gap-2 px-3 py-1.5 rounded-xs bg-primary/20 border border-primary/40 hover:bg-primary/30 transition-all group"
           >
             <Zap className="w-3 h-3 text-primary group-hover:scale-110 transition-transform" />

@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona la subida y exportación de manifestos en el editor de manifesto OMEGA.
+ * @purpose_en Manages manifest upload and export functionalities in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Custom Hook
+ * @complexity Medium
+ * @fingerprint exports:1,imports:7,sig:tqkm7f
+ * @lastUpdated 2026-06-15T13:10:55.153Z
+ */
+
 import { useCallback } from 'react';
 import yaml from 'js-yaml';
 import type { OMEGA_Manifest, ManifestEntity, ComponentType, AttachmentType, Attachment, Dimensions, Position } from '@/omega-ui-core/types/manifest';

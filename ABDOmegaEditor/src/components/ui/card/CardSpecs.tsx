@@ -1,6 +1,11 @@
 /**
  * @purpose Renderiza especificaciones de instrumentos en una interfaz de usuario.
- * @lastUpdated 2026-06-14T15:31:19.095Z
+ * @purpose_en Renders specifications of instruments in a user interface.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:0,sig:1anmbfv
+ * @lastUpdated 2026-06-15T10:51:12.390Z
  */
 
 

@@ -1,16 +1,20 @@
 'use client';
 
 /**
- * @purpose Renderiza un modal para el conjunto de herramientas Omega Engineering, mostrando versión de editor, detalles del entorno y matriz de preparación del sistema.
+ * @purpose Renderiza un modal para el conjunto de herramientas OMEGA Engineering, mostrando versión de editor, detalles del entorno y matriz de preparación del sistema.
  * @purpose_en Renders a modal for the OMEGA Engineering Suite, displaying editor version, environment details, and system preparation matrix.
- * @fingerprint exports:1,imports:4,sig:yd7cyw
- * @lastUpdated 2026-06-15T06:29:20.097Z
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:7,sig:1520j79
+ * @lastUpdated 2026-06-15T20:48:39.467Z
  */
 
 import { motion } from 'framer-motion';
 import ModalCloseButton from './ModalCloseButton';
 import ModalActionButton from './ModalActionButton';
 import { Shield, Info, Globe, Zap } from 'lucide-react';
+import { useFocusTrap } from '@/features/manifest-editor/hooks/useFocusTrap';
 import IndustrialStatusSection from '../hub/IndustrialStatusSection';
 import type { OMEGA_Metric } from '@/types/manifest';
 
@@ -23,10 +27,18 @@ interface AboutModalProps {
 }
 
 export default function AboutModal({ isOpen, onClose, metrics, sysReady, onDeploy }: AboutModalProps) {
+  const focusTrapRef = useFocusTrap(isOpen);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div 
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+      ref={focusTrapRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label="About OMEGA Engineering Suite"
+    >
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

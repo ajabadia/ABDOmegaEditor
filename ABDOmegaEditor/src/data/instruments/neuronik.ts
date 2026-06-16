@@ -1,6 +1,11 @@
 /**
- * @purpose Define y exporta un objeto que representa el instrumento NEURONiK con sus propiedades como ID, nombre, descripción, imágenes, categorías, especificaciones técnicas y ruta del signal path.
- * @lastUpdated 2026-06-14T15:55:26.336Z
+ * @purpose Gestiona un objeto que representa el instrumento NEURONiK con sus propiedades y especificaciones para su uso en el editor de manifesto OMEGA.
+ * @purpose_en Defines an object representing the NEURONiK instrument with its properties and specifications for use in the OMEGA manifest editor.
+ * @refactorable true (contains detailed instrument data and could be split into smaller components for better maintainability)
+ * @classification Data/Constants
+ * @complexity Low
+ * @fingerprint exports:1,imports:1,sig:3qp8pj
+ * @lastUpdated 2026-06-15T10:52:47.848Z
  */
 
 import type { Instrument } from "./types";

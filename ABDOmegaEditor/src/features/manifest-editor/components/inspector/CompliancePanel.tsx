@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona un panel de cumplimiento para manifestos OMEGA, mostrando resultados de auditoría y problemas con grupos desplegables y opciones de navegación.
- * @lastUpdated 2026-06-14T16:43:42.923Z
+ * @purpose Renderiza una pestaña de cumplimiento para manifestos OMEGA, mostrando resultados de auditoría y problemas con opciones de navegación.
+ * @purpose_en Renders a compliance panel for OMEGA manifests, displaying audit results and issues with navigation options.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:6,sig:1nt6jha
+ * @lastUpdated 2026-06-15T11:05:58.984Z
  */
 
 import React, { useState } from 'react';
@@ -155,6 +160,7 @@ export default function CompliancePanel({ audit, manifest, onNavigate }: Complia
               <button
                 onClick={() => toggleGroup(group)}
                 className={`flex items-center gap-1.5 px-2 py-1.5 ${cfg.bg} ${cfg.border} border-b border-white/5 hover:bg-white/5 transition-colors text-left`}
+                aria-label={`${cfg.label} issues`}
               >
                 {isExpanded ? <ChevronDown className="w-2.5 h-2.5" /> : <ChevronRight className="w-2.5 h-2.5" />}
                 <GrpIcon className={`w-3 h-3 ${cfg.color}`} />
@@ -207,6 +213,7 @@ export default function CompliancePanel({ audit, manifest, onNavigate }: Complia
           <button
             onClick={() => setShowGuidelines(!showGuidelines)}
             className="flex items-center gap-1.5 px-2 py-1.5 bg-primary/5 border-b border-white/5 hover:bg-white/5 transition-colors text-left"
+            aria-label={showGuidelines ? 'Hide aseptic guidelines' : 'Show aseptic guidelines'}
           >
             {showGuidelines ? <ChevronDown className="w-2.5 h-2.5" /> : <ChevronRight className="w-2.5 h-2.5" />}
             <span className="text-[7px] font-black uppercase tracking-wider text-primary">Aseptic Guidelines v7.2</span>
@@ -249,6 +256,7 @@ export default function CompliancePanel({ audit, manifest, onNavigate }: Complia
         <button
           onClick={handleDownload}
           className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-xs bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 text-[7px] font-black uppercase tracking-wider transition-all"
+          aria-label="Export certification report"
         >
           <Download className="w-3 h-3" />
           Export Cert
@@ -301,6 +309,7 @@ function IssueCard({ issue, onNavigate }: { issue: AuditIssue; onNavigate?: (pat
       <button
         onClick={() => setExpanded(!expanded)}
         className="w-full flex items-center gap-1.5 px-2 py-1.5 hover:bg-white/5 transition-colors text-left"
+        aria-label={expanded ? `Collapse ${issue.message}` : `Expand ${issue.message}`}
       >
         <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${severityColor.split(' ')[0]}`} />
         <span className="text-[7px] font-mono font-bold wb-text truncate flex-1">{issue.message}</span>
@@ -352,6 +361,7 @@ function IssueCard({ issue, onNavigate }: { issue: AuditIssue; onNavigate?: (pat
                       onNavigate(issue.path!);
                     }}
                     className="flex items-center gap-1 text-[6px] font-black uppercase tracking-wider text-primary hover:text-white transition-colors"
+                    aria-label={`Locate in workbench: ${issue.message}`}
                   >
                     Locate <ArrowRight className="w-2 h-2" />
                   </button>

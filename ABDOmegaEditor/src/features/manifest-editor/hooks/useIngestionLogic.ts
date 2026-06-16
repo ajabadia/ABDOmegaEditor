@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona lógica de ingestión para archivos en el editor de manifesto OMEGA, maneja tipos de archivo, estados de selección y conteos.
+ * @purpose_en Manages ingestion logic for files in the OMEGA manifest editor, handling file types, selection states, and counts.
+ * @refactorable false
+ * @classification Custom Hook
+ * @complexity Medium
+ * @fingerprint exports:2,imports:1,sig:qdzqq3
+ * @lastUpdated 2026-06-15T13:22:14.608Z
+ */
+
 import { useState, useEffect } from 'react';
 
 export interface IngestionFile {

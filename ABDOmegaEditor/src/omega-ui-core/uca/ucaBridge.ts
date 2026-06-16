@@ -1,4 +1,14 @@
 /**
+ * @purpose Gestiona la conversión y manipulación de datos manifest OMEGA para crear estructuras OmegaNode, aplicando overrides y manejo de placeholders para generar contenido dinámico.
+ * @purpose_en Manages conversion and manipulation of OMEGA manifest data to create OmegaNode structures, applying overrides and handling placeholders for dynamic content generation.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Business Service
+ * @complexity Medium
+ * @fingerprint exports:4,imports:4,sig:a4snuq
+ * @lastUpdated 2026-06-15T16:54:26.114Z
+ */
+
+/**
  * OMEGA UCA BRIDGE - Phase 10.2
  * Formal Compilation Pipeline & Materialization Engine.
  */

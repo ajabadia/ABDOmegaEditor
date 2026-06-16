@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona y actualiza las configuraciones del grid en el editor de manifesto OMEGA mientras se preservan los valores de diseño existentes con valores de seguridad por defecto.
+ * @purpose_en Manages and updates grid configurations in the OMEGA manifest editor while preserving existing layout values with safe defaults.
+ * @refactorable false
+ * @classification Helper Utility
+ * @complexity Low
+ * @fingerprint exports:3,imports:1,sig:qbhwww
+ * @lastUpdated 2026-06-15T15:17:17.877Z
+ */
+
 import type { OMEGA_Manifest, GridConfig, GridGuide } from '@/omega-ui-core/types/manifest';
 
 /**

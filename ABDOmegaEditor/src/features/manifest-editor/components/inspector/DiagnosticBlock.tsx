@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Renderiza un bloque diagnóstico que muestra señales con iconos y estados.
- * @lastUpdated 2026-06-14T16:44:35.734Z
+ * @purpose Renderiza un bloque de diagnóstico que muestra señales con iconos y estatus.
+ * @purpose_en Renders a diagnostic block that displays signals with icons and statuses.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:1,sig:w5mel5
+ * @lastUpdated 2026-06-15T11:06:21.867Z
  */
 
 import { Activity, ShieldAlert, Zap } from 'lucide-react';

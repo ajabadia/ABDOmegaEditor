@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona tipos para manejar y reportar operaciones de inyección de plantillas en el editor de manifesto OMEGA.
+ * @purpose_en Manages types for handling and reporting template injection operations in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification Type Definition
+ * @complexity Low
+ * @fingerprint exports:5,imports:1,sig:1nfqfiv
+ * @lastUpdated 2026-06-15T16:10:07.546Z
+ */
+
 import type { 
   OMEGA_Manifest, 
   OmegaNode, 

@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona y renderiza propiedades estéticas y ajustes de diseño para entidades manifestadas en el editor de manifestas OMEGA.
+ * @purpose_en Manages and renders aesthetic properties and layout adjustments for manifest entities in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:2,sig:1l078vv
+ * @lastUpdated 2026-06-15T11:41:40.681Z
+ */
+
 import type { ManifestEntity, OMEGA_Manifest, Presentation } from '@/types/manifest';
 import IndustrialGovernanceConsole from './IndustrialGovernanceConsole';
 

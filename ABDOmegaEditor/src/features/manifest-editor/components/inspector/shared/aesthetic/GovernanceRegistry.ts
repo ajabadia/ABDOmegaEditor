@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona dominios de gobernanza y capacidades para configuraciones estéticas en el editor de manifesto OMEGA.
+ * @purpose_en Manages governance domains and capabilities for aesthetic configurations in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification Data/Constants
+ * @complexity Low
+ * @fingerprint exports:3,imports:1,sig:94vhc7
+ * @lastUpdated 2026-06-15T11:40:26.874Z
+ */
+
 import type { AestheticCapability } from "@/omega-ui-core/governance/ElementCatalog";
 
 export interface GovernanceDomain {

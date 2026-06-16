@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona las conexiones de archivo para entidades manifestadas en ABDOmegaEditor.
+ * @purpose_en Manages attachments for manifest entities in ABDOmegaEditor.
+ * @refactorable false
+ * @classification Custom Hook
+ * @complexity Medium
+ * @fingerprint exports:1,imports:2,sig:ee9y4o
+ * @lastUpdated 2026-06-15T13:11:44.846Z
+ */
+
 import { useState } from 'react';
 import type { ManifestEntity, Attachment, AttachmentType } from '@/omega-ui-core/types/manifest';
 

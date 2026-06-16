@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Renderiza un formulario para editar propiedades del contenedor en el editor de manifestos OMEGA, incluyendo selección de estilo, posición, tamaño, anclaje de etiqueta y asignación de plano arquitectónico.
- * @lastUpdated 2026-06-14T16:44:16.158Z
+ * @purpose Renderiza una forma para editar propiedades de un contenedor en el editor de manifesto OMEGA, incluyendo selección de estilo, posición, tamaño, anclaje de etiquetas y asignación de plano arquitectónico.
+ * @purpose_en Renders a form for editing properties of a container in the OMEGA manifest editor, including style selection, position, size, label anchoring, and architectural plane assignment.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:4,sig:m6yjpl
+ * @lastUpdated 2026-06-15T11:06:13.112Z
  */
 
 import { Move, Maximize2, Type, Layers } from 'lucide-react';
@@ -38,6 +43,7 @@ export default function ContainerForm({ container, onUpdate, manifest, setActive
             {containerStyles.map(s => (
               <button
                 key={s.id}
+                aria-label={`Select container style: ${s.label}`}
                 onClick={() => onUpdate(container.id, { 
                   variant: s.id,
                   // Purge local overrides to force style library inheritance
@@ -82,6 +88,7 @@ export default function ContainerForm({ container, onUpdate, manifest, setActive
                    value={container.pos.x} 
                    onChange={(e) => onUpdate(container.id, { pos: { ...container.pos, x: parseInt(e.target.value) } })}
                    className="bg-transparent text-[9px] font-mono text-primary w-full outline-none" 
+                   aria-label="Container X position"
                  />
               </div>
               <div className="flex-1 flex items-center bg-black/40 border border-outline/10 rounded-xs px-2 py-1">
@@ -91,6 +98,7 @@ export default function ContainerForm({ container, onUpdate, manifest, setActive
                    value={container.pos.y} 
                    onChange={(e) => onUpdate(container.id, { pos: { ...container.pos, y: parseInt(e.target.value) } })}
                    className="bg-transparent text-[9px] font-mono text-primary w-full outline-none" 
+                   aria-label="Container Y position"
                  />
               </div>
            </div>
@@ -121,6 +129,7 @@ export default function ContainerForm({ container, onUpdate, manifest, setActive
                    value={container.size.height} 
                    onChange={(e) => onUpdate(container.id, { size: { ...container.size, height: parseInt(e.target.value) } })}
                    className="bg-transparent text-[9px] font-mono text-primary w-full outline-none" 
+                   aria-label="Container height in pixels"
                  />
               </div>
            </div>

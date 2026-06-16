@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona y mapea datos para el inspector de entidad en el editor de manifesto OMEGA.
+ * @purpose_en Manages and maps data for the model inspector of entity in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Custom Hook
+ * @complexity Medium
+ * @fingerprint exports:5,imports:2,sig:nxd8nk
+ * @lastUpdated 2026-06-15T13:10:23.045Z
+ */
+
 import type { OmegaNode, OmegaStyleNode, Position, OverrideMode, OverridePolicy, ModuleTemplate, ManifestEntity } from '@/omega-ui-core/types/manifest';
 import { findParentInTree } from './ucaInspectorAdapter';
 

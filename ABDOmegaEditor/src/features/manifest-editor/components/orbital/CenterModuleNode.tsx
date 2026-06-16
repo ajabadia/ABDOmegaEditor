@@ -1,5 +1,15 @@
 'use client';
- 
+
+/**
+ * @purpose Renderiza un módulo node seleccionable y arrastrable en el editor de manifesto OMEGA, mostrando la versión del contrato disponible.
+ * @purpose_en Renders a selectable and draggable module node in the OMEGA manifest editor, displaying the contract version if available.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:3,sig:1dgvs9c
+ * @lastUpdated 2026-06-15T12:59:08.662Z
+ */
+
 import { motion } from 'framer-motion';
 import type { OMEGA_Manifest, OMEGA_Contract } from '@/omega-ui-core/types/manifest';
 import type { OmegaContract } from '@/services/wasmLoader';

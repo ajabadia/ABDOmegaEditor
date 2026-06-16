@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona la hidratación desde localStorage y sincronización atómica del estado de diseño para el editor de manifesto OMEGA workbench.
+ * @purpose_en Manages hydration from localStorage and atomic sync of layout state for the OMEGA manifest editor workbench.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Custom Hook
+ * @complexity Medium
+ * @fingerprint exports:1,imports:3,sig:1x2vbjv
+ * @lastUpdated 2026-06-15T15:15:58.294Z
+ */
+
 import { useEffect } from "react";
 import type { WorkbenchState, WorkbenchAction } from "../../types/workbench";
 import { STORAGE_KEYS } from "../../constants/storage";

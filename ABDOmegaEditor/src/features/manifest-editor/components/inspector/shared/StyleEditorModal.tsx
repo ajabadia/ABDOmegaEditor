@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Renderiza un modal para editar variantes de estilo en el editor de manifesto OMEGA, permitiendo a los usuarios visualizar y actualizar estilos a través de múltiples pestañas y controles.
+ * @purpose_en Renders a modal for editing style variants in the OMEGA manifest editor, allowing users to visualize and update styles through multiple tabs and controls.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:10,sig:1gd57b4
+ * @lastUpdated 2026-06-15T11:50:12.386Z
+ */
+
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Wand2, X, Save, RefreshCcw, ShieldCheck, Box, Layout } from 'lucide-react';
@@ -142,6 +152,7 @@ export default function StyleEditorModal({
             <button 
               onClick={onClose}
               className="w-8 h-8 flex items-center justify-center hover:bg-white/5 rounded-xs transition-colors group"
+              aria-label="Close style editor"
             >
               <X className="w-5 h-5 wb-text-muted group-hover:wb-text transition-colors" />
             </button>
@@ -211,12 +222,14 @@ export default function StyleEditorModal({
                     <button 
                        onClick={() => setActiveTab('fragments')}
                        className={`px-6 py-2 text-[8px] font-black uppercase tracking-widest rounded-xs transition-all ${activeTab === 'fragments' ? 'bg-primary text-black' : 'wb-text-muted hover:wb-text'}`}
+                       aria-label="Fragments tab"
                     >
                        📑 Fragments
                     </button>
                     <button 
                        onClick={() => setActiveTab('properties')}
                        className={`px-6 py-2 text-[8px] font-black uppercase tracking-widest rounded-xs transition-all ${activeTab === 'properties' ? 'bg-primary text-black' : 'wb-text-muted hover:wb-text'}`}
+                       aria-label="Properties tab"
                     >
                        🛠️ Properties
                     </button>
@@ -235,6 +248,7 @@ export default function StyleEditorModal({
                              <button 
                                 onClick={() => { setActiveFragment('host'); setActiveTab('properties'); }}
                                 className={`w-full flex items-center justify-between p-4 border-2 rounded-xs transition-all group ${activeFragment === 'host' ? 'border-primary bg-primary/5' : 'wb-outline wb-surface-subtle hover:border-primary/40'}`}
+                                aria-label="Edit main architectural host fragment"
                              >
                                 <div className="flex items-center gap-4">
                                    <div className={`w-8 h-8 rounded-xs border-2 flex items-center justify-center ${activeFragment === 'host' ? 'border-primary text-primary' : 'wb-outline wb-text-muted'}`}>
@@ -252,6 +266,7 @@ export default function StyleEditorModal({
                              <button 
                                 onClick={() => { setActiveFragment('label'); setActiveTab('properties'); }}
                                 className={`w-full flex items-center justify-between p-4 border-2 rounded-xs transition-all group ${activeFragment === 'label' ? 'border-primary bg-primary/5' : 'wb-outline wb-surface-subtle hover:border-primary/40'}`}
+                                aria-label="Edit primary branding fragment"
                              >
                                 <div className="flex items-center gap-4">
                                    <div className={`w-8 h-8 rounded-xs border-2 flex items-center justify-center ${activeFragment === 'label' ? 'border-primary text-primary' : 'wb-outline wb-text-muted'}`}>
@@ -275,7 +290,7 @@ export default function StyleEditorModal({
                                 </span>
                                 <h3 className="text-[10px] font-black uppercase tracking-wider">Editing: {activeFragment.toUpperCase()}</h3>
                              </div>
-                             <button onClick={() => setActiveTab('fragments')} className="text-[7px] font-black uppercase text-primary hover:underline">Back to tree</button>
+                             <button onClick={() => setActiveTab('fragments')} aria-label="Back to fragment tree" title="Back to fragment tree" className="text-[7px] font-black uppercase text-primary hover:underline">Back to tree</button>
                           </div>
                           
                           <IndustrialGovernanceConsole 
@@ -300,6 +315,7 @@ export default function StyleEditorModal({
           <div className="px-6 py-4 border-t-2 wb-outline wb-surface-subtle flex items-center justify-between">
              <button 
                onClick={() => onUpdate({})} 
+               aria-label="Reset style to defaults"
                className="flex items-center gap-2 px-4 py-2 text-[8px] font-black uppercase wb-text-muted hover:wb-text transition-colors"
              >
                 <RefreshCcw className="w-3 h-3" />
@@ -308,6 +324,7 @@ export default function StyleEditorModal({
 
              <button 
                onClick={onClose}
+               aria-label="Apply style changes and close"
                className="flex items-center gap-2 px-8 py-2 bg-primary text-black text-[10px] font-black uppercase rounded-xs hover:bg-primary/80 transition-all shadow-[0_0_20px_rgba(0,240,255,0.4)]"
              >
                 <Save className="w-4 h-4" />

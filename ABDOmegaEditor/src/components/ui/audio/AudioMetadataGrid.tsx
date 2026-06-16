@@ -1,6 +1,11 @@
 /**
- * @purpose Mostrador de metadatos de audio en un grid que se despliega o se oculta según sea necesario, mostrando información como el formato, frecuencia, bitrate y modo de los archivos de audio seleccionados.
- * @lastUpdated 2026-06-14T15:28:03.265Z
+ * @purpose Renderiza una grilla que muestra metadatos para los tracks de audio seleccionados, incluyendo formato, frecuencia, bitrate y modo, con efectos de animación para mostrar y ocultar la grilla.
+ * @purpose_en Renders a grid displaying metadata for selected audio tracks, including format, frequency, bitrate, and mode, with animation effects for showing and hiding the grid.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:1,sig:1yp5kok
+ * @lastUpdated 2026-06-15T10:50:23.422Z
  */
 
 import { motion, AnimatePresence } from "framer-motion";

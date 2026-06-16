@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona el estado y ciclo de vida de una pila de injeccion de plantillas en el editor de manifesto OMEGA, maneja dry-runs, finalizaciones y interacciones del usuario para insertar diagramas en manifests.
+ * @purpose_en Manages the state and lifecycle of a blueprint injection pipeline in the OMEGA manifest editor, handling dry-runs, finalizations, and user interactions for inserting diagrams into manifests.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Custom Hook
+ * @complexity Medium
+ * @fingerprint exports:1,imports:4,sig:bwrshz
+ * @lastUpdated 2026-06-15T13:12:20.334Z
+ */
+
 import { useState, useCallback, useRef } from 'react';
 import type { 
   OMEGA_Manifest, 

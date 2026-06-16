@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Renderiza una sección colapsable para seleccionar y aplicar diferentes skins a un módulo en el editor de manifesto OMEGA.
+ * @purpose_en Renders a collapsible section for selecting and applying different skins to a module in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:4,sig:1nfq1zl
+ * @lastUpdated 2026-06-15T11:39:10.293Z
+ */
+
 import { Palette } from 'lucide-react';
 import type { OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
 import { OMEGA_THEMES } from '@/constants/manifest-editor/themes';
@@ -60,6 +70,7 @@ export default function ModuleSkinSelector({ manifest, onUpdate, standalone }: M
                 }
               });
             }}
+            aria-label={`Select skin: ${theme.label}`}
             className={`flex flex-col items-center justify-center py-2 px-1 text-center transition-all border-b-2 ${
               ui.skin === theme.ui.skin && ui.skinMode !== 'custom'
                 ? 'bg-primary/15 text-primary border-primary font-black' 
@@ -81,6 +92,7 @@ export default function ModuleSkinSelector({ manifest, onUpdate, standalone }: M
               }
             });
           }}
+          aria-label="Select custom skin"
           className={`flex flex-col items-center justify-center py-2 px-1 text-center transition-all border-b-2 ${
             ui.skinMode === 'custom'
               ? 'bg-accent/15 text-accent border-accent font-black' 

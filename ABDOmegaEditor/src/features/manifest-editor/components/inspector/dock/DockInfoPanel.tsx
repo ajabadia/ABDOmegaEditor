@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Proporciona un panel que muestra información sobre el elemento seleccionado actualmente en el editor del manifiesto OMEGA, incluyendo diagnósticos y estado motor en vivo.
- * @lastUpdated 2026-06-14T16:45:00.568Z
+ * @purpose Renderiza un panel que muestra información sobre el elemento seleccionado actualmente en el editor de manifesto OMEGA, incluyendo diagnósticos y estado del motor en vivo.
+ * @purpose_en Renders a panel displaying information about the currently selected element in the OMEGA manifest editor, including diagnostics and live engine status.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:3,sig:c2m2iz
+ * @lastUpdated 2026-06-15T11:37:49.334Z
  */
 
 import { Crosshair, Monitor } from 'lucide-react';
@@ -24,7 +29,7 @@ interface DockInfoPanelProps {
   selectedItemId: string | null;
   contract: OMEGA_Contract | null;
   isLiveMode: boolean;
-  uiTheme: 'dark' | 'light';
+  uiTheme: 'dark' | 'light' | 'amber' | 'cyberpunk' | 'high-contrast';
 }
 
 /**

@@ -1,8 +1,13 @@
 "use client";
 
 /**
- * @purpose Componente de interfaz de usuario que representa un botón personalizable con variantes de estilo y tamaño, así como una indicación de carga en proceso.
- * @lastUpdated 2026-06-14T15:28:14.805Z
+ * @purpose Renderiza un componente botón personalizable con variantes y tamaños, incluyendo indicación del estado de carga.
+ * @purpose_en Renders a customizable button component with variants and sizes, including loading state indication.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:0,imports:3,sig:taxfvp
+ * @lastUpdated 2026-06-15T10:50:51.180Z
  */
 
 

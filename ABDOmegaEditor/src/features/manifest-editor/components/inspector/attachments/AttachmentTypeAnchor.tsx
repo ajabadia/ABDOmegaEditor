@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Renderiza un menú desplegable para seleccionar el tipo y posición de adjunto en el editor del manifiesto OMEGA.
- * @lastUpdated 2026-06-14T16:42:42.255Z
+ * @purpose Renderiza un menú desplegable para seleccionar el tipo y posición de la manifestación en el editor OMEGA.
+ * @purpose_en Renders a dropdown menu for selecting attachment type and position in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:3,sig:1008j1r
+ * @lastUpdated 2026-06-15T11:05:34.975Z
  */
 
 import { Activity } from 'lucide-react';

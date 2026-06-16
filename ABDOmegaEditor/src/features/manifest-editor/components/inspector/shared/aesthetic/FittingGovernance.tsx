@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Renderiza un grupo de botones para seleccionar estrategias de ajuste en el editor de manifesto OMEGA, permitiendo a los usuarios elegir cómo se deben redimensionar y posicionar elementos multimedia dentro de sus contenedores.
+ * @purpose_en Renders a group of buttons for selecting fitting strategies in an OMEGA manifest editor, allowing users to choose how multimedia elements should be resized and positioned within their containers.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:2,sig:1gsb94w
+ * @lastUpdated 2026-06-15T11:40:21.947Z
+ */
+
 import { Maximize2, Minimize2, Move, LayoutGrid, Square } from 'lucide-react';
 
 import type { OmegaStyleNode } from '@/types/manifest';
@@ -30,6 +40,7 @@ export default function FittingGovernance({ value, onChange }: FittingGovernance
             <button
               key={opt.id}
               onClick={() => onChange(opt.id as NonNullable<OmegaStyleNode['fitting']>)}
+              aria-label={`Fitting: ${opt.label}`}
               className={`
                 flex flex-col items-center justify-center p-2 rounded-xs border transition-all group
                 ${isActive 

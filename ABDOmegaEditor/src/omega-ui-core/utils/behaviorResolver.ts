@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona comportamientos de activos según valores de entrada y los mapea para determinar cuadro, rotación, desplazamiento y opacidad para elementos visuales en el editor de manifesto OMEGA.
+ * @purpose_en Manages behaviors of assets based on input values and maps them to determine frame, rotation, offset, and opacity for visual elements in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Helper Utility
+ * @complexity Medium
+ * @fingerprint exports:2,imports:1,sig:h8x0rx
+ * @lastUpdated 2026-06-15T16:55:12.301Z
+ */
+
 import type { AssetBehavior, BehaviorMapping } from '../types/assetBehavior';
 
 export interface ResolvedBehavior {

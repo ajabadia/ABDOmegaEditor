@@ -1,5 +1,15 @@
 "use client";
 
+/**
+ * @purpose Gestiona un componente select de dropdown personalizable con características adicionales como etiqueta heredada y visualización de badge.
+ * @purpose_en Manages a customizable dropdown select component with additional features such as inherited label and badge display.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:3,imports:1,sig:l88b5q
+ * @lastUpdated 2026-06-15T12:59:38.489Z
+ */
+
 import { ChevronDown } from "lucide-react";
 
 export type IndustrialSelectOption = {

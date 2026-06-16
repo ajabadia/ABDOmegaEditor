@@ -1,4 +1,14 @@
 /**
+ * @purpose Gestiona tipos y interfaces para estructuras celulares en el editor de manifesto OMEGA, incluyendo primitivos, composites y módulos estructurales.
+ * @purpose_en Manages types and interfaces for cellular structures in the OMEGA manifest editor, including primitivos, composites, and structural modules.
+ * @refactorable false
+ * @classification Type Definition
+ * @complexity Low
+ * @fingerprint exports:24,imports:1,sig:1t32dmd
+ * @lastUpdated 2026-06-15T17:03:50.550Z
+ */
+
+/**
  * ADR-046: Cell Philosophy Redesign — Atomic, Composite, Structural
  * 
  * New cell architecture with three clear levels of abstraction:

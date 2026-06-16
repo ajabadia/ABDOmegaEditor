@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Renderiza un componente terminal-like para mostrar registros con una barra de herramientas y un indicador de estado en vivo.
+ * @purpose_en Renders a terminal-like component to display logs with a toolbar and live status indicator.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:2,sig:3kf7iq
+ * @lastUpdated 2026-06-15T12:48:36.868Z
+ */
+
 import { useEffect, useRef } from 'react';
 import { Terminal } from 'lucide-react';
 

@@ -1,6 +1,11 @@
 /**
- * @purpose Renderiza una imagen con categorización en un card de interfaz de usuario.
- * @lastUpdated 2026-06-14T15:31:17.824Z
+ * @purpose Renderiza una imagen con un etiqueta de categoría dentro de un componente de tarjeta.
+ * @purpose_en Renders an image with a category label inside a card component.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:1,sig:10wxxiu
+ * @lastUpdated 2026-06-15T10:51:09.242Z
  */
 
 import Image from "next/image";

@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona y renderiza propiedades para entidades de ilustración en el editor del manifiesto OMEGA, incluyendo dimensiones y modo de renderizado.
- * @lastUpdated 2026-06-14T16:51:38.932Z
+ * @purpose Gestiona y renderiza propiedades para entidades de ilustración en el editor de manifesto OMEGA, incluyendo dimensiones y opciones de modo de rendimiento.
+ * @purpose_en Manages and renders properties for illustration entities in the OMEGA manifest editor, including dimensions and render mode options.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:3,sig:1miytum
+ * @lastUpdated 2026-06-15T11:31:40.275Z
  */
 
 import { Maximize2, Layers } from 'lucide-react';
@@ -39,6 +44,7 @@ export default function IllustrationProperties({ item, manifest, onUpdate, setAc
                 <input 
                     type="number" value={size.width} 
                     onChange={(e) => onUpdate({ presentation: { ...pres, size: { ...size, width: Number(e.target.value) } } } as Partial<ManifestEntity>)}
+                    aria-label="Illustration width in HP"
                     className="w-full bg-black/20 border border-outline rounded-xs px-2 py-1.5 text-[10px] font-mono text-primary"
                 />
             </div>
@@ -47,6 +53,7 @@ export default function IllustrationProperties({ item, manifest, onUpdate, setAc
                 <input 
                     type="number" value={size.height} 
                     onChange={(e) => onUpdate({ presentation: { ...pres, size: { ...size, height: Number(e.target.value) } } } as Partial<ManifestEntity>)}
+                    aria-label="Illustration height in pixels"
                     className="w-full bg-black/20 border border-outline rounded-xs px-2 py-1.5 text-[10px] font-mono text-primary"
                 />
             </div>

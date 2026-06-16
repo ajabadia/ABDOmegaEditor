@@ -1,5 +1,15 @@
 'use client';
- 
+
+/**
+ * @purpose Gestiona y muestra una lista de recursos en el editor de manifesto OMEGA, permitiendo a los usuarios subir, preview y eliminar activos.
+ * @purpose_en Manages and displays a list of resources in the OMEGA manifest editor, allowing users to upload, preview, and delete assets.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:9,sig:jlusm7
+ * @lastUpdated 2026-06-15T11:39:58.283Z
+ */
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Image as ImageIcon, Plus, Trash2, FileImage, Globe, ShieldCheck, Folder, ChevronLeft } from 'lucide-react';
@@ -78,6 +88,7 @@ const ResourceItem = React.memo(({ res, idx, onRemove }: ResourceItemProps) => {
         )}
         <button 
           onClick={() => onRemove?.(res.name)}
+          aria-label={`Delete ${res.name}`}
           className="p-1.5 hover:bg-red-500/10 rounded-xs text-foreground/20 hover:text-red-500 transition-all"
         >
           <Trash2 className="w-3 h-3" />
@@ -124,6 +135,7 @@ export default function ResourceSection({ resources, onTriggerUpload, onRemove }
                {currentPath && (
                  <button 
                    onClick={() => setCurrentPath(null)}
+                   aria-label="Go back to root folder"
                    className="p-1.5 bg-accent/5 border border-accent/20 rounded-xs transition-all hover:bg-accent/10 flex items-center gap-1 text-[8px] font-black uppercase text-accent group"
                  >
                    <ChevronLeft className="w-3 h-3 group-hover:-translate-x-0.5 transition-transform" />
@@ -164,6 +176,7 @@ export default function ResourceSection({ resources, onTriggerUpload, onRemove }
                   <button
                     key={folderName}
                     onClick={() => setCurrentPath(folderName)}
+                    aria-label={`Open folder ${folderName}`}
                     className="p-3 bg-black/40 border wb-outline rounded-sm hover:border-accent/40 transition-all flex items-center justify-between group"
                   >
                     <div className="flex items-center gap-4">

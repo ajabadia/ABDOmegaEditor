@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona y recupera activos industriales para el editor de manifesto OMEGA, proporcionando herramientas para filtrar y resolver datos de activos según el modo.
+ * @purpose_en Manages and retrieves industrial assets for the OMEGA manifest editor, providing tools to filter and resolve asset data based on mode.
+ * @refactorable false
+ * @classification Custom Hook
+ * @complexity Medium
+ * @fingerprint exports:1,imports:2,sig:1ynmi1j
+ * @lastUpdated 2026-06-15T13:11:40.959Z
+ */
+
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import type { OMEGA_Manifest, OMEGA_Asset } from '@/omega-ui-core/types/manifest';
 

@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona la inyección de señal virtual con opciones para seleccionar tipos de ondas, ajustar parámetros, visualizar señales y manejar la cruz-modulación.
+ * @purpose_en Manages virtual signal injection with options for selecting types of waveforms, adjusting parameters, visualizing signals, and handling cross-modulation.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:5,sig:1d86v53
+ * @lastUpdated 2026-06-15T12:59:59.553Z
+ */
+
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Zap, X, Activity } from 'lucide-react';
@@ -66,7 +76,7 @@ export const SignalInjector = ({ portId, onClose }: SignalInjectorProps) => {
           <span className="text-[9px] font-black uppercase tracking-widest text-primary">Signal Injector</span>
           <span className="text-[6px] font-mono text-white/20 ml-1">{portId.slice(0, 16)}</span>
         </div>
-        <button onClick={onClose} className="text-white/20 hover:text-white">
+        <button onClick={onClose} title="Close signal injector" className="text-white/20 hover:text-white">
           <X className="w-3 h-3" />
         </button>
       </div>
@@ -97,7 +107,7 @@ export const SignalInjector = ({ portId, onClose }: SignalInjectorProps) => {
             <span>{hasRate ? 'Rate' : 'Frequency'}</span>
             <span>{sig.frequency} {hasRate ? 'Hz (step)' : 'Hz'}</span>
           </div>
-          <input type="range" min={isEnvelope ? 0.1 : 1} max={isEnvelope ? 10 : 2000} step="0.1" value={sig.frequency} onChange={e => update({ frequency: parseFloat(e.target.value) })} className="w-full accent-primary h-1" />
+          <input type="range" min={isEnvelope ? 0.1 : 1} max={isEnvelope ? 10 : 2000} step="0.1" value={sig.frequency} onChange={e => update({ frequency: parseFloat(e.target.value) })} className="w-full accent-primary h-1" aria-label={hasRate ? 'Rate in Hz' : 'Frequency in Hz'} />
         </div>
 
         {/* Amplitude */}
@@ -106,7 +116,7 @@ export const SignalInjector = ({ portId, onClose }: SignalInjectorProps) => {
             <span>Amplitude</span>
             <span>{(sig.amplitude * 100).toFixed(0)}%</span>
           </div>
-          <input type="range" min="0" max="1" step="0.01" value={sig.amplitude} onChange={e => update({ amplitude: parseFloat(e.target.value) })} className="w-full accent-primary h-1" />
+          <input type="range" min="0" max="1" step="0.01" value={sig.amplitude} onChange={e => update({ amplitude: parseFloat(e.target.value) })} className="w-full accent-primary h-1" aria-label="Amplitude" />
         </div>
 
         {/* Duty Cycle (pulse only) */}
@@ -116,7 +126,7 @@ export const SignalInjector = ({ portId, onClose }: SignalInjectorProps) => {
               <span>Duty Cycle</span>
               <span>{(sig.dutyCycle! * 100).toFixed(0)}%</span>
             </div>
-            <input type="range" min="0.05" max="0.95" step="0.01" value={sig.dutyCycle!} onChange={e => update({ dutyCycle: parseFloat(e.target.value) })} className="w-full accent-primary h-1" />
+            <input type="range" min="0.05" max="0.95" step="0.01" value={sig.dutyCycle!} onChange={e => update({ dutyCycle: parseFloat(e.target.value) })} className="w-full accent-primary h-1" aria-label="Duty cycle" />
           </div>
         )}
 
@@ -130,28 +140,28 @@ export const SignalInjector = ({ portId, onClose }: SignalInjectorProps) => {
                   <span>Attack</span>
                   <span>{(sig.attackTime! * 1000).toFixed(0)}ms</span>
                 </div>
-                <input type="range" min="1" max="2000" step="1" value={sig.attackTime! * 1000} onChange={e => update({ attackTime: parseInt(e.target.value) / 1000 })} className="w-full accent-primary h-1" />
+                <input type="range" min="1" max="2000" step="1" value={sig.attackTime! * 1000} onChange={e => update({ attackTime: parseInt(e.target.value) / 1000 })} className="w-full accent-primary h-1" aria-label="Attack time in milliseconds" />
               </div>
               <div>
                 <div className="flex justify-between text-[6px] font-bold opacity-40">
                   <span>Decay</span>
                   <span>{(sig.decayTime! * 1000).toFixed(0)}ms</span>
                 </div>
-                <input type="range" min="10" max="5000" step="10" value={sig.decayTime! * 1000} onChange={e => update({ decayTime: parseInt(e.target.value) / 1000 })} className="w-full accent-primary h-1" />
+                <input type="range" min="10" max="5000" step="10" value={sig.decayTime! * 1000} onChange={e => update({ decayTime: parseInt(e.target.value) / 1000 })} className="w-full accent-primary h-1" aria-label="Decay time in milliseconds" />
               </div>
               <div>
                 <div className="flex justify-between text-[6px] font-bold opacity-40">
                   <span>Sustain</span>
                   <span>{(sig.sustainLevel! * 100).toFixed(0)}%</span>
                 </div>
-                <input type="range" min="0" max="1" step="0.01" value={sig.sustainLevel!} onChange={e => update({ sustainLevel: parseFloat(e.target.value) })} className="w-full accent-primary h-1" />
+                <input type="range" min="0" max="1" step="0.01" value={sig.sustainLevel!} onChange={e => update({ sustainLevel: parseFloat(e.target.value) })} className="w-full accent-primary h-1" aria-label="Sustain level" />
               </div>
               <div>
                 <div className="flex justify-between text-[6px] font-bold opacity-40">
                   <span>Release</span>
                   <span>{(sig.releaseTime! * 1000).toFixed(0)}ms</span>
                 </div>
-                <input type="range" min="10" max="10000" step="10" value={sig.releaseTime! * 1000} onChange={e => update({ releaseTime: parseInt(e.target.value) / 1000 })} className="w-full accent-primary h-1" />
+                <input type="range" min="10" max="10000" step="10" value={sig.releaseTime! * 1000} onChange={e => update({ releaseTime: parseInt(e.target.value) / 1000 })} className="w-full accent-primary h-1" aria-label="Release time in milliseconds" />
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -183,6 +193,7 @@ export const SignalInjector = ({ portId, onClose }: SignalInjectorProps) => {
                       next[i] = parseFloat(e.target.value);
                       update({ steps: next });
                     }}
+                    aria-label={`Step ${i + 1}`}
                     className="w-4 h-12 accent-accent [writing-mode:vertical-lr] appearance-none cursor-pointer"
                     style={{ accentColor: '#ff8c00' }}
                   />
@@ -199,7 +210,7 @@ export const SignalInjector = ({ portId, onClose }: SignalInjectorProps) => {
             <span>Slew Rate</span>
             <span>{sig.slewRate! > 0 ? `${sig.slewRate!.toFixed(1)}/s` : 'Off'}</span>
           </div>
-          <input type="range" min="0" max="20" step="0.1" value={sig.slewRate!} onChange={e => update({ slewRate: parseFloat(e.target.value) })} className="w-full accent-purple-400 h-1" style={{ accentColor: '#a855f7' }} />
+          <input type="range" min="0" max="20" step="0.1" value={sig.slewRate!} onChange={e => update({ slewRate: parseFloat(e.target.value) })} className="w-full accent-purple-400 h-1" style={{ accentColor: '#a855f7' }} aria-label="Slew rate" />
           <div className="text-[5px] font-mono text-white/20">Limits rate of change (portamento)</div>
         </div>
 
@@ -209,7 +220,7 @@ export const SignalInjector = ({ portId, onClose }: SignalInjectorProps) => {
             <span>Quantize</span>
             <span>{sig.quantize! > 0 ? `${sig.quantize} steps` : 'Off'}</span>
           </div>
-          <input type="range" min="0" max="24" step="1" value={sig.quantize!} onChange={e => update({ quantize: parseInt(e.target.value) })} className="w-full accent-amber-400 h-1" style={{ accentColor: '#eab308' }} />
+          <input type="range" min="0" max="24" step="1" value={sig.quantize!} onChange={e => update({ quantize: parseInt(e.target.value) })} className="w-full accent-amber-400 h-1" style={{ accentColor: '#eab308' }} aria-label="Quantization steps" />
           <div className="text-[5px] font-mono text-white/20">Snaps to discrete steps (2 = on/off, 12 = semitones)</div>
         </div>
 
@@ -219,7 +230,7 @@ export const SignalInjector = ({ portId, onClose }: SignalInjectorProps) => {
             <span>Offset</span>
             <span>{sig.offset.toFixed(2)}</span>
           </div>
-          <input type="range" min="-1" max="1" step="0.01" value={sig.offset} onChange={e => update({ offset: parseFloat(e.target.value) })} className="w-full accent-primary h-1" />
+          <input type="range" min="-1" max="1" step="0.01" value={sig.offset} onChange={e => update({ offset: parseFloat(e.target.value) })} className="w-full accent-primary h-1" aria-label="Offset" />
         </div>
       </div>
 
@@ -259,7 +270,7 @@ export const SignalInjector = ({ portId, onClose }: SignalInjectorProps) => {
                 <span>Mod Amount</span>
                 <span>{sig.modAmount?.toFixed(2) ?? '0.00'}</span>
               </div>
-              <input type="range" min="-1" max="1" step="0.01" value={sig.modAmount ?? 0} onChange={e => update({ modAmount: parseFloat(e.target.value) })} className="w-full accent-orange-500 h-1" style={{ accentColor: '#ff8c00' }} />
+              <input type="range" min="-1" max="1" step="0.01" value={sig.modAmount ?? 0} onChange={e => update({ modAmount: parseFloat(e.target.value) })} className="w-full accent-orange-500 h-1" style={{ accentColor: '#ff8c00' }} aria-label="Modulation amount" />
             </div>
           )}
         </div>
@@ -273,7 +284,7 @@ export const SignalInjector = ({ portId, onClose }: SignalInjectorProps) => {
         </span>
       </div>
 
-      <button onClick={remove} className="w-full py-2 bg-red-500/10 border border-red-500/20 text-red-500 text-[8px] font-black uppercase tracking-widest hover:bg-red-500/20 transition-all rounded-xs">
+      <button onClick={remove} title="Remove signal" className="w-full py-2 bg-red-500/10 border border-red-500/20 text-red-500 text-[8px] font-black uppercase tracking-widest hover:bg-red-500/20 transition-all rounded-xs">
         Kill Signal
       </button>
     </motion.div>

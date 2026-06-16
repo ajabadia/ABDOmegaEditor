@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona automáticamente la conexión de cables entre un nodo inyectado y el manifesto existente mediante una coincidencia de señales estrictamente determinista para planos industriales.
+ * @purpose_en Manages automatically connecting wires between an injected node and the existing manifest using strict, deterministic signal matching for industrial blueprints.
+ * @refactorable false
+ * @classification Business Service
+ * @complexity Low
+ * @fingerprint exports:1,imports:1,sig:16u52ca
+ * @lastUpdated 2026-06-15T16:54:44.734Z
+ */
+
 import type { 
   OMEGA_Manifest, 
   BlueprintDefinition, 

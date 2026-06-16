@@ -3,8 +3,11 @@
 /**
  * @purpose Renderiza una barra de herramientas para activar secciones en el editor de manifesto OMEGA, clasificándolas en opciones esenciales y avanzadas.
  * @purpose_en Renders a toolbar for toggling sections in the OMEGA manifest editor, categorizing them into essential and advanced options.
- * @fingerprint exports:1,imports:2,sig:z6p3ve
- * @lastUpdated 2026-06-15T05:07:40.584Z
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:4,sig:1fit6cn
+ * @lastUpdated 2026-06-15T11:14:06.678Z
  */
 
 import React from 'react';

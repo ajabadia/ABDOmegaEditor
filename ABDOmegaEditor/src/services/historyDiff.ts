@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona el comparativo de dos versiones manifestadas para detectar cambios semánticos y generar un informe de diferencia de historia.
+ * @purpose_en Manages the comparison of two manifest versions to detect semantic changes and generate a history diff report.
+ * @refactorable false
+ * @classification Business Service
+ * @complexity Low
+ * @fingerprint exports:1,imports:2,sig:fk8zde
+ * @lastUpdated 2026-06-15T16:56:57.099Z
+ */
+
 import type { OmegaNode } from '@/omega-ui-core/types/manifest';
 import type { HistoryDiff } from './historyTypes';
 

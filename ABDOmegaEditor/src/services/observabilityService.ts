@@ -1,4 +1,14 @@
 /**
+ * @purpose Gestiona observabilidad y métricas para el monitoreo de runtime industrial, proporcionando registro estructurado, seguimiento de latencia y IDs de correlación.
+ * @purpose_en Manages observability and metrics for industrial runtime monitoring, providing structured logging, latency tracking, and correlation IDs.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Business Service
+ * @complexity Medium
+ * @fingerprint exports:3,imports:0,sig:gzbef1
+ * @lastUpdated 2026-06-15T17:02:43.527Z
+ */
+
+/**
  * OMEGA ERA 7.2.3 - OBSERVABILITY SERVICE (Phase 20.5)
  * Centralized telemetry for industrial runtime monitoring.
  * Focus: Structured logging, latency metrics, and correlation IDs.

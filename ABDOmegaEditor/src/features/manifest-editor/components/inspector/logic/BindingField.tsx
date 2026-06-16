@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Renderiza un campo colapsable para seleccionar y vincular valores en un editor de manifest OMEGA, proporcionando opciones desde binds disponibles e indicando las ligas seleccionadas.
- * @lastUpdated 2026-06-14T16:50:35.705Z
+ * @purpose Gestiona un campo colapsible para seleccionar y vincular valores en un editor de manifesto OMEGA, proporcionando opciones desde los binds disponibles e indicando las enlaces seleccionadas.
+ * @purpose_en Manages a collapsible field for selecting and binding values in an OMEGA manifest editor, providing options from available binds and indicating selected links.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:3,sig:15re68i
+ * @lastUpdated 2026-06-15T11:31:18.092Z
  */
 
 import { Settings2 } from 'lucide-react';

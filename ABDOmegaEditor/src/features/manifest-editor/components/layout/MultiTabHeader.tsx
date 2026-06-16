@@ -1,5 +1,15 @@
 "use client";
 
+/**
+ * @purpose Renderiza un encabezado multi-tab para paneles de escritorio en el editor de manifesto OMEGA, incluyendo selección y selección de tab, control diagnóstico, opciones de división de pestañas.
+ * @purpose_en Renders a multi-tab header for desktop panels in the OMEGA manifest editor, including tab selection, closure, diagnostic control, and pane division options.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:4,sig:1qe027g
+ * @lastUpdated 2026-06-15T12:47:56.786Z
+ */
+
 import React from 'react';
 import { X, Rows, Columns, type LucideIcon } from 'lucide-react';
 import type { WorkbenchTab, WorkbenchPaneId } from '@/features/manifest-editor/hooks/useWorkbenchState';
@@ -154,10 +164,12 @@ export default function MultiTabHeader({
                     e.stopPropagation();
                     onTabClose(tab.id);
                   }}
+                  aria-label={`Close ${tab.title} tab`}
                   className={`
                     p-0.5 rounded-full hover:bg-white/10 text-foreground/20 hover:text-red-400 transition-all duration-200
                     ${tab.isDirty ? 'opacity-0 hover:opacity-100' : 'opacity-60'}
-                  `}
+                  }`}
+                  title={`Close ${tab.title}`}
                 >
                   <X className="w-2.5 h-2.5" />
                 </button>

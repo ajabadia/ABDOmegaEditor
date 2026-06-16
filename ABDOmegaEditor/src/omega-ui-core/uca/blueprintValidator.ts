@@ -1,3 +1,13 @@
+/**
+ * @purpose Valida la integridad estructural y la conformidad invariante de los nodos OMEGA antes de su instantiación, asegurando la unicidad, las vinculaciones, los recursos y las estructuras sin ciclos.
+ * @purpose_en Validates the structural integrity and invariant compliance of OMEGA nodes before their instantiation, ensuring uniqueness, bindings, resources, and cycle-free structures.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Business Service
+ * @complexity Medium
+ * @fingerprint exports:1,imports:1,sig:1qz3u7l
+ * @lastUpdated 2026-06-15T16:10:59.022Z
+ */
+
 import type { OmegaNode, OMEGA_Manifest } from '../types/manifest';
 
 /**

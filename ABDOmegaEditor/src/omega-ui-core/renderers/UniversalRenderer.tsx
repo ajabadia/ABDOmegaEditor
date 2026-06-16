@@ -1,3 +1,13 @@
+/**
+ * @purpose Renderiza jerarquías UCA utilizando nodos estructurales, nodos de celda y elementos div según tipos de nodos y propiedades de layout.
+ * @purpose_en Renders UCA hierarchies using structural nodes, cell nodes, and div elements based on node types and layout properties.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:7,sig:1mdpe0k
+ * @lastUpdated 2026-06-15T16:09:39.573Z
+ */
+
 import React from 'react';
 import { resolveNodeSemantics } from '../uca/ucaSemantics';
 import { resolveLayout } from '../uca/layoutResolver';

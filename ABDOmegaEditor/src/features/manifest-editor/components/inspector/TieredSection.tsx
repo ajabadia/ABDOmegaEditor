@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Renderiza una sección colapsable con título personalizable, nivel, icono y badge para su uso en el editor de manifestos OMEGA.
+ * @purpose_en Renders a collapsible section with customizable title, level, icon, and badge for use in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:4,sig:1o1cs85
+ * @lastUpdated 2026-06-15T11:50:35.446Z
+ */
+
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';

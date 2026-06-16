@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona el restaurado de estados manifestos históricos cargando una revisión, validándola y preparando nodos para su promoción.
+ * @purpose_en Manages the restoration of historical manifest states by loading a revision, validating it, and preparing nodes for promotion.
+ * @refactorable false
+ * @classification Business Service
+ * @complexity Low
+ * @fingerprint exports:1,imports:4,sig:19ixip2
+ * @lastUpdated 2026-06-15T16:57:02.105Z
+ */
+
 import { historyService } from './historyService';
 import { BlueprintValidator } from '@/omega-ui-core/utils/blueprintValidator';
 import { observabilityService } from './observabilityService';

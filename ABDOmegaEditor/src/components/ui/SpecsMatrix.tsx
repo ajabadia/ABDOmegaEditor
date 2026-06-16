@@ -1,8 +1,13 @@
 "use client";
 
 /**
- * @purpose Gestiona y presenta las especificaciones técnicas en una matriz organizada por categorías.
- * @lastUpdated 2026-06-14T15:50:32.616Z
+ * @purpose Renderiza una matriz de especificaciones técnicas agrupadas por categorías utilizando una estructura de tabla semántica con animaciones para mejorar la legibilidad y accesibilidad.
+ * @purpose_en Renders a technical specifications matrix grouped by categories using a semantic table structure with animations for better readability and accessibility.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:2,sig:kzvw38
+ * @lastUpdated 2026-06-15T10:52:22.990Z
  */
 
 

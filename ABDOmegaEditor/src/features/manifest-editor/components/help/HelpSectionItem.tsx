@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Renderiza un elemento de ayuda desplegable para el editor del manifiesto OMEGA, mostrando contenido y subsecciones con animaciones.
- * @lastUpdated 2026-06-14T16:37:46.078Z
+ * @purpose Renderiza un elemento de ayuda collapsible para el editor de manifesto OMEGA, mostrando contenido y subsecciones con animaciones.
+ * @purpose_en Renders a collapsible help section item for the OMEGA manifest editor, displaying content and subsections with animations.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:4,sig:15db1nn
+ * @lastUpdated 2026-06-15T11:03:24.421Z
  */
 
 import { motion, AnimatePresence } from 'framer-motion';
@@ -21,6 +26,7 @@ export function HelpSectionItem({ section, isExpanded, onToggle }: HelpSectionIt
     <div id={`help-anchor-${section.id}`} className="space-y-2">
       <button 
         onClick={onToggle}
+        aria-label={`Expand ${section.title} section`}
         className={`w-full flex items-center justify-between p-5 rounded-xs border transition-all ${
           isExpanded ? 'bg-white/[0.03] border-white/20' : 'bg-white/[0.01] border-white/5 hover:border-white/10'
         }`}

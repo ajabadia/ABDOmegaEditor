@@ -1,7 +1,18 @@
 'use client';
 
+/**
+ * @purpose Renderiza una vista modular de instrumento de alta fidelidad para editar manifestos OMEGA, incluyendo inyección de señal, líneas de modulación y componentes HUD del rack.
+ * @purpose_en Renders a high-fidelity modular instrument view for editing OMEGA manifests, including signal injection, modulation lines, and rack HUD components.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:23,sig:1m2e8p8
+ * @lastUpdated 2026-06-15T22:05:27.519Z
+ */
+
 import React, { useRef } from 'react';
-import type { OMEGA_Manifest, HybridEntityUpdate, OmegaNode } from '@/omega-ui-core/types/manifest';
+import type { OMEGA_Manifest, OMEGA_Contract, OMEGA_Modulation, HybridEntityUpdate, OmegaNode } from '@/omega-ui-core/types/manifest';
+import type { OmegaContract } from '@/services/wasmLoader';
 import type { AuditResult } from '@/services/auditService';
 
 // Modular Components & Hooks
@@ -16,6 +27,8 @@ import { findNodeInTree, findParentInTree } from '@/omega-ui-core/uca/treeUtils'
 import { snapToGrid } from '@/omega-ui-core/uca/spatialConstraints';
 import { InjectionPreviewOverlay } from './InjectionPreviewOverlay';
 import { GhostPreviewOverlay } from './GhostPreviewOverlay';
+import BindingOverlay from '../rack/BindingOverlay';
+import ConnectionOverlay from '../rack/ConnectionOverlay';
 import type { GhostItem as AlignGhostItem } from '@/features/manifest-editor/utils/alignmentConstants';
 import AlignGhostOverlay from './AlignGhostOverlay';
 import RackContextMenu from './RackContextMenu';
@@ -24,6 +37,7 @@ import { inputSignalService } from '@/services/inputSignalService';
 
 interface VirtualRackProps {
   manifest: OMEGA_Manifest;
+  contract: (OmegaContract | OMEGA_Contract) | null;
   selectedItemId: string | null;
   onSelectItem: (id: string | null) => void;
   onUpdateItem: (id: string, updates: HybridEntityUpdate) => void;
@@ -68,6 +82,13 @@ interface VirtualRackProps {
   // AlignGhostOverlay — ghost preview on alignment button hover
   alignGhostItems?: AlignGhostItem[] | undefined;
   alignGhostType?: string | undefined;
+
+  // BindingOverlay — visual binding editor
+  isBindingMode?: boolean | undefined;
+
+  // P11 — Visual Connection Editor
+  onAddModulation?: ((mod: OMEGA_Modulation) => void) | undefined;
+  onRemoveModulation?: ((id: string) => void) | undefined;
 }
 
 
@@ -98,6 +119,7 @@ import { useDesignTokens } from '@/features/manifest-editor/hooks/useDesignToken
 
 export default function VirtualRack({
   manifest,
+  contract,
   selectedItemId,
   onSelectItem,
   onUpdateItem,
@@ -132,7 +154,10 @@ export default function VirtualRack({
   onGhostClick,
   onGhostCancel,
   alignGhostItems,
-  alignGhostType
+  alignGhostType,
+  isBindingMode = false,
+  onAddModulation,
+  onRemoveModulation,
 }: VirtualRackProps) {
   const rackRef = useRef<HTMLDivElement>(null);
   const skin = manifest.ui?.skin || 'industrial';
@@ -175,6 +200,11 @@ export default function VirtualRack({
     if (!isGhostVisible || !onGhostClick) return;
     onGhostClick(x, y);
   }, [isGhostVisible, onGhostClick]);
+
+  // ── Binding Overlay: handle bind change ─────────────────────────────
+  const handleBindNode = React.useCallback((nodeId: string, bind: string) => {
+    onUpdateItem(nodeId, { bind });
+  }, [onUpdateItem]);
 
   // ASEPTIC LAYOUT & SIMULATION
   const { width, height, allElements } = useRackLayout(manifest);
@@ -368,6 +398,25 @@ export default function VirtualRack({
             containerRef={rackRef}
           />
         )}
+
+        {/* CONNECTION OVERLAY — interactive modulation editor (P11) */}
+        {onAddModulation && onRemoveModulation && (
+          <ConnectionOverlay
+            manifest={manifest}
+            containerRef={rackRef}
+            onAddModulation={onAddModulation}
+            onRemoveModulation={onRemoveModulation}
+          />
+        )}
+
+        {/* BINDING OVERLAY — visual binding status + editor */}
+        <BindingOverlay
+          manifest={manifest}
+          contract={contract}
+          containerRef={rackRef}
+          isBindingMode={isBindingMode}
+          onBindNode={handleBindNode}
+        />
 
         {/* BLUEPRINT STUDIO GHOST LAYER (Phase 11) */}
         {previewManifest && (

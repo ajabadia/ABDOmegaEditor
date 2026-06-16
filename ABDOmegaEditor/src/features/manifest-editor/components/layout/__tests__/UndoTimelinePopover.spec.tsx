@@ -8,6 +8,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { createRef } from 'react';
 import UndoTimelinePopover from '../UndoTimelinePopover';
 import type { HistoryEntry } from '@/features/manifest-editor/types/history';
+import type { HistoryEntry as BatchHistoryEntry } from '@/features/manifest-editor/hooks/useBatchHistory';
 
 // ── Helpers ─────────────────────────────────────────────────────────────
 
@@ -18,7 +19,19 @@ const createEntry = (
   label: overrides.label ?? 'Untitled change',
   timestamp: overrides.timestamp ?? Date.now(),
   correlationId: overrides.correlationId ?? 'corr-1',
-  manifest: { version: '1.0', modules: [], contracts: [] } as any,
+  manifest: { version: '1.0', modules: [], contracts: [] } as unknown as HistoryEntry['manifest'],
+  ...overrides,
+});
+
+/** Helper: create a batch history entry */
+const createBatchEntry = (
+  overrides: Partial<BatchHistoryEntry> & { message: string }
+): BatchHistoryEntry => ({
+  variant: overrides.variant ?? 'hide',
+  time: overrides.time ?? Date.now(),
+  ids: overrides.ids ?? ['node-1', 'node-2'],
+  action: overrides.action ?? 'visibility',
+  value: overrides.value ?? true,
   ...overrides,
 });
 
@@ -37,7 +50,7 @@ function createTriggerRef() {
     y: 500,
     toJSON: () => {},
   });
-  (ref as any).current = el;
+  (ref as React.RefObject<HTMLButtonElement>).current = el;
   return ref;
 }
 
@@ -277,12 +290,14 @@ describe('UndoTimelinePopover — future (redo) entries', () => {
 
 /** Helper: get the footer Undo button via accessible name */
 function getUndoBtn(): HTMLButtonElement {
-  return screen.getByRole('button', { name: /Undo/i }) as HTMLButtonElement;
+  return screen.getByRole('button', { name: 'Undo last action' }) as HTMLButtonElement;
 }
 
 /** Helper: get the footer Redo button via accessible name */
 function getRedoBtn(): HTMLButtonElement {
-  return screen.getByRole('button', { name: /Redo/i }) as HTMLButtonElement;
+  // Use exact aria-label match to distinguish footer button from future entry
+  // buttons (which have aria-label="Redo: ...")
+  return screen.getByRole('button', { name: 'Redo last action' }) as HTMLButtonElement;
 }
 
 describe('UndoTimelinePopover — footer undo/redo buttons', () => {
@@ -461,7 +476,7 @@ describe('UndoTimelinePopover — event types', () => {
 
   it('should render an entry with a default icon for unknown types', () => {
     const past = [
-      createEntry({ id: 'e1', type: 'UI_SELECTION' as any, label: 'Custom' }),
+      createEntry({ id: 'e1',  type: 'UI_SELECTION' as HistoryEntry['type'], label: 'Custom' }),
     ];
     render(<UndoTimelinePopover {...BASE_PROPS} past={past} />);
     expect(screen.getByText('Custom')).toBeTruthy();
@@ -518,7 +533,7 @@ describe('UndoTimelinePopover — edge cases', () => {
       label: 'Minimal',
       timestamp: Date.now(),
       correlationId: '',
-      manifest: {} as any,
+      manifest: {} as unknown as HistoryEntry['manifest'],
     };
     render(
       <UndoTimelinePopover
@@ -546,8 +561,8 @@ describe('UndoTimelinePopover — edge cases', () => {
 
   it('should render footer buttons when there are no entries', () => {
     render(<UndoTimelinePopover {...BASE_PROPS} />);
-    const undoBtn = screen.getByRole('button', { name: /Undo/i }) as HTMLButtonElement;
-    const redoBtn = screen.getByRole('button', { name: /Redo/i }) as HTMLButtonElement;
+    const undoBtn = screen.getByRole('button', { name: 'Undo last action' }) as HTMLButtonElement;
+    const redoBtn = screen.getByRole('button', { name: 'Redo last action' }) as HTMLButtonElement;
     expect(undoBtn).toBeTruthy();
     expect(redoBtn).toBeTruthy();
     expect(undoBtn.disabled).toBe(true);
@@ -555,9 +570,240 @@ describe('UndoTimelinePopover — edge cases', () => {
   });
 });
 
+// ── Batch History entries ───────────────────────────────────────────────
+
+describe('UndoTimelinePopover — batch entries', () => {
+  it('should render batch entries when batchEntries is provided', () => {
+    const batchEntries = [
+      createBatchEntry({ message: '3 hidden', variant: 'hide', action: 'visibility', value: true }),
+    ];
+    render(<UndoTimelinePopover {...BASE_PROPS} batchEntries={batchEntries} />);
+    expect(screen.getByText('3 hidden')).toBeTruthy();
+  });
+
+  it('should show "Batch" divider with amber styling', () => {
+    const batchEntries = [
+      createBatchEntry({ message: '2 locked', variant: 'lock', action: 'lock', value: true }),
+    ];
+    render(<UndoTimelinePopover {...BASE_PROPS} batchEntries={batchEntries} />);
+    expect(screen.getByText('Batch')).toBeTruthy();
+    // The Batch label should have amber color classes
+    const batchLabel = screen.getByText('Batch');
+    expect(batchLabel.className).toContain('text-amber-400/50');
+  });
+
+  it('should not render batch section when batchEntries is empty', () => {
+    render(<UndoTimelinePopover {...BASE_PROPS} batchEntries={[]} />);
+    expect(screen.queryByText('Batch')).toBeNull();
+  });
+
+  it('should include batch entries in total step count', () => {
+    const past = [createEntry({ id: 'e1', label: 'Edit' })];
+    const batchEntries = [
+      createBatchEntry({ message: '3 hidden', variant: 'hide' }),
+      createBatchEntry({ message: '2 locked', variant: 'lock' }),
+    ];
+    render(<UndoTimelinePopover {...BASE_PROPS} past={past} batchEntries={batchEntries} />);
+    expect(screen.getByText('3 steps')).toBeTruthy();
+  });
+
+  it('should show undo symbol ↶ for undoable entries (visibility action)', () => {
+    const batchEntries = [
+      createBatchEntry({ message: '5 hidden', action: 'visibility', value: true }),
+    ];
+    render(<UndoTimelinePopover {...BASE_PROPS} batchEntries={batchEntries} />);
+    expect(screen.getByText('↶')).toBeTruthy();
+  });
+
+  it('should show undo symbol ↶ for lock actions', () => {
+    const batchEntries = [
+      createBatchEntry({ message: '2 locked', action: 'lock', value: true, variant: 'lock' }),
+    ];
+    render(<UndoTimelinePopover {...BASE_PROPS} batchEntries={batchEntries} />);
+    expect(screen.getByText('↶')).toBeTruthy();
+  });
+
+  it('should show undo symbol ↶ for group action with value=true', () => {
+    const batchEntries = [
+      createBatchEntry({ message: '4 grouped', action: 'group', value: true, variant: 'group' }),
+    ];
+    render(<UndoTimelinePopover {...BASE_PROPS} batchEntries={batchEntries} />);
+    expect(screen.getByText('↶')).toBeTruthy();
+  });
+
+  it('should show dash — for non-undoable entries (ungroup)', () => {
+    const batchEntries = [
+      createBatchEntry({ message: '1 ungrouped', action: 'group', value: false, variant: 'ungroup' }),
+    ];
+    render(<UndoTimelinePopover {...BASE_PROPS} batchEntries={batchEntries} />);
+    expect(screen.getByText('—')).toBeTruthy();
+    expect(screen.queryByText('↶')).toBeNull();
+  });
+
+  it('should disable buttons for non-undoable entries', () => {
+    const batchEntries = [
+      createBatchEntry({ message: '1 ungrouped', action: 'group', value: false, variant: 'ungroup' }),
+    ];
+    render(<UndoTimelinePopover {...BASE_PROPS} batchEntries={batchEntries} />);
+    const buttons = screen.getAllByRole('button');
+    // Find the batch entry button (exclude footer Undo/Redo buttons)
+    const batchBtn = buttons.find(b => b.textContent?.includes('1 ungrouped')) as HTMLButtonElement;
+    expect(batchBtn).toBeTruthy();
+    expect(batchBtn.disabled).toBe(true);
+  });
+
+  it('should call onUndoBatchEntry with correct index and close when clicking undoable entry', () => {
+    const onUndoBatchEntry = jest.fn();
+    const onClose = jest.fn();
+    const batchEntries = [
+      createBatchEntry({ message: '3 hidden', variant: 'hide', action: 'visibility', value: true }),
+      createBatchEntry({ message: '2 locked', variant: 'lock', action: 'lock', value: true }),
+    ];
+    render(
+      <UndoTimelinePopover
+        {...BASE_PROPS}
+        batchEntries={batchEntries}
+        onUndoBatchEntry={onUndoBatchEntry}
+        onClose={onClose}
+      />
+    );
+
+    // Click the second entry (index 1)
+    fireEvent.click(screen.getByText('2 locked'));
+    expect(onUndoBatchEntry).toHaveBeenCalledWith(1);
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('should not call onUndoBatchEntry when clicking non-undoable entry', () => {
+    const onUndoBatchEntry = jest.fn();
+    const batchEntries = [
+      createBatchEntry({ message: '1 ungrouped', action: 'group', value: false, variant: 'ungroup' }),
+    ];
+    render(
+      <UndoTimelinePopover
+        {...BASE_PROPS}
+        batchEntries={batchEntries}
+        onUndoBatchEntry={onUndoBatchEntry}
+      />
+    );
+
+    fireEvent.click(screen.getByText('1 ungrouped'));
+    expect(onUndoBatchEntry).not.toHaveBeenCalled();
+  });
+
+  it('should not fail when onUndoBatchEntry is undefined', () => {
+    const batchEntries = [
+      createBatchEntry({ message: '3 hidden', variant: 'hide', action: 'visibility', value: true }),
+    ];
+    render(<UndoTimelinePopover {...BASE_PROPS} batchEntries={batchEntries} onUndoBatchEntry={undefined} />);
+    // Should not throw when clicking
+    expect(() => fireEvent.click(screen.getByText('3 hidden'))).not.toThrow();
+  });
+
+  it('should use correct color for hide variant', () => {
+    const batchEntries = [
+      createBatchEntry({ message: 'hide test', variant: 'hide', action: 'visibility', value: true }),
+    ];
+    const { container } = render(<UndoTimelinePopover {...BASE_PROPS} batchEntries={batchEntries} />);
+    const batchBtn = container.querySelector('[class*="bg-red-400"]');
+    expect(batchBtn).toBeTruthy();
+  });
+
+  it('should use correct color for show variant', () => {
+    const batchEntries = [
+      createBatchEntry({ message: 'show test', variant: 'show', action: 'visibility', value: false }),
+    ];
+    const { container } = render(<UndoTimelinePopover {...BASE_PROPS} batchEntries={batchEntries} />);
+    const batchBtn = container.querySelector('[class*="bg-green-400"]');
+    expect(batchBtn).toBeTruthy();
+  });
+
+  it('should use correct color for lock variant', () => {
+    const batchEntries = [
+      createBatchEntry({ message: 'lock test', variant: 'lock', action: 'lock', value: true }),
+    ];
+    const { container } = render(<UndoTimelinePopover {...BASE_PROPS} batchEntries={batchEntries} />);
+    const batchBtn = container.querySelector('[class*="bg-amber-400"]');
+    expect(batchBtn).toBeTruthy();
+  });
+
+  it('should use correct color for group variant', () => {
+    const batchEntries = [
+      createBatchEntry({ message: 'group test', variant: 'group', action: 'group', value: true }),
+    ];
+    const { container } = render(<UndoTimelinePopover {...BASE_PROPS} batchEntries={batchEntries} />);
+    const batchBtn = container.querySelector('[class*="bg-sky-400"]');
+    expect(batchBtn).toBeTruthy();
+  });
+
+  it('should use correct color for ungroup variant', () => {
+    const batchEntries = [
+      createBatchEntry({ message: 'ungroup test', variant: 'ungroup', action: 'group', value: false }),
+    ];
+    const { container } = render(<UndoTimelinePopover {...BASE_PROPS} batchEntries={batchEntries} />);
+    const batchBtn = container.querySelector('[class*="bg-fuchsia-400"]');
+    expect(batchBtn).toBeTruthy();
+  });
+
+  it('should display timestamps in HH:MM:SS format', () => {
+    const fixedTime = new Date('2026-06-15T12:30:45').getTime();
+    const batchEntries = [
+      createBatchEntry({ message: 'timestamped', time: fixedTime }),
+    ];
+    render(<UndoTimelinePopover {...BASE_PROPS} batchEntries={batchEntries} />);
+    // toLocaleTimeString depends on locale, so just check a timestamp is rendered (digits + colons)
+    const timeEl = screen.getByText(/\d{1,2}:\d{2}:\d{2}/);
+    expect(timeEl).toBeTruthy();
+  });
+
+  it('should render multiple batch entries in order (newest first, as passed)', () => {
+    const batchEntries = [
+      createBatchEntry({ message: 'First', time: 1000 }),
+      createBatchEntry({ message: 'Second', time: 2000 }),
+      createBatchEntry({ message: 'Third', time: 3000 }),
+    ];
+    render(<UndoTimelinePopover {...BASE_PROPS} batchEntries={batchEntries} />);
+
+    const entries = screen.getAllByText(/First|Second|Third/);
+    expect(entries[0]?.textContent).toBe('First');
+    expect(entries[1]?.textContent).toBe('Second');
+    expect(entries[2]?.textContent).toBe('Third');
+  });
+
+  it('should have amber dot indicator for undoable entries', () => {
+    const batchEntries = [
+      createBatchEntry({ message: 'dot test', action: 'visibility', value: true }),
+    ];
+    const { container } = render(<UndoTimelinePopover {...BASE_PROPS} batchEntries={batchEntries} />);
+    const dot = container.querySelector('[class*="bg-amber-400/60"]');
+    expect(dot).toBeTruthy();
+  });
+
+  it('should have white dot indicator for non-undoable entries', () => {
+    const batchEntries = [
+      createBatchEntry({ message: 'non-dot', action: 'group', value: false, variant: 'ungroup' }),
+    ];
+    const { container } = render(<UndoTimelinePopover {...BASE_PROPS} batchEntries={batchEntries} />);
+    // Non-undoable: should have bg-white/10 on the dot span
+    const nonUndoableDot = container.querySelector('[class*="bg-white/10"]');
+    expect(nonUndoableDot).toBeTruthy();
+  });
+});
+
 // ── Snapshot tests ──────────────────────────────────────────────────────
 
 describe('UndoTimelinePopover — snapshots', () => {
+  const FIXED_DATE = new Date('2026-06-15T12:00:00.000Z');
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(FIXED_DATE);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   it('should match snapshot for empty state', () => {
     const { container } = render(<UndoTimelinePopover {...BASE_PROPS} />);
     expect(container.firstChild).toMatchSnapshot();
@@ -608,6 +854,22 @@ describe('UndoTimelinePopover — snapshots', () => {
     );
     const { container } = render(
       <UndoTimelinePopover {...BASE_PROPS} past={past} />
+    );
+    expect(container.firstChild).toMatchSnapshot();
+  });
+
+  it('should match snapshot with batch entries', () => {
+    const past = [
+      createEntry({ id: 'e1', label: 'Edited module', timestamp: Date.now() - 120000 }),
+    ];
+    const batchEntries = [
+      createBatchEntry({ message: '3 hidden', variant: 'hide', action: 'visibility', value: true, time: Date.now() - 30000 }),
+      createBatchEntry({ message: '2 locked', variant: 'lock', action: 'lock', value: true, time: Date.now() - 20000 }),
+      createBatchEntry({ message: '4 grouped', variant: 'group', action: 'group', value: true, time: Date.now() - 10000 }),
+      createBatchEntry({ message: '1 ungrouped', variant: 'ungroup', action: 'group', value: false, time: Date.now() - 5000 }),
+    ];
+    const { container } = render(
+      <UndoTimelinePopover {...BASE_PROPS} past={past} batchEntries={batchEntries} />
     );
     expect(container.firstChild).toMatchSnapshot();
   });

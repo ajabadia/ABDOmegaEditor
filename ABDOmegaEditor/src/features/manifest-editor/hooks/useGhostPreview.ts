@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona el estado y la lógica para una previsualización fantasma, incluyendo detección de colisiones y actualización de posición según la entrada del usuario.
+ * @purpose_en Manages the state and logic for a ghost preview feature in the OMEGA manifest editor, including collision detection and updating position based on user input.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Custom Hook
+ * @complexity Medium
+ * @fingerprint exports:1,imports:4,sig:1d38n7q
+ * @lastUpdated 2026-06-15T13:21:56.584Z
+ */
+
 import { useState, useCallback, useRef } from 'react';
 import type { OMEGA_Manifest, OmegaNode, BlueprintDefinition, GridConfig } from '@/omega-ui-core/types/manifest';
 import { snapToGrid } from '@/omega-ui-core/uca/spatialConstraints';
@@ -64,7 +74,6 @@ export function useGhostPreview() {
    * Update ghost position from pre-converted rack-local coordinates.
    * This is used by VirtualRack which does the screen→rack conversion itself.
    */
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const updateGhostAtRackCoords = useCallback((
     rackX: number,
     rackY: number,
@@ -101,7 +110,6 @@ export function useGhostPreview() {
   }, []);
 
   /** Update ghost position from a mouse event on the rack container. */
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const updateGhostPosition = useCallback((
     clientX: number,
     clientY: number,

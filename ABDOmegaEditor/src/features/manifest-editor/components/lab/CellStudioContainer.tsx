@@ -1,10 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona el estado y la renderización de un editor de estudio celular dentro del manifestador OMEGA, manejando interacciones del usuario, gestión de bocetos y procesos de finalización para entidades celulares.
+ * @purpose Gestiona el estado y la renderización de un editor de estudio celular dentro del editor OMEGA manifest, maneja las interacciones del usuario, la gestión de bocetos y los procesos de finalización para entidades celulares.
  * @purpose_en Manages the state and rendering of a cellular study editor within the OMEGA manifest editor, handling user interactions, draft management, and finalization processes for cellular entities.
- * @fingerprint exports:1,imports:15,sig:1vyxp7w
- * @lastUpdated 2026-06-15T05:51:27.664Z
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity High
+ * @fingerprint exports:1,imports:16,sig:1nmx0p3
+ * @lastUpdated 2026-06-15T12:46:46.444Z
  */
 
 import { useState, useEffect, useMemo } from 'react';
@@ -83,7 +86,7 @@ export default function CellStudioContainer({
         recipe: state.recipe
       });
     }
-  }, [state.currentStep, state.cellData, state.behavior, state.recipe, initialCell]);
+  }, [state.currentStep, state.cellData, state.behavior, state.recipe, initialCell, saveDraft]);
 
   // Sync cell type with presentation component if they differ
   useEffect(() => {
@@ -101,7 +104,7 @@ export default function CellStudioContainer({
         }
       }));
     }
-  }, [state.cellData.type, state.cellData.presentation?.component, actions]);
+  }, [state.cellData.type, state.cellData.presentation, state.cellData.presentation?.component, actions]);
 
   // Mock manifest for local aesthetic previewing
   const [mockManifest, setMockManifest] = useState<OMEGA_Manifest>(manifest || {

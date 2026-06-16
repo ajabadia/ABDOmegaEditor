@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona un componente para inspeccionar y editar ajustes de modulación en un editor de manifest OMEGA.
- * @lastUpdated 2026-06-14T16:51:15.092Z
+ * @purpose Renderiza un componente para inspeccionar y editar configuraciones de modulación en un editor de manifesto OMEGA.
+ * @purpose_en Renders a component for inspecting and editing modulation settings in an OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:2,sig:8lmcn0
+ * @lastUpdated 2026-06-15T11:31:32.148Z
  */
 
 import { Trash2, ArrowRight, Info } from 'lucide-react';
@@ -66,6 +71,7 @@ export function ModulationItem({ mod, isExpanded, onToggle, onUpdate, onRemove, 
            </div>
            <button 
              onClick={(e) => { e.stopPropagation(); onRemove(mod.id); }} 
+             aria-label={`Remove modulation ${mod.id}`}
              className="text-slate-400 dark:text-foreground/10 hover:text-red-500 transition-colors p-1.5 bg-slate-200 dark:bg-white/5 rounded-xs"
            >
               <Trash2 className="w-3.5 h-3.5" />
@@ -88,6 +94,7 @@ export function ModulationItem({ mod, isExpanded, onToggle, onUpdate, onRemove, 
                  value={mod.amount ?? 1.0}
                  onClick={(e) => e.stopPropagation()}
                  onChange={(e) => onUpdate(mod.id, { amount: parseFloat(e.target.value) })}
+                 aria-label="Modulation depth"
                  className="w-full accent-cyan-500 h-1.5 bg-slate-300 dark:bg-white/5 rounded-full appearance-none cursor-pointer"
                />
             </div>

@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona la configuración de gobierno y anatomía técnica para los objetos OmegaStyleNode en el editor de manifesto OMEGA.
+ * @purpose_en Manages governance and technical anatomy configurations for OmegaStyleNode objects in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:3,sig:1cgiw5i
+ * @lastUpdated 2026-06-15T11:41:10.807Z
+ */
+
 import React from 'react';
 import { Layers, RefreshCw, Lock, Unlock, ChevronDown, ChevronRight } from 'lucide-react';
 import type { OmegaStyleNode } from '@/types/manifest';
@@ -27,6 +37,7 @@ export default function SequenceGovernance({ values, onChange }: SequenceGoverna
         {isOfficial && (
           <button 
             onClick={() => setIsUnlocked(!isUnlocked)}
+            aria-label={isUnlocked ? 'Lock registry protection' : 'Unlock registry protection'}
             className={`px-2 py-0.5 rounded flex items-center gap-1.5 transition-all ${isUnlocked ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-accent/10 text-accent/60 border border-accent/20'}`}
           >
             {isUnlocked ? <Unlock className="w-2.5 h-2.5" /> : <Lock className="w-2.5 h-2.5" />}
@@ -39,6 +50,7 @@ export default function SequenceGovernance({ values, onChange }: SequenceGoverna
       <div className="border border-white/5 rounded bg-black/20 overflow-hidden">
         <button 
           onClick={() => setIsExpanded(!isExpanded)}
+          aria-label={isExpanded ? 'Collapse technical anatomy' : 'Expand technical anatomy'}
           className="w-full px-3 py-2 bg-white/5 flex items-center justify-between hover:bg-white/10 transition-colors"
         >
           <div className="flex items-center gap-2">
@@ -62,6 +74,7 @@ export default function SequenceGovernance({ values, onChange }: SequenceGoverna
                 disabled={!canEditAnatomy}
                 onChange={(e) => onChange({ frames: parseInt(e.target.value) })}
                 className="w-full accent-accent bg-white/10 h-1 rounded-full appearance-none cursor-pointer"
+                aria-label="Total frames"
               />
             </div>
 
@@ -100,6 +113,7 @@ export default function SequenceGovernance({ values, onChange }: SequenceGoverna
                 disabled={!canEditAnatomy}
                 onChange={(e) => onChange({ frameWidth: parseInt(e.target.value) })}
                 className="w-full accent-accent bg-white/10 h-1 rounded-full appearance-none cursor-pointer"
+                aria-label="Native frame width in pixels"
               />
             </div>
 
@@ -117,6 +131,7 @@ export default function SequenceGovernance({ values, onChange }: SequenceGoverna
                 disabled={!canEditAnatomy}
                 onChange={(e) => onChange({ frameHeight: parseInt(e.target.value) })}
                 className="w-full accent-accent bg-white/10 h-1 rounded-full appearance-none cursor-pointer"
+                aria-label="Native frame height in pixels"
               />
             </div>
 
@@ -191,6 +206,7 @@ export default function SequenceGovernance({ values, onChange }: SequenceGoverna
             value={values.padding || 0}
             onChange={(e) => onChange({ padding: parseInt(e.target.value) })}
             className="w-full accent-accent bg-white/10 h-1 rounded-full appearance-none cursor-pointer"
+            aria-label="Internal padding in pixels"
           />
         </div>
       </div>
@@ -219,6 +235,7 @@ export default function SequenceGovernance({ values, onChange }: SequenceGoverna
               });
             }}
             className="w-full accent-accent bg-white/10 h-1.5 rounded-full appearance-none cursor-pointer"
+            aria-label="Visual scale as percentage"
           />
         </div>
 
@@ -233,6 +250,7 @@ export default function SequenceGovernance({ values, onChange }: SequenceGoverna
               value={values.width || values.frameWidth || 48}
               onChange={(e) => onChange({ width: parseInt(e.target.value) })}
               className="w-full accent-accent bg-white/10 h-1 rounded-full appearance-none cursor-pointer"
+              aria-label="Render width in pixels"
             />
           </div>
           <div className="space-y-2">
@@ -245,6 +263,7 @@ export default function SequenceGovernance({ values, onChange }: SequenceGoverna
               value={values.height || values.frameHeight || 48}
               onChange={(e) => onChange({ height: parseInt(e.target.value) })}
               className="w-full accent-accent bg-white/10 h-1 rounded-full appearance-none cursor-pointer"
+              aria-label="Render height in pixels"
             />
           </div>
         </div>
@@ -269,6 +288,7 @@ export default function SequenceGovernance({ values, onChange }: SequenceGoverna
                value={(values.testValue ?? 0.75) * 100}
                onChange={(e) => onChange({ testValue: parseInt(e.target.value) / 100 })}
                className="w-full accent-accent bg-white/10 h-1.5 rounded-full appearance-none cursor-pointer"
+               aria-label="Validation scrub percentage"
             />
         </div>
       </div>

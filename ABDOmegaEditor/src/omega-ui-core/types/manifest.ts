@@ -1,4 +1,14 @@
 /**
+ * @purpose Gestiona interfaces y tipos para archivos manifesto en OMEGA ERA 7.2.3, incluyendo gestión de activos, definiciones de componentes, configuraciones de señales y estilos de interfaz de usuario.
+ * @purpose_en Defines interfaces and types for manifest files in OMEGA ERA 7.2.3, including asset management, component definitions, signal configurations, and UI styles.
+ * @refactorable false (contains only static declarations/types/constants)
+ * @classification Type Definition
+ * @complexity Low
+ * @fingerprint exports:59,imports:0,sig:y5ga6i
+ * @lastUpdated 2026-06-15T16:10:30.392Z
+ */
+
+/**
  * OMEGA ERA 7.2.3 - CANONICAL MANIFEST INTERFACES
  * Following ERA 4 Hardening Standards
  */

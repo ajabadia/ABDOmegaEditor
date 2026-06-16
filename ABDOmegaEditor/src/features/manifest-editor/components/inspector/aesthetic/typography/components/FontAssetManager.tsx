@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona y renderiza un componente para agregar mostrar y eliminar activos de fuentes personalizadas en el editor del manifiesto OMEGA.
- * @lastUpdated 2026-06-14T16:41:00.592Z
+ * @purpose Gestiona y renderiza un componente para agregar, mostrar y eliminar activos de fuente de tipografía personalizados en el editor de manifesto OMEGA.
+ * @purpose_en Manages and renders a component for adding, displaying, and removing custom font assets in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:4,sig:1yq90il
+ * @lastUpdated 2026-06-15T11:04:49.547Z
  */
 
 import React from 'react';
@@ -64,6 +69,7 @@ export default function FontResourceManager({ fonts, onAdd, onRemove }: FontReso
             </div>
             <button 
               onClick={() => onRemove(idx)}
+              aria-label={`Remove font ${font.name}`}
               className="p-1.5 text-foreground/20 hover:text-red-400 hover:wb-surface-subtle rounded-xs transition-all"
             >
               <Trash2 className="w-3.5 h-3.5" />

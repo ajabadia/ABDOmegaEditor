@@ -1,8 +1,11 @@
 /**
- * @purpose Renderiza un componente de pie de página para el Editor Manifesto OMEGA, mostrando estado industrial, seleccionadores de tablas, vista dividida y funcionalidad de undo/redo.
+ * @purpose Renderiza un componente pie de editor de manifesto OMEGA, mostrando estado industrial, seleccionadores de tablas, vista dividida y funcionalidad de undo/redo.
  * @purpose_en Renders a footer component for the OMEGA Manifest Editor, displaying industrial status, tab selectors, split view toggle, and undo/redo functionality.
- * @fingerprint exports:0,imports:4,sig:ydug41
- * @lastUpdated 2026-06-15T06:32:44.397Z
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:0,imports:7,sig:1ycix7n
+ * @lastUpdated 2026-06-15T20:48:34.476Z
  */
 
 import { useRef, useState } from 'react';
@@ -11,6 +14,7 @@ import ShortcutBadge from './ShortcutBadge';
 import ToolbarIconButton from './ToolbarIconButton';
 import UndoTimelinePopover from './UndoTimelinePopover';
 import type { HistoryEntry } from '@/features/manifest-editor/types/history';
+import type { HistoryEntry as BatchHistoryEntry } from '@/features/manifest-editor/hooks/useBatchHistory';
 
 interface WorkbenchFooterProps {
   watchdogStatus?: 'idle' | 'connected' | 'error';
@@ -34,6 +38,9 @@ interface WorkbenchFooterProps {
   onUndo?: () => void;
   onRedo?: () => void;
   onUndoTo?: (index: number) => void;
+  /** Batch history entries (visibility/lock/group) */
+  batchEntries?: BatchHistoryEntry[];
+  onUndoBatchEntry?: (index: number) => void;
   /** Callback to open the Command Palette (Ctrl+K) */
   onCommandPaletteToggle?: () => void;
   /** Callback to trigger Save (Ctrl+S) */
@@ -64,6 +71,8 @@ const WorkbenchFooter = ({
   onUndo,
   onRedo,
   onUndoTo,
+  batchEntries = [],
+  onUndoBatchEntry,
   showMiniMap = true,
   onToggleMiniMap,
   onCommandPaletteToggle,
@@ -118,25 +127,25 @@ const WorkbenchFooter = ({
             icon={<Layers className="w-2.5 h-2.5" />}
             active={activeTabType === 'orbital'}
             onClick={() => onTabFocus?.('orbital')}
-            title="Orbital View"
+            title="Orbital View (Ctrl+1)"
           />
           <ToolbarIconButton
             icon={<Cpu className="w-2.5 h-2.5" />}
             active={activeTabType === 'rack'}
             onClick={() => onTabFocus?.('rack')}
-            title="Virtual Rack"
+            title="Virtual Rack (Ctrl+2)"
           />
           <ToolbarIconButton
             icon={<FileCode className="w-2.5 h-2.5" />}
             active={activeTabType === 'source'}
             onClick={() => onTabFocus?.('source')}
-            title="Source View"
+            title="Source View (Ctrl+3)"
           />
           <ToolbarIconButton
             icon={<History className="w-2.5 h-2.5" />}
             active={activeTabType === 'history'}
             onClick={() => onTabFocus?.('history')}
-            title="Timeline / History"
+            title="Timeline / History (Ctrl+4)"
           />
           
           <div className="w-px h-3 bg-white/10 mx-1" />
@@ -171,6 +180,7 @@ const WorkbenchFooter = ({
                 : 'text-white/10 cursor-not-allowed'
           }`}
           title={totalSteps > 0 ? `History (${totalSteps} step${totalSteps !== 1 ? 's' : ''})` : 'No history'}
+          aria-label={totalSteps > 0 ? `History, ${totalSteps} steps` : 'No history'}
         >
           <Undo2 className="w-2.5 h-2.5" />
           {totalSteps > 0 && (
@@ -214,52 +224,7 @@ const WorkbenchFooter = ({
             title="Save OmegaPack (Ctrl+S)"
           />
 
-          {/* View: Orbital (Ctrl+1) — hidden below lg */}
-          <ShortcutBadge
-            keys={['Ctrl', '1']}
-            onClick={() => onTabFocus?.('orbital')}
-            active={activeTabType === 'orbital'}
-            responsive="hidden lg:flex"
-            title="Orbital View (Ctrl+1)"
-          />
 
-          {/* View: Rack (Ctrl+2) — hidden below lg */}
-          <ShortcutBadge
-            keys={['Ctrl', '2']}
-            onClick={() => onTabFocus?.('rack')}
-            active={activeTabType === 'rack'}
-            responsive="hidden lg:flex"
-            title="Virtual Rack (Ctrl+2)"
-          />
-
-          {/* View: Source (Ctrl+3) — hidden below xl */}
-          <ShortcutBadge
-            keys={['Ctrl', '3']}
-            onClick={() => onTabFocus?.('source')}
-            active={activeTabType === 'source'}
-            responsive="hidden xl:flex"
-            title="Source Code (Ctrl+3)"
-          />
-
-          {/* View: History (Ctrl+4) — hidden below xl */}
-          <ShortcutBadge
-            keys={['Ctrl', '4']}
-            onClick={() => onTabFocus?.('history')}
-            active={activeTabType === 'history'}
-            responsive="hidden xl:flex"
-            title="History Timeline (Ctrl+4)"
-          />
-
-          {/* Mini Map (Ctrl+Shift+M) — hidden below xl, only in rack view */}
-          {activeTabType === 'rack' && (
-            <ShortcutBadge
-              keys={['Ctrl', 'Shift', 'M']}
-              onClick={() => onToggleMiniMap?.()}
-              active={showMiniMap}
-              responsive="hidden xl:flex"
-              title="Toggle Mini Map (Ctrl+Shift+M)"
-            />
-          )}
         </div>
 
         <span className="opacity-20 shrink-0">|</span>
@@ -308,6 +273,8 @@ const WorkbenchFooter = ({
       <UndoTimelinePopover
         past={historyPast}
         future={historyFuture}
+        batchEntries={batchEntries}
+        onUndoBatchEntry={onUndoBatchEntry}
         onUndoTo={(index) => { onUndoTo?.(index); setIsHistoryOpen(false); }}
         onUndo={() => { onUndo?.(); setIsHistoryOpen(false); }}
         onRedo={() => { onRedo?.(); setIsHistoryOpen(false); }}

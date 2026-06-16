@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Muestra las directrices de auditoría para los manifiestos OMEGA en un formato visualmente atractivo y organizado.
- * @lastUpdated 2026-06-14T15:55:32.957Z
+ * @purpose Renderiza un componente que muestra directrices de auditoría para manifestaciones OMEGA en un formato visualmente atractivo.
+ * @purpose_en Renders a component displaying audit guidelines for OMEGA manifests in a visually appealing format.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:1,sig:uda5io
+ * @lastUpdated 2026-06-15T10:53:04.005Z
  */
 
 

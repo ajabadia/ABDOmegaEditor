@@ -28,10 +28,70 @@ Este documento registra los hitos alcanzados y el estado actual del editor.
 | **Ctrl+Shift+E Shortcut CellStudio (v9.6.1)** | ✅ Completado | `useWorkbenchShortcuts.ts` — nuevo handler Ctrl+Shift+E. MenuBar muestra shortcut en lugar de deprecated. |
 | **LayersPanel TS Fix (v9.6.1)** | ✅ Completado | `boolean | undefined` por optional chaining → `!!()` wrapper. Pre-existing del virtual scrolling. |
 | **Unit Tests Shortcuts (v9.6.1)** | ✅ Completado | `useWorkbenchShortcuts.spec.ts` — 19 tests: dispatch, guards, cleanup, coexistence. |
+| **Alignment Shortcuts — Resolución Colisiones (v9.7.0)** | ✅ Completado | Ctrl+Shift+L/H/R/B priorizan alignment cuando ≥2 items. Colisiones resueltas con panel toggles. |
+| **Ctrl+Alt+E — Distribute Evenly (v9.7.0)** | ✅ Completado | Nuevo shortcut distribuye en ambos ejes simultáneamente. `computeDistributedBothPositions()` en useAlignment.ts. |
+| **Auditoría Global Shortcuts (v9.7.0)** | ✅ Completado | 49/49 shortcuts documentados están implementados. 4 shortcuts faltantes añadidos a helpData.ts (arrow keys, Enter/Escape). |
+| **Discrepancia Ctrl+Shift+A (v9.7.0)** | ✅ Completado | Movido de Help > deprecated a Window como panel toggle legítimo. |
+| **MenuBar Indicadores Prioridad (v9.7.0)** | ✅ Completado | Badges ámbar + shortcut color change cuando ≥2 items: alignment override. |
+| **ViewportToolbar Tooltip Contextual (v9.7.0)** | ✅ Completado | Explica qué shortcuts cambian con multi-selección. |
+| **Deprecated Tags Limpiados (v9.7.0)** | ✅ Completado | `highlight: 'deprecated'` eliminado de 4 items funcionales (Link Workspace, Blueprints, Deploy, Config). |
+| **E2E Suite Completa (v9.7.0)** | ✅ Completado | 50/52 passed. Fix: 4 layers-panel-filters tests reparados (locator Clear). 2 pre-existing blueprint-store failures. |
+| **11 Propuestas UI/UX Priorizadas (v9.7.0)** | ✅ Completado | Toast System, Command Palette, Status Bar, Walkthrough, Mini-Map, Undo Timeline, Themes, Toolbar Customizable, Resizable Panels, Accesibilidad, Editor Conexiones. |
+| **Mini-Map: Filtro por tipo de nodo (v9.8.0)** | ✅ Completado | Dropdown con checkboxes para ocultar/mostrar cell, group, container, layer, rack. Colores por tipo. |
+| **Mini-Map: Indicador locked (v9.8.0)** | ✅ Completado | Nodos bloqueados con opacity 0.45 + overlay 🔒. Prop lockedNodeIds. |
+| **Mini-Map: Persistencia localStorage (v9.8.0)** | ✅ Completado | hiddenKinds sobrevive a recargas. |
+| **Mini-Map: URL query params (v9.8.0)** | ✅ Completado | `?hide=cell,group` compartible. URL priority sobre localStorage. |
+| **Mini-Map: Color legend + Clear all filters (v9.8.0)** | ✅ Completado | Círculos de color por tipo y botón reset en dropdown. |
+| **Mini-Map: Flotante y arrastrable (v9.8.0)** | ✅ Completado | Movido a top-right. Arrastrable por texto "Navigator" con cursor-move. Posición persistida en localStorage. |
+| **Mini-Map: Doble-click reset (v9.8.0)** | ✅ Completado | Doble-click en "Navigator" resetea posición del panel. Tooltip "Double-click to reset position". |
+| **Mini-Map: Botón colapsado arrastrable (v9.8.0)** | ✅ Completado | EyeOff con onMouseDown=handleHeaderMouseDown. transition-colors evita lag. |
+| **Mini-Map: Glow visual al arrastrar (v9.8.0)** | ✅ Completado | isDraggingVisual state. Glow cyan + ring en panel expandido y colapsado. Cleanup al soltar dentro/fuera. |
+| **Mini-Map: Reset position button (v9.8.0)** | ✅ Completado | Icono RotateCcw en header. Resetea panelOffset a {x:0, y:0}. |
+| **Mini-Map: Snap a bordes (v9.8.0)** | ✅ Completado | Panel expandido snap a left/right/top/bottom (threshold 8px). Multi-eje simultáneo (esquinas). panelRef para dimensiones. |
+| **Mini-Map: Unit tests (v9.8.0)** | ✅ Completado | 42 tests total en RackMiniMap.spec.tsx (todos pasando). |
 
 ---
 
-## 📈 Estado: Era 9.6.0 — Visual Modulation Matrix + Virtual Scrolling
+## 📈 Estado: Era 9.8.0 — Mini-Map Avanzado
+
+### Features del Mini-Map
+| Feature | Estado | Detalle |
+|:--------|:------:|:--------|
+| Filtro por tipo de nodo | ✅ | Dropdown con checkboxes. Colores por tipo con círculos de color. |
+| Indicador locked | ✅ | Nodos bloqueados con opacity 0.45 y overlay 🔒. |
+| Persistencia localStorage | ✅ | hiddenKinds sobrevive a recargas. |
+| URL query params | ✅ | `?hide=cell,group` compartible. URL priority sobre localStorage. |
+| Clear all filters | ✅ | Botón reset en dropdown. Solo visible con filtros activos. |
+| Navigator flotante/arrastrable | ✅ | Posición `top-[40px] right-[10px]`. Arrastrable por texto "Navigator". Posición persistida. |
+| Doble-click reset | ✅ | Doble-click en "Navigator" resetea posición. Tooltip "Double-click to reset position". |
+| Botón colapsado arrastrable | ✅ | EyeOff con drag handler. transition-colors evita lag. |
+| Glow visual al arrastrar | ✅ | Brillo cyan + ring. State isDraggingVisual sincronizado. Cleanup en todas las rutas. |
+| Reset position button | ✅ | Icono RotateCcw en header del panel expandido. |
+| Snap a bordes | ✅ | Snap a 4 bordes (threshold 8px). panelRef mide dimensiones. Multi-eje. |
+| Unit tests | ✅ | 42 tests (todos pasando). |
+
+**Typecheck:** `npx tsc --noEmit` → 0 errores ✅
+**Unit Tests:** `npx jest RackMiniMap.spec.tsx` → 42/42 passed ✅
+
+---
+
+## 📈 Estado: Era 9.9.1 — UI Cleanup & Redundancy Removal
+
+### Acciones de Limpieza
+| Acción | Componentes | Tests |
+|:-------|:------------|:-----:|
+| ✅ Audit button eliminado de floating toolbar | `Toolbar.tsx`, `toolbarDefinitions.tsx` | ✅ Actualizados (11→10 buttons) |
+| ✅ 5 ShortcutBadge duplicados eliminados de footer | `WorkbenchFooter.tsx` | ✅ 45/45 passed, snapshots updated |
+| ✅ Engine info overlay eliminado de Orbital view | `NodeCanvas.tsx` | ✅ Sin tests afectados |
+| ✅ Compliance Report movido de Help a Window menu | `MenuBar.tsx` | ✅ 13/13 passed, snapshots updated |
+| ✅ ComplianceBadge en Header — **conservado** (no redundante) | `Header.tsx` | — |
+
+**Typecheck:** `npx tsc --noEmit` → 0 errores ✅
+**Tests:** 94/94 en suites modificadas (MenuBar + WorkbenchFooter + ToolbarCustomizePopover) ✅
+
+---
+
+## 📈 Estado Anterior: Era 9.6.0 — Visual Modulation Matrix + Virtual Scrolling
 
 ### Fases del Roadmap Original — Estado Actual
 | Fase | Estado | Notas |

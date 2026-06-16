@@ -27,6 +27,7 @@ beforeEach(() => {
 jest.mock('framer-motion', () => ({
   motion: {
     div: ({ children, ...props }: React.PropsWithChildren<Record<string, unknown>>) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { initial, animate, exit, transition, ...rest } = props as Record<string, unknown>;
       return <div {...(rest as React.HTMLAttributes<HTMLDivElement>)}>{children}</div>;
     },
@@ -121,6 +122,31 @@ describe('RackMiniMap — render states', () => {
     expect(screen.getByText('Navigator')).toBeTruthy();
   });
 
+  it('should match tailwind positioning classes with JS constants (expanded + collapsed)', () => {
+    render(<RackMiniMap {...defaultProps()} />);
+
+    const { PANEL_CSS_TOP, PANEL_CSS_RIGHT } = jest.requireActual<typeof import('../RackMiniMap')>('../RackMiniMap');
+
+    // Expanded panel
+    const panel = screen.getByTestId('mini-map');
+    const panelTop = panel.className.match(/top-\[(\d+)px\]/);
+    const panelRight = panel.className.match(/right-\[(\d+)px\]/);
+    expect(panelTop).toBeTruthy();
+    expect(panelRight).toBeTruthy();
+    expect(Number(panelTop![1])).toBe(PANEL_CSS_TOP);
+    expect(Number(panelRight![1])).toBe(PANEL_CSS_RIGHT);
+
+    // Collapsed button
+    fireEvent.click(screen.getByTitle('Hide Mini Map'));
+    const toggle = screen.getByTestId('mini-map-toggle');
+    const toggleTop = toggle.className.match(/top-\[(\d+)px\]/);
+    const toggleRight = toggle.className.match(/right-\[(\d+)px\]/);
+    expect(toggleTop).toBeTruthy();
+    expect(toggleRight).toBeTruthy();
+    expect(Number(toggleTop![1])).toBe(PANEL_CSS_TOP);
+    expect(Number(toggleRight![1])).toBe(PANEL_CSS_RIGHT);
+  });
+
   it('should show the zoom percentage in the header', () => {
     render(<RackMiniMap {...defaultProps({ zoom: 0.75 })} />);
     expect(screen.getByText('75%')).toBeTruthy();
@@ -133,8 +159,8 @@ describe('RackMiniMap — render states', () => {
 
   it('should render the canvas area with rack background dimensions', () => {
     render(<RackMiniMap {...defaultProps()} />);
-    // The rack background has width: miniW (180) and height: miniH (90)
-    const bg = document.querySelector('[style*="width: 180px"][style*="height: 90px"]');
+    // The rack background has width: miniW (184) and height: miniH (92)
+    const bg = document.querySelector('[style*="width: 184px"][style*="height: 92px"]');
     expect(bg).toBeTruthy();
   });
 
@@ -221,7 +247,7 @@ describe('RackMiniMap — node rendering', () => {
     render(<RackMiniMap {...defaultProps()} />);
     // Nodes are rendered as children of the rack background div.
     // Find the rack background by its style attributes.
-    const rackBg = document.querySelector('[style*="width: 180px"][style*="height: 90px"]');
+    const rackBg = document.querySelector('[style*="width: 184px"][style*="height: 92px"]');
     expect(rackBg).toBeTruthy();
     // The rack background should have 3 node children (one per positioned node)
     const nodeDivs = rackBg!.querySelectorAll('div');
@@ -241,14 +267,14 @@ describe('RackMiniMap — node rendering', () => {
 
   it('should scale node positions correctly', () => {
     render(<RackMiniMap {...defaultProps()} />);
-    const rackBg = document.querySelector('[style*="width: 180px"][style*="height: 90px"]');
+    const rackBg = document.querySelector('[style*="width: 184px"][style*="height: 92px"]');
     expect(rackBg).toBeTruthy();
     const nodeDivs = rackBg!.querySelectorAll('div');
     expect(nodeDivs.length).toBe(3);
-    // The first node (osc1) at rack pos (100, 50) should be at mini-map pos (22.5, 11.25)
+    // The first node (osc1) at rack pos (100, 50) should be at mini-map pos (23, 11.5)
     const firstChild = nodeDivs[0] as HTMLElement;
-    expect(firstChild.style.top).toBe('11.25px');
-    expect(firstChild.style.left).toBe('22.5px');
+    expect(firstChild.style.top).toBe('11.5px');
+    expect(firstChild.style.left).toBe('23px');
   });
 
   it('should render tooltip with label and kind for each node', () => {
@@ -377,8 +403,8 @@ describe('RackMiniMap — click-to-navigate', () => {
     // We mock Element.prototype.getBoundingClientRect to return
     // a known position for the mini-map container.
     const mockRect: DOMRect = {
-      top: 100, left: 100, bottom: 206, right: 296,
-      width: 196, height: 106, x: 100, y: 100,
+      top: 100, left: 100, bottom: 300, right: 300,
+      width: 200, height: 200, x: 100, y: 100,
       toJSON: () => ({}),
     };
     const rectSpy = jest.spyOn(Element.prototype, 'getBoundingClientRect').mockReturnValue(mockRect);
@@ -396,8 +422,8 @@ describe('RackMiniMap — click-to-navigate', () => {
     expect(onPan).toHaveBeenCalledTimes(1);
     // Verify delta is roughly correct (floating point)
     const call = onPan.mock.calls[0] as [number, number];
-    expect(call[0]).toBeCloseTo(177.78, 0);
-    expect(call[1]).toBeCloseTo(-22.22, 0);
+    expect(call[0]).toBeCloseTo(217, 0);
+    expect(call[1]).toBeCloseTo(217, 0);
 
     rectSpy.mockRestore();
   });
@@ -413,8 +439,8 @@ describe('RackMiniMap — drag-to-navigate', () => {
   it('should call onPan with delta when dragging the viewport indicator', () => {
     const onPan = jest.fn();
     const mockRect: DOMRect = {
-      top: 100, left: 100, bottom: 206, right: 296,
-      width: 196, height: 106, x: 100, y: 100,
+      top: 100, left: 100, bottom: 300, right: 300,
+      width: 200, height: 200, x: 100, y: 100,
       toJSON: () => ({}),
     };
     jest.spyOn(Element.prototype, 'getBoundingClientRect').mockReturnValue(mockRect);
@@ -431,7 +457,7 @@ describe('RackMiniMap — drag-to-navigate', () => {
     });
 
     // Mousemove to (200, 180) — delta of (50, 30) in screen pixels
-    // rackDx = 50 / 0.225 = 222.22, rackDy = 30 / 0.225 = 133.33
+    // rackDx = 50 / 0.23 = 217.39, rackDy = 30 / 0.23 = 130.43
     act(() => {
       fireEvent.mouseMove(window, { clientX: 200, clientY: 180 });
     });
@@ -443,15 +469,15 @@ describe('RackMiniMap — drag-to-navigate', () => {
 
     expect(onPan).toHaveBeenCalledTimes(1);
     const call = onPan.mock.calls[0] as [number, number];
-    expect(call[0]).toBeCloseTo(222.22, 0);
-    expect(call[1]).toBeCloseTo(133.33, 0);
+    expect(call[0]).toBeCloseTo(217, 0);
+    expect(call[1]).toBeCloseTo(130, 0);
   });
 
   it('should not call onPan when mousedown on rect without movement (click)', () => {
     const onPan = jest.fn();
     const mockRect: DOMRect = {
-      top: 100, left: 100, bottom: 206, right: 296,
-      width: 196, height: 106, x: 100, y: 100,
+      top: 100, left: 100, bottom: 300, right: 300,
+      width: 200, height: 200, x: 100, y: 100,
       toJSON: () => ({}),
     };
     jest.spyOn(Element.prototype, 'getBoundingClientRect').mockReturnValue(mockRect);
@@ -549,7 +575,7 @@ describe('RackMiniMap — kind filter dropdown', () => {
   it('should hide cell nodes when cell checkbox is unchecked', () => {
     render(<RackMiniMap {...defaultProps()} />);
     // Initially 3 nodes visible (2 cells + 1 group)
-    const rackBg = document.querySelector('[style*="width: 180px"][style*="height: 90px"]');
+    const rackBg = document.querySelector('[style*="width: 184px"][style*="height: 92px"]');
     expect(rackBg!.querySelectorAll('div').length).toBe(3);
 
     // Open filter dropdown
@@ -561,7 +587,7 @@ describe('RackMiniMap — kind filter dropdown', () => {
     fireEvent.click(cellCheckbox!);
 
     // Now only the group node should remain (1 node)
-    const rackBgAfter = document.querySelector('[style*="width: 180px"][style*="height: 90px"]');
+    const rackBgAfter = document.querySelector('[style*="width: 184px"][style*="height: 92px"]');
     expect(rackBgAfter!.querySelectorAll('div').length).toBe(1);
   });
 
@@ -574,7 +600,7 @@ describe('RackMiniMap — kind filter dropdown', () => {
     fireEvent.click(cellCheckbox!);
 
     // Only 1 node left
-    const rackBg = document.querySelector('[style*="width: 180px"][style*="height: 90px"]');
+    const rackBg = document.querySelector('[style*="width: 184px"][style*="height: 92px"]');
     expect(rackBg!.querySelectorAll('div').length).toBe(1);
 
     // Re-check 'cell'
@@ -628,7 +654,7 @@ describe('RackMiniMap — kind filter dropdown', () => {
     fireEvent.click(groupCheckbox!);
 
     // All nodes hidden
-    const rackBg = document.querySelector('[style*="width: 180px"][style*="height: 90px"]');
+    const rackBg = document.querySelector('[style*="width: 184px"][style*="height: 92px"]');
     expect(rackBg!.querySelectorAll('div').length).toBe(0);
 
     // Click Clear all filters
@@ -652,7 +678,7 @@ describe('RackMiniMap — kind filter dropdown', () => {
     fireEvent.click(groupCheckbox!);
 
     // 2 cells should remain
-    const rackBg = document.querySelector('[style*="width: 180px"][style*="height: 90px"]');
+    const rackBg = document.querySelector('[style*="width: 184px"][style*="height: 92px"]');
     expect(rackBg!.querySelectorAll('div').length).toBe(2);
 
     // Clear all
@@ -732,10 +758,65 @@ describe('RackMiniMap — panel clamping', () => {
   it('should preserve normal values in localStorage without clamping', () => {
     localStorage.setItem('omega-mini-map-panel-offset', JSON.stringify({ x: 5, y: -20 }));
     render(<RackMiniMap {...defaultProps({ containerWidth: 600, containerHeight: 300 })} />);
-    // Mount clamp: x = Math.max(-530, Math.min(10, 5)) = 5, y = Math.max(-80, Math.min(200, -20)) = -20
+    // Mount clamp: x = Math.max(-530, Math.min(10, 5)) = 5, y = Math.max(-20, Math.min(200, -20)) = -20
     const miniMap = screen.getByTestId('mini-map');
     const style = miniMap.getAttribute('style') || '';
     expect(style).toContain('translate(5px, -20px)');
+  });
+
+  it('should clamp offset when dragging the collapsed (EyeOff) button — horizontal and vertical', () => {
+    const mockRect: DOMRect = {
+      top: 0, left: 0, bottom: 300, right: 600,
+      width: 600, height: 300, x: 0, y: 0,
+      toJSON: () => ({}),
+    };
+    jest.spyOn(Element.prototype, 'getBoundingClientRect').mockReturnValue(mockRect);
+
+    const onPan = jest.fn();
+    const onFitViewport = jest.fn();
+    render(<RackMiniMap {...defaultProps({ onPan, onFitViewport, containerWidth: 600, containerHeight: 300 })} />);
+
+    // Collapse the mini-map first
+    fireEvent.click(screen.getByTitle('Hide Mini Map'));
+    const collapsedBtn = screen.getByTestId('mini-map-toggle');
+    expect(collapsedBtn).toBeTruthy();
+
+    // Drag right extreme on collapsed button
+    act(() => {
+      fireEvent.mouseDown(collapsedBtn, { clientX: 0, clientY: 0, button: 0 });
+    });
+    act(() => {
+      fireEvent.mouseMove(window, { clientX: 1000, clientY: 0, buttons: 1 });
+    });
+    act(() => {
+      fireEvent.mouseUp(window);
+    });
+
+    // Clamped: offsetX ≤ 10 (PANEL_CSS_RIGHT)
+    const style1 = collapsedBtn.getAttribute('style') || '';
+    const matchX = style1.match(/translate\(([-\d.]+)px/);
+    expect(matchX).toBeTruthy();
+    if (matchX) {
+      expect(Number(matchX[1])).toBeLessThanOrEqual(10);
+    }
+
+    // Now drag up extreme — should clamp to -20
+    act(() => {
+      fireEvent.mouseDown(collapsedBtn, { clientX: 0, clientY: 0, button: 0 });
+    });
+    act(() => {
+      fireEvent.mouseMove(window, { clientX: 0, clientY: -1000, buttons: 1 });
+    });
+    act(() => {
+      fireEvent.mouseUp(window);
+    });
+
+    const style2 = collapsedBtn.getAttribute('style') || '';
+    const matchY = style2.match(/translate\(([-\d.]+)px, ([\d.-]+)px\)/);
+    expect(matchY).toBeTruthy();
+    if (matchY) {
+      expect(Number(matchY[2])).toBe(-20);
+    }
   });
 
   it('should clamp offset during drag to prevent panel from going off-screen right', () => {
@@ -777,6 +858,119 @@ describe('RackMiniMap — panel clamping', () => {
     expect(matchX).toBeTruthy();
     if (matchX) {
       expect(Number(matchX[1])).toBeLessThanOrEqual(10);
+    }
+  });
+
+  it('should clamp offset upward during drag to prevent panel from going above the viewport top', () => {
+    const mockRect: DOMRect = {
+      top: 0, left: 0, bottom: 300, right: 600,
+      width: 600, height: 300, x: 0, y: 0,
+      toJSON: () => ({}),
+    };
+    jest.spyOn(Element.prototype, 'getBoundingClientRect').mockReturnValue(mockRect);
+
+    const onPan = jest.fn();
+    const onFitViewport = jest.fn();
+    render(<RackMiniMap {...defaultProps({ onPan, onFitViewport, containerWidth: 600, containerHeight: 300 })} />);
+
+    const navSpan = screen.getByText('Navigator');
+    expect(navSpan).toBeTruthy();
+
+    act(() => {
+      fireEvent.mouseDown(navSpan, { clientX: 0, clientY: 0, button: 0 });
+    });
+
+    // Drag far up (clientY: -1000) — would try to set offsetY to -1000
+    act(() => {
+      fireEvent.mouseMove(window, { clientX: 0, clientY: -1000, buttons: 1 });
+    });
+
+    act(() => {
+      fireEvent.mouseUp(window);
+    });
+
+    // Clamp: y = Math.max(PANEL_CLAMP_TOP_MAX, -1000) = Math.max(-20, -1000) = -20
+    const miniMap = screen.getByTestId('mini-map');
+    const style = miniMap.getAttribute('style') || '';
+    const matchY = style.match(/translate\(([-\d.]+)px, ([\d.-]+)px\)/);
+    expect(matchY).toBeTruthy();
+    if (matchY) {
+      expect(Number(matchY[2])).toBe(-20);
+    }
+  });
+
+  it('should show top limit inset shadow when panel is at the clamp top bound (offsetY === PANEL_CLAMP_TOP_MAX)', () => {
+    const mockRect: DOMRect = {
+      top: 0, left: 0, bottom: 300, right: 600,
+      width: 600, height: 300, x: 0, y: 0,
+      toJSON: () => ({}),
+    };
+    jest.spyOn(Element.prototype, 'getBoundingClientRect').mockReturnValue(mockRect);
+
+    const onPan = jest.fn();
+    const onFitViewport = jest.fn();
+    render(<RackMiniMap {...defaultProps({ onPan, onFitViewport, containerWidth: 600, containerHeight: 300 })} />);
+
+    const navSpan = screen.getByText('Navigator');
+    expect(navSpan).toBeTruthy();
+
+    act(() => {
+      fireEvent.mouseDown(navSpan, { clientX: 0, clientY: 0, button: 0 });
+    });
+
+    // Drag up to clamp limit (offsetY = -20)
+    act(() => {
+      fireEvent.mouseMove(window, { clientX: 0, clientY: -1000, buttons: 1 });
+    });
+
+    // Panel should have the top limit inset shadow class
+    const miniMap = screen.getByTestId('mini-map');
+    expect(miniMap.className).toContain('shadow-[inset_0_1px_0_rgba(0,242,255,0.12)]');
+
+    // Drag down to restore normal position
+    act(() => {
+      fireEvent.mouseMove(window, { clientX: 0, clientY: 200, buttons: 1 });
+    });
+
+    // Inset shadow should disappear
+    expect(miniMap.className).not.toContain('shadow-[inset_0_1px_0_rgba(0,242,255,0.12)]');
+  });
+
+  it('should clamp offset during drag to prevent panel from going off-screen left (min 70px visible)', () => {
+    const mockRect: DOMRect = {
+      top: 0, left: 0, bottom: 300, right: 600,
+      width: 600, height: 300, x: 0, y: 0,
+      toJSON: () => ({}),
+    };
+    jest.spyOn(Element.prototype, 'getBoundingClientRect').mockReturnValue(mockRect);
+
+    const onPan = jest.fn();
+    const onFitViewport = jest.fn();
+    render(<RackMiniMap {...defaultProps({ onPan, onFitViewport, containerWidth: 600, containerHeight: 300 })} />);
+
+    const navSpan = screen.getByText('Navigator');
+    expect(navSpan).toBeTruthy();
+
+    act(() => {
+      fireEvent.mouseDown(navSpan, { clientX: 0, clientY: 0, button: 0 });
+    });
+
+    // Drag far left (clientX: -1000) — would try to set offsetX to -1000
+    act(() => {
+      fireEvent.mouseMove(window, { clientX: -1000, clientY: 0, buttons: 1 });
+    });
+
+    act(() => {
+      fireEvent.mouseUp(window);
+    });
+
+    // Clamp: x = Math.max(-(pw - PANEL_CLAMP_MIN_VISIBLE_LEFT), ...) = Math.max(-(600-70), -1000) = Math.max(-530, -1000) = -530
+    const miniMap = screen.getByTestId('mini-map');
+    const style = miniMap.getAttribute('style') || '';
+    const matchX = style.match(/translate\(([-\d.]+)px/);
+    expect(matchX).toBeTruthy();
+    if (matchX) {
+      expect(Number(matchX[1])).toBe(-530);
     }
   });
 

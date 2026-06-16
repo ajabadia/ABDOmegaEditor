@@ -1,4 +1,15 @@
 'use client';
+
+/**
+ * @purpose Gestiona persistencia de sesión para documentos en el editor de manifesto OMEGA cargando y guardando el estado en almacenamiento local y recuperando datos persistidos.
+ * @purpose_en Manages session persistence for documents in the OMEGA manifest editor by loading and saving the state to local storage and handling recovery from persisted data.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Custom Hook
+ * @complexity Medium
+ * @fingerprint exports:1,imports:7,sig:1kpy1im
+ * @lastUpdated 2026-06-15T13:11:13.291Z
+ */
+
 import { useEffect } from 'react';
 import type { OrchestratorState, OrchestratorAction } from '../../types/document';
 import { DEFAULT_MANIFEST, normalizeManifest } from '../../constants/defaults';

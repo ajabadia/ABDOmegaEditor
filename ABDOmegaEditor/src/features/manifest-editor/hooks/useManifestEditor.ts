@@ -1,7 +1,11 @@
 /**
- * @purpose Gestiona y coordina las operaciones del estado, entrada/salida, entidades, auditoria y acciones para el editor de manifesto OMEGA.
- * @fingerprint exports:1,imports:13,sig:1nat5vp
- * @lastUpdated 2026-06-14T20:35:01.653Z
+ * @purpose Gestiona y coordina las operaciones para el editor de manifesto OMEGA, incluyendo gestión de estado, entrada/salida, entidades, auditoría y acciones.
+ * @purpose_en Manages and coordinates operations for the OMEGA manifest editor, including state management, input/output, entities, auditing, and actions.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Custom Hook
+ * @complexity Medium
+ * @fingerprint exports:1,imports:14,sig:13j2a70
+ * @lastUpdated 2026-06-15T13:22:26.866Z
  */
 
 import { useState, useCallback } from 'react';

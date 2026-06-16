@@ -1,4 +1,14 @@
 /**
+ * @purpose Renderiza plantillas para botones industriales y selectores incrementales según las propiedades proporcionadas.
+ * @purpose_en Renders HTML for industrial buttons and incremental selectors based on provided properties.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:2,imports:0,sig:h2dter
+ * @lastUpdated 2026-06-15T16:09:20.188Z
+ */
+
+/**
  * OMEGA UI CORE — Stateless Stepper/Button Renderer (Era 7.2.3)
  * Single Source of Truth for Industrial Buttons and Incremental Selectors.
  */

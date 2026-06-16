@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona subidas y descargas de WASM y contratos, exporta contratos y actualiza el manifesto.
+ * @purpose_en Manages WASM and contract uploads, exports contracts, and updates the manifest accordingly.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Custom Hook
+ * @complexity Medium
+ * @fingerprint exports:1,imports:6,sig:rlze2s
+ * @lastUpdated 2026-06-15T13:10:59.741Z
+ */
+
 import { useCallback } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import type { OMEGA_Manifest, OMEGA_Contract } from '@/omega-ui-core/types/manifest';

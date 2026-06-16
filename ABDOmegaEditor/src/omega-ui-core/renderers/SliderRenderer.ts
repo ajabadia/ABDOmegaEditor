@@ -1,4 +1,14 @@
 /**
+ * @purpose Renderiza plantilla para componente slider basado en propiedades proporcionadas.
+ * @purpose_en Renders HTML for a slider component based on provided properties.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:2,imports:0,sig:0bn6g2
+ * @lastUpdated 2026-06-15T16:09:16.163Z
+ */
+
+/**
  * OMEGA UI CORE — Stateless Slider Renderer (Era 7.2.3)
  * Single Source of Truth for Slider HTML Structure.
  */

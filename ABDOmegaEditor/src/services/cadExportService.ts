@@ -1,4 +1,14 @@
 /**
+ * @purpose Gestiona la creación de plantillas técnicas industriales (SVG) a partir de manifestos CAD OMEGA utilizando opciones y activos proporcionados.
+ * @purpose_en Manages the creation of technical industrial blueprints (SVG) from OMEGA CAD manifests using provided options and assets.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Business Service
+ * @complexity Medium
+ * @fingerprint exports:2,imports:1,sig:1p6pkkh
+ * @lastUpdated 2026-06-15T16:56:42.154Z
+ */
+
+/**
  * OMEGA CAD Export Service (v7.2.3)
  * Generates technical industrial blueprints (SVG) from manifests.
  */

@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona y renderiza ajustes tipográficos para manifestos OMEGA, incluyendo activos de fuente, reemplazos globales y mapas abstractos.
- * @lastUpdated 2026-06-14T16:41:27.212Z
+ * @purpose Gestiona y renderiza ajustes a las configuraciones tipográficas para los manifestos OMEGA, incluyendo activos de fuente, caídas globales y mapas abstractos.
+ * @purpose_en Manages and renders adjustments to typographic settings for OMEGA manifests, including font assets, global fallbacks, and abstract maps.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:8,sig:1t31plv
+ * @lastUpdated 2026-06-15T11:05:00.440Z
  */
 
 import { Type, ShieldAlert } from 'lucide-react';

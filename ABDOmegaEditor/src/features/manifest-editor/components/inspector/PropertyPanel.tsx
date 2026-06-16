@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Renderiza un panel para inspeccionar y editar propiedades de entidades manifestadas en OMEGA.
+ * @purpose_en Renders a panel for inspecting and editing properties of manifest entities in OMEGA.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:2,imports:25,sig:7t9ikl
+ * @lastUpdated 2026-06-15T11:37:58.447Z
+ */
+
 import React from 'react';
 
 // Specialized Sections
@@ -54,7 +64,7 @@ export interface PropertyPanelProps {
   onRemoveResource?: ((name: string) => void) | undefined;
   resolveAsset: (id: string | undefined) => string | undefined;
   manifest: OMEGA_Manifest;
-  uiTheme?: ('dark' | 'light') | undefined;
+  uiTheme?: ('dark' | 'light' | 'amber' | 'cyberpunk' | 'high-contrast') | undefined;
   activeTab?: string | undefined;
   onOpenConfig?: (() => void) | undefined;
   onOpenLibrary?: (() => void) | undefined;
@@ -364,6 +374,7 @@ export default function PropertyPanel(props: PropertyPanelProps) {
                 </div>
                 <button
                   onClick={toggleSimulation}
+                  aria-label={isPlaying ? 'Stop LFO simulation' : 'Start LFO simulation'}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xs text-[8px] font-bold uppercase transition-all duration-300 ${isPlaying ? 'bg-primary text-black shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)] border border-primary animate-pulse' : 'bg-black/60 border wb-outline text-white/70 hover:border-primary/40 hover:text-white'}`}
                 >
                   {isPlaying ? (

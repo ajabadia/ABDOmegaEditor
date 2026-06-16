@@ -1,4 +1,15 @@
 "use client";
+
+/**
+ * @purpose Gestiona la navegación del teclado para los nodos seleccionados en el viewport del bastidor actualizando sus posiciones según presiones de teclas de flecha.
+ * @purpose_en Handles keyboard navigation for selected nodes in the rack viewport by updating their positions based on arrow key presses.
+ * @refactorable false
+ * @classification Custom Hook
+ * @complexity Low
+ * @fingerprint exports:1,imports:3,sig:mfwagd
+ * @lastUpdated 2026-06-15T13:01:41.975Z
+ */
+
 import { useEffect } from "react";
 import type { OMEGA_Manifest } from "@/omega-ui-core/types/manifest";
 import { findNodeInTree } from "@/omega-ui-core/utils/treeUtils";

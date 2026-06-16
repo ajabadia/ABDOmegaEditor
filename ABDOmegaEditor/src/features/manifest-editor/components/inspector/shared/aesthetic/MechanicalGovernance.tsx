@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona propiedades mecánicas y superficiales en un editor de manifesto OMEGA utilizando un selector de colores inteligente y campos de entrada para texturas.
+ * @purpose_en Manages mechanical and surface properties in an OMEGA manifest editor using a smart color picker and input fields for texture.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:3,sig:1lz597l
+ * @lastUpdated 2026-06-15T11:40:47.448Z
+ */
+
 import { CircleDot, Sun, Layers, Shield, Square } from 'lucide-react';
 import type { OMEGA_Manifest, OmegaStyleNode } from '@/omega-ui-core/types/manifest';
 import SmartColorPicker from '../SmartColorPicker';
@@ -100,6 +110,7 @@ export default function MechanicalGovernance({ type, values, capabilities, manif
                 value={values.rounding ?? 0}
                 onChange={(e) => onChange({ rounding: parseInt(e.target.value) })}
                 className="w-full h-1 bg-accent/10 rounded-full appearance-none cursor-pointer accent-accent"
+                aria-label={values.useSpecificRounding ? 'Uniform rounding' : 'Structural rounding'}
               />
             ) : (
               <div className="grid grid-cols-2 gap-x-6 gap-y-3 pt-1 animate-in fade-in slide-in-from-top-2 duration-300">
@@ -119,6 +130,7 @@ export default function MechanicalGovernance({ type, values, capabilities, manif
                         value={(values[corner.key] as number) ?? values.rounding ?? 0}
                         onChange={(e) => onChange({ [corner.key]: parseInt(e.target.value) })}
                         className="w-full h-1 bg-primary/10 rounded-full appearance-none cursor-pointer accent-primary"
+                        aria-label={`${corner.label} rounding`}
                       />
                    </div>
                  ))}
@@ -141,6 +153,7 @@ export default function MechanicalGovernance({ type, values, capabilities, manif
               value={values.borderWidth ?? 0}
               onChange={(e) => onChange({ borderWidth: parseInt(e.target.value) })}
               className="w-full h-1 bg-accent/10 rounded-full appearance-none cursor-pointer accent-accent"
+              aria-label="Border width in pixels"
             />
           </div>
         )}
@@ -159,6 +172,7 @@ export default function MechanicalGovernance({ type, values, capabilities, manif
               value={values.thickness ?? 1}
               onChange={(e) => onChange({ thickness: parseInt(e.target.value) })}
               className="w-full h-1 bg-accent/10 rounded-full appearance-none cursor-pointer accent-accent"
+              aria-label="Line thickness in pixels"
             />
           </div>
         )}
@@ -177,6 +191,7 @@ export default function MechanicalGovernance({ type, values, capabilities, manif
               value={values.height ?? 1.0}
               onChange={(e) => onChange({ height: parseFloat(e.target.value) })}
               className="w-full h-1 bg-accent/10 rounded-full appearance-none cursor-pointer accent-accent"
+              aria-label="Height multiplier"
             />
           </div>
         )}
@@ -197,6 +212,7 @@ export default function MechanicalGovernance({ type, values, capabilities, manif
               value={values.blur ?? 0}
               onChange={(e) => onChange({ blur: parseInt(e.target.value) })}
               className="w-full h-1 bg-accent/10 rounded-full appearance-none cursor-pointer accent-accent"
+              aria-label="Glass blur in pixels"
             />
           </div>
         )}
@@ -215,6 +231,7 @@ export default function MechanicalGovernance({ type, values, capabilities, manif
               value={values.zIndex ?? 1}
               onChange={(e) => onChange({ zIndex: parseInt(e.target.value) })}
               className="w-full h-1 bg-accent/10 rounded-full appearance-none cursor-pointer accent-accent"
+              aria-label="Layer order (z-index)"
             />
           </div>
         )}
@@ -233,6 +250,7 @@ export default function MechanicalGovernance({ type, values, capabilities, manif
               value={values.padding ?? 0}
               onChange={(e) => onChange({ padding: parseInt(e.target.value) })}
               className="w-full h-1 bg-accent/10 rounded-full appearance-none cursor-pointer accent-accent"
+              aria-label="Padding in pixels"
             />
           </div>
         )}
@@ -251,6 +269,7 @@ export default function MechanicalGovernance({ type, values, capabilities, manif
               value={values.tiling ?? 1}
               onChange={(e) => onChange({ tiling: parseInt(e.target.value) })}
               className="w-full h-1 bg-accent/10 rounded-full appearance-none cursor-pointer accent-accent"
+              aria-label="Asset tiling multiplier"
             />
           </div>
         )}
@@ -270,6 +289,7 @@ export default function MechanicalGovernance({ type, values, capabilities, manif
             onChange={(e) => onChange({ texture: e.target.value })}
             className="w-full wb-surface-inset border border-outline/10 rounded-xs px-2 py-1 text-[8px] font-mono text-primary outline-none"
             placeholder="e.g. noise, carbon, grain"
+            aria-label="Surface texture"
           />
         </div>
       )}

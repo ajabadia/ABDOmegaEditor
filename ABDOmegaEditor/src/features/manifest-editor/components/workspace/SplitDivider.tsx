@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona las interacciones del usuario para dividir y redimensionar paneles en el espacio de trabajo del editor de manifesto OMEGA.
+ * @purpose_en Manages user interactions for dividing and resizing panels in the OMEGA manifest editor workspace.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:2,imports:1,sig:xer029
+ * @lastUpdated 2026-06-15T13:02:30.822Z
+ */
+
 import React, { useCallback } from 'react';
 
 interface SplitDividerProps {

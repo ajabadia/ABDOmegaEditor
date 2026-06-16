@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona una interfaz de usuario para seleccionar colores estéticos basados en capacidades y datos de un manifesto OMEGA.
+ * @purpose_en Manages a user interface for selecting aesthetic colors based on capabilities and data from an OMEGA manifest.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:2,sig:0tgkrp
+ * @lastUpdated 2026-06-15T11:40:14.664Z
+ */
+
 import type { OMEGA_Manifest, OmegaStyleNode } from '@/omega-ui-core/types/manifest';
 import SmartColorPicker from '../SmartColorPicker';
 

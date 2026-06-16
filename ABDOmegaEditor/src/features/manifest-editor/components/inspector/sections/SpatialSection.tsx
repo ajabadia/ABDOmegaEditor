@@ -1,5 +1,15 @@
 'use client';
- 
+
+/**
+ * @purpose Gestiona una sección del editor de manifesto OMEGA para inspeccionar y editar propiedades espaciales de nodos, incluyendo posición, restricciones y coordenadas mundiales.
+ * @purpose_en Manages a section in the OMEGA manifest editor for inspecting and editing spatial properties of nodes, including position, constraints, and world coordinates.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:8,sig:180ptjk
+ * @lastUpdated 2026-06-15T11:40:04.995Z
+ */
+
 import React from 'react';
 import { Move, Grid3X3, Layout, Info } from 'lucide-react';
 import type { LayoutContainer, OmegaNode } from '@/omega-ui-core/types/manifest';
@@ -128,6 +138,7 @@ export default function SpatialSection({ item, onUpdate, onHelp, highlightPath, 
                   onChange={(e) => setLocalX(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') handleCommit('x', localX); }}
                   className={`w-full bg-black/40 border ${isHighlighted('pos') ? 'border-amber-500 ring-1 ring-amber-500 animate-pulse' : 'border-outline'} rounded-sm p-2 text-[11px] font-mono text-foreground outline-none focus:border-primary/40 transition-all transition-colors duration-500`}
+                  aria-label="Axis X (Horizontal)"
                 />
               </div>
               <div className="space-y-1.5">
@@ -142,6 +153,7 @@ export default function SpatialSection({ item, onUpdate, onHelp, highlightPath, 
                   onChange={(e) => setLocalY(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') handleCommit('y', localY); }}
                   className={`w-full bg-black/40 border ${isHighlighted('pos') ? 'border-amber-500 ring-1 ring-amber-500 animate-pulse' : 'border-outline'} rounded-sm p-2 text-[11px] font-mono text-foreground outline-none focus:border-primary/40 transition-all transition-colors duration-500`}
+                  aria-label="Axis Y (Vertical)"
                 />
               </div>
             </div>
@@ -186,6 +198,7 @@ export default function SpatialSection({ item, onUpdate, onHelp, highlightPath, 
                   handleApplyConstraints({ clampToParent: val });
                 }}
                 className="w-4 h-4 rounded-xs border-outline bg-black/40 text-primary focus:ring-primary/40 transition-all cursor-pointer"
+                aria-label="Clamp to parent"
               />
             </div>
 
@@ -202,6 +215,7 @@ export default function SpatialSection({ item, onUpdate, onHelp, highlightPath, 
                   handleApplyConstraints({ margin: val });
                 }}
                 className="w-full bg-black/40 border border-outline rounded-sm p-2 text-[10px] font-mono text-foreground outline-none focus:border-primary/40 transition-colors"
+                aria-label="Containment margin in pixels"
               />
             </div>
           </div>

@@ -1,3 +1,13 @@
+/**
+ * @purpose Renderiza una sección colapsable para seleccionar y actualizar roles de ingenieria en un editor de manifesto OMEGA.
+ * @purpose_en Renders a collapsible section for selecting and updating engineering roles in an OMEGA manifest editor.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:3,sig:l0mo29
+ * @lastUpdated 2026-06-15T11:38:31.547Z
+ */
+
 import { Layers } from 'lucide-react';
 import type { OmegaNode } from '@/omega-ui-core/types/manifest';
 

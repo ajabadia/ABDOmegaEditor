@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona datos manifest OMEGA para convertirlos a y desde una estructura de árbol legado para uso en ABDOmegaEditor.
+ * @purpose_en Converts OMEGA manifest data to and from a legacy tree structure for use in ABDOmegaEditor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Helper Utility
+ * @complexity Medium
+ * @fingerprint exports:3,imports:2,sig:148zdq3
+ * @lastUpdated 2026-06-15T16:56:16.291Z
+ */
+
 import type { OMEGA_Manifest, OmegaNode, LayoutContainer, ManifestEntity, CellTemplate } from '../types/manifest';
 import type { AssetBehavior, LayerRecipe } from '../types/assetBehavior';
 

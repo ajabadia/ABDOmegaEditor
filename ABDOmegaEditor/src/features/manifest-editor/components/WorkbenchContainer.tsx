@@ -3,8 +3,11 @@
 /**
  * @purpose Renderiza el contenedor principal para la edición del manifest OMEGA, incluyendo cabecera, pie de página, modales, matriz de modulación visual, galería de plantillas, toolbar y componentes de espacio de trabajo.
  * @purpose_en Renders the main container for the OMEGA manifest editor's workbench, including header, footer, modals, visual modulation matrix, template gallery, toolbar, and workspace components.
- * @fingerprint exports:1,imports:42,sig:26jhk4
- * @lastUpdated 2026-06-15T09:19:34.266Z
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:43,sig:1sj4z5i
+ * @lastUpdated 2026-06-15T20:49:33.990Z
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -48,6 +51,8 @@ import { useExportOperations } from '@/features/manifest-editor/hooks/useExportO
 import { useBatchUngroup } from '@/features/manifest-editor/hooks/useBatchUngroup';
 import { useCellBlueprint } from '@/features/manifest-editor/hooks/useCellBlueprint';
 import { useGroupBlueprint } from '@/features/manifest-editor/hooks/useGroupBlueprint';
+import { useBatchHistory } from '@/features/manifest-editor/hooks/useBatchHistory';
+
 import type { Diagnostic } from '../types/diagnostics';
 import { createEmptyDiagnostics } from '../types/diagnostics';
 import { mergeDiagnostics } from '../utils/diagnosticUtils';
@@ -62,11 +67,6 @@ import { useWorkbenchFileOperations } from '@/features/manifest-editor/hooks/use
 
 interface WorkbenchContainerProps {
   onOpenCellEditor?: () => void;
-  onOpenAudit?: () => void;
-  
-  // External state overrides
-  isAuditOpen?: boolean;
-  setIsAuditOpen?: (open: boolean) => void;
   isCellEditorOpen?: boolean;
   setIsCellEditorOpen?: (open: boolean) => void;
 
@@ -74,9 +74,6 @@ interface WorkbenchContainerProps {
 
 export default function WorkbenchContainer({ 
   onOpenCellEditor,
-  onOpenAudit,
-  isAuditOpen,
-  setIsAuditOpen,
   isCellEditorOpen,
   setIsCellEditorOpen,
 }: WorkbenchContainerProps) {
@@ -184,6 +181,9 @@ export default function WorkbenchContainer({
     editor,
   );
 
+  // ── Batch History (lifted from LayersPanel for P6 Undo Timeline integration) ──
+  const batchHistory = useBatchHistory();
+
   const handleCompareWithHistory = useCallback((index: number) => {
     const diff = editor.compareWithHistory(index);
     if (diff) {
@@ -256,7 +256,7 @@ export default function WorkbenchContainer({
       }
     };
     input.click();
-  }, [editor]);
+  }, [editor, addUserBlueprintEntry]);
 
 
   const { isDragOver, dragHandlers } = useFileDrop(handleFileDrop);
@@ -348,16 +348,19 @@ export default function WorkbenchContainer({
     setInspectorActiveSection('globals');
   }, [actions, state.isRightPanelCollapsed, state.window_rack_properties, handleSelectItem]);
 
-  const handleOpenAudit = onOpenAudit || (() => {
+  const handleOpenAudit = useCallback(() => {
     if (state.isRightPanelCollapsed) actions.toggleRightPanel();
     if (!state.window_compliance) actions.toggleWindow('window_compliance');
-  });
+  }, [actions, state.isRightPanelCollapsed, state.window_compliance]);
 
-  const handleOpenCellEditor = onOpenCellEditor || (() => {
-    if (state.selectedNodeId) {
-      actions.setStudioMode(true, state.selectedNodeId);
-    }
-  });
+  const handleOpenCellEditor = useMemo(
+    () => onOpenCellEditor || (() => {
+      if (state.selectedNodeId) {
+        actions.setStudioMode(true, state.selectedNodeId);
+      }
+    }),
+    [onOpenCellEditor, state.selectedNodeId, actions]
+  );
 
   const selectedItemId = state.selectedNodeId;
 
@@ -395,11 +398,18 @@ export default function WorkbenchContainer({
 
 
   // 7. Effects & Synchronization (Aseptic Sync)
+  // Guard: only sync if manifest's activeTab actually differs from the UI tab type.
+  // Using a ref to track last-synced tab value prevents infinite loops when
+  // updateManifest triggers a re-render with a new manifest object.
+  const lastSyncedTabRef = useRef<string | undefined>(undefined);
   useEffect(() => {
     const m = manifest as OMEGA_Manifest;
     const manifestTab = m.ui?.layout?.activeTab;
     const currentTabType = activeTab?.type || 'rack';
+    // Skip if we already synced this tab value (guards against manifest object churn)
+    if (lastSyncedTabRef.current === currentTabType) return;
     if (manifestTab !== currentTabType && ['rack', 'orbital'].includes(currentTabType)) {
+      lastSyncedTabRef.current = currentTabType;
       updateManifest({ 
         ui: { 
           ...m.ui, 
@@ -431,7 +441,7 @@ export default function WorkbenchContainer({
       if (state.isRightPanelCollapsed) actions.toggleRightPanel();
       if (!state.window_compliance) actions.toggleWindow('window_compliance');
     }
-  }, [editor, actions]);
+  }, [editor, actions, state.isRightPanelCollapsed, state.window_compliance]);
 
   const onReset = useCallback(() => {
     editor.reset();
@@ -533,6 +543,7 @@ export default function WorkbenchContainer({
     const c = contract as OMEGA_Contract | null;
     if (!c) return [];
     return [
+      ...(c.parameters?.map((p: { id: string }) => p.id) || []),
       ...(c.ports?.map((p: { id: string }) => p.id) || [])
     ];
   }, [contract]);
@@ -660,6 +671,8 @@ export default function WorkbenchContainer({
   onGhostMouseMove={handleGhostMouseMove}
   onGhostClick={handleGhostClick}
   onGhostCancel={handleGhostCancel}
+  onAddModulation={editor.addModulation}
+  onRemoveModulation={editor.removeModulation}
   onMoveTab={actions.moveTabToPane}
         isSplitH={paneId === 'primary' || paneId === 'primary_bottom' ? state.isPrimarySplitH : state.isSecondarySplitH}
         onToggleSplitH={paneId === 'primary' || paneId === 'secondary' ? () => actions.toggleHorizontalSplit(paneId) : undefined}
@@ -796,7 +809,6 @@ export default function WorkbenchContainer({
                 isLiveMode={state.isLiveMode}
                 onToggleLive={() => actions.toggleUIState('isLiveMode')}
                 onOpenGallery={() => actions.toggleWindow('window_blueprints')}
-                onOpenAudit={handleOpenAudit}
                 onOpenConfig={handleOpenConfig}
                 onOpenCellStudio={() => {
                   if (selectedItemId) {
@@ -942,7 +954,7 @@ export default function WorkbenchContainer({
               onSelectMultiple={actions.setMultiSelectedNodes}
               rackSections={rackSections}
               onToggleRackSection={handleToggleRackSection}
-              onNavigate={gps.handleNavigateToIssue}
+              onNavigate={handleNavigateToIssue}
             />
           </>
         )}
@@ -963,11 +975,8 @@ export default function WorkbenchContainer({
         handleBulkUpload={editor.handleBulkUpload}
         helpState={{ isOpen: state.helpState.isOpen, sectionId: state.helpState.sectionId || '' }}
         closeHelp={() => actions.setHelpState(false)}
-        isAuditModalOpen={isAuditOpen !== undefined ? isAuditOpen : state.isAuditModalOpen}
-        setIsAuditModalOpen={setIsAuditOpen ? (open) => setIsAuditOpen(open) : () => actions.toggleUIState('isAuditModalOpen')}
         isAboutModalOpen={state.isAboutModalOpen}
         setIsAboutModalOpen={() => actions.toggleUIState('isAboutModalOpen')}
-        handleNavigateToIssue={handleNavigateToIssue}
         auditResult={auditResult}
         mockupOpen={state.mockupOpen}
         setMockupOpen={() => actions.toggleUIState('mockupOpen')}
@@ -1024,6 +1033,19 @@ export default function WorkbenchContainer({
           onSave={() => editor.exportOmegaPack()}
           showMiniMap={showMiniMap}
           onToggleMiniMap={handleToggleMiniMap}
+          batchEntries={batchHistory.batchHistory}
+          onUndoBatchEntry={(index) => {
+            const entry = batchHistory.batchHistory[index];
+            if (!entry) return;
+            if (entry.action === 'visibility') {
+              actions.batchSetVisibility(entry.ids, !entry.value);
+            } else if (entry.action === 'lock') {
+              actions.batchSetLocked(entry.ids, !entry.value);
+            } else if (entry.action === 'group' && entry.value === true) {
+              handleBatchUndoGroup(entry.ids);
+            } else return;
+            batchHistory.setBatchHistory(prev => prev.filter((_, i) => i !== index));
+          }}
         />
       )}
 

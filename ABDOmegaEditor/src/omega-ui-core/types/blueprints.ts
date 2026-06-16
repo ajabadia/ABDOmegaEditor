@@ -1,4 +1,14 @@
 /**
+ * @purpose Gestiona interfaces para metadatos y estructuras de datos de plantillas V2 Blueprints en el panel de biblioteca de Blueprint del editor OMEGA manifest y el flujo de pipeline de inserción de dock derecho.
+ * @purpose_en Manages interfaces for metadata and data structures of V2 Blueprints in the OMEGA manifest editor's Blueprint Library panel and Right Dock insertion pipeline.
+ * @refactorable false
+ * @classification Type Definition
+ * @complexity Low
+ * @fingerprint exports:2,imports:0,sig:p90s96
+ * @lastUpdated 2026-06-15T16:10:15.734Z
+ */
+
+/**
  * V2 Blueprint Types — Simplified GroupNode format
  *
  * These types represent the simplified blueprint format used by the

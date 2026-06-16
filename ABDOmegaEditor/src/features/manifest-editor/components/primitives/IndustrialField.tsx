@@ -1,5 +1,15 @@
 "use client";
 
+/**
+ * @purpose Renderiza un componente de campo personalizable con indicadores de estado y mensajes de validación para uso en el editor del manifesto OMEGA.
+ * @purpose_en ** Renders a customizable field component with status indicators and validation messages for use in the OMEGA manifest editor.
+ * @refactorable ** true (contains too many state variables and UI parts)
+ * @classification ** UI Component
+ * @complexity ** Medium
+ * @fingerprint exports:3,imports:2,sig:1r8rbwt
+ * @lastUpdated 2026-06-15T12:59:29.083Z
+ */
+
 import * as React from "react";
 import { Info, Lock, AlertTriangle, type LucideIcon } from "lucide-react";
 
@@ -119,6 +129,7 @@ export function IndustrialField(props: IndustrialFieldProps) {
             <button
               type="button"
               onClick={onHelp}
+              aria-label={`Help: ${label}`}
               className="p-1 hover:text-primary transition-colors opacity-40 hover:opacity-100"
             >
               <Info className="w-2.5 h-2.5" />

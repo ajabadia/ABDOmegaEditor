@@ -1,11 +1,29 @@
 /**
+ * @purpose Gestiona actualizaciones de parámetros en tiempo real y ejecución a través de un puente WASM en el editor de manifesto OMEGA.
+ * @purpose_en Manages real-time parameter updates and execution through a WASM bridge in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Business Service
+ * @complexity Medium
+ * @fingerprint exports:2,imports:6,sig:f65qdu
+ * @lastUpdated 2026-06-15T17:03:41.933Z
+ */
+
+/**
  * OMEGA WASM BRIDGE - ERA 7.2.3
  * Sovereign Adapter for real-time DSP execution via UCA Tree.
  */
 
 import type { OMEGA_Manifest, OmegaNode } from '@/omega-ui-core/types/manifest';
+import type { OmegaContract } from './wasmLoader';
 import { OmegaRPCBridge } from './rpc/omegaRPCBridge';
-import type { SyncStatus } from './rpc/rpcTypes';
+import type { 
+  SyncStatus, 
+  MaterializationResult, 
+  ReconciliationResult, 
+  BindingVerification,
+  DeploymentResult
+} from './rpc/rpcTypes';
+import { reconciliationService } from './reconciliationService';
 import { observabilityService } from './observabilityService';
 
 export class WasmRuntime {
@@ -89,20 +107,97 @@ export class WasmRuntime {
   /**
    * reconcileState (Phase 20.9)
    * Triggers a full state comparison and reconciliation.
+   * Legacy mode: returns raw engine state as a flat record.
+   * Returns empty state in mock mode (no RPC bridge required).
    */
-  async reconcileState() {
-    const engineState = await this.rpc.requestEngineState();
-    // In a real scenario, this would be compared with a UI state snapshot
-    // For Phase 20.9, we expose the mechanism for the orchestrator to use.
-    return engineState;
+  async reconcileState(): Promise<Record<string, number>> {
+    if (this.isMock) return {};
+    return this.rpc.requestEngineState();
   }
 
   /**
-   * deployManifest
+   * reconcileStateDetailed (Phase 20.9) — P11 Enhanced
+   * Full reconciliation cycle: compares UI state against engine state,
+   * detects divergences, and resolves using the reconciliation service.
+   * In mock mode, returns simulated results without RPC bridge.
+   */
+  async reconcileStateDetailed(uiState?: Record<string, number>): Promise<ReconciliationResult> {
+    if (this.isMock) {
+      if (!uiState || Object.keys(uiState).length === 0) {
+        return {
+          inSync: true,
+          divergenceCount: 0,
+          divergences: [],
+          conflicts: [],
+          engineState: {}
+        };
+      }
+      // Simulate divergence: all UI keys are absent from empty engine state
+      const divergences = Object.keys(uiState);
+      const conflicts = divergences.map(path =>
+        reconciliationService.resolveConflict(
+          path,
+          uiState[path],
+          0,
+          'LAST_WRITE_WINS'
+        )
+      );
+      return {
+        inSync: false,
+        divergenceCount: divergences.length,
+        divergences,
+        conflicts,
+        engineState: {}
+      };
+    }
+
+    const engineState = await this.rpc.requestEngineState();
+    
+    if (!uiState || Object.keys(uiState).length === 0) {
+      return {
+        inSync: true,
+        divergenceCount: 0,
+        divergences: [],
+        conflicts: [],
+        engineState
+      };
+    }
+
+    const divergences = reconciliationService.detectDivergence(
+      uiState as unknown as Record<string, unknown>,
+      engineState as unknown as Record<string, unknown>
+    );
+
+    const conflicts = divergences.map(path =>
+      reconciliationService.resolveConflict(
+        path,
+        uiState[path],
+        engineState[path],
+        'LAST_WRITE_WINS'
+      )
+    );
+
+    return {
+      inSync: divergences.length === 0,
+      divergenceCount: divergences.length,
+      divergences,
+      conflicts,
+      engineState
+    };
+  }
+
+  /**
+   * deployManifest — P11 Enhanced
    * High-fidelity structural synchronization.
    * Sends the full canonical OmegaNode tree to the engine.
+   * Optionally validates bindings against an OmegaContract.
+   * In mock mode, performs verification + materialization without RPC bridge.
    */
-  async deployManifest(manifest: OMEGA_Manifest, options?: { isHotReload?: boolean }): Promise<{ success: boolean; hash: string }> {
+  async deployManifest(
+    manifest: OMEGA_Manifest, 
+    options?: { isHotReload?: boolean },
+    contract?: OmegaContract
+  ): Promise<DeploymentResult> {
     const mode = options?.isHotReload ? '[HOT-RELOAD]' : '[MANUAL]';
     const rootNode = manifest.nodes?.[0];
 
@@ -113,8 +208,27 @@ export class WasmRuntime {
 
     console.log(`OMEGA HIL: ${mode} Deploying UCA Tree for '${manifest.id}'...`);
 
+    // Pre-deployment binding verification (P11) — no RPC needed
+    const verification = contract ? this.verifyBindings(rootNode, contract) : undefined;
+    
+    if (verification && verification.orphanBinds > 0) {
+      console.warn(
+        `WASM-BRIDGE: ${verification.orphanBinds} orphan bind(s) detected. ` +
+        `Deploying with ${verification.resolvedBinds}/${verification.totalBinds} valid bindings.`
+      );
+    }
+
+    // Materialization (no RPC needed — uses verifyBindings internally)
+    const instance = this.instantiateBlueprint(rootNode, contract);
+
+    if (this.isMock) {
+      // Skip RPC bridge entirely in mock mode
+      const hash = this.computeManifestHash(manifest);
+      return { success: true, hash, materialization: instance, verification };
+    }
+
     try {
-      // 1. Resolve and Validate via Bridge (Phase 20.4)
+      // Resolve and Validate via Bridge (Phase 20.4)
       const result = await this.rpc.syncSnapshot({
         manifestVersion: manifest.schemaVersion || '7.2.3',
         documentId: manifest.id || 'anonymous',
@@ -126,20 +240,8 @@ export class WasmRuntime {
         throw new Error(result.error || 'Engine rejected snapshot or timed out');
       }
 
-      // 2. Materialization (Runtime Instantiation)
-      const instance = await this.instantiateBlueprint(rootNode);
-      if (!instance.success) {
-        // Rollback already handled inside instantiateBlueprint
-        throw new Error(`Materialization failed: ${instance.error}`);
-      }
-
-      // 2. Generate a local integrity hash (Industrial security)
       const hash = this.computeManifestHash(manifest);
-      
-      return { 
-        success: true, 
-        hash 
-      };
+      return { success: true, hash, materialization: instance, verification };
     } catch (err) {
       console.error('WASM-BRIDGE: Deployment failed:', err);
       return { success: false, hash: 'ERR_DEPLOY_FAIL' };
@@ -147,75 +249,138 @@ export class WasmRuntime {
   }
 
   /**
-   * instantiateBlueprint (Phase 20.4)
-   * Atomic construction of runtime objects from canonical graph.
-   * Handles memory allocation, handle binding, and rollback on failure.
+   * verifyBindings — P11
+   * Public method to validate all bindings in an OmegaNode tree against an OmegaContract.
+   * Returns a structured verification report.
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private async instantiateBlueprint(_graph: OmegaNode): Promise<{ success: boolean; error?: string }> {
-    const correlationId = observabilityService.generateCorrelationId();
-    const startTime = Date.now();
+  verifyBindings(graph: OmegaNode, contract: OmegaContract): BindingVerification {
+    const contractParamIds = new Set(contract.parameters.map(p => p.id));
+    const contractPortIds = new Set(contract.ports.map(p => p.id));
+    const allContractIds = new Set([...contractParamIds, ...contractPortIds]);
     
-    if (this.isMock) return { success: true };
+    const details: BindingVerification['details'] = [];
+    const nodeIds: string[] = [];
+    const visited = new Set<string>();
+    let totalNodes = 0;
+    let totalBinds = 0;
+    let resolvedBinds = 0;
+    let orphanBinds = 0;
 
-    observabilityService.trackEvent({
-      correlationId,
-      phase: 'PHASE_20_INSTANTIATION',
-      component: 'WASM_RUNTIME',
-      state: 'START',
-      message: 'Materializing runtime instance'
-    });
+    const walk = (node: OmegaNode) => {
+      // Circular reference detection — skip if already visited
+      if (visited.has(node.id)) {
+        console.warn(`[WASM-BRIDGE] Circular reference detected: node '${node.id}' already visited. Skipping.`);
+        return;
+      }
+      visited.add(node.id);
 
-    try {
-      // Simulated materialization logic
-      // In production, this would call WASM exported functions to create the DSP graph
-      
-      // Verification of atomic construction
-      const isValid = true; // Simulated check
-      if (!isValid) throw new Error('Incomplete materialization');
+      totalNodes++;
+      nodeIds.push(node.id);
 
-      const durationMs = Date.now() - startTime;
-      observabilityService.trackEvent({
-        correlationId,
-        phase: 'PHASE_20_INSTANTIATION',
-        component: 'WASM_RUNTIME',
-        state: 'SUCCESS',
-        durationMs,
-        message: 'Runtime instance materialized successfully'
-      });
+      // Check node-level bind
+      if (node.bind) {
+        totalBinds++;
+        if (allContractIds.has(node.bind)) {
+          resolvedBinds++;
+          details.push({ nodeId: node.id, bind: node.bind, status: 'resolved' });
+        } else {
+          orphanBinds++;
+          details.push({ nodeId: node.id, bind: node.bind, status: 'orphan' });
+        }
+      }
 
-      return { success: true };
-    } catch (err: unknown) {
-      const error = err as Error;
-      const durationMs = Date.now() - startTime;
-      observabilityService.trackEvent({
-        correlationId,
-        phase: 'PHASE_20_INSTANTIATION',
-        component: 'WASM_RUNTIME',
-        state: 'FAILURE',
-        durationMs,
-        code: 'MATERIALIZATION_FAILED',
-        message: error.message
-      });
+      // Check port-level binds
+      if (node.ports) {
+        for (const port of node.ports) {
+          if (port.bind) {
+            totalBinds++;
+            const portNodeId = `${node.id}/${port.id}`;
+            if (allContractIds.has(port.bind)) {
+              resolvedBinds++;
+              details.push({ nodeId: portNodeId, bind: port.bind, status: 'resolved' });
+            } else {
+              orphanBinds++;
+              details.push({ nodeId: portNodeId, bind: port.bind, status: 'orphan' });
+            }
+          }
+        }
+      }
 
-      this.rollback(correlationId);
-      return { success: false, error: error.message };
-    }
+      // Recurse into children
+      if (node.children) {
+        for (const child of node.children) {
+          walk(child);
+        }
+      }
+    };
+
+    walk(graph);
+
+    return {
+      totalNodes,
+      totalBinds,
+      resolvedBinds,
+      orphanBinds,
+      contractParamCount: contract.parameters.length,
+      contractPortCount: contract.ports.length,
+      nodeIds,
+      details
+    };
   }
 
   /**
-   * rollback
-   * Reverts handles and bindings to previous stable state.
+   * instantiateBlueprint (Phase 20.4) — P11 Enhanced
+   * Atomic construction of runtime objects from canonical graph.
+   * Delegates tree traversal to verifyBindings and wraps results as MaterializationResult.
    */
-  private rollback(correlationId?: string) {
-    observabilityService.trackEvent({
-      correlationId: correlationId || 'system',
-      phase: 'PHASE_20_INSTANTIATION',
-      component: 'WASM_RUNTIME',
-      state: 'ROLLBACK',
-      message: 'Rollback executed. Partial handles cleared.'
-    });
-    // Logic to revert WASM state
+  private instantiateBlueprint(
+    graph: OmegaNode,
+    contract?: OmegaContract
+  ): MaterializationResult {
+    if (this.isMock) {
+      return { 
+        success: true, 
+        nodeCount: 0, 
+        bindingCount: 0, 
+        orphanBindings: [], 
+        boundNodes: [],
+        materializedNodeIds: [] 
+      };
+    }
+
+    // Reuse verifyBindings for tree traversal — no duplicate walk
+    const verification = contract ? this.verifyBindings(graph, contract) : undefined;
+
+    if (!verification) {
+      // No contract — just report node count without binding details
+      let nodeCount = 0;
+      const materializedNodeIds: string[] = [];
+      const visited = new Set<string>();
+      const walk = (node: OmegaNode) => {
+        if (visited.has(node.id)) return;
+        visited.add(node.id);
+        nodeCount++;
+        materializedNodeIds.push(node.id);
+        if (node.children) node.children.forEach(walk);
+      };
+      walk(graph);
+      return { success: true, nodeCount, bindingCount: 0, orphanBindings: [], boundNodes: [], materializedNodeIds };
+    }
+
+    return {
+      success: true,
+      nodeCount: verification.totalNodes,
+      bindingCount: verification.totalBinds,
+      orphanBindings: verification.details
+        .filter(d => d.status === 'orphan')
+        .map(d => ({ nodeId: d.nodeId, bind: d.bind })),
+      boundNodes: verification.details.map(d => ({
+        nodeId: d.nodeId,
+        bind: d.bind,
+        resolved: d.status === 'resolved'
+      })),
+      materializedNodeIds: verification.nodeIds // All node IDs, including nodes without binds
+    };
   }
 
   private computeManifestHash(manifest: OMEGA_Manifest): string {
@@ -236,6 +401,18 @@ export class WasmRuntime {
   enableMockMode() {
     this.isMock = true;
     console.warn('WASM-BRIDGE: Mock mode enabled. DSP execution is simulated.');
+  }
+
+  /**
+   * dispose
+   * Cleanup — stops the batch timer so Node.js can exit cleanly in tests.
+   */
+  dispose() {
+    if (this.batchTimer !== null) {
+      clearInterval(this.batchTimer);
+      this.batchTimer = null;
+    }
+    this.rpc.disconnect();
   }
 
   /**
@@ -275,4 +452,25 @@ export class WasmRuntime {
   }
 }
 
-export const wasmRuntime = new WasmRuntime();
+/**
+ * Lazy singleton — creates the WasmRuntime instance on first access, not on module import.
+ * This avoids timers (setInterval) being created during module evaluation in tests.
+ */
+let _wasmRuntime: WasmRuntime | null = null;
+
+function getWasmRuntimeSingleton(): WasmRuntime {
+  if (!_wasmRuntime) {
+    _wasmRuntime = new WasmRuntime();
+  }
+  return _wasmRuntime;
+}
+
+/**
+ * Proxy-based singleton that defers instance creation until first property access.
+ * Backward compatible: existing callers using `import { wasmRuntime }` work unchanged.
+ */
+export const wasmRuntime: WasmRuntime = new Proxy({} as WasmRuntime, {
+  get(_target, prop: string | symbol) {
+    return (getWasmRuntimeSingleton() as unknown as Record<string | symbol, unknown>)[prop];
+  }
+});

@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Renderiza un componente para editar propiedades de identidad como tipo, ID canonical, autoridad y etiqueta de visualización de entidades manifestadas en el editor de manifesto OMEGA.
+ * @purpose_en Renders a component for editing identity properties such as type, canonical ID, authority, and display label of manifest entities in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:7,sig:1du1rf9
+ * @lastUpdated 2026-06-15T11:38:44.611Z
+ */
+
 import React from 'react';
 import type { ManifestEntity, OMEGA_Manifest, OmegaNode } from '@/omega-ui-core/types/manifest';
 import { getInspectorModel, buildInspectorPatch } from '@/features/manifest-editor/hooks/entities/ucaInspectorModel';
@@ -155,6 +165,7 @@ export default function EntityIdentity({ entity, rootManifest, rootTree, onUpdat
       {exportSelectedAsBlueprint && 'kind' in entity && (
         <button
           onClick={() => exportSelectedAsBlueprint(entity.id)}
+          aria-label="Export as blueprint"
           className="mt-3 w-full flex items-center justify-center gap-2 bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 rounded-xs py-2 px-3 text-[8px] font-black uppercase tracking-wider transition-all duration-300"
         >
           <Download className="w-3.5 h-3.5" />

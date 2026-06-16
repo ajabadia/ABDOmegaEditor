@@ -3,11 +3,14 @@
 /**
  * @purpose Renderiza una guía interactiva de onboarding para los usuarios del editor Manifest OMEGA, guiándolos a través de las principales características y funcionalidades.
  * @purpose_en Renders an interactive onboarding walkthrough for users of the OMEGA Manifest Editor, guiding them through key features and functionalities.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
  * @fingerprint exports:5,imports:3,sig:1k9b175
- * @lastUpdated 2026-06-15T06:42:10.597Z
+ * @lastUpdated 2026-06-15T13:00:28.244Z
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, startTransition } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Compass, Layout, Layers, Zap, Shield, Keyboard,
@@ -133,7 +136,7 @@ export default function OnboardingWalkthrough({
 
   // Reset step when opening
   useEffect(() => {
-    if (isOpen) setCurrentStep(0);
+    if (isOpen) startTransition(() => setCurrentStep(0));
   }, [isOpen]);
 
   // Compute tooltip position for target selectors
@@ -173,7 +176,7 @@ export default function OnboardingWalkthrough({
 
   // Recalc on step change and resize
   useEffect(() => {
-    recalcPosition();
+    startTransition(() => recalcPosition());
     window.addEventListener('resize', recalcPosition);
     return () => window.removeEventListener('resize', recalcPosition);
   }, [recalcPosition]);
@@ -266,6 +269,7 @@ export default function OnboardingWalkthrough({
                   </div>
                   <button
                     onClick={handleSkip}
+                    aria-label="Skip tour"
                     className="p-1 rounded-xs text-white/20 hover:text-white/60 hover:bg-white/5 transition-colors"
                     title="Skip tour"
                   >
@@ -283,6 +287,7 @@ export default function OnboardingWalkthrough({
                   <button
                     onClick={handlePrev}
                     disabled={isFirst}
+                    aria-label="Go to previous step"
                     className={`flex items-center gap-1 px-3 py-1.5 rounded-xs text-[8px] font-bold uppercase tracking-wider transition-all ${
                       isFirst
                         ? 'text-white/10 cursor-not-allowed'
@@ -294,6 +299,7 @@ export default function OnboardingWalkthrough({
                   </button>
                   <button
                     onClick={handleNext}
+                    aria-label={isLast ? 'Complete tour' : 'Go to next step'}
                     className="flex items-center gap-1.5 px-4 py-1.5 rounded-xs bg-primary/20 border border-primary/30 text-primary text-[8px] font-black uppercase tracking-wider hover:bg-primary/30 transition-all"
                   >
                     {isLast ? (

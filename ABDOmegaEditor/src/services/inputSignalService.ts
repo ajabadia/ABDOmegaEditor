@@ -1,4 +1,14 @@
 /**
+ * @purpose Gestiona generadores de señal virtual para simulación de entrada en el editor manifest OMEGA.
+ * @purpose_en Manages virtual signal generators for input port simulation in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Business Service
+ * @complexity Medium
+ * @fingerprint exports:3,imports:0,sig:5oonld
+ * @lastUpdated 2026-06-15T17:00:16.005Z
+ */
+
+/**
  * OMEGA INPUT SIGNAL SERVICE - ERA R2
  * Manages virtual signal generators for input port simulation.
  * Extended with 10 wave types, ADSR envelope, sample-and-hold, sequencer.

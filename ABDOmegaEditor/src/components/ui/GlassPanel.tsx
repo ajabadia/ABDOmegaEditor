@@ -1,8 +1,13 @@
 "use client";
 
 /**
- * @purpose Gestiona y renderiza un panel con efecto de vidrio que responde a eventos de hover.
- * @lastUpdated 2026-06-14T15:49:50.406Z
+ * @purpose Renderiza un componente panel de vidrio que responde a eventos de desplazamiento del ratón con escalado y cambios de color de borde.
+ * @purpose_en Renders a glass panel component that responds to hover events with scaling and border color changes.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:0,imports:3,sig:1pz9sl5
+ * @lastUpdated 2026-06-15T10:51:53.481Z
  */
 
 

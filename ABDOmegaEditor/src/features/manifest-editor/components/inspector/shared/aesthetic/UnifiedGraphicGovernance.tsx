@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona configuraciones para el gobierno de activos gráficos en el editor de manifesto OMEGA, incluyendo selección de variantes, modificación del modo y propiedades como zoom y desplazamientos.
+ * @purpose_en Manages configurations for graphic asset governance in the OMEGA manifest editor, including selection of variants, mode switching, and properties like zoom and offsets.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:7,sig:1jn2g8p
+ * @lastUpdated 2026-06-15T11:41:35.613Z
+ */
+
 import { Image as ImageIcon, Film, Layers, Move, Maximize } from 'lucide-react';
 import { getElementDefinition } from '@/omega-ui-core/governance/ElementCatalog';
 import type { OMEGA_Manifest, OmegaStyleNode } from '@/omega-ui-core/types/manifest';
@@ -57,6 +67,7 @@ export default function UnifiedGraphicGovernance({
                   <button
                     key={mode}
                     onClick={() => setGraphicMode(mode)}
+                    aria-label={`Switch to ${mode} mode`}
                     className={`flex-1 rounded flex items-center justify-center gap-1.5 transition-all ${graphicMode === mode ? 'bg-accent text-black font-black' : 'text-white/40 hover:text-white/60 font-bold'}`}
                   >
                     {mode === 'static' ? <ImageIcon className="w-2.5 h-2.5" /> : <Film className="w-2.5 h-2.5" />}
@@ -118,6 +129,7 @@ export default function UnifiedGraphicGovernance({
                       <button
                         key={m}
                         onClick={() => onChange({ mode: m })}
+                        aria-label={`Set behavior to ${m}`}
                         className={`flex-1 rounded text-[6px] font-black uppercase transition-all ${values.mode === m ? 'bg-accent/20 text-accent' : 'text-white/20 hover:text-white/40'}`}
                       >
                         {m}
@@ -132,6 +144,7 @@ export default function UnifiedGraphicGovernance({
                     value={values.zeroAnchor || 0}
                     onChange={(e) => onChange({ zeroAnchor: parseInt(e.target.value) || 0 })}
                     className="w-full bg-black/40 border border-white/5 rounded px-2 h-[26px] text-[10px] font-mono text-accent outline-none"
+                    aria-label="Zero anchor"
                   />
                 </div>
              </div>
@@ -176,6 +189,7 @@ export default function UnifiedGraphicGovernance({
                   });
                 }}
                 className="w-full accent-accent bg-white/10 h-1 rounded-full appearance-none cursor-pointer"
+                aria-label="Visual zoom as percentage"
               />
             </div>
 
@@ -189,6 +203,7 @@ export default function UnifiedGraphicGovernance({
                 value={values.offsetX || 0}
                 onChange={(e) => onChange({ offsetX: parseInt(e.target.value) })}
                 className="w-full accent-white/20 bg-white/5 h-1 rounded-full appearance-none cursor-pointer"
+                aria-label="X offset"
               />
             </div>
             <div className="space-y-2">
@@ -200,6 +215,7 @@ export default function UnifiedGraphicGovernance({
                 value={values.offsetY || 0}
                 onChange={(e) => onChange({ offsetY: parseInt(e.target.value) })}
                 className="w-full accent-white/20 bg-white/5 h-1 rounded-full appearance-none cursor-pointer"
+                aria-label="Y offset"
               />
             </div>
           </div>

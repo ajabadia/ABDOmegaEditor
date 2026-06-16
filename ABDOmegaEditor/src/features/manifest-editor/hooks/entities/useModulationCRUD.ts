@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona operaciones CRUD para modulaciones en un manifesto OMEGA utilizando hook de React.
+ * @purpose_en Manages CRUD operations for modulations in an OMEGA manifest using React hooks.
+ * @refactorable false
+ * @classification Custom Hook
+ * @complexity Low
+ * @fingerprint exports:1,imports:2,sig:0486f4
+ * @lastUpdated 2026-06-15T13:10:41.198Z
+ */
+
 import { useCallback } from 'react';
 import type { OMEGA_Manifest, OMEGA_Modulation } from '@/omega-ui-core/types/manifest';
 

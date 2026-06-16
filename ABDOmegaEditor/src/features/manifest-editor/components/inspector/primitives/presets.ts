@@ -1,6 +1,11 @@
 /**
- * @purpose Gestiona perfiles para canales MIDI, tasas de muestreo, ondas y estados booleanos en el editor del manifiesto OMEGA.
- * @lastUpdated 2026-06-14T16:52:22.313Z
+ * @purpose Gestiona presets para canales MIDI, tasas de muestreo, formas de onda y estados booleanos en el editor de manifesto OMEGA.
+ * @purpose_en Manages presets for MIDI channels, sample rates, waveforms, and boolean states in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification Data/Constants
+ * @complexity Low
+ * @fingerprint exports:2,imports:1,sig:ldesk4
+ * @lastUpdated 2026-06-15T11:31:55.567Z
  */
 
 import { Globe, Activity, Zap, List } from 'lucide-react';

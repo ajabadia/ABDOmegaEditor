@@ -1,3 +1,13 @@
+/**
+ * @purpose Renderiza un componente etiqueta estilizado para su exhibición en el editor manifesto OMEGA.
+ * @purpose_en Renders a styled label component for display in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:2,imports:1,sig:usmuwi
+ * @lastUpdated 2026-06-15T16:08:39.298Z
+ */
+
 import type { ComponentStyle, BindConfig } from '../../types/rack';
 
 export interface LabelRendererProps {

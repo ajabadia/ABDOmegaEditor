@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Proporciona métricas para la readinidad del módulo basadas en cobertura de vinculación, auditoría de metadatos, densidad de UI, profundidad de anexos y readinidad general del sistema a partir de un manifesto OMEGA.
+ * @purpose_en Calculates and returns metrics for module readiness based on binding coverage, metadata audit, UI density, attachment depth, and overall system readiness from an OMEGA manifest.
+ * @refactorable false
+ * @classification Custom Hook
+ * @complexity Medium
+ * @fingerprint exports:1,imports:2,sig:15m3ga5
+ * @lastUpdated 2026-06-15T13:22:34.705Z
+ */
+
 import { useMemo } from 'react';
 import type { OMEGA_Manifest, ManifestEntity } from '@/omega-ui-core/types/manifest';
 

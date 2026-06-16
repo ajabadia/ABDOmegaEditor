@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Renderiza un selector para elegir un contenedor de ancla arquitectónica en el editor del manifiesto OMEGA.
- * @lastUpdated 2026-06-14T16:38:31.602Z
+ * @purpose Gestiona un selector de dropdown para seleccionar un contenedor de anclaje arquitectónico en el editor de manifesto OMEGA.
+ * @purpose_en Manages a dropdown selector for choosing an architectural anchor container in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:2,sig:13prut
+ * @lastUpdated 2026-06-15T11:03:45.248Z
  */
 
 import { Layout, Info, Box } from 'lucide-react';
@@ -25,7 +30,7 @@ export default function ArchAnchorSelector({ item, onUpdate, containers, onHelp,
             <span className="text-[9px] font-black uppercase tracking-widest italic text-accent">Architectural Anchor</span>
          </div>
          {onHelp && (
-           <button onClick={() => onHelp('layout')} className="p-1 text-white/20 hover:text-primary transition-colors">
+           <button onClick={() => onHelp('layout')} title="Help: architectural anchor" className="p-1 text-white/20 hover:text-primary transition-colors">
              <Info className="w-3 h-3" />
            </button>
          )}

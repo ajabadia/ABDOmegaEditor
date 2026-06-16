@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona una sección colapsable para ajustes espaciales y estructurales en componentes del editor de manifesto, incluyendo control de tamaño, posición y índice z basado en capacidades disponibles.
+ * @purpose_en Manages a collapsible section for spatial and structural adjustments in manifest editor components, including size, position, and z-index controls based on available capabilities.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:3,sig:82yb1f
+ * @lastUpdated 2026-06-15T11:41:23.008Z
+ */
+
 import { Maximize, Move, Layers } from 'lucide-react';
 import type { OmegaStyleNode } from '@/types/manifest';
 import InspectorCollapsible from '../InspectorCollapsible';
@@ -41,6 +51,7 @@ export default function SpatialGovernance({ values, capabilities, onChange }: Sp
                   value={values.width || 48}
                   onChange={(e) => onChange({ width: parseInt(e.target.value) })}
                   className="w-full h-1 bg-accent/10 rounded-full appearance-none cursor-pointer accent-accent"
+                  aria-label="Width in pixels"
                 />
               </div>
               <div className="space-y-1.5">
@@ -52,6 +63,7 @@ export default function SpatialGovernance({ values, capabilities, onChange }: Sp
                   value={values.height || 48}
                   onChange={(e) => onChange({ height: parseInt(e.target.value) })}
                   className="w-full h-1 bg-accent/10 rounded-full appearance-none cursor-pointer accent-accent"
+                  aria-label="Height in pixels"
                 />
               </div>
             </div>
@@ -81,6 +93,7 @@ export default function SpatialGovernance({ values, capabilities, onChange }: Sp
                   value={values.offsetX || 0}
                   onChange={(e) => onChange({ offsetX: parseInt(e.target.value) })}
                   className="w-full h-1 bg-accent/10 rounded-full appearance-none cursor-pointer accent-accent"
+                  aria-label="Offset X position"
                 />
               </div>
               <div className="space-y-1.5">
@@ -92,6 +105,7 @@ export default function SpatialGovernance({ values, capabilities, onChange }: Sp
                   value={values.offsetY || 0}
                   onChange={(e) => onChange({ offsetY: parseInt(e.target.value) })}
                   className="w-full h-1 bg-accent/10 rounded-full appearance-none cursor-pointer accent-accent"
+                  aria-label="Offset Y position"
                 />
               </div>
             </div>
@@ -113,6 +127,7 @@ export default function SpatialGovernance({ values, capabilities, onChange }: Sp
               value={values.zIndex || 1}
               onChange={(e) => onChange({ zIndex: parseInt(e.target.value) })}
               className="w-full h-1 bg-accent/10 rounded-full appearance-none cursor-pointer accent-accent"
+              aria-label="Layer stack order (z-index)"
             />
           </div>
         )}

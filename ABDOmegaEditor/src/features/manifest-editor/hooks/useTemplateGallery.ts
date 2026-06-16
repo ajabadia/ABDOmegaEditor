@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona el descubrimiento y selección de plantillas UCA en el editor de manifesto OMEGA.
+ * @purpose_en Manages the discovery and selection of UCA templates in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification Custom Hook
+ * @complexity Medium
+ * @fingerprint exports:1,imports:3,sig:11vqwo7
+ * @lastUpdated 2026-06-15T13:22:59.412Z
+ */
+
 import { useState, useCallback, useMemo } from 'react';
 import type { ModuleTemplate } from '@/omega-ui-core/types/manifest';
 

@@ -1,5 +1,15 @@
 'use client';
- 
+
+/**
+ * @purpose Renderiza secciones para gestionar identidad y propiedades de entidades en el editor de manifesto OMEGA.
+ * @purpose_en Renders sections for managing identity and properties of entities in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:6,sig:aj739x
+ * @lastUpdated 2026-06-15T11:39:14.875Z
+ */
+
 import type { OMEGA_Manifest, OmegaNode } from '@/omega-ui-core/types/manifest';
  
 // Modular Sub-components
@@ -27,7 +37,6 @@ export default function IdentitySection({  item,
   rootTree,
   resolveAsset,
   exportSelectedAsBlueprint,
-  onSaveGroupAsBlueprint: _onSaveGroupAsBlueprint
 }: IdentitySectionProps) {
   const isModule = 'metadata' in item;
  

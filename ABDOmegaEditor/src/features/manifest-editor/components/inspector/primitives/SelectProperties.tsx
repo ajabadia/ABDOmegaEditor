@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona y renderiza propiedades para seleccionar opciones en una interfaz de editor de manifiesto, incluyendo agregar, editar y aplicar presets.
- * @lastUpdated 2026-06-14T16:52:33.635Z
+ * @purpose Gestiona y renderiza propiedades para seleccionar opciones en una interfaz de editor de manifesto, incluyendo agregar, editar y aplicar plantillas.
+ * @purpose_en Manages and renders properties for selecting options in a manifest editor interface, including adding, editing, and applying presets.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:4,sig:185yj3a
+ * @lastUpdated 2026-06-15T11:31:59.765Z
  */
 
 import { List, Plus, Trash2, Hash, Type, Zap } from 'lucide-react';
@@ -54,6 +59,7 @@ export default function SelectProperties({ item, manifest, onUpdate, setActiveSe
             <button
               key={id}
               onClick={() => applyPreset(id)}
+              aria-label={`Inject preset: ${p.label}`}
               className="flex items-center gap-3 p-2 bg-black/40 border border-outline/10 rounded-xs hover:border-primary/40 hover:bg-primary/5 transition-all group text-left"
             >
               <div className="w-6 h-6 shrink-0 rounded-xs bg-white/5 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
@@ -80,6 +86,7 @@ export default function SelectProperties({ item, manifest, onUpdate, setActiveSe
           </label>
           <button 
             onClick={addOption}
+            aria-label="Add option entry"
             className="flex items-center gap-1.5 px-2 py-1 bg-primary/10 border border-primary/20 rounded-xs text-primary hover:bg-primary/20 transition-all"
           >
             <Plus className="w-2.5 h-2.5" />
@@ -95,6 +102,7 @@ export default function SelectProperties({ item, manifest, onUpdate, setActiveSe
                    <Type className="w-2.5 h-2.5 text-foreground/20" />
                    <input 
                      type="text" 
+                     aria-label={`Option ${idx + 1} label`}
                      value={opt.label}
                      onChange={(e) => {
                        const next = [...options];
@@ -108,6 +116,7 @@ export default function SelectProperties({ item, manifest, onUpdate, setActiveSe
                    <Hash className="w-2.5 h-2.5 text-foreground/20" />
                    <input 
                      type="number" 
+                     aria-label={`Option ${idx + 1} value`}
                      value={opt.value}
                      onChange={(e) => {
                        const next = [...options];
@@ -120,6 +129,7 @@ export default function SelectProperties({ item, manifest, onUpdate, setActiveSe
               </div>
               <button 
                 onClick={() => updateOptions(options.filter((_: SelectOption, i: number) => i !== idx))}
+                aria-label={`Delete option ${opt.label}`}
                 className="p-2 text-foreground/20 hover:text-red-400 hover:bg-red-500/5 rounded-xs transition-all opacity-0 group-hover:opacity-100"
               >
                 <Trash2 className="w-3 h-3" />

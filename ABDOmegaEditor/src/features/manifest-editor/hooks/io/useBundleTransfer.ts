@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona subcargas y actualizaciones de recursos y manifestos para el editor de manifestos OMEGA.
+ * @purpose_en Manages subuploads and updates of resources and manifests for the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Custom Hook
+ * @complexity Medium
+ * @fingerprint exports:1,imports:14,sig:dyzh20
+ * @lastUpdated 2026-06-15T13:10:50.983Z
+ */
+
 import { useCallback } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import yaml from 'js-yaml';

@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona historias de entrada y estados para el editor de manifesto OMEGA, incluyendo cambios de contenido, selecciones de UI y capturas de snapshot.
+ * @purpose_en Manages history entries and states for the OMEGA manifest editor, including content changes, UI selections, and snapshots.
+ * @refactorable false
+ * @classification Type Definition
+ * @complexity Low
+ * @fingerprint exports:4,imports:1,sig:n6cifl
+ * @lastUpdated 2026-06-15T15:16:37.083Z
+ */
+
 import type { OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
 
 /**

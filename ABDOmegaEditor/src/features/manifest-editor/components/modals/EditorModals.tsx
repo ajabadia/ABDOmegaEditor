@@ -1,9 +1,18 @@
 'use client';
 
+/**
+ * @purpose Gestiona y renderiza varios modales para el editor de manifesto OMEGA, incluyendo ingestión, ayuda, auditoría, mockup, sobre, editor de celda, diferencia y integración de blueprint.
+ * @purpose_en Manages and renders various modals for the OMEGA manifest editor, including ingestion, help, audit, mockup, about, cell editor, difference, and blueprint integration.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:12,sig:1wp4f8h
+ * @lastUpdated 2026-06-15T20:48:50.461Z
+ */
+
 import { AnimatePresence } from 'framer-motion';
 import IngestionModal from './IngestionModal';
 import HelpModal from './HelpModal';
-import AuditModal from './AuditModal';
 import MockupModal from './MockupModal';
 import AboutModal from './AboutModal';
 import UniversalCellEditorModal from './UniversalCellEditorModal';
@@ -26,11 +35,9 @@ interface EditorModalsProps {
   handleBulkUpload: (files: File[]) => void;
   helpState: { isOpen: boolean; sectionId?: string | undefined };
   closeHelp: () => void;
-  isAuditModalOpen: boolean;
-  setIsAuditModalOpen: (open: boolean) => void;
+  // isAuditModalOpen removed — use CompliancePanel in right dock instead
   isAboutModalOpen: boolean;
   setIsAboutModalOpen: (open: boolean) => void;
-  handleNavigateToIssue: (path: string) => void;
   auditResult: AuditResult;
   mockupOpen: boolean;
   setMockupOpen: (open: boolean) => void;
@@ -65,11 +72,9 @@ export default function EditorModals({
   handleBulkUpload,
   helpState,
   closeHelp,
-  isAuditModalOpen,
-  setIsAuditModalOpen,
+
   isAboutModalOpen,
   setIsAboutModalOpen,
-  handleNavigateToIssue,
   auditResult,
   mockupOpen,
   setMockupOpen,
@@ -113,14 +118,6 @@ export default function EditorModals({
         isOpen={helpState.isOpen} 
         initialSectionId={helpState.sectionId} 
         onClose={closeHelp} 
-      />
-
-      <AuditModal 
-        isOpen={isAuditModalOpen} 
-        onClose={() => setIsAuditModalOpen(false)} 
-        onNavigate={handleNavigateToIssue}
-        audit={auditResult} 
-        manifest={manifest} 
       />
 
       <MockupModal 

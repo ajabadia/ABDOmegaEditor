@@ -1,4 +1,14 @@
 /**
+ * @purpose Renderiza un menú desplegable sin estado para aplicaciones industriales utilizando OMEGA UI CORE.
+ * @purpose_en Renders a stateless dropdown menu for industrial applications using OMEGA UI CORE.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:3,imports:0,sig:1b5tcwk
+ * @lastUpdated 2026-06-15T16:09:07.743Z
+ */
+
+/**
  * OMEGA UI CORE — Stateless Select Renderer (Era 7.2.3)
  * Single Source of Truth for Industrial Dropdown Menus.
  */

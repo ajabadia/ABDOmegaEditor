@@ -1,3 +1,13 @@
+/**
+ * @purpose Renderiza un menú desplegable para seleccionar presets de comportamiento de activos con iconos y descripciones.
+ * @purpose_en Renders a dropdown menu for selecting asset behavior presets with icons and descriptions.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:3,sig:1mr2l8d
+ * @lastUpdated 2026-06-15T11:50:44.957Z
+ */
+
 import React from 'react';
 import type { AssetBehaviorPreset } from '@/omega-ui-core/types/assetBehavior';
 import { Cpu, RotateCcw, Sliders, ToggleLeft, CircleDot, Activity, Zap, Monitor, Layout } from 'lucide-react';
@@ -32,6 +42,7 @@ export default function AssetBehaviorPresetSelector({ value, onChange }: AssetBe
           <button
             key={preset.id}
             onClick={() => onChange(preset.id)}
+            aria-label={`Select preset: ${preset.label}`}
             className={`flex flex-col items-start p-3 rounded border transition-all text-left gap-2 ${
               value === preset.id 
                 ? 'bg-accent/10 border-accent shadow-[0_0_15px_rgba(0,242,255,0.1)]' 

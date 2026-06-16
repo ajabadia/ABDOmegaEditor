@@ -1,4 +1,15 @@
 "use client";
+
+/**
+ * @purpose Renderiza una vista previa de entidad fantasma utilizando el mismo motor de renderizado del Virtual Rack.
+ * @purpose_en ** Renders a phantom entity preview using the same rendering engine as the Virtual Rack.
+ * @refactorable false
+ * @classification ** UI Component
+ * @complexity ** Low
+ * @fingerprint exports:1,imports:6,sig:1c3sgsk
+ * @lastUpdated 2026-06-15T11:49:21.392Z
+ */
+
 import type {
   OMEGA_Manifest,
   ManifestEntity,

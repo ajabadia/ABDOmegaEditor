@@ -3,8 +3,11 @@
 /**
  * @purpose Renderiza un componente popover para acciones de undo y redo en el editor de manifesto OMEGA, mostrando una línea del tiempo de eventos históricos con iconos y colores.
  * @purpose_en Renders a popover component for undo and redo actions in the OMEGA manifest editor, displaying a timeline of historical events with icons and colors.
- * @fingerprint exports:2,imports:3,sig:apjeq8
- * @lastUpdated 2026-06-15T05:55:31.401Z
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:2,imports:5,sig:1350fkm
+ * @lastUpdated 2026-06-15T16:07:56.309Z
  */
 
 import React, { useEffect, useRef, useState } from 'react';
@@ -21,6 +24,8 @@ import {
   History,
 } from 'lucide-react';
 import type { HistoryEntry, HistoryEventType } from '@/features/manifest-editor/types/history';
+import type { HistoryEntry as BatchHistoryEntry } from '@/features/manifest-editor/hooks/useBatchHistory';
+import { BATCH_VARIANT_TIMELINE } from '@/features/manifest-editor/hooks/useBatchHistory';
 
 // ── Helpers ─────────────────────────────────────────────────────────────
 
@@ -70,6 +75,10 @@ export interface UndoTimelinePopoverProps {
   past: HistoryEntry[];
   /** Future (redo) history entries — next is first in array */
   future: HistoryEntry[];
+  /** Batch history entries (visibility/lock/group operations) */
+  batchEntries?: BatchHistoryEntry[];
+  /** Undo a batch history entry by index (0 = most recent) */
+  onUndoBatchEntry?: ((index: number) => void) | undefined;
   /** Jump to a specific past entry by index */
   onUndoTo: (index: number) => void;
   /** Undo one step */
@@ -89,6 +98,8 @@ export interface UndoTimelinePopoverProps {
 export default function UndoTimelinePopover({
   past,
   future,
+  batchEntries = [],
+  onUndoBatchEntry,
   onUndoTo,
   onUndo,
   onRedo,
@@ -139,10 +150,14 @@ export default function UndoTimelinePopover({
 
   if (!isOpen) return null;
 
-  const totalSteps = past.length + future.length;
+  const totalSteps = past.length + future.length + batchEntries.length;
 
   // Display past in reverse (newest first) and mark current
   const pastReversed = [...past].reverse();
+
+  // Merge batch entries (already newest-first) with semantic entries for visual timeline
+  // We display them in the "Batch History" section below the semantic history
+  const hasBatchEntries = batchEntries.length > 0;
 
   return (
     <div
@@ -188,6 +203,7 @@ export default function UndoTimelinePopover({
                   ? 'bg-primary/10 border-l-2 border-primary cursor-default'
                   : 'hover:bg-white/5 border-l-2 border-transparent cursor-pointer active:bg-white/10'
               }`}
+              aria-label={isCurrent ? `Current: ${entry.label || entry.type.replace(/_/g, ' ')}` : `Undo to: ${entry.label || entry.type.replace(/_/g, ' ')}`}
             >
               {/* Dot marker */}
               <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
@@ -233,6 +249,7 @@ export default function UndoTimelinePopover({
                   onClose();
                 }}
                 className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-white/5 transition-colors border-l-2 border-transparent cursor-pointer active:bg-white/10"
+                aria-label={`Redo: ${entry.label || entry.type.replace(/_/g, ' ')}`}
               >
                 <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-white/10" />
                 <span className={`shrink-0 ${eventColor(entry.type)}`}>
@@ -248,6 +265,47 @@ export default function UndoTimelinePopover({
             ))}
           </div>
         )}
+
+        {/* ── Batch History entries ── */}
+        {hasBatchEntries && (
+          <>
+            <div className="flex items-center gap-2 px-3 py-1">
+              <div className="flex-1 h-px bg-amber-400/20" />
+              <span className="text-[6px] font-mono uppercase tracking-widest text-amber-400/50">Batch</span>
+              <div className="flex-1 h-px bg-amber-400/20" />
+            </div>
+            {batchEntries.map((entry, idx) => {
+              const timeStr = new Date(entry.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+              const variantClass = BATCH_VARIANT_TIMELINE[entry.variant] || 'border-white/20 bg-white/5 text-white/60';
+              const isUndoable = entry.action === 'visibility' || entry.action === 'lock' || (entry.action === 'group' && entry.value === true);
+              return (
+                <button
+                  key={`batch-${entry.time}-${idx}`}
+                  onClick={() => {
+                    if (isUndoable && onUndoBatchEntry) {
+                      onUndoBatchEntry(idx);
+                      onClose();
+                    }
+                  }}
+                  disabled={!isUndoable}
+                  className={`w-full flex items-center gap-2 px-3 py-1.5 text-left transition-all border-l-2 ${
+                    isUndoable
+                      ? 'hover:bg-white/5 border-transparent cursor-pointer active:bg-white/10'
+                      : 'border-transparent cursor-default opacity-50'
+                  } ${variantClass}`}
+                  aria-label={isUndoable ? `Undo batch: ${entry.message}` : `Batch: ${entry.message}`}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isUndoable ? 'bg-amber-400/60' : 'bg-white/10'}`} />
+                  <span className="text-[7px] shrink-0 opacity-60">{isUndoable ? '↶' : '—'}</span>
+                  <span className="flex-1 truncate text-[7px] font-black uppercase tracking-widest leading-tight">
+                    {entry.message}
+                  </span>
+                  <span className="shrink-0 text-[6px] font-mono opacity-50">{timeStr}</span>
+                </button>
+              );
+            })}
+          </>
+        )}
       </div>
 
       {/* FOOTER: Undo / Redo buttons */}
@@ -256,6 +314,7 @@ export default function UndoTimelinePopover({
           onClick={() => { onUndo(); onClose(); }}
           disabled={past.length === 0}
           className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[8px] font-bold uppercase tracking-wider transition-all border-r wb-outline hover:bg-white/5 active:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed"
+          aria-label="Undo last action"
         >
           <Undo2 className="w-2.5 h-2.5" />
           Undo
@@ -264,6 +323,7 @@ export default function UndoTimelinePopover({
           onClick={() => { onRedo(); onClose(); }}
           disabled={future.length === 0}
           className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[8px] font-bold uppercase tracking-wider transition-all hover:bg-white/5 active:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed"
+          aria-label="Redo last action"
         >
           <Redo2 className="w-2.5 h-2.5" />
           Redo

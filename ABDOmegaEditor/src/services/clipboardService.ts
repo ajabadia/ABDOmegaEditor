@@ -4,8 +4,13 @@ import { STORAGE_KEYS } from '@/features/manifest-editor/constants/storage';
 import { cloneAndRegenerateNodeIds } from '@/features/manifest-editor/utils/idManagement';
 
 /**
- * @purpose Servicio de portapapeles industrial para copiar y pegar nodos/entidades con regeneración automática de IDs
- * @lastUpdated 2026-06-14T17:45:00.000Z
+ * @purpose Gestiona operaciones del portapapeles para copiar y pegar nodos/entidades con regeneración automática de ID en el editor de manifesto OMEGA.
+ * @purpose_en Manages clipboard operations for copying and pasting nodes/entites with automatic ID regeneration in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification Business Service
+ * @complexity Low
+ * @fingerprint exports:1,imports:3,sig:6or5kr
+ * @lastUpdated 2026-06-15T16:56:47.856Z
  */
 export const ClipboardService = {
   copy: (item: OmegaNode | ManifestEntity) => {

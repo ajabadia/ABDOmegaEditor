@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Muestra un componente que muestra una tarjeta de inspección para problemas en manifiestos OMEGA, incluyendo recomendaciones técnicas y opciones para navegar a la ubicación del problema en el editor.
- * @lastUpdated 2026-06-14T15:55:42.014Z
+ * @purpose Gestiona un componente UI reutilizable para mostrar problemas diagnósticos en un editor de manifesto OMEGA con recomendaciones técnicas y opciones de navegación.
+ * @purpose_en Manages a reusable UI component for displaying diagnostic issues in an OMEGA manifest editor with technical recommendations and navigation options.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:3,sig:2pdx4r
+ * @lastUpdated 2026-06-15T10:53:19.208Z
  */
 
 
@@ -96,6 +101,7 @@ export default function InspectionCard({ issue, onNavigate, onClose }: Inspectio
                 onClose();
               }}
               className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-primary hover:text-white transition-colors group/btn"
+              aria-label={`Locate in workbench: ${issue.message}`}
             >
               Locate in Workbench
               <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />

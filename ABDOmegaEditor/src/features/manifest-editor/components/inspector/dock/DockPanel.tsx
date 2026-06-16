@@ -3,8 +3,11 @@
 /**
  * @purpose Renderiza un panel de carga reutilizable para el editor de manifesto OMEGA con título personalizable, icono y contenido.
  * @purpose_en Renders a reusable dock panel for the OMEGA manifest editor with customizable title, icon, and content.
- * @fingerprint exports:1,imports:2,sig:1mvqgv0
- * @lastUpdated 2026-06-15T05:07:34.113Z
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:2,sig:wwuy90
+ * @lastUpdated 2026-06-15T16:07:42.309Z
  */
 
 import React from 'react';
@@ -17,6 +20,8 @@ interface DockPanelProps {
   children: React.ReactNode;
   width?: string;
   variant?: 'default' | 'subtle';
+  /** Accent color for the top indicator strip (CSS color value) */
+  accentColor?: string;
 }
 
 /**
@@ -31,10 +36,18 @@ export function DockPanel({
   onClose,
   children,
   width = 'w-[260px]',
-  variant = 'default'
+  variant = 'default',
+  accentColor
 }: DockPanelProps) {
   return (
-    <div className={`${width} h-full flex flex-col overflow-hidden shrink-0`}>
+    <div className={`${width} h-full flex flex-col overflow-hidden shrink-0 relative`}>
+      {/* Colored top indicator strip */}
+      {accentColor && (
+        <div
+          className="absolute top-0 left-0 right-0 h-[2px] z-10 shrink-0"
+          style={{ backgroundColor: accentColor, opacity: 0.5 }}
+        />
+      )}
       <DockPanelHeader
         title={title}
         icon={icon}

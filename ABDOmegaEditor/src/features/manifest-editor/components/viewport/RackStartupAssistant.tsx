@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Renderiza una asistente de inicio de sesión sobre un bastidor vacío en el editor de manifesto OMEGA, proporcionando opciones para abrir una galería, enlazar una carpeta de trabajo o crear un nuevo bastidor desde cero.
+ * @purpose_en Renders a startup assistant overlay for an empty rack in the OMEGA manifest editor, providing options to open a gallery, link a workspace directory, or create a new rack from scratch.
+ * @refactorable false (contains only static declarations/types/constants)
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:1,sig:16whgdi
+ * @lastUpdated 2026-06-15T13:01:30.886Z
+ */
+
 import { Zap, Layout, FolderOpen, Settings } from 'lucide-react';
 
 interface RackStartupAssistantProps {
@@ -44,6 +54,7 @@ export default function RackStartupAssistant({
         <div className="grid grid-cols-2 gap-4">
           <button
             onClick={onOpenGallery}
+            aria-label="Open blueprint gallery"
             className="flex flex-col items-center gap-3 p-5 border border-outline bg-white/5 hover:border-primary/50 hover:bg-primary/10 transition-all group rounded-xs cursor-pointer"
           >
             <div className="w-10 h-10 rounded-full bg-black/40 flex items-center justify-center border border-white/5 group-hover:border-primary/30 transition-colors">
@@ -57,6 +68,7 @@ export default function RackStartupAssistant({
 
           <button
             onClick={onLinkWorkspace}
+            aria-label={isDirectoryLinked ? 'Open linked workspace' : 'Link workspace directory'}
             className="flex flex-col items-center gap-3 p-5 border border-outline bg-white/5 hover:border-primary/50 hover:bg-primary/10 transition-all group rounded-xs cursor-pointer"
           >
             <div className="w-10 h-10 rounded-full bg-black/40 flex items-center justify-center border border-white/5 group-hover:border-primary/30 transition-colors">
@@ -81,6 +93,7 @@ export default function RackStartupAssistant({
 
         <button
           onClick={onCreateFromScratch}
+          aria-label="Create rack from scratch"
           className="w-full py-4 border border-outline bg-black/40 hover:border-primary/50 hover:bg-white/5 text-[10px] font-black uppercase tracking-[0.15em] text-foreground/60 hover:text-primary transition-all flex items-center justify-center gap-3 rounded-xs group cursor-pointer"
         >
           <Settings className="w-3.5 h-3.5 group-hover:animate-spin-slow" />

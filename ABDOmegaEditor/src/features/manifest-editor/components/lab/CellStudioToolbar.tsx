@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Renderiza una barra de herramientas para gestionar y navegar a través de diferentes pestañas y pasos en el componente CellStudio del editor de manifesto OMEGA.
+ * @purpose_en Renders a toolbar for managing and navigating through different tabs and steps in the CellStudio component of the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:4,sig:1yn3iqw
+ * @lastUpdated 2026-06-15T12:47:08.348Z
+ */
+
 import React from 'react';
 import { Layers, Activity, Settings2 } from 'lucide-react';
 import { OMEGA_ELEMENT_CATALOG } from '@/omega-ui-core/governance/ElementCatalog';
@@ -41,6 +51,7 @@ export function CellStudioToolbar({
       <div className="flex-1 space-y-4">
         <input
           type="text" value={cellData.label || ''}
+          aria-label="Cell identity label"
           onChange={(e) => setCellData({ ...cellData, label: e.target.value })}
           className="bg-transparent text-xl font-black uppercase tracking-tighter wb-text outline-none w-full border-b border-transparent focus:border-accent/40 placeholder:opacity-20"
           placeholder="CELL IDENTITY NAME"
@@ -86,6 +97,8 @@ export function CellStudioToolbar({
                 }}
                 disabled={i > currentStep}
                 aria-current={i === currentStep ? 'step' : undefined}
+                aria-label={`Step ${i + 1}: ${step.label}`}
+                title={`Step ${i + 1}: ${step.label}`}
                 className={`
                   flex items-center gap-1.5 px-3 py-1.5 rounded-xs text-[7px] font-black uppercase tracking-wider
                   transition-all duration-200
@@ -111,6 +124,7 @@ export function CellStudioToolbar({
                 setActiveTab(STEPS[prev].tab as 'fragments' | 'behavior' | 'recipes' | 'properties');
               }}
               disabled={currentStep === 0}
+              title="Previous step"
               className="px-2 py-1.5 rounded-xs text-[7px] font-black uppercase wb-text-muted hover:wb-text disabled:opacity-30 disabled:cursor-not-allowed transition-all"
             >
               ← Back
@@ -122,6 +136,7 @@ export function CellStudioToolbar({
                 setActiveTab(STEPS[next].tab as 'fragments' | 'behavior' | 'recipes' | 'properties');
               }}
               disabled={currentStep === 3}
+              title="Next step"
               className="px-2 py-1.5 rounded-xs text-[7px] font-black uppercase bg-accent text-black hover:brightness-110 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
             >
               Next →
@@ -139,6 +154,8 @@ export function CellStudioToolbar({
             <button
               key={t.id}
               onClick={() => { setActiveTab(t.id as 'fragments' | 'behavior' | 'recipes' | 'properties'); setIsCommandCenterOpen(false); }}
+              aria-label={`Tab: ${t.label}`}
+              title={`Tab: ${t.label}`}
               className={`px-4 py-1.5 rounded-xs text-[8px] font-black uppercase transition-all ${activeTab === t.id && !isCommandCenterOpen ? 'bg-accent text-black shadow-none' : 'wb-text-muted hover:wb-text hover:bg-accent/5'}`}
             >
               <t.icon className="w-3 h-3 inline-block mr-2" /> {t.label}

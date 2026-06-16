@@ -1,4 +1,14 @@
 /**
+ * @purpose Gestiona el renderizado de HTML para estackear y posicionar elementos orbitantes alrededor de un componente central según las opciones especificadas.
+ * @purpose_en Manages the rendering of HTML for stacking and positioning orbitant attachments around a central component according to specified options.
+ * @refactorable false
+ * @classification Helper Utility
+ * @complexity Low
+ * @fingerprint exports:2,imports:3,sig:r2f2li
+ * @lastUpdated 2026-06-15T16:09:44.471Z
+ */
+
+/**
  * OMEGA Attachment Stack Renderer (Era 7.2.3)
  * Logic for stacking and positioning orbitant attachments around a central component.
  */

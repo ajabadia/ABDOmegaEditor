@@ -1,8 +1,11 @@
 /**
  * @purpose Gestiona y exporta datos para el editor de manifesto OMEGA, incluyendo secciones y subsecciones con títulos, contenido, parámetros técnicos y categorías.
  * @purpose_en Manages and exports data for the OMEGA manifest editor, including sections and subsections with titles, content, technical parameters, and categories.
- * @fingerprint exports:3,imports:0,sig:1d89dtk
- * @lastUpdated 2026-06-15T06:31:01.968Z
+ * @refactorable false (contains only static declarations/types/constants)
+ * @classification Data/Constants
+ * @complexity Low
+ * @fingerprint exports:3,imports:0,sig:12d3n4z
+ * @lastUpdated 2026-06-15T12:49:44.706Z
  */
 
 /**

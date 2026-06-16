@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona un componente de seleccionador de colores para seleccionar colores de una paleta y ajustar transparencia en el contexto de un editor de manifestos OMEGA.
+ * @purpose_en Manages a color picker component for selecting colors from a palette and adjusting transparency in the context of an OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:5,sig:1366wrx
+ * @lastUpdated 2026-06-15T11:50:01.641Z
+ */
+
 import React from 'react';
 import { Palette, ChevronDown, ChevronUp } from 'lucide-react';
 import type { OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
@@ -115,6 +125,7 @@ export default function SmartColorPicker({
                 <button
                   key={sys.id}
                   onClick={() => onChange(sys.id)}
+                  aria-label={`Color: ${sys.label}`}
                   className={`group relative p-1.5 border rounded-xs transition-all flex flex-col items-center gap-1 ${
                     value === sys.id ? 'bg-primary/20 border-primary' : 'wb-surface-inset border-outline/5 hover:border-outline/30'
                   }`}
@@ -130,6 +141,7 @@ export default function SmartColorPicker({
                 <button
                   key={token}
                   onClick={() => onChange(token)}
+                  aria-label={`DNA color: ${info.label}`}
                   className={`group relative p-1.5 border rounded-xs transition-all flex flex-col items-center gap-1 ${
                     value === token ? 'bg-primary/20 border-primary' : 'wb-surface-inset border-outline/5 hover:border-outline/30'
                   }`}
@@ -143,6 +155,7 @@ export default function SmartColorPicker({
               {/* TRANSPARENT BUTTON */}
               <button 
                 onClick={() => onChange('transparent')}
+                aria-label="Color: transparent"
                 className={`group relative p-1.5 border rounded-xs transition-all flex flex-col items-center gap-1 ${
                   value === 'transparent' ? 'bg-red-500/20 border-red-500' : 'wb-surface-inset border-outline/5 hover:border-red-500/30'
                 }`}
@@ -166,6 +179,7 @@ export default function SmartColorPicker({
                     type="range" min="0" max="1" step="0.01" value={currentAlpha}
                     onChange={(e) => handleAlphaChange(parseFloat(e.target.value))}
                     className="w-full h-1 bg-accent/10 rounded-full appearance-none cursor-pointer accent-accent"
+                    aria-label={`${label} alpha slider`}
                   />
                </div>
                <div className="w-12">
@@ -176,6 +190,7 @@ export default function SmartColorPicker({
                       handleAlphaChange(val === '' ? 1 : parseInt(val) / 100);
                     }}
                     className="w-full wb-surface-inset border wb-outline rounded-xs px-1 py-1 text-[8px] font-mono wb-text text-center outline-none focus:border-accent/40"
+                    aria-label={`${label} alpha percentage`}
                   />
                </div>
             </div>
@@ -187,6 +202,7 @@ export default function SmartColorPicker({
                   type="color" value={resolvePreview(value)}
                   onChange={(e) => onChange(applyAlpha(e.target.value, currentAlpha))}
                   className="w-10 h-6 rounded-xs border wb-outline bg-transparent cursor-pointer p-0.5 group-hover:border-accent/40 transition-colors"
+                  aria-label={`${label} custom color`}
                 />
               </div>
               <div className="flex-1 relative">
@@ -195,6 +211,7 @@ export default function SmartColorPicker({
                   onChange={(e) => onChange(e.target.value)}
                   placeholder="Inherited / Hex / Token"
                   className="w-full wb-surface-inset border wb-outline rounded-xs px-2 py-1.5 text-[8px] font-mono wb-text outline-none focus:border-accent/40"
+                  aria-label={`${label} custom value`}
                 />
                 {DNA_MAP[value] && (
                   <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[6px] font-black uppercase text-primary/60">Linked</span>

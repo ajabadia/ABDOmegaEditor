@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Renderiza un terminal flotante con animaciones industriales que se pueden mostrar o ocultar.
+ * @purpose_en Renders a floating log terminal with industrial animations that can be shown or hidden.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:0,imports:2,sig:1f85gin
+ * @lastUpdated 2026-06-15T12:48:31.440Z
+ */
+
 import { motion, AnimatePresence } from 'framer-motion';
 import LogTerminal from '../logs/LogTerminal';
 
@@ -29,6 +39,7 @@ const WorkbenchLogs = ({ showLogs, setShowLogs, logs }: WorkbenchLogsProps) => {
              <button 
                onClick={() => setShowLogs(false)}
                className="absolute top-2 right-4 p-1 text-foreground/20 hover:text-foreground/60 transition-colors"
+               title="Close Log Terminal"
              >
                <span className="text-[9px] font-black uppercase tracking-widest">Close</span>
              </button>

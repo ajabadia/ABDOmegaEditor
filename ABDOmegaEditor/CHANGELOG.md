@@ -2,12 +2,81 @@
 
 All notable changes to the OMEGA Manifest Editor will be documented in this file.
 
-## [9.6.0] - 2026-06-16
+## [9.9.1] - 2026-06-16
+### Removed
+- **Audit button from floating toolbar**: Eliminado `audit` de `TOOLBAR_BUTTONS` en `toolbarDefinitions.tsx` (11→10 botones). Redundante con Compliance panel en dock derecho, DockIconStrip y Window menu. `loadConfig()` auto-filtra `audit` de configs persistidos. `Toolbar.tsx`: eliminados `auditBtn`, `Shield` import, `onOpenAudit` prop.
+- **5 ShortcutBadge duplicados del WorkbenchFooter**: Eliminados Orbital (Ctrl+1), Rack (Ctrl+2), Source (Ctrl+3), History (Ctrl+4) y Mini Map (Ctrl+Shift+M) — duplicaban los botones mini-icono del centro. Shortcuts movidos a tooltip nativo HTML: `title="Orbital View (Ctrl+1)"`, etc. ShortcutBadges restantes: Undo, Redo, Cmd Palette, Save (sin duplicado en iconos).
+- **Engine info overlay de vista Orbital**: Eliminado overlay inferior-izquierdo en `NodeCanvas.tsx` con "Engine: OMEGA v7.2.3 (Sovereign)", "Mode: Orbital Hub", "Status: X Elements Online" — texto decorativo sin valor funcional.
+- **Compliance Report del menú Help**: Movido de Help > Compliance Report (deprecated) a Window > Compliance (Audit) como toggle legítimo con `checked`, `onToggleWindow('window_compliance')` y shortcut `Ctrl+Shift+A`, consistente con Layers/Element Properties/Blueprints.
+
+### Changed
+- **MenuBar**: Compliance Report eliminado de Help, añadido a Window como `{ label: 'Compliance (Audit)', icon: Shield, checked, onClick, shortcut: 'Ctrl+Shift+A' }`.
+
+### Tests
+- **ToolbarCustomizePopover.spec.tsx**: Arrays de orden actualizados (sin 'audit'), counts 11→10, eye icon counts.
+- **MenuBar.spec.tsx**: Test "Guided Tour" antes de "About OMEGA" (reemplaza "Compliance Report"), nuevo test Window > Compliance toggle.
+- **WorkbenchFooter.spec.tsx**: Titles actualizados para incluir shortcuts: "Orbital View (Ctrl+1)", etc.
+
+## [9.9.0] - 2026-06-16
+### Added
+- **Resizable Panels (P9)**: `react-resizable-panels` integrado en `RightDockContainer`. `PanelGroup`/`Panel`/`PanelResizeHandle` reemplazan el antiguo sistema de anchos fijos (260-320px) con splitters redimensionables entre todos los paneles del dock (Layers, Properties, Rack, Compliance, Blueprints, Logs, Info/History). Tamaños de panel persistidos en localStorage (`omega_dock_panel_sizes`) con `defaultSize` como fallback. `minSize` previene colapso accidental.
+- **Floating Toolbar Customizable (P8)**: `useToolbarCustomization` hook con `moveButton` (drag-and-drop), `toggleVisibility`, `resetToDefault`. `toolbarDefinitions.tsx` con 11 botones en 4 categorías (tools/edit/views/system). Popover de personalización con GripVertical para reordenar, Eye/EyeOff para visibilidad, Reset a defaults. Persistencia en localStorage (`omega_toolbar_config`) con validación de integridad (missing IDs añadidos, unknown IDs filtrados).
+- **Undo Timeline Visual (P6)**: UndoTimelinePopover extendido con integración de batch history (hide/lock/group). Nueva sección "Batch" en el timeline con entradas coloreadas por variante (`BATCH_VARIANT_TIMELINE`), indicador ↶ para entradas undoables, y undo individual de batch entries. 47 tests pasando.
+
+### Changed
+- **UndoTimelinePopover**: Props `batchEntries` y `onUndoBatchEntry` opcionales. Total steps ahora incluye `batchEntries.length`.
+- **WorkbenchFooter**: Nuevos props `batchEntries` y `onUndoBatchEntry` pasados al popover.
+- **WorkbenchContainer**: `useBatchHistory()` llamado a nivel contenedor. `onUndoBatchEntry` implementa undo de visibility/lock/group.
+
+## [9.8.1] - 2026-06-16
+### Added
+- **Temas Visuales Adicionales (P7)**: 3 nuevos temas — Amber (warm), Cyberpunk (neon), High Contrast (max legibility).
+- **ThemeSelector dropdown**: Reemplaza el antiguo ThemeToggle (solo dark/light) con un selector desplegable con indicador de color, lista de 5 temas y checkmark en el activo. Cierre con click outside + Escape.
+- **CSS variables para 5 temas**: `:root` (dark), `[data-ui-theme="light"]`, `[data-ui-theme="amber"]`, `[data-ui-theme="cyberpunk"]`, `[data-ui-theme="high-contrast"]` — cada uno con `--wb-primary`, `--primary-rgb`, `--wb-bg`, `--wb-surface`, `--wb-outline`, `--wb-text`, `--wb-bloom`, `--wb-accent`, `--primitive-*`, `--omega-*`.
+- **Tipo uiTheme expandido**: `"dark" | "light" | "amber" | "cyberpunk" | "high-contrast"` en todos los componentes que referencian `uiTheme` (WorkbenchPane, WorkbenchViewport, WorkbenchInspector, RightDockContainer, DockInfoPanel, PropertyPanel, RulerOverlay, Header, ThemeSelector).
+
+## [9.8.0] - 2026-06-16
 ### Added
 - **Status Bar (P3) completado**: WorkbenchFooter con indicador dirty/validation verificado y marcado como completado en roadmap. Indicador Modified/Saved con timestamp, conteo de errores/warnings de validación en vivo, estado watchdog, indicador de herramienta activa.
 - **Integration tests para Status Bar**: 7 nuevos tests de integración cubriendo combinaciones dirty + errors + watchdog (dirty+connected+errors, dirty+offline+worst-case, clean+idle+ideal, dirty+connected+marquee, etc.). 45 tests total para WorkbenchFooter.
 - **Onboarding Walkthrough (P4)**: Interactive guided tour with 7 steps (Welcome, Header & Menu Bar, Tool Palette, Work Canvas, Inspector Panel, Status Bar, Keyboard Shortcuts). Auto-opens on first visit via localStorage. Highlights target elements with animated glow ring. Accessible anytime via Command Palette (Ctrl+K > Help > "Take a Guided Tour").
 - **isOnboardingOpen state**: Added to workbench state management with TOGGLE_UI_STATE support for open/close control.
+
+## [9.7.0] - 2026-06-15
+### Added
+- **Alignment Shortcuts — Resolución de Colisiones**: Ctrl+Shift+L/H/R/B ahora priorizan alineación cuando hay ≥2 ítems seleccionados. Los toggles de panel (Layers, History, Blueprints, Reset) ceden el shortcut cuando hay multi-selección. Archivos: `useWorkbenchShortcuts.ts`, `useAlignment.ts`, `alignmentConstants.ts`.
+- **Ctrl+Alt+E — Distribute Evenly Both Axes**: Nuevo shortcut que distribuye elementos uniformemente en ambos ejes simultáneamente (grid layout). `computeDistributedBothPositions()` en `useAlignment.ts`.
+- **Auditoría Global de Shortcuts**: 49/49 shortcuts documentados en `helpData.ts` verificados como implementados. 4 shortcuts añadidos: ↑↓←→ (nudge 1px), Shift+↑↓←→ (nudge grid), Enter (confirm ghost), Escape (cancel ghost/context menu).
+- **Ctrl+Shift+A movido a Window**: Antes en Help > deprecated, ahora en Window como panel toggle legítimo con `checked`/`onToggleWindow`.
+- **Indicadores de Prioridad en MenuBar**: Badges ámbar (→Align Left/Center/Right/Bottom) y tooltip cuando ≥2 ítems seleccionados. `ALIGNMENT_OVERRIDE` map + `hasMultiSelection` prop.
+- **Tooltip Contextual en ViewportToolbar**: Contador `Sel: N` ahora muestra qué shortcuts de alineación están activos en modo multi-selección.
+
+### Fixed
+- **4 tests E2E de layers-panel-filters**: Locator ambiguo `button:has-text("Clear")` → `button[title*="Clear all filters"]`.
+- **Deprecated tags**: Eliminado `highlight: 'deprecated'` de 4 ítems funcionales en MenuBar (Link Workspace, Blueprints, Deploy, Module Global Configuration).
+
+### Tests
+- **E2E Suite**: 50/52 tests pasando (2 pre-existing blueprint-store failures).
+
+## [9.6.1] - 2026-06-14
+### Added
+- **Ctrl+Shift+E Shortcut para CellStudio**: Nuevo handler `onOpenCellStudio` en `useWorkbenchShortcuts.ts` con guard `!isInputFocused()`. MenuBar muestra `shortcut: 'Ctrl+Shift+E'` en lugar de `highlight: 'deprecated'`.
+- **Unit Tests para Shortcuts**: 19 tests en `useWorkbenchShortcuts.spec.ts` — Ctrl+Shift+E dispatch, Meta+Shift+E (macOS), case insensitivity, guards en input/textarea/select/contenteditable/monaco, preventDefault, cleanup, coexistencia con Ctrl+S/Z/G.
+
+### Fixed
+- **LayersPanel TypeScript Fix**: `boolean | undefined` por optional chaining en `propOk`. Envuelto en `!!()` coercion.
+
+### Tests
+- **Full typecheck**: `npx tsc --noEmit` → 0 errores. `npx jest` → 19/19 passed.
+
+## [9.6.0] - 2026-06-14
+### Added
+- **Visual Modulation Matrix**: `VisualModulationMatrix.tsx` — matriz SVG drag-and-drop reemplazando `ModulationGrid` modal. Conexiones Bezier con color por tipo de modulación, ghost preview al arrastrar, ajuste de cantidad con scroll-wheel.
+- **Virtual Scrolling LayersPanel**: `react-window@2.0.0-dev.1` — `List` + `rowComponent` para rendimiento con +1000 nodos. Drag & drop a nivel contenedor, expand/collapse preservado.
+
+### Fixed
+- **SVG Coordinate Fix**: Posiciones de links ahora restan `sidebarWidth`/`headerHeight` offset.
+- **Virtual Scrolling TS Fixes**: 9 type errors corregidos (useListRef, FilterParams interface, HistoryEntry import, height/width removidos de List).
 
 ## [9.5.0] - 2026-06-15
 ### Added

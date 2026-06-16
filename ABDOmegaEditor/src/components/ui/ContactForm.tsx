@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Presenta un formulario de contacto con validaciones y notificaciones para el editor de manifiestos OMEGA (ABDOmegaEditor).
- * @lastUpdated 2026-06-14T15:31:27.253Z
+ * @purpose Gestiona un formulario de contacto con características de validación y notificaciones para el editor de manifesto OMEGA (ABDOmegaEditor).
+ * @purpose_en Manages a contact form with validation and notification features for the OMEGA manifest editor (ABDOmegaEditor).
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:8,sig:mu961c
+ * @lastUpdated 2026-06-15T10:51:33.829Z
  */
 
 
@@ -33,8 +38,8 @@ export function ContactForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-8" aria-labelledby="contact-title">
       {/* Honeypot Field (Hidden for humans) */}
-      <div className="sr-only opacity-0 h-0 w-0 overflow-hidden" aria-hidden="true">
-        <input type="text" name="bot_field" tabIndex={-1} autoComplete="off" />
+      <div aria-hidden="true" className="sr-only">
+        <input type="hidden" name="bot_field" autoComplete="off" />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -91,6 +96,7 @@ export function ContactForm() {
 
       <Button
         type="submit"
+        aria-label="Submit contact form"
         disabled={status === "loading" || cooldown}
         className="w-full py-8 text-sm uppercase tracking-widest font-black bg-primary text-zinc-950 group"
       >

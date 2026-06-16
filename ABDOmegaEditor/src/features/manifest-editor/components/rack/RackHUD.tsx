@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Renderiza una interfaz de usuario (HUD) para cambiar entre modo bastidor y navegación por tablas en el editor de manifesto OMEGA.
+ * @purpose_en Renders a HUD for switching between rack mode and tab navigation in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:2,sig:vly1by
+ * @lastUpdated 2026-06-15T12:59:53.608Z
+ */
+
 import { Settings2, PlayCircle } from 'lucide-react';
 
 import type { ManifestEntity, TabName } from '@/types/manifest';
@@ -33,6 +43,7 @@ export const RackHUD = ({
       <div className="flex wb-surface border wb-outline rounded-xs p-1 shadow-2xl backdrop-blur-md transition-colors duration-500 pointer-events-auto">
         <button 
           onClick={() => setIsLiveMode(false)} 
+          aria-label="Switch to engineering mode"
           className={`flex items-center gap-2 px-4 py-1.5 rounded-xs text-[8px] font-black tracking-[0.1em] transition-all ${!isLiveMode ? 'bg-primary text-white shadow-[0_0_15px_rgba(0,240,255,0.3)]' : 'wb-text-muted hover:wb-text'}`}
         >
           <Settings2 className="w-3 h-3" />
@@ -40,6 +51,7 @@ export const RackHUD = ({
         </button>
         <button 
           onClick={() => setIsLiveMode(true)} 
+          aria-label="Switch to live mode"
           className={`flex items-center gap-2 px-4 py-1.5 rounded-xs text-[8px] font-black tracking-[0.1em] transition-all ${isLiveMode ? 'bg-accent text-white shadow-[0_0_15px_rgba(255,140,0,0.3)]' : 'wb-text-muted hover:wb-text'}`}
         >
           <PlayCircle className="w-3 h-3" />
@@ -53,6 +65,7 @@ export const RackHUD = ({
           <button 
             key={t} 
             onClick={() => setActiveTab(t)} 
+            aria-label={`Switch to ${t} tab`}
             className={`px-4 py-1.5 rounded-xs text-[8px] font-black tracking-[0.1em] transition-all flex items-center gap-2 ${activeTab === t ? (isLiveMode ? 'bg-accent text-white shadow-[0_0_10px_rgba(255,140,0,0.2)]' : 'bg-primary text-white shadow-[0_0_10px_rgba(0,240,255,0.2)]') : 'wb-text-muted hover:wb-text'}`}
           >
             <span>{t}</span>

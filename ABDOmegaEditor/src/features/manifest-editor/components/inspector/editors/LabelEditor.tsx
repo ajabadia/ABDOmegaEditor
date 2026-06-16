@@ -1,6 +1,11 @@
 /**
- * @purpose Proporciona un componente para editar propiedades de etiquetas en el editor del manifiesto OMEGA, incluyendo campos comunes y ajustes avanzados opcionales como tamaño y color de fuente.
- * @lastUpdated 2026-06-14T16:47:49.375Z
+ * @purpose Renderiza un componente para editar propiedades del etiquetado en el editor de manifesto OMEGA, incluyendo campos comunes y configuraciones avanzadas como tamaño de fuente y color.
+ * @purpose_en Renders a component for editing label properties in the OMEGA manifest editor, including common fields and optional advanced settings like font size and color.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:2,imports:4,sig:1xo16qe
+ * @lastUpdated 2026-06-15T11:30:05.216Z
  */
 
 import type { ComponentNode } from '../../../../../omega-ui-core/types/rack';

@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Renderiza un enlace estilizado para editar una estilo en la biblioteca, manejando la navegación y mostrando detalles de estilo.
+ * @purpose_en Renders a styled link for editing a style in the library, handling navigation and displaying style details.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:1,sig:dvzu91
+ * @lastUpdated 2026-06-15T11:50:17.463Z
+ */
+
 import { ExternalLink, Palette } from 'lucide-react';
 
 interface StyleLibraryLinkProps {
@@ -36,6 +46,7 @@ export default function StyleLibraryLink({ type, styleId, styleLabel, setActiveS
          
          <button 
             onClick={handleNavigate}
+            aria-label="Edit in library"
             className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-xs text-[7px] font-black uppercase text-primary hover:bg-primary/20 transition-all group"
          >
             <ExternalLink className="w-3 h-3 group-hover:scale-110 transition-transform" />

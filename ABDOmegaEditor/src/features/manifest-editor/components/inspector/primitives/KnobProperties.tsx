@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona un componente para seleccionar y actualizar estilos de manijas en el editor del manifest OMEGA.
- * @lastUpdated 2026-06-14T16:51:48.248Z
+ * @purpose Gestiona un componente para seleccionar y actualizar estilos de botones en el editor de manifesto OMEGA.
+ * @purpose_en Manages a component for selecting and updating knob styles in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:3,sig:16wp90p
+ * @lastUpdated 2026-06-15T11:31:43.514Z
  */
 
 import { Palette } from 'lucide-react';
@@ -49,6 +54,7 @@ export default function KnobProperties({ item, manifest, onUpdate, setActiveSect
               <button
                 key={s.id}
                 onClick={() => updateStyle(s.id, s.aesthetics)}
+                aria-label={`Select style: ${s.label}`}
                 className={`group py-2.5 px-4 rounded-xs border text-[10px] font-black uppercase transition-all text-left flex items-center justify-between ${currentStyleId === s.id ? 'border-primary bg-primary/20 text-primary shadow-[0_0_20px_rgba(0,240,255,0.1)]' : 'wb-surface-subtle wb-outline wb-text-muted hover:wb-text hover:border-primary/30'}`}
               >
                 <div className="flex items-center gap-3">

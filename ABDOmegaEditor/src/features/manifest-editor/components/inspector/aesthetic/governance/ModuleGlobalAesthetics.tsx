@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona un componente para administrar estéticas globales en un editor de manifest OMEGA, incluyendo paleta de tema, textura física del faceplate y ajustes de física atmosférica.
- * @lastUpdated 2026-06-14T16:39:08.343Z
+ * @purpose Gestiona estéticas globales en un editor de manifesto OMEGA, incluyendo el paleta de temas, el texto físico del faceplate y las configuraciones de física atmosférica.
+ * @purpose_en Manages global aesthetics in an OMEGA manifest editor, including theme palette, faceplate physical texture, and atmospheric physics settings.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:6,sig:1x062wo
+ * @lastUpdated 2026-06-15T11:04:01.565Z
  */
 
 import { Layers } from 'lucide-react';

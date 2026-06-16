@@ -57,8 +57,10 @@ exports[`WorkbenchFooter — snapshots should match snapshot for all props set (
       class="flex items-center wb-surface border wb-outline rounded-xs p-0.5 pointer-events-auto h-5 bg-black/40"
     >
       <button
+        aria-label="Orbital View (Ctrl+1)"
+        aria-pressed="false"
         class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
-        title="Orbital View"
+        title="Orbital View (Ctrl+1)"
       >
         <svg
           aria-hidden="true"
@@ -85,8 +87,10 @@ exports[`WorkbenchFooter — snapshots should match snapshot for all props set (
         </svg>
       </button>
       <button
+        aria-label="Virtual Rack (Ctrl+2)"
+        aria-pressed="true"
         class="flex items-center justify-center rounded-xs transition-all w-5 h-4 bg-primary/20 text-primary border border-primary/20 "
-        title="Virtual Rack"
+        title="Virtual Rack (Ctrl+2)"
       >
         <svg
           aria-hidden="true"
@@ -154,8 +158,10 @@ exports[`WorkbenchFooter — snapshots should match snapshot for all props set (
         </svg>
       </button>
       <button
+        aria-label="Source View (Ctrl+3)"
+        aria-pressed="false"
         class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
-        title="Source View"
+        title="Source View (Ctrl+3)"
       >
         <svg
           aria-hidden="true"
@@ -185,8 +191,10 @@ exports[`WorkbenchFooter — snapshots should match snapshot for all props set (
         </svg>
       </button>
       <button
+        aria-label="Timeline / History (Ctrl+4)"
+        aria-pressed="false"
         class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
-        title="Timeline / History"
+        title="Timeline / History (Ctrl+4)"
       >
         <svg
           aria-hidden="true"
@@ -216,6 +224,8 @@ exports[`WorkbenchFooter — snapshots should match snapshot for all props set (
         class="w-px h-3 bg-white/10 mx-1"
       />
       <button
+        aria-label="Toggle Split View (Vertical)"
+        aria-pressed="true"
         class="flex items-center justify-center rounded-xs transition-all w-5 h-4 bg-primary/20 text-primary border border-primary/20 "
         title="Toggle Split View (Vertical)"
       >
@@ -245,6 +255,8 @@ exports[`WorkbenchFooter — snapshots should match snapshot for all props set (
         </svg>
       </button>
       <button
+        aria-label="Toggle Mini Map (Ctrl+Shift+M)"
+        aria-pressed="true"
         class="flex items-center justify-center rounded-xs transition-all w-5 h-4 bg-primary/20 text-primary border border-primary/20 "
         title="Toggle Mini Map (Ctrl+Shift+M)"
       >
@@ -278,6 +290,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for all props set (
     class="flex items-center justify-end gap-3 text-[7px] font-mono uppercase tracking-[0.2em] text-foreground/20 min-w-0"
   >
     <button
+      aria-label="No history"
       class="flex items-center gap-1.5 px-1.5 py-0.5 rounded-xs transition-all text-white/10 cursor-not-allowed"
       disabled=""
       title="No history"
@@ -307,6 +320,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for all props set (
       class="flex items-center gap-1 shrink-0 overflow-hidden"
     >
       <button
+        aria-label="Undo (Ctrl+Z)"
         class="flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/5 bg-transparent text-white/10 cursor-not-allowed"
         disabled=""
         title="Undo (Ctrl+Z)"
@@ -328,6 +342,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for all props set (
         </kbd>
       </button>
       <button
+        aria-label="Redo (Ctrl+Shift+Z)"
         class="hidden md:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/5 bg-transparent text-white/10 cursor-not-allowed"
         disabled=""
         title="Redo (Ctrl+Shift+Z)"
@@ -359,6 +374,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for all props set (
         </kbd>
       </button>
       <button
+        aria-label="Command Palette (Ctrl+K)"
         class="flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/10 bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50"
         title="Command Palette (Ctrl+K)"
       >
@@ -379,6 +395,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for all props set (
         </kbd>
       </button>
       <button
+        aria-label="Save OmegaPack (Ctrl+S)"
         class="hidden md:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/10 bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50"
         title="Save OmegaPack (Ctrl+S)"
       >
@@ -396,116 +413,6 @@ exports[`WorkbenchFooter — snapshots should match snapshot for all props set (
           class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
         >
           S
-        </kbd>
-      </button>
-      <button
-        class="hidden lg:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/10 bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50"
-        title="Orbital View (Ctrl+1)"
-      >
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          Ctrl
-        </kbd>
-        <span
-          class="text-white/20"
-        >
-          +
-        </span>
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          1
-        </kbd>
-      </button>
-      <button
-        class="hidden lg:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-primary/30 bg-primary/10 text-primary hover:bg-primary/20"
-        title="Virtual Rack (Ctrl+2)"
-      >
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          Ctrl
-        </kbd>
-        <span
-          class="text-white/20"
-        >
-          +
-        </span>
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          2
-        </kbd>
-      </button>
-      <button
-        class="hidden xl:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/10 bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50"
-        title="Source Code (Ctrl+3)"
-      >
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          Ctrl
-        </kbd>
-        <span
-          class="text-white/20"
-        >
-          +
-        </span>
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          3
-        </kbd>
-      </button>
-      <button
-        class="hidden xl:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/10 bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50"
-        title="History Timeline (Ctrl+4)"
-      >
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          Ctrl
-        </kbd>
-        <span
-          class="text-white/20"
-        >
-          +
-        </span>
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          4
-        </kbd>
-      </button>
-      <button
-        class="hidden xl:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-primary/30 bg-primary/10 text-primary hover:bg-primary/20"
-        title="Toggle Mini Map (Ctrl+Shift+M)"
-      >
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          Ctrl
-        </kbd>
-        <span
-          class="text-white/20"
-        >
-          +
-        </span>
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          Shift
-        </kbd>
-        <span
-          class="text-white/20"
-        >
-          +
-        </span>
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          M
         </kbd>
       </button>
     </div>
@@ -636,8 +543,10 @@ exports[`WorkbenchFooter — snapshots should match snapshot for clean state wit
       class="flex items-center wb-surface border wb-outline rounded-xs p-0.5 pointer-events-auto h-5 bg-black/40"
     >
       <button
+        aria-label="Orbital View (Ctrl+1)"
+        aria-pressed="false"
         class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
-        title="Orbital View"
+        title="Orbital View (Ctrl+1)"
       >
         <svg
           aria-hidden="true"
@@ -664,8 +573,10 @@ exports[`WorkbenchFooter — snapshots should match snapshot for clean state wit
         </svg>
       </button>
       <button
+        aria-label="Virtual Rack (Ctrl+2)"
+        aria-pressed="true"
         class="flex items-center justify-center rounded-xs transition-all w-5 h-4 bg-primary/20 text-primary border border-primary/20 "
-        title="Virtual Rack"
+        title="Virtual Rack (Ctrl+2)"
       >
         <svg
           aria-hidden="true"
@@ -733,8 +644,10 @@ exports[`WorkbenchFooter — snapshots should match snapshot for clean state wit
         </svg>
       </button>
       <button
+        aria-label="Source View (Ctrl+3)"
+        aria-pressed="false"
         class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
-        title="Source View"
+        title="Source View (Ctrl+3)"
       >
         <svg
           aria-hidden="true"
@@ -764,8 +677,10 @@ exports[`WorkbenchFooter — snapshots should match snapshot for clean state wit
         </svg>
       </button>
       <button
+        aria-label="Timeline / History (Ctrl+4)"
+        aria-pressed="false"
         class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
-        title="Timeline / History"
+        title="Timeline / History (Ctrl+4)"
       >
         <svg
           aria-hidden="true"
@@ -795,6 +710,8 @@ exports[`WorkbenchFooter — snapshots should match snapshot for clean state wit
         class="w-px h-3 bg-white/10 mx-1"
       />
       <button
+        aria-label="Toggle Split View (Vertical)"
+        aria-pressed="false"
         class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
         title="Toggle Split View (Vertical)"
       >
@@ -824,6 +741,8 @@ exports[`WorkbenchFooter — snapshots should match snapshot for clean state wit
         </svg>
       </button>
       <button
+        aria-label="Toggle Mini Map (Ctrl+Shift+M)"
+        aria-pressed="true"
         class="flex items-center justify-center rounded-xs transition-all w-5 h-4 bg-primary/20 text-primary border border-primary/20 "
         title="Toggle Mini Map (Ctrl+Shift+M)"
       >
@@ -857,6 +776,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for clean state wit
     class="flex items-center justify-end gap-3 text-[7px] font-mono uppercase tracking-[0.2em] text-foreground/20 min-w-0"
   >
     <button
+      aria-label="No history"
       class="flex items-center gap-1.5 px-1.5 py-0.5 rounded-xs transition-all text-white/10 cursor-not-allowed"
       disabled=""
       title="No history"
@@ -886,6 +806,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for clean state wit
       class="flex items-center gap-1 shrink-0 overflow-hidden"
     >
       <button
+        aria-label="Undo (Ctrl+Z)"
         class="flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/5 bg-transparent text-white/10 cursor-not-allowed"
         disabled=""
         title="Undo (Ctrl+Z)"
@@ -907,6 +828,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for clean state wit
         </kbd>
       </button>
       <button
+        aria-label="Redo (Ctrl+Shift+Z)"
         class="hidden md:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/5 bg-transparent text-white/10 cursor-not-allowed"
         disabled=""
         title="Redo (Ctrl+Shift+Z)"
@@ -938,6 +860,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for clean state wit
         </kbd>
       </button>
       <button
+        aria-label="Command Palette (Ctrl+K)"
         class="flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/10 bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50"
         title="Command Palette (Ctrl+K)"
       >
@@ -958,6 +881,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for clean state wit
         </kbd>
       </button>
       <button
+        aria-label="Save OmegaPack (Ctrl+S)"
         class="hidden md:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/10 bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50"
         title="Save OmegaPack (Ctrl+S)"
       >
@@ -975,116 +899,6 @@ exports[`WorkbenchFooter — snapshots should match snapshot for clean state wit
           class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
         >
           S
-        </kbd>
-      </button>
-      <button
-        class="hidden lg:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/10 bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50"
-        title="Orbital View (Ctrl+1)"
-      >
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          Ctrl
-        </kbd>
-        <span
-          class="text-white/20"
-        >
-          +
-        </span>
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          1
-        </kbd>
-      </button>
-      <button
-        class="hidden lg:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-primary/30 bg-primary/10 text-primary hover:bg-primary/20"
-        title="Virtual Rack (Ctrl+2)"
-      >
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          Ctrl
-        </kbd>
-        <span
-          class="text-white/20"
-        >
-          +
-        </span>
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          2
-        </kbd>
-      </button>
-      <button
-        class="hidden xl:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/10 bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50"
-        title="Source Code (Ctrl+3)"
-      >
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          Ctrl
-        </kbd>
-        <span
-          class="text-white/20"
-        >
-          +
-        </span>
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          3
-        </kbd>
-      </button>
-      <button
-        class="hidden xl:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/10 bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50"
-        title="History Timeline (Ctrl+4)"
-      >
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          Ctrl
-        </kbd>
-        <span
-          class="text-white/20"
-        >
-          +
-        </span>
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          4
-        </kbd>
-      </button>
-      <button
-        class="hidden xl:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-primary/30 bg-primary/10 text-primary hover:bg-primary/20"
-        title="Toggle Mini Map (Ctrl+Shift+M)"
-      >
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          Ctrl
-        </kbd>
-        <span
-          class="text-white/20"
-        >
-          +
-        </span>
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          Shift
-        </kbd>
-        <span
-          class="text-white/20"
-        >
-          +
-        </span>
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          M
         </kbd>
       </button>
     </div>
@@ -1213,8 +1027,10 @@ exports[`WorkbenchFooter — snapshots should match snapshot for default state (
       class="flex items-center wb-surface border wb-outline rounded-xs p-0.5 pointer-events-auto h-5 bg-black/40"
     >
       <button
+        aria-label="Orbital View (Ctrl+1)"
+        aria-pressed="false"
         class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
-        title="Orbital View"
+        title="Orbital View (Ctrl+1)"
       >
         <svg
           aria-hidden="true"
@@ -1241,8 +1057,10 @@ exports[`WorkbenchFooter — snapshots should match snapshot for default state (
         </svg>
       </button>
       <button
+        aria-label="Virtual Rack (Ctrl+2)"
+        aria-pressed="true"
         class="flex items-center justify-center rounded-xs transition-all w-5 h-4 bg-primary/20 text-primary border border-primary/20 "
-        title="Virtual Rack"
+        title="Virtual Rack (Ctrl+2)"
       >
         <svg
           aria-hidden="true"
@@ -1310,8 +1128,10 @@ exports[`WorkbenchFooter — snapshots should match snapshot for default state (
         </svg>
       </button>
       <button
+        aria-label="Source View (Ctrl+3)"
+        aria-pressed="false"
         class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
-        title="Source View"
+        title="Source View (Ctrl+3)"
       >
         <svg
           aria-hidden="true"
@@ -1341,8 +1161,10 @@ exports[`WorkbenchFooter — snapshots should match snapshot for default state (
         </svg>
       </button>
       <button
+        aria-label="Timeline / History (Ctrl+4)"
+        aria-pressed="false"
         class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
-        title="Timeline / History"
+        title="Timeline / History (Ctrl+4)"
       >
         <svg
           aria-hidden="true"
@@ -1372,6 +1194,8 @@ exports[`WorkbenchFooter — snapshots should match snapshot for default state (
         class="w-px h-3 bg-white/10 mx-1"
       />
       <button
+        aria-label="Toggle Split View (Vertical)"
+        aria-pressed="false"
         class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
         title="Toggle Split View (Vertical)"
       >
@@ -1401,6 +1225,8 @@ exports[`WorkbenchFooter — snapshots should match snapshot for default state (
         </svg>
       </button>
       <button
+        aria-label="Toggle Mini Map (Ctrl+Shift+M)"
+        aria-pressed="true"
         class="flex items-center justify-center rounded-xs transition-all w-5 h-4 bg-primary/20 text-primary border border-primary/20 "
         title="Toggle Mini Map (Ctrl+Shift+M)"
       >
@@ -1434,6 +1260,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for default state (
     class="flex items-center justify-end gap-3 text-[7px] font-mono uppercase tracking-[0.2em] text-foreground/20 min-w-0"
   >
     <button
+      aria-label="No history"
       class="flex items-center gap-1.5 px-1.5 py-0.5 rounded-xs transition-all text-white/10 cursor-not-allowed"
       disabled=""
       title="No history"
@@ -1463,6 +1290,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for default state (
       class="flex items-center gap-1 shrink-0 overflow-hidden"
     >
       <button
+        aria-label="Undo (Ctrl+Z)"
         class="flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/5 bg-transparent text-white/10 cursor-not-allowed"
         disabled=""
         title="Undo (Ctrl+Z)"
@@ -1484,6 +1312,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for default state (
         </kbd>
       </button>
       <button
+        aria-label="Redo (Ctrl+Shift+Z)"
         class="hidden md:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/5 bg-transparent text-white/10 cursor-not-allowed"
         disabled=""
         title="Redo (Ctrl+Shift+Z)"
@@ -1515,6 +1344,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for default state (
         </kbd>
       </button>
       <button
+        aria-label="Command Palette (Ctrl+K)"
         class="flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/10 bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50"
         title="Command Palette (Ctrl+K)"
       >
@@ -1535,6 +1365,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for default state (
         </kbd>
       </button>
       <button
+        aria-label="Save OmegaPack (Ctrl+S)"
         class="hidden md:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/10 bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50"
         title="Save OmegaPack (Ctrl+S)"
       >
@@ -1552,116 +1383,6 @@ exports[`WorkbenchFooter — snapshots should match snapshot for default state (
           class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
         >
           S
-        </kbd>
-      </button>
-      <button
-        class="hidden lg:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/10 bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50"
-        title="Orbital View (Ctrl+1)"
-      >
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          Ctrl
-        </kbd>
-        <span
-          class="text-white/20"
-        >
-          +
-        </span>
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          1
-        </kbd>
-      </button>
-      <button
-        class="hidden lg:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-primary/30 bg-primary/10 text-primary hover:bg-primary/20"
-        title="Virtual Rack (Ctrl+2)"
-      >
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          Ctrl
-        </kbd>
-        <span
-          class="text-white/20"
-        >
-          +
-        </span>
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          2
-        </kbd>
-      </button>
-      <button
-        class="hidden xl:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/10 bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50"
-        title="Source Code (Ctrl+3)"
-      >
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          Ctrl
-        </kbd>
-        <span
-          class="text-white/20"
-        >
-          +
-        </span>
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          3
-        </kbd>
-      </button>
-      <button
-        class="hidden xl:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/10 bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50"
-        title="History Timeline (Ctrl+4)"
-      >
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          Ctrl
-        </kbd>
-        <span
-          class="text-white/20"
-        >
-          +
-        </span>
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          4
-        </kbd>
-      </button>
-      <button
-        class="hidden xl:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-primary/30 bg-primary/10 text-primary hover:bg-primary/20"
-        title="Toggle Mini Map (Ctrl+Shift+M)"
-      >
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          Ctrl
-        </kbd>
-        <span
-          class="text-white/20"
-        >
-          +
-        </span>
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          Shift
-        </kbd>
-        <span
-          class="text-white/20"
-        >
-          +
-        </span>
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          M
         </kbd>
       </button>
     </div>
@@ -1758,8 +1479,10 @@ exports[`WorkbenchFooter — snapshots should match snapshot for dirty state wit
       class="flex items-center wb-surface border wb-outline rounded-xs p-0.5 pointer-events-auto h-5 bg-black/40"
     >
       <button
+        aria-label="Orbital View (Ctrl+1)"
+        aria-pressed="false"
         class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
-        title="Orbital View"
+        title="Orbital View (Ctrl+1)"
       >
         <svg
           aria-hidden="true"
@@ -1786,8 +1509,10 @@ exports[`WorkbenchFooter — snapshots should match snapshot for dirty state wit
         </svg>
       </button>
       <button
+        aria-label="Virtual Rack (Ctrl+2)"
+        aria-pressed="true"
         class="flex items-center justify-center rounded-xs transition-all w-5 h-4 bg-primary/20 text-primary border border-primary/20 "
-        title="Virtual Rack"
+        title="Virtual Rack (Ctrl+2)"
       >
         <svg
           aria-hidden="true"
@@ -1855,8 +1580,10 @@ exports[`WorkbenchFooter — snapshots should match snapshot for dirty state wit
         </svg>
       </button>
       <button
+        aria-label="Source View (Ctrl+3)"
+        aria-pressed="false"
         class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
-        title="Source View"
+        title="Source View (Ctrl+3)"
       >
         <svg
           aria-hidden="true"
@@ -1886,8 +1613,10 @@ exports[`WorkbenchFooter — snapshots should match snapshot for dirty state wit
         </svg>
       </button>
       <button
+        aria-label="Timeline / History (Ctrl+4)"
+        aria-pressed="false"
         class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
-        title="Timeline / History"
+        title="Timeline / History (Ctrl+4)"
       >
         <svg
           aria-hidden="true"
@@ -1917,6 +1646,8 @@ exports[`WorkbenchFooter — snapshots should match snapshot for dirty state wit
         class="w-px h-3 bg-white/10 mx-1"
       />
       <button
+        aria-label="Toggle Split View (Vertical)"
+        aria-pressed="false"
         class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
         title="Toggle Split View (Vertical)"
       >
@@ -1946,6 +1677,8 @@ exports[`WorkbenchFooter — snapshots should match snapshot for dirty state wit
         </svg>
       </button>
       <button
+        aria-label="Toggle Mini Map (Ctrl+Shift+M)"
+        aria-pressed="true"
         class="flex items-center justify-center rounded-xs transition-all w-5 h-4 bg-primary/20 text-primary border border-primary/20 "
         title="Toggle Mini Map (Ctrl+Shift+M)"
       >
@@ -1979,6 +1712,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for dirty state wit
     class="flex items-center justify-end gap-3 text-[7px] font-mono uppercase tracking-[0.2em] text-foreground/20 min-w-0"
   >
     <button
+      aria-label="No history"
       class="flex items-center gap-1.5 px-1.5 py-0.5 rounded-xs transition-all text-white/10 cursor-not-allowed"
       disabled=""
       title="No history"
@@ -2008,6 +1742,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for dirty state wit
       class="flex items-center gap-1 shrink-0 overflow-hidden"
     >
       <button
+        aria-label="Undo (Ctrl+Z)"
         class="flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/5 bg-transparent text-white/10 cursor-not-allowed"
         disabled=""
         title="Undo (Ctrl+Z)"
@@ -2029,6 +1764,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for dirty state wit
         </kbd>
       </button>
       <button
+        aria-label="Redo (Ctrl+Shift+Z)"
         class="hidden md:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/5 bg-transparent text-white/10 cursor-not-allowed"
         disabled=""
         title="Redo (Ctrl+Shift+Z)"
@@ -2060,6 +1796,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for dirty state wit
         </kbd>
       </button>
       <button
+        aria-label="Command Palette (Ctrl+K)"
         class="flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/10 bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50"
         title="Command Palette (Ctrl+K)"
       >
@@ -2080,6 +1817,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for dirty state wit
         </kbd>
       </button>
       <button
+        aria-label="Save OmegaPack (Ctrl+S)"
         class="hidden md:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/10 bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50"
         title="Save OmegaPack (Ctrl+S)"
       >
@@ -2097,116 +1835,6 @@ exports[`WorkbenchFooter — snapshots should match snapshot for dirty state wit
           class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
         >
           S
-        </kbd>
-      </button>
-      <button
-        class="hidden lg:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/10 bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50"
-        title="Orbital View (Ctrl+1)"
-      >
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          Ctrl
-        </kbd>
-        <span
-          class="text-white/20"
-        >
-          +
-        </span>
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          1
-        </kbd>
-      </button>
-      <button
-        class="hidden lg:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-primary/30 bg-primary/10 text-primary hover:bg-primary/20"
-        title="Virtual Rack (Ctrl+2)"
-      >
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          Ctrl
-        </kbd>
-        <span
-          class="text-white/20"
-        >
-          +
-        </span>
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          2
-        </kbd>
-      </button>
-      <button
-        class="hidden xl:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/10 bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50"
-        title="Source Code (Ctrl+3)"
-      >
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          Ctrl
-        </kbd>
-        <span
-          class="text-white/20"
-        >
-          +
-        </span>
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          3
-        </kbd>
-      </button>
-      <button
-        class="hidden xl:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/10 bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50"
-        title="History Timeline (Ctrl+4)"
-      >
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          Ctrl
-        </kbd>
-        <span
-          class="text-white/20"
-        >
-          +
-        </span>
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          4
-        </kbd>
-      </button>
-      <button
-        class="hidden xl:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-primary/30 bg-primary/10 text-primary hover:bg-primary/20"
-        title="Toggle Mini Map (Ctrl+Shift+M)"
-      >
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          Ctrl
-        </kbd>
-        <span
-          class="text-white/20"
-        >
-          +
-        </span>
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          Shift
-        </kbd>
-        <span
-          class="text-white/20"
-        >
-          +
-        </span>
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          M
         </kbd>
       </button>
     </div>
@@ -2357,8 +1985,10 @@ exports[`WorkbenchFooter — snapshots should match snapshot for error watchdog 
       class="flex items-center wb-surface border wb-outline rounded-xs p-0.5 pointer-events-auto h-5 bg-black/40"
     >
       <button
+        aria-label="Orbital View (Ctrl+1)"
+        aria-pressed="false"
         class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
-        title="Orbital View"
+        title="Orbital View (Ctrl+1)"
       >
         <svg
           aria-hidden="true"
@@ -2385,8 +2015,10 @@ exports[`WorkbenchFooter — snapshots should match snapshot for error watchdog 
         </svg>
       </button>
       <button
+        aria-label="Virtual Rack (Ctrl+2)"
+        aria-pressed="true"
         class="flex items-center justify-center rounded-xs transition-all w-5 h-4 bg-primary/20 text-primary border border-primary/20 "
-        title="Virtual Rack"
+        title="Virtual Rack (Ctrl+2)"
       >
         <svg
           aria-hidden="true"
@@ -2454,8 +2086,10 @@ exports[`WorkbenchFooter — snapshots should match snapshot for error watchdog 
         </svg>
       </button>
       <button
+        aria-label="Source View (Ctrl+3)"
+        aria-pressed="false"
         class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
-        title="Source View"
+        title="Source View (Ctrl+3)"
       >
         <svg
           aria-hidden="true"
@@ -2485,8 +2119,10 @@ exports[`WorkbenchFooter — snapshots should match snapshot for error watchdog 
         </svg>
       </button>
       <button
+        aria-label="Timeline / History (Ctrl+4)"
+        aria-pressed="false"
         class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
-        title="Timeline / History"
+        title="Timeline / History (Ctrl+4)"
       >
         <svg
           aria-hidden="true"
@@ -2516,6 +2152,8 @@ exports[`WorkbenchFooter — snapshots should match snapshot for error watchdog 
         class="w-px h-3 bg-white/10 mx-1"
       />
       <button
+        aria-label="Toggle Split View (Vertical)"
+        aria-pressed="false"
         class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
         title="Toggle Split View (Vertical)"
       >
@@ -2545,6 +2183,8 @@ exports[`WorkbenchFooter — snapshots should match snapshot for error watchdog 
         </svg>
       </button>
       <button
+        aria-label="Toggle Mini Map (Ctrl+Shift+M)"
+        aria-pressed="true"
         class="flex items-center justify-center rounded-xs transition-all w-5 h-4 bg-primary/20 text-primary border border-primary/20 "
         title="Toggle Mini Map (Ctrl+Shift+M)"
       >
@@ -2578,6 +2218,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for error watchdog 
     class="flex items-center justify-end gap-3 text-[7px] font-mono uppercase tracking-[0.2em] text-foreground/20 min-w-0"
   >
     <button
+      aria-label="No history"
       class="flex items-center gap-1.5 px-1.5 py-0.5 rounded-xs transition-all text-white/10 cursor-not-allowed"
       disabled=""
       title="No history"
@@ -2607,6 +2248,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for error watchdog 
       class="flex items-center gap-1 shrink-0 overflow-hidden"
     >
       <button
+        aria-label="Undo (Ctrl+Z)"
         class="flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/5 bg-transparent text-white/10 cursor-not-allowed"
         disabled=""
         title="Undo (Ctrl+Z)"
@@ -2628,6 +2270,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for error watchdog 
         </kbd>
       </button>
       <button
+        aria-label="Redo (Ctrl+Shift+Z)"
         class="hidden md:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/5 bg-transparent text-white/10 cursor-not-allowed"
         disabled=""
         title="Redo (Ctrl+Shift+Z)"
@@ -2659,6 +2302,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for error watchdog 
         </kbd>
       </button>
       <button
+        aria-label="Command Palette (Ctrl+K)"
         class="flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/10 bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50"
         title="Command Palette (Ctrl+K)"
       >
@@ -2679,6 +2323,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for error watchdog 
         </kbd>
       </button>
       <button
+        aria-label="Save OmegaPack (Ctrl+S)"
         class="hidden md:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/10 bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50"
         title="Save OmegaPack (Ctrl+S)"
       >
@@ -2696,116 +2341,6 @@ exports[`WorkbenchFooter — snapshots should match snapshot for error watchdog 
           class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
         >
           S
-        </kbd>
-      </button>
-      <button
-        class="hidden lg:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/10 bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50"
-        title="Orbital View (Ctrl+1)"
-      >
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          Ctrl
-        </kbd>
-        <span
-          class="text-white/20"
-        >
-          +
-        </span>
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          1
-        </kbd>
-      </button>
-      <button
-        class="hidden lg:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-primary/30 bg-primary/10 text-primary hover:bg-primary/20"
-        title="Virtual Rack (Ctrl+2)"
-      >
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          Ctrl
-        </kbd>
-        <span
-          class="text-white/20"
-        >
-          +
-        </span>
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          2
-        </kbd>
-      </button>
-      <button
-        class="hidden xl:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/10 bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50"
-        title="Source Code (Ctrl+3)"
-      >
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          Ctrl
-        </kbd>
-        <span
-          class="text-white/20"
-        >
-          +
-        </span>
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          3
-        </kbd>
-      </button>
-      <button
-        class="hidden xl:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/10 bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50"
-        title="History Timeline (Ctrl+4)"
-      >
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          Ctrl
-        </kbd>
-        <span
-          class="text-white/20"
-        >
-          +
-        </span>
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          4
-        </kbd>
-      </button>
-      <button
-        class="hidden xl:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-primary/30 bg-primary/10 text-primary hover:bg-primary/20"
-        title="Toggle Mini Map (Ctrl+Shift+M)"
-      >
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          Ctrl
-        </kbd>
-        <span
-          class="text-white/20"
-        >
-          +
-        </span>
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          Shift
-        </kbd>
-        <span
-          class="text-white/20"
-        >
-          +
-        </span>
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          M
         </kbd>
       </button>
     </div>
@@ -2885,8 +2420,10 @@ exports[`WorkbenchFooter — snapshots should match snapshot for saved with time
       class="flex items-center wb-surface border wb-outline rounded-xs p-0.5 pointer-events-auto h-5 bg-black/40"
     >
       <button
+        aria-label="Orbital View (Ctrl+1)"
+        aria-pressed="false"
         class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
-        title="Orbital View"
+        title="Orbital View (Ctrl+1)"
       >
         <svg
           aria-hidden="true"
@@ -2913,8 +2450,10 @@ exports[`WorkbenchFooter — snapshots should match snapshot for saved with time
         </svg>
       </button>
       <button
+        aria-label="Virtual Rack (Ctrl+2)"
+        aria-pressed="true"
         class="flex items-center justify-center rounded-xs transition-all w-5 h-4 bg-primary/20 text-primary border border-primary/20 "
-        title="Virtual Rack"
+        title="Virtual Rack (Ctrl+2)"
       >
         <svg
           aria-hidden="true"
@@ -2982,8 +2521,10 @@ exports[`WorkbenchFooter — snapshots should match snapshot for saved with time
         </svg>
       </button>
       <button
+        aria-label="Source View (Ctrl+3)"
+        aria-pressed="false"
         class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
-        title="Source View"
+        title="Source View (Ctrl+3)"
       >
         <svg
           aria-hidden="true"
@@ -3013,8 +2554,10 @@ exports[`WorkbenchFooter — snapshots should match snapshot for saved with time
         </svg>
       </button>
       <button
+        aria-label="Timeline / History (Ctrl+4)"
+        aria-pressed="false"
         class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
-        title="Timeline / History"
+        title="Timeline / History (Ctrl+4)"
       >
         <svg
           aria-hidden="true"
@@ -3044,6 +2587,8 @@ exports[`WorkbenchFooter — snapshots should match snapshot for saved with time
         class="w-px h-3 bg-white/10 mx-1"
       />
       <button
+        aria-label="Toggle Split View (Vertical)"
+        aria-pressed="false"
         class="flex items-center justify-center rounded-xs transition-all w-5 h-4 wb-text-muted hover:wb-text  "
         title="Toggle Split View (Vertical)"
       >
@@ -3073,6 +2618,8 @@ exports[`WorkbenchFooter — snapshots should match snapshot for saved with time
         </svg>
       </button>
       <button
+        aria-label="Toggle Mini Map (Ctrl+Shift+M)"
+        aria-pressed="true"
         class="flex items-center justify-center rounded-xs transition-all w-5 h-4 bg-primary/20 text-primary border border-primary/20 "
         title="Toggle Mini Map (Ctrl+Shift+M)"
       >
@@ -3106,6 +2653,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for saved with time
     class="flex items-center justify-end gap-3 text-[7px] font-mono uppercase tracking-[0.2em] text-foreground/20 min-w-0"
   >
     <button
+      aria-label="No history"
       class="flex items-center gap-1.5 px-1.5 py-0.5 rounded-xs transition-all text-white/10 cursor-not-allowed"
       disabled=""
       title="No history"
@@ -3135,6 +2683,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for saved with time
       class="flex items-center gap-1 shrink-0 overflow-hidden"
     >
       <button
+        aria-label="Undo (Ctrl+Z)"
         class="flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/5 bg-transparent text-white/10 cursor-not-allowed"
         disabled=""
         title="Undo (Ctrl+Z)"
@@ -3156,6 +2705,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for saved with time
         </kbd>
       </button>
       <button
+        aria-label="Redo (Ctrl+Shift+Z)"
         class="hidden md:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/5 bg-transparent text-white/10 cursor-not-allowed"
         disabled=""
         title="Redo (Ctrl+Shift+Z)"
@@ -3187,6 +2737,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for saved with time
         </kbd>
       </button>
       <button
+        aria-label="Command Palette (Ctrl+K)"
         class="flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/10 bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50"
         title="Command Palette (Ctrl+K)"
       >
@@ -3207,6 +2758,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for saved with time
         </kbd>
       </button>
       <button
+        aria-label="Save OmegaPack (Ctrl+S)"
         class="hidden md:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/10 bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50"
         title="Save OmegaPack (Ctrl+S)"
       >
@@ -3224,116 +2776,6 @@ exports[`WorkbenchFooter — snapshots should match snapshot for saved with time
           class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
         >
           S
-        </kbd>
-      </button>
-      <button
-        class="hidden lg:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/10 bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50"
-        title="Orbital View (Ctrl+1)"
-      >
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          Ctrl
-        </kbd>
-        <span
-          class="text-white/20"
-        >
-          +
-        </span>
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          1
-        </kbd>
-      </button>
-      <button
-        class="hidden lg:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-primary/30 bg-primary/10 text-primary hover:bg-primary/20"
-        title="Virtual Rack (Ctrl+2)"
-      >
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          Ctrl
-        </kbd>
-        <span
-          class="text-white/20"
-        >
-          +
-        </span>
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          2
-        </kbd>
-      </button>
-      <button
-        class="hidden xl:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/10 bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50"
-        title="Source Code (Ctrl+3)"
-      >
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          Ctrl
-        </kbd>
-        <span
-          class="text-white/20"
-        >
-          +
-        </span>
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          3
-        </kbd>
-      </button>
-      <button
-        class="hidden xl:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-white/10 bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50"
-        title="History Timeline (Ctrl+4)"
-      >
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          Ctrl
-        </kbd>
-        <span
-          class="text-white/20"
-        >
-          +
-        </span>
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          4
-        </kbd>
-      </button>
-      <button
-        class="hidden xl:flex items-center gap-1 px-1 py-0.5 rounded-xs border text-[6px] font-mono font-bold tracking-wider shrink-0 transition-all border-primary/30 bg-primary/10 text-primary hover:bg-primary/20"
-        title="Toggle Mini Map (Ctrl+Shift+M)"
-      >
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          Ctrl
-        </kbd>
-        <span
-          class="text-white/20"
-        >
-          +
-        </span>
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          Shift
-        </kbd>
-        <span
-          class="text-white/20"
-        >
-          +
-        </span>
-        <kbd
-          class="text-[5px] px-0.5 py-px rounded-[1px] bg-white/10 text-white/40 font-mono font-black uppercase leading-none"
-        >
-          M
         </kbd>
       </button>
     </div>

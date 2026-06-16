@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona conexiones WebSocket para comunicación RPC de alta fidelidad con validación de ACK, monitoreo de latencia y bufferización del delta en el editor de manifestos OMEGA.
+ * @purpose_en Manages WebSocket connections for high-fidelity RPC communication with ACK validation, heartbeat monitoring, and delta buffering in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Business Service
+ * @complexity Medium
+ * @fingerprint exports:1,imports:7,sig:11wb19p
+ * @lastUpdated 2026-06-15T17:03:15.037Z
+ */
+
 import type { 
   SyncStatus, 
   RPCRequest, 
@@ -31,9 +41,12 @@ export class OmegaRPCBridge {
   private lastHeartbeatAt = 0;
   private heartbeatInterval: ReturnType<typeof setTimeout> | null = null;
   private readonly HEARTBEAT_TIMEOUT = 3000; // 3 seconds threshold
+  private _wasEverConnected = false;
 
-  constructor(url: string = 'ws://localhost:8081') {
-    this.url = url;
+  constructor(url?: string) {
+    // Lazy connection — only connect when explicitly called via connect().
+    // This avoids ERR_CONNECTION_REFUSED when no engine is running.
+    this.url = url || 'ws://localhost:8081';
     this.sessionId = `session_${Math.random().toString(36).substring(2, 9)}_${Date.now()}`;
   }
 
@@ -45,6 +58,7 @@ export class OmegaRPCBridge {
       this.ws = new WebSocket(this.url);
       
       this.ws.onopen = () => {
+        this._wasEverConnected = true;
         this.updateStatus('in-sync');
         this.lastHeartbeatAt = Date.now();
         this.startHeartbeatMonitor();
@@ -56,18 +70,26 @@ export class OmegaRPCBridge {
       this.ws.onclose = () => {
         this.stopHeartbeatMonitor();
         this.updateStatus('disconnected');
-        setTimeout(() => this.connect(onStatusChange), 5000);
+        if (this._wasEverConnected) {
+          setTimeout(() => this.connect(onStatusChange), 5000);
+        }
       };
 
       this.ws.onerror = (err) => {
         const currentStatus = this.status;
-        if (currentStatus === 'disconnected' || currentStatus === 'syncing') return;
+        // Silent on first connection failure (no engine running) — expected error.
+        // Only warn if we lose an established connection.
+        if (currentStatus === 'disconnected' || currentStatus === 'syncing') {
+          this.updateStatus('disconnected');
+          return;
+        }
         
         console.warn('[OMEGA RPC] Connection Error:', err);
         this.updateStatus('error');
       };
     } catch {
-      this.updateStatus('error');
+      // Silent catch — no engine running is a valid state
+      this.updateStatus('disconnected');
     }
   }
 

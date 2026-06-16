@@ -1,6 +1,11 @@
 /**
- * @purpose Gestiona un componente para editar propiedades de visualización en el editor del manifiesto OMEGA, incluyendo campos de activos y marcos para ajustes avanzados y selección de vinculación para ajustes intermedios.
- * @lastUpdated 2026-06-14T16:46:55.230Z
+ * @purpose Gestiona un componente para editar propiedades de visualización en el editor de manifesto OMEGA, incluyendo campos para activos y cuadros para configuraciones avanzadas, y selección de vinculación para ajustes intermedios.
+ * @purpose_en Manages a component for editing display properties in the OMEGA manifest editor, including fields for assets and frames for advanced settings, and bind selection for intermediate adjustments.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:2,imports:3,sig:g58mcs
+ * @lastUpdated 2026-06-15T11:29:46.256Z
  */
 
 import type { ComponentNode } from '../../../../../omega-ui-core/types/rack';

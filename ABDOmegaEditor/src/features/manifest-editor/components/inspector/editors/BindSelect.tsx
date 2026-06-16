@@ -1,6 +1,11 @@
 /**
- * @purpose Renderiza un componente select desplegable para vincular opciones en el editor del manifiesto OMEGA.
- * @lastUpdated 2026-06-14T16:45:37.634Z
+ * @purpose Renderiza un componente seleccionador dropdown para vincular opciones en el editor de manifesto OMEGA.
+ * @purpose_en Renders a dropdown select component for binding options in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:0,sig:1c71s94
+ * @lastUpdated 2026-06-15T11:14:10.733Z
  */
 
 interface BindSelectProps {

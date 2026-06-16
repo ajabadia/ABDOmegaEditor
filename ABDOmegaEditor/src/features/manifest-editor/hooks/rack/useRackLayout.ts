@@ -1,5 +1,15 @@
 'use client';
- 
+
+/**
+ * @purpose Gestiona y calcula el diseño de un contenedor según los datos del manifesto, incluyendo ancho, alto, elementos, visibilidad y contenedores.
+ * @purpose_en Manages and calculates the layout of a container based on manifest data, including width, height, elements, visibility, and containers.
+ * @refactorable false
+ * @classification Custom Hook
+ * @complexity Medium
+ * @fingerprint exports:1,imports:3,sig:26wqej
+ * @lastUpdated 2026-06-15T13:11:19.087Z
+ */
+
 import { useMemo } from 'react';
 import type { OMEGA_Manifest, ManifestEntity, OmegaNode } from '@/omega-ui-core/types/manifest';
 import { adaptNodeToManifestEntity, calculateWorldPosition } from '../entities/ucaInspectorAdapter';
@@ -43,7 +53,6 @@ export function useRackLayout(manifest: OMEGA_Manifest) {
 
     traverse(tree);
     return entities;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [manifest.ui?.tree]);
  
   // 2. EXTRACT CONTAINERS

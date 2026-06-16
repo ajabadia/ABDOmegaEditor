@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona un mapa de sitio para ABDOmegaEditor, listando páginas de instrumentos y rutas estáticas con metadata adecuada.
+ * @purpose_en Generates a sitemap for ABDOmegaEditor, listing instrument pages and static routes with appropriate metadata.
+ * @refactorable false
+ * @classification Helper Utility
+ * @complexity Low
+ * @fingerprint exports:1,imports:2,sig:1eubkek
+ * @lastUpdated 2026-06-15T17:04:18.784Z
+ */
+
 import type { MetadataRoute } from 'next';
 import { instruments } from '@/data/instruments';
 

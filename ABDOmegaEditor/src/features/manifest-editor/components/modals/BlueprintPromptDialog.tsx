@@ -3,8 +3,11 @@
 /**
  * @purpose Renderiza una dialogo modal para que los usuarios ingresen valores para construir un modulo basado en definiciones de plantilla.
  * @purpose_en Renders a modal dialog for users to input values for assembling a module based on blueprint definitions.
- * @fingerprint exports:1,imports:5,sig:1elwm2w
- * @lastUpdated 2026-06-15T06:29:34.873Z
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:8,sig:ljauia
+ * @lastUpdated 2026-06-15T20:48:43.722Z
  */
 
 import { useState } from 'react';
@@ -12,6 +15,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ModalCloseButton from './ModalCloseButton';
 import ModalActionButton from './ModalActionButton';
 import { Grid3X3 } from 'lucide-react';
+import { useFocusTrap } from '@/features/manifest-editor/hooks/useFocusTrap';
 import type { BlueprintDefinition, BlueprintPlaceholderDefinition, BlueprintPlaceholderValues } from '@/omega-ui-core/types/manifest';
 import BlueprintPreview from '../preview/BlueprintPreview';
 
@@ -45,6 +49,8 @@ export default function BlueprintPromptDialog({
     return initial;
   });
 
+  const focusTrapRef = useFocusTrap(isOpen);
+
   if (!blueprint || !blueprint.placeholders) return null;
 
   const handleConfirm = () => {
@@ -72,6 +78,7 @@ export default function BlueprintPromptDialog({
             className="w-full px-4 py-2.5 bg-black/40 border wb-outline rounded-xs text-[11px] font-bold text-white focus:outline-none focus:border-primary/40"
             value={String(value)}
             onChange={(e) => updateValue(p.id, e.target.value)}
+            aria-label={p.label}
           >
             {(p.allowedValues || []).map((opt: { label: string; value: string | number | boolean } | string | number | boolean) => (
               <option key={String(typeof opt === 'object' ? opt.value : opt)} value={String(typeof opt === 'object' ? opt.value : opt)} className="bg-neutral-900">{String(typeof opt === 'object' ? opt.label : opt)}</option>
@@ -86,6 +93,7 @@ export default function BlueprintPromptDialog({
             className="w-full h-10 bg-black/40 border wb-outline rounded-xs cursor-pointer"
             value={String(value || '#00f2ff')}
             onChange={(e) => updateValue(p.id, e.target.value)}
+            aria-label={p.label}
           />
         );
       
@@ -95,6 +103,7 @@ export default function BlueprintPromptDialog({
             <input
               type="checkbox"
               id={`p-${p.id}`}
+              aria-label={p.label}
               className="w-4 h-4 accent-primary rounded-xs cursor-pointer"
               checked={!!value}
               onChange={(e) => updateValue(p.id, e.target.checked)}
@@ -110,6 +119,7 @@ export default function BlueprintPromptDialog({
             className="w-full px-4 py-2.5 bg-black/40 border wb-outline rounded-xs text-[11px] font-bold text-white focus:outline-none focus:border-primary/40"
             value={Number(value)}
             onChange={(e) => updateValue(p.id, Number(e.target.value))}
+            aria-label={p.label}
           />
         );
 
@@ -121,6 +131,7 @@ export default function BlueprintPromptDialog({
             placeholder={p.hint || `Enter ${p.label}...`}
             value={String(value)}
             onChange={(e) => updateValue(p.id, e.target.value)}
+            aria-label={p.label}
           />
         );
     }
@@ -129,7 +140,13 @@ export default function BlueprintPromptDialog({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md"
+          ref={focusTrapRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label={blueprint ? `Blueprint: ${blueprint.name}` : 'Blueprint Prompt'}
+        >
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -165,7 +182,7 @@ export default function BlueprintPromptDialog({
                   </span>
                 </div>
                 <div className="flex-1 flex items-center justify-center min-h-0">
-                  <BlueprintPreview children={blueprint.rootNode.children} width={280} />
+                  <BlueprintPreview width={280}>{blueprint.rootNode.children}</BlueprintPreview>
                 </div>
                 {/* Legend */}
                 <div className="mt-3 pt-3 border-t wb-outline flex flex-wrap gap-x-3 gap-y-1">

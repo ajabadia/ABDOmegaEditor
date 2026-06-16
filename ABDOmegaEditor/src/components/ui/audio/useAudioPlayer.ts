@@ -1,8 +1,13 @@
 "use client";
 
 /**
- * @purpose El archivo `useAudioPlayer.ts` proporciona un hook React que gestiona la reproducción de archivos de audio y permite controlar el estado de reproducción, tiempo actual y duración del audio, así como también maneja eventos de carga y seek en el progreso de reproducción.
- * @lastUpdated 2026-06-14T15:28:10.492Z
+ * @purpose Gestiona reproducción de audio y control de pistas en el editor de manifesto OMEGA.
+ * @purpose_en Manages audio playback and controls for tracks in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification Custom Hook
+ * @complexity Medium
+ * @fingerprint exports:1,imports:1,sig:c3srpy
+ * @lastUpdated 2026-06-15T10:50:41.867Z
  */
 
 

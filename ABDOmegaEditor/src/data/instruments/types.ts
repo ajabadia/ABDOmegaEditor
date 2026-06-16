@@ -1,6 +1,11 @@
 /**
- * @purpose Define las interfaces para los instrumentos en el editor OMEGA ABDOmegaEditor.
- * @lastUpdated 2026-06-14T15:55:29.865Z
+ * @purpose Gestiona interfaces para instrumentos en el OMEGA ABDOmegaEditor.
+ * @purpose_en Defines interfaces for instruments in the OMEGA ABDOmegaEditor.
+ * @refactorable false
+ * @classification Type Definition
+ * @complexity Low
+ * @fingerprint exports:1,imports:0,sig:1494ddo
+ * @lastUpdated 2026-06-15T10:52:55.703Z
  */
 
 export interface Instrument {

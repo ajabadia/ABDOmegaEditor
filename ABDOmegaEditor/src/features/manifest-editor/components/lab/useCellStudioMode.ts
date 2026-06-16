@@ -1,4 +1,14 @@
 /**
+ * @purpose Gestiona el paso entre modos UI basados en pestañas y stepper utilizando parámetros URL.
+ * @purpose_en Manages the switching between tab-based and stepper-based UI modes in the OMEGA manifest editor using URL parameters.
+ * @refactorable false
+ * @classification Custom Hook
+ * @complexity Low
+ * @fingerprint exports:4,imports:0,sig:ogarpv
+ * @lastUpdated 2026-06-15T12:47:24.619Z
+ */
+
+/**
  * Phase 0: Feature Flag Infrastructure for CellStudio Migration
  * 
  * Provides URL-based mode switching between:

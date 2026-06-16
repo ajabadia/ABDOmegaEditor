@@ -1,4 +1,14 @@
 /**
+ * @purpose Gestiona y descarga contratos técnicos en formatos TypeScript y C++ a partir de manifestos OMEGA.
+ * @purpose_en Manages and downloads technical contracts in TypeScript and C++ formats from OMEGA manifests.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Business Service
+ * @complexity Low
+ * @fingerprint exports:4,imports:1,sig:dbqldw
+ * @lastUpdated 2026-06-15T16:56:52.390Z
+ */
+
+/**
  * OMEGA Contract Service (v7.2.3)
  * Handles generation of technical contracts (enums, schema IDs) from manifests.
  */

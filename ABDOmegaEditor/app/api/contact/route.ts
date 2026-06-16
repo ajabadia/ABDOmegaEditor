@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona contactos entrantes, valida datos y envía notificaciones emergentes a administradores.
+ * @purpose_en Handles incoming contact transmissions, validates data, dispatches alerts to administrators, and sends confirmations to operators using the API Resend.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Business Service
+ * @complexity Medium
+ * @fingerprint exports:1,imports:1,sig:1qdva5t
+ * @lastUpdated 2026-06-15T17:04:03.549Z
+ */
+
 import { NextResponse } from 'next/server';
 
 /**

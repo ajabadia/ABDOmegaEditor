@@ -3,8 +3,11 @@
 /**
  * @purpose Renderiza una barra vertical de iconos para cambiar entre diferentes paneles del editor de manifesto OMEGA.
  * @purpose_en Renders a vertical bar of icons for toggling between different panels in the OMEGA manifest editor.
- * @fingerprint exports:1,imports:2,sig:uytd87
- * @lastUpdated 2026-06-15T05:07:20.787Z
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:3,sig:1unie1e
+ * @lastUpdated 2026-06-15T11:06:31.667Z
  */
 
 import { Layers, Sliders, Info, History, Settings, Zap, Terminal, Shield } from 'lucide-react';

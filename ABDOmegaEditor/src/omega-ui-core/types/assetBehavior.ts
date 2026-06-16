@@ -1,4 +1,14 @@
 /**
+ * @purpose Gestiona tipos para comportamientos de activos y recetas de capas en el editor de manifesto OMEGA.
+ * @purpose_en Defines types for asset behaviors and layer recipes in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification Type Definition
+ * @complexity Low
+ * @fingerprint exports:6,imports:0,sig:r3z8kh
+ * @lastUpdated 2026-06-15T16:10:02.744Z
+ */
+
+/**
  * OMEGA Asset Behavior Model - Phase 12
  * Formalizes how visual assets respond to input, state, and telemetry.
  */

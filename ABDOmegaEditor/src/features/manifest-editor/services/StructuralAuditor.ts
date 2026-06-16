@@ -1,3 +1,13 @@
+/**
+ * @purpose Valida la integridad estructural y coherencia de los manifestos OMEGA a través del análisis semántico, incluyendo colisiones de IDs, referencias de entidades, rangos de parámetros y resolubilidad de enlaces.
+ * @purpose_en Validates the structural integrity and coherence of OMEGA manifests through semantic analysis, including ID collisions, entity references, parameter ranges, and link resolvability.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Business Service
+ * @complexity Medium
+ * @fingerprint exports:2,imports:5,sig:1vihr4w
+ * @lastUpdated 2026-06-15T15:16:16.310Z
+ */
+
 import type { OMEGA_Manifest, OmegaNode, OMEGA_Contract } from '@/omega-ui-core/types/manifest';
 import type { OmegaContract } from '@/services/wasmLoader';
 import type { DiagnosticSource, TabDiagnostics, DiagnosticContext, AuditResult } from '../types/diagnostics';

@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona un ManifestEntity para renderizar en el editor de manifesto OMEGA.
+ * @purpose_en Converts a ManifestEntity to an OmegaNode for rendering in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification Helper Utility
+ * @complexity Low
+ * @fingerprint exports:1,imports:1,sig:wwtv5x
+ * @lastUpdated 2026-06-15T16:55:48.438Z
+ */
+
 import type { ManifestEntity, OmegaNode, NodeRole } from '../types/manifest';
 
 export function entityToNode(entity: ManifestEntity): OmegaNode {

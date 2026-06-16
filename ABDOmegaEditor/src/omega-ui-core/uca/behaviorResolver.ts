@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona estados visuales para activos según sus comportamientos y valores actuales.
+ * @purpose_en Manages visual states for assets based on their behaviors and current values.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Helper Utility
+ * @complexity Low
+ * @fingerprint exports:2,imports:1,sig:dzbz84
+ * @lastUpdated 2026-06-15T16:10:46.698Z
+ */
+
 import type { AssetBehavior, BehaviorMapping } from '../types/assetBehavior';
 
 /**

@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Renderiza una capa de fantasma interactiva para detección de colisiones en tiempo real y inyección de plantillas en el editor de manifesto OMEGA en la ventana de visualización.
+ * @purpose_en Renders an interactive ghost layer for real-time collision detection and blueprint injection in the OMEGA manifest editor's viewport.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:1,sig:1vtjnmg
+ * @lastUpdated 2026-06-15T13:00:55.193Z
+ */
+
 import React from 'react';
 
 interface GhostPreviewOverlayProps {

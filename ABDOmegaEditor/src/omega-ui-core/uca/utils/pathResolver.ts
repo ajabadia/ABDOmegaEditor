@@ -1,4 +1,14 @@
 /**
+ * @purpose Gestiona resolución de IDs jerárquicos y parseo de rutas para componentes en el editor de manifesto OMEGA.
+ * @purpose_en Manages hierarchical ID resolution and path parsing for components in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification Helper Utility
+ * @complexity Low
+ * @fingerprint exports:3,imports:0,sig:tbdqhe
+ * @lastUpdated 2026-06-15T16:55:01.504Z
+ */
+
+/**
  * OMEGA UCA Path Resolver Utility - Phase 17.3
  * Sovereign logic for hierarchical ID resolution and path parsing.
  */

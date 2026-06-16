@@ -1,6 +1,11 @@
 /**
- * @purpose Componente que crea un pie de tarjeta con un botón enlazado a una ruta específica, que muestra el nombre del instrumento y el label asociado.
- * @lastUpdated 2026-06-14T15:28:19.358Z
+ * @purpose Renderiza un componente pie de tarjeta con un botón enlazado que muestra el nombre del instrumento y su etiqueta.
+ * @purpose_en Renders a card footer component with a linked button displaying an instrument name and label.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:3,sig:1frpsko
+ * @lastUpdated 2026-06-16T17:35:39.170Z
  */
 
 import { ArrowUpRight } from "lucide-react";
@@ -24,6 +29,7 @@ export function CardFooter({ href, label, instrumentName }: CardFooterProps) {
           variant="outline" 
           size="sm" 
           className="gap-3 px-6 py-5 text-[10px] uppercase tracking-widest font-bold border-white/10 hover:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary group/btn"
+          aria-label={`${label} ${instrumentName}`}
         >
           {label}
           <ArrowUpRight size={14} className="transition-transform group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 text-primary" />

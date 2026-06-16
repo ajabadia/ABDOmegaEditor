@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona un panel de control para el gobierno industrial, mostrando y administrando las propiedades estéticas y mecánicas según los manifestos y valores proporcionados.
+ * @purpose_en ** Renders a console for industrial governance, displaying and managing aesthetic and mechanical properties based on the manifest and provided values.
+ * @refactorable ** true (contains too many state variables and UI parts)
+ * @classification ** UI Component
+ * @complexity ** Medium
+ * @fingerprint exports:1,imports:12,sig:24k5fu
+ * @lastUpdated 2026-06-15T11:49:45.502Z
+ */
+
 import React from 'react';
 import { Hash } from 'lucide-react';
 import type { OMEGA_Manifest, OmegaStyleNode } from '@/omega-ui-core/types/manifest';

@@ -1,4 +1,14 @@
 /**
+ * @purpose Gestiona la persistencia y ciclo de vida de los bocetos de CellStudio en sessionStorage para la recuperación en el flujo medio.
+ * @purpose_en Manages the persistence and lifecycle of CellStudio drafts in sessionStorage for mid-workflow recovery.
+ * @refactorable false
+ * @classification Custom Hook
+ * @complexity Medium
+ * @fingerprint exports:2,imports:2,sig:11hnkmz
+ * @lastUpdated 2026-06-15T12:47:20.156Z
+ */
+
+/**
  * Phase 0: Draft Persistence for CellStudio Mid-Workflow Recovery
  * 
  * Persists CellStudio state to sessionStorage to prevent data loss

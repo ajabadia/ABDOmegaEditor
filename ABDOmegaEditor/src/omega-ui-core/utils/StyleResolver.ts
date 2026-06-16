@@ -1,4 +1,14 @@
 /**
+ * @purpose Gestiona y aplica estilos visuales para nodos en el editor de manifesto OMEGA, asegurando consistencia temática a través de una cadena de resolución trilateral.
+ * @purpose_en ** Manages and applies visual styles for nodes in the OMEGA manifest editor, ensuring theme consistency across components through a three-level resolution chain.
+ * @refactorable ** true (contains too many state variables and UI parts)
+ * @classification ** Business Service
+ * @complexity ** Medium
+ * @fingerprint exports:15,imports:2,sig:sy6k9f
+ * @lastUpdated 2026-06-15T16:56:05.612Z
+ */
+
+/**
  * OMEGA Style Resolver (Era 9.2.0-dev)
  * 
  * Implements the 3-level resolution chain for the Self-Contained Manifest:
@@ -102,6 +112,7 @@ export function resolveColor(
  */
 export function expandNodeStyle(
   node: OmegaNode,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _manifest?: OMEGA_Manifest
 ): OmegaNode {
   if (!node.style) {
@@ -137,10 +148,12 @@ export function contractNodeStyle(
   if (!defaultAesthetics) return node;
 
   // Extract node style without variant (variant is a selector, not a value)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { variant: _variant, ...nodeStyleValues } = node.style;
 
   // If node has no style values beyond variant → safe to remove
   if (Object.keys(nodeStyleValues).length === 0) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { style: _removed, ...rest } = node;
     return rest as OmegaNode;
   }
@@ -158,6 +171,7 @@ export function contractNodeStyle(
   }
 
   // All properties match default → safe to remove style
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { style: _removed, ...rest } = node;
   return rest as OmegaNode;
 }

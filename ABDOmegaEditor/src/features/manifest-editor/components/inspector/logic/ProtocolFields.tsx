@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona una sección colapsable para editar ajustes del protocolo técnico en el editor de manifest OMEGA.
- * @lastUpdated 2026-06-14T16:50:45.692Z
+ * @purpose Gestiona una sección colapsable para editar configuraciones del protocolo técnico en el editor de manifesto OMEGA.
+ * @purpose_en Manages a collapsible section for editing technical protocol settings in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:3,sig:i1sx5i
+ * @lastUpdated 2026-06-15T11:31:21.741Z
  */
 
 import { Box } from 'lucide-react';

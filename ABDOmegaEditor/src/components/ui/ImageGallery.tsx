@@ -2,7 +2,12 @@
 
 /**
  * @purpose Gestiona una galería de imágenes con navegación previa y siguiente.
- * @lastUpdated 2026-06-14T15:49:57.124Z
+ * @purpose_en Manages a gallery of images with navigation previa and siguiente.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:5,sig:1ryb3a5
+ * @lastUpdated 2026-06-15T10:51:56.863Z
  */
 
 

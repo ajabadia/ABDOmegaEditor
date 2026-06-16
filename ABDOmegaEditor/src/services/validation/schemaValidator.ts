@@ -1,3 +1,13 @@
+/**
+ * @purpose Valida los archivos manifest OMEGA contra las plantillas JSON predeterminadas para versiones 6 y 7, devolviendo problemas de validación si se encuentran.
+ * @purpose_en Validates OMEGA manifest files against predefined JSON schemas for versions 6 and 7, returning validation issues if any are found.
+ * @refactorable false
+ * @classification Business Service
+ * @complexity Low
+ * @fingerprint exports:1,imports:7,sig:1xaoean
+ * @lastUpdated 2026-06-15T17:03:30.225Z
+ */
+
 import AJV from 'ajv';
 import type { ErrorObject } from 'ajv';
 import addFormats from 'ajv-formats';

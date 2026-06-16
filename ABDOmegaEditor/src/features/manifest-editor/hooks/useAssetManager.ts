@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona URLs de blob locales para recursos en el espacio de trabajo, detectando automáticamente imágenes/SVG y creando URLs accesibles.
+ * @purpose_en Manages local blob URLs for resources in the workspace, automatically detecting images/SVGs and creating accessible URLs.
+ * @refactorable false
+ * @classification Custom Hook
+ * @complexity Low
+ * @fingerprint exports:1,imports:1,sig:xr3h0p
+ * @lastUpdated 2026-06-15T13:11:35.063Z
+ */
+
 import { useEffect, useMemo } from 'react';
 
 interface AssetResource {

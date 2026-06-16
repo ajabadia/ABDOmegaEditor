@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Muestra una lista de problemas de auditoría en un manifiesto OMEGA, categorizando y visualizando los errores según su tipo.
- * @lastUpdated 2026-06-14T15:55:35.539Z
+ * @purpose Renderiza una lista de problemas de auditoría categorizados por tipo en un editor de manifesto OMEGA.
+ * @purpose_en Renders a list of audit issues categorized by type in an OMEGA manifest editor.
+ * @refactorable true (contains multiple UI components and logic for categorization)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:4,sig:6d1nba
+ * @lastUpdated 2026-06-15T10:53:08.024Z
  */
 
 

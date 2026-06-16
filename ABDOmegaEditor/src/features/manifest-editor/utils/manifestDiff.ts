@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona y devuelve las diferencias entre dos manifestos OMEGA, incluyendo cambios estructurales y de nivel de propiedad.
+ * @purpose_en Calculates and returns differences between two OMEGA manifests, including structural and property-level changes.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Business Service
+ * @complexity Medium
+ * @fingerprint exports:2,imports:3,sig:1h0r2mq
+ * @lastUpdated 2026-06-15T15:17:27.023Z
+ */
+
 import type { OMEGA_Manifest, ManifestEntity, LayoutContainer, OmegaNode } from '@/omega-ui-core/types/manifest';
 import type { DiffEntry, ManifestDiffResult, DiffEntityKind } from '../types/diff';
 import { regenerateEntityId, cloneAndRegenerateNodeIds } from './idManagement';

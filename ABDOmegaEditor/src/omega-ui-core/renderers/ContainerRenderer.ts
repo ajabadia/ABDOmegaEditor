@@ -1,4 +1,14 @@
 /**
+ * @purpose Renderiza plantillas HTML para secciones del módulo arquitectónico según las propiedades y datos de manifestación proporcionados.
+ * @purpose_en Renders HTML for architectural module sections based on provided properties and manifest data.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:2,sig:16629op
+ * @lastUpdated 2026-06-15T15:31:19.927Z
+ */
+
+/**
  * OMEGA UI CORE — CONTAINER RENDERER (Era 7.2.3)
  * ---------------------------------------------------------------------------
  * Static HTML generator for architectural module sections.

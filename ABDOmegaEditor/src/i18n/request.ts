@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona solicitudes para archivos de mensaje específicos para el editor de manifesto locales de OMEGA.
+ * @purpose_en Manages requests for specific message files for OMEGA manifest editor locales.
+ * @refactorable false
+ * @classification Business Service
+ * @complexity Low
+ * @fingerprint exports:0,imports:2,sig:1nkwygk
+ * @lastUpdated 2026-06-15T15:17:39.210Z
+ */
+
 import {getRequestConfig} from 'next-intl/server';
 import {routing} from './routing';
  

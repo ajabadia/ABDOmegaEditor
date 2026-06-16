@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona y devuelve problemas de validación para los manifestos OMEGA integrando validación de esquema, reglas industriales y auditorías estructurales, mientras persiste registros en almacenamiento local.
+ * @purpose_en Manages and returns validation issues for OMEGA manifests by integrating schema validation, industrial rules, and structural audits, while persisting logs in local storage.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Custom Hook
+ * @complexity Medium
+ * @fingerprint exports:1,imports:7,sig:19wwtrv
+ * @lastUpdated 2026-06-15T13:11:56.644Z
+ */
+
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import type { OMEGA_Manifest, OMEGA_Contract } from '@/omega-ui-core/types/manifest';
 import type { OmegaContract } from '@/services/wasmLoader';

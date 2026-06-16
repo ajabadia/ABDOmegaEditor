@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona un componente para seleccionar y actualizar estilos de puerto en el editor del manifiesto OMEGA.
- * @lastUpdated 2026-06-14T16:52:10.767Z
+ * @purpose Gestiona un componente para seleccionar y actualizar estilos de puertos en el editor de manifesto OMEGA.
+ * @purpose_en Manages a component for selecting and updating port styles in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:3,sig:11lzp15
+ * @lastUpdated 2026-06-15T11:31:51.399Z
  */
 
 import { Palette } from 'lucide-react';
@@ -51,6 +56,7 @@ export default function PortProperties({ item, manifest, onUpdate, setActiveSect
               <button
                 key={s.id}
                 onClick={() => updateStyle(s.id, s.aesthetics)}
+                aria-label={`Select style: ${s.label}`}
                 className={`group py-2.5 px-4 rounded-xs border text-[10px] font-black uppercase transition-all text-left flex items-center justify-between ${currentStyleId === s.id ? 'border-primary bg-primary/20 text-primary shadow-[0_0_20px_rgba(0,240,255,0.1)]' : 'wb-surface-subtle wb-outline wb-text-muted hover:wb-text hover:border-primary/30'}`}
               >
                 <div className="flex items-center gap-3">

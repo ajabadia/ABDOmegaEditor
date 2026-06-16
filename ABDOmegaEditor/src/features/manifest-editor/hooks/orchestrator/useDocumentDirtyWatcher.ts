@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona el estado sucio de los documentos comparando hashes y actualizando banderas según sea necesario.
+ * @purpose_en Manages the dirty state of documents by comparing hashes and updating flags accordingly.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Custom Hook
+ * @complexity Medium
+ * @fingerprint exports:1,imports:3,sig:bcih2l
+ * @lastUpdated 2026-06-15T13:11:07.715Z
+ */
+
 import { useEffect, useRef } from 'react';
 import type { DocumentState, OrchestratorAction } from '../../types/document';
 import { IntegrityService } from '@/services/integrityService';

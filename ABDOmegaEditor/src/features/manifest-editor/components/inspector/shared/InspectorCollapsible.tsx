@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Renderiza una sección colapsable con contenido expandible para uso en el editor de manifesto OMEGA.
+ * @purpose_en Renders a collapsible section with expandable content for use in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:3,sig:ydw0md
+ * @lastUpdated 2026-06-15T11:49:55.661Z
+ */
+
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, ChevronRight, Info } from 'lucide-react';
@@ -67,6 +77,7 @@ export default function InspectorCollapsible({
                  e.stopPropagation();
                  onHelp(title);
                }} 
+               aria-label={`Help: ${title}`}
                className="hover:text-primary transition-colors p-1"
              >
                 <Info className="w-3 h-3" />

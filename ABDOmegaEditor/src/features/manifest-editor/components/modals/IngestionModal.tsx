@@ -1,16 +1,20 @@
 'use client';
 
 /**
- * @purpose Renderiza un modal para seleccionar y confirmar archivos para su ingestión en el editor de manifesto OMEGA.
- * @purpose_en Renders a modal for selecting and confirming files for ingestion in the OMEGA manifest editor.
- * @fingerprint exports:1,imports:5,sig:1lqvimz
- * @lastUpdated 2026-06-15T06:31:11.008Z
+ * @purpose Gestiona el proceso de ingestión de archivos en el editor de manifesto OMEGA al renderizar una modal para la selección y confirmación de archivos.
+ * @purpose_en Manages the ingestion process for files in the OMEGA manifest editor by rendering a modal for file selection and confirmation.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:8,sig:iza29m
+ * @lastUpdated 2026-06-15T20:49:00.717Z
  */
 
 import { motion } from 'framer-motion';
 import ModalCloseButton from './ModalCloseButton';
 import ModalActionButton from './ModalActionButton';
 import { ScrollText, AlertTriangle, ChevronRight } from 'lucide-react';
+import { useFocusTrap } from '@/features/manifest-editor/hooks/useFocusTrap';
 import { useIngestionLogic } from '@/features/manifest-editor/hooks/useIngestionLogic';
 import type { IngestionFile } from '@/features/manifest-editor/hooks/useIngestionLogic';
 import IngestionFileList from '../ingestion/IngestionFileList';
@@ -22,6 +26,7 @@ interface IngestionModalProps {
 }
 
 export default function IngestionModal({ files, onConfirm, onCancel }: IngestionModalProps) {
+  const focusTrapRef = useFocusTrap(true);
   const { ingestionList, toggleSelect, setPrimary, manifestCount, wasmCount, contractCount } = useIngestionLogic(files);
 
   const handleConfirm = () => {
@@ -29,7 +34,13 @@ export default function IngestionModal({ files, onConfirm, onCancel }: Ingestion
   };
 
   return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
+    <div 
+      className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm"
+      ref={focusTrapRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Industrial Ingestion Wizard"
+    >
       <motion.div 
         initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
         className="relative w-full max-w-7xl h-full max-h-[850px] wb-surface border wb-outline shadow-2xl overflow-hidden flex flex-col"
@@ -67,9 +78,10 @@ export default function IngestionModal({ files, onConfirm, onCancel }: Ingestion
           <ModalActionButton onClick={onCancel}>
             Abort Ingestion
           </ModalActionButton>
-          <button 
+          <button
             onClick={handleConfirm}
             disabled={!ingestionList.some((i: IngestionFile) => i.selected)}
+            aria-label="Confirm file ingestion"
             className="px-8 py-2.5 bg-primary/20 border border-primary/40 text-primary text-[9px] font-black uppercase tracking-widest rounded-xs hover:bg-primary/30 transition-all flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed shadow-[0_0_20px_var(--wb-bloom)]"
           >
             <span>Confirm Injection</span>

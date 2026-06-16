@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona benchmarks de rendimiento para hashing, agregación diagnóstica, latencia del auditor estructural y retraso de interacción en el editor de manifestos OMEGA.
+ * @purpose_en ** Runs performance benchmarks for hashing, diagnostic aggregation, structural auditor latency, and interaction delay in the OMEGA manifest editor.
+ * @refactorable ** true (contains too many state variables and UI parts)
+ * @classification ** UI Component
+ * @complexity ** Medium
+ * @fingerprint exports:1,imports:5,sig:q1py1r
+ * @lastUpdated 2026-06-15T17:04:23.461Z
+ */
+
 import { useState, useEffect } from 'react';
 import { IntegrityService } from '@/services/integrityService';
 import { mergeDiagnostics } from '@/features/manifest-editor/utils/diagnosticUtils';

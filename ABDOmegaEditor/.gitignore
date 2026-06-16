@@ -55,3 +55,21 @@ next-env.d.ts
 
 # generated dependency graph (regenerated via npm run generate-graphs)
 /docs/grafos/
+
+# generated ESLint output (debug/audit dumps)
+eslint_*.txt
+lint-results.json
+
+# generated server output
+server_log.txt
+server_output.txt
+
+# generated temporary files
+temp_files.txt
+
+# generated audit results
+omega-audit-results.log
+
+# test artifacts
+/test-results/
+/playwright-report/

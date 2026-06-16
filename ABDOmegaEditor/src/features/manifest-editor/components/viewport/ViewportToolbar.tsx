@@ -1,13 +1,18 @@
 'use client';
 
 /**
- * @purpose Barra de herramientas del viewport con controles de alineación, distribución, cuadrícula Eurorack y ghost preview
- * @lastUpdated 2026-06-14T17:30:00.000Z
+ * @purpose Renderiza un toolbar para el viewport en el editor de manifesto OMEGA, proporcionando controles para alineación, distribución, configuraciones del grid y visibilidad de mini map.
+ * @purpose_en Renders a toolbar for the viewport in the OMEGA manifest editor, providing controls for alignment, distribution, grid settings, and mini map visibility.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:8,sig:hri5k6
+ * @lastUpdated 2026-06-15T20:49:17.925Z
  */
 
 import React, { useState, useCallback } from 'react';
 import {
-  Grid3X3, Layout, ChevronDown,
+  Grid3X3, Layout, ChevronDown, Map, Link2,
 } from 'lucide-react';
 import type { OMEGA_Manifest, OmegaNode, GridConfig } from '@/omega-ui-core/types/manifest';
 import type { UpdateManifestFn, GhostItem, AlignTarget } from '@/features/manifest-editor/utils/alignmentConstants';
@@ -39,6 +44,10 @@ interface ViewportToolbarProps {
   onUpdateManifest?: UpdateManifestFn | undefined;
   /** Called when hovering over an alignment button to show ghost preview */
   onGhostPreviewChange?: ((items: GhostItem[] | null, alignType?: string) => void) | undefined;
+  showMiniMap?: boolean;
+  onToggleMiniMap?: () => void;
+  isBindingMode?: boolean;
+  onToggleBindingMode?: () => void;
 }
 
 const TOOLBAR_H = 28;
@@ -50,6 +59,10 @@ export default function ViewportToolbar({
   onUpdateItem,
   onUpdateManifest,
   onGhostPreviewChange,
+  showMiniMap,
+  onToggleMiniMap,
+  isBindingMode,
+  onToggleBindingMode,
 }: ViewportToolbarProps) {
   const [alignTarget, setAlignTarget] = useState<AlignTarget>('selection');
   const [showGridSettings, setShowGridSettings] = useState(false);
@@ -109,14 +122,14 @@ export default function ViewportToolbar({
     >
       {/* ALIGNMENT — order matches the user-supplied icon set */}
       <div className="flex items-center gap-px px-1" data-align-toolbar="true">
-        <AlignBtn icon={<AlignLeftIcon size={14} />} title={`Align left edges (${SHORTCUT_LABELS['l']})`} disabled={!canAlign} onClick={() => handleAlign('left')} onMouseEnter={() => showGhostPreview('left')} onMouseLeave={hideGhostPreview} />
-        <AlignBtn icon={<AlignCenterHIcon size={14} />} title={`Center horizontally (${SHORTCUT_LABELS['h']})`} disabled={!canAlign} onClick={() => handleAlign('center-h')} onMouseEnter={() => showGhostPreview('center-h')} onMouseLeave={hideGhostPreview} />
-        <AlignBtn icon={<AlignRightIcon size={14} />} title={`Align right edges (${SHORTCUT_LABELS['r']})`} disabled={!canAlign} onClick={() => handleAlign('right')} onMouseEnter={() => showGhostPreview('right')} onMouseLeave={hideGhostPreview} />
-        <AlignBtn icon={<DistributeVIcon size={14} />} title={`Distribute vertically (${SHORTCUT_LABELS['v']})`} disabled={!canDistribute} onClick={() => handleDistribute('dist-v')} onMouseEnter={() => showGhostPreview('dist-v')} onMouseLeave={hideGhostPreview} />
-        <AlignBtn icon={<AlignTopIcon size={14} />} title={`Align top edges (${SHORTCUT_LABELS['t']})`} disabled={!canAlign} onClick={() => handleAlign('top')} onMouseEnter={() => showGhostPreview('top')} onMouseLeave={hideGhostPreview} />
-        <AlignBtn icon={<AlignCenterVIcon size={14} />} title={`Center vertically (${SHORTCUT_LABELS['m']})`} disabled={!canAlign} onClick={() => handleAlign('center-v')} onMouseEnter={() => showGhostPreview('center-v')} onMouseLeave={hideGhostPreview} />
-        <AlignBtn icon={<AlignBottomIcon size={14} />} title={`Align bottom edges (${SHORTCUT_LABELS['b']})`} disabled={!canAlign} onClick={() => handleAlign('bottom')} onMouseEnter={() => showGhostPreview('bottom')} onMouseLeave={hideGhostPreview} />
-        <AlignBtn icon={<DistributeHIcon size={14} />} title={`Distribute horizontally (${SHORTCUT_LABELS['d']})`} disabled={!canDistribute} onClick={() => handleDistribute('dist-h')} onMouseEnter={() => showGhostPreview('dist-h')} onMouseLeave={hideGhostPreview} />
+        <AlignBtn icon={<AlignLeftIcon size={14} />} ariaLabel="Align left edges" title={`Align left edges (${SHORTCUT_LABELS['l']})`} disabled={!canAlign} onClick={() => handleAlign('left')} onMouseEnter={() => showGhostPreview('left')} onMouseLeave={hideGhostPreview} />
+        <AlignBtn icon={<AlignCenterHIcon size={14} />} ariaLabel="Center horizontally" title={`Center horizontally (${SHORTCUT_LABELS['h']})`} disabled={!canAlign} onClick={() => handleAlign('center-h')} onMouseEnter={() => showGhostPreview('center-h')} onMouseLeave={hideGhostPreview} />
+        <AlignBtn icon={<AlignRightIcon size={14} />} ariaLabel="Align right edges" title={`Align right edges (${SHORTCUT_LABELS['r']})`} disabled={!canAlign} onClick={() => handleAlign('right')} onMouseEnter={() => showGhostPreview('right')} onMouseLeave={hideGhostPreview} />
+        <AlignBtn icon={<DistributeVIcon size={14} />} ariaLabel="Distribute vertically" title={`Distribute vertically (${SHORTCUT_LABELS['v']})`} disabled={!canDistribute} onClick={() => handleDistribute('dist-v')} onMouseEnter={() => showGhostPreview('dist-v')} onMouseLeave={hideGhostPreview} />
+        <AlignBtn icon={<AlignTopIcon size={14} />} ariaLabel="Align top edges" title={`Align top edges (${SHORTCUT_LABELS['t']})`} disabled={!canAlign} onClick={() => handleAlign('top')} onMouseEnter={() => showGhostPreview('top')} onMouseLeave={hideGhostPreview} />
+        <AlignBtn icon={<AlignCenterVIcon size={14} />} ariaLabel="Center vertically" title={`Center vertically (${SHORTCUT_LABELS['m']})`} disabled={!canAlign} onClick={() => handleAlign('center-v')} onMouseEnter={() => showGhostPreview('center-v')} onMouseLeave={hideGhostPreview} />
+        <AlignBtn icon={<AlignBottomIcon size={14} />} ariaLabel="Align bottom edges" title={`Align bottom edges (${SHORTCUT_LABELS['b']})`} disabled={!canAlign} onClick={() => handleAlign('bottom')} onMouseEnter={() => showGhostPreview('bottom')} onMouseLeave={hideGhostPreview} />
+        <AlignBtn icon={<DistributeHIcon size={14} />} ariaLabel="Distribute horizontally" title={`Distribute horizontally (${SHORTCUT_LABELS['d']})`} disabled={!canDistribute} onClick={() => handleDistribute('dist-h')} onMouseEnter={() => showGhostPreview('dist-h')} onMouseLeave={hideGhostPreview} />
       </div>
       <div
         className="flex items-center px-1 gap-0.5 text-[7px] font-bold uppercase tracking-wider"
@@ -125,7 +138,7 @@ export default function ViewportToolbar({
             ? 'No selection. Click a node, then Ctrl+click (or Shift+click) others to multi-select.'
             : selectedIds.length === 1
               ? '1 selected. Add more with Ctrl+click or Shift+click.'
-              : `${selectedIds.length} selected. Click any align button.`
+              : `${selectedIds.length} selected. Click any align button.\nCtrl+Shift+L/H/R/B now align instead of panel toggles/reset.`
         }
       >
         <span className="text-[#555]">Sel:</span>
@@ -140,6 +153,7 @@ export default function ViewportToolbar({
           onClick={() => setAlignTarget(alignTarget === 'selection' ? 'canvas' : 'selection')}
           className="flex items-center gap-1 px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider text-[#999] hover:text-white hover:bg-white/5 transition-colors"
           title={`Align relative to: ${alignTarget}`}
+          aria-label={`Align relative to: ${alignTarget}`}
         >
           <span className="text-[7px] text-[#666]">Align to:</span>
           <span className="text-primary">{alignTarget === 'selection' ? 'Selection' : 'Canvas'}</span>
@@ -157,6 +171,8 @@ export default function ViewportToolbar({
               : 'text-[#666] hover:text-[#999] hover:bg-white/5'
           }`}
           title={`Snap to grid: ${gridEnabled ? 'ON' : 'OFF'}`}
+          aria-label={`Snap to grid, currently ${gridEnabled ? 'enabled' : 'disabled'}`}
+          aria-pressed={gridEnabled}
         >
           <Layout className="w-3 h-3" />
         </button>
@@ -168,6 +184,8 @@ export default function ViewportToolbar({
               : 'text-[#999] hover:text-white hover:bg-white/8'
           }`}
           title="Grid settings (Eurorack)"
+          aria-label="Grid settings"
+          aria-expanded={showGridSettings}
         >
           <Grid3X3 className="w-3 h-3" />
         </button>
@@ -220,6 +238,7 @@ export default function ViewportToolbar({
                 max={80}
                 onChange={e => setPxPerHP(Math.max(4, parseInt(e.target.value) || DEFAULT_PX_PER_HP))}
                 className="w-14 bg-[#111] border border-white/10 rounded px-2 py-0.5 text-[9px] text-white text-right font-mono"
+                aria-label="Grid scale in pixels per HP"
               />
             </div>
 
@@ -233,6 +252,7 @@ export default function ViewportToolbar({
                   min={1}
                   onChange={e => updateGrid({ spacingX: Math.max(1, parseInt(e.target.value) || 1) })}
                   className="w-14 bg-[#111] border border-white/10 rounded px-2 py-0.5 text-[9px] text-white text-right font-mono"
+                  aria-label="Grid spacing X in pixels"
                 />
                 <span className="text-[7px] text-[#666] w-10 text-right">{currentHP} HP</span>
               </div>
@@ -249,6 +269,7 @@ export default function ViewportToolbar({
                   min={1}
                   onChange={e => updateGrid({ spacingY: Math.max(1, parseInt(e.target.value) || 1) })}
                   className="w-14 bg-[#111] border border-white/10 rounded px-2 py-0.5 text-[9px] text-white text-right font-mono"
+                  aria-label="Grid spacing Y in pixels"
                 />
                 <span className="text-[7px] text-[#666] w-10 text-right">{currentRowHP} U</span>
               </div>
@@ -283,13 +304,52 @@ export default function ViewportToolbar({
           </div>
         )}
       </div>
+      {onToggleMiniMap && (
+        <>
+          <ToolbarDivider />
+          <div className="flex items-center px-1">
+            <button
+              onClick={onToggleMiniMap}
+              aria-label={`${showMiniMap ? 'Hide' : 'Show'} mini map`}
+              className={`flex items-center justify-center w-6 h-5 rounded transition-colors ${
+                showMiniMap
+                  ? 'text-primary bg-white/10 hover:bg-white/15'
+                  : 'text-[#666] hover:text-[#999] hover:bg-white/5'
+              }`}
+              title={`${showMiniMap ? 'Hide' : 'Show'} Mini Map`}
+            >
+              <Map className="w-3 h-3" />
+            </button>
+          </div>
+        </>
+      )}
+      {onToggleBindingMode && (
+        <>
+          <ToolbarDivider />
+          <div className="flex items-center px-1">
+            <button
+              onClick={onToggleBindingMode}
+              aria-label={isBindingMode ? 'Exit bind mode' : 'Enter bind mode'}
+              className={`flex items-center justify-center w-6 h-5 rounded transition-colors ${
+                isBindingMode
+                  ? 'text-emerald-400 bg-emerald-500/15 hover:bg-emerald-500/25 ring-1 ring-emerald-500/40'
+                  : 'text-[#666] hover:text-[#999] hover:bg-white/5'
+              }`}
+              title={`${isBindingMode ? 'Exit bind mode' : 'Enter bind mode — click controls to set WASM binding'}`}
+            >
+              <Link2 className="w-3 h-3" />
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
 
-function AlignBtn({ icon, title, disabled, onClick, onMouseEnter, onMouseLeave }: {
+function AlignBtn({ icon, title, ariaLabel, disabled, onClick, onMouseEnter, onMouseLeave }: {
   icon: React.ReactNode;
   title: string;
+  ariaLabel?: string;
   disabled?: boolean;
   onClick: () => void;
   onMouseEnter?: () => void;
@@ -303,6 +363,7 @@ function AlignBtn({ icon, title, disabled, onClick, onMouseEnter, onMouseLeave }
       disabled={disabled}
       className="flex items-center justify-center w-6 h-5 rounded text-[#999] hover:text-white hover:bg-white/8 transition-colors disabled:opacity-25 disabled:cursor-not-allowed"
       title={title}
+      aria-label={ariaLabel || title}
     >
       {icon}
     </button>

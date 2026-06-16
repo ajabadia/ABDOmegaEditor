@@ -1,6 +1,11 @@
 /**
- * @purpose Define los temas visuales para el editor de manifiestos OMEGA.
- * @lastUpdated 2026-06-14T15:50:40.465Z
+ * @purpose Gestiona y exporta una lista de definiciones de temas para el editor de manifesto OMEGA, incluyendo propiedades como piel, colores, iluminación y tipografía.
+ * @purpose_en Manages and exports a list of theme definitions for the OMEGA manifest editor, including properties like skin, colors, lighting, and typography.
+ * @refactorable false
+ * @classification Data/Constants
+ * @complexity Low
+ * @fingerprint exports:2,imports:0,sig:1qdubbv
+ * @lastUpdated 2026-06-15T10:52:28.986Z
  */
 
 /**

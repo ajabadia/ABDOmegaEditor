@@ -1,8 +1,13 @@
 "use client";
 
 /**
- * @purpose Maneja el formulario de contacto para verificar la humanidad del usuario y enviar datos a la API.
- * @lastUpdated 2026-06-14T15:31:25.300Z
+ * @purpose Gestiona el formulario de contacto para verificar la humanidad y enviar datos a la API.
+ * @purpose_en Manages the contact form for verifying user humanity and sending data to the API.
+ * @refactorable false
+ * @classification Custom Hook
+ * @complexity Medium
+ * @fingerprint exports:1,imports:3,sig:hkdob4
+ * @lastUpdated 2026-06-15T10:51:29.148Z
  */
 
 

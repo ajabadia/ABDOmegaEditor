@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona el reciclaje de IDs para ManifestEntities y árboles OmegaNode en el editor de manifesto OMEGA.
+ * @purpose_en Manages the reciclaje de IDs para ManifestEntities y árboles OmegaNode en el editor de manifesto OMEGA.
+ * @refactorable false
+ * @classification Helper Utility
+ * @complexity Low
+ * @fingerprint exports:2,imports:1,sig:ixnf87
+ * @lastUpdated 2026-06-15T15:17:22.593Z
+ */
+
 import type { ManifestEntity, OmegaNode, Attachment } from '@/omega-ui-core/types/manifest';
 
 /**

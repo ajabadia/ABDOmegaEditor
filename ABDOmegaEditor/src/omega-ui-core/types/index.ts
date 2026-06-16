@@ -1,4 +1,14 @@
 /**
+ * @purpose Gestiona tipos unificados para OMEGA UI Core, incluyendo formatos Blueprint V2, entidades y nodos del Manifest, componentes Rack, y problemas de validación, con alias para evitar conflictos.
+ * @purpose_en Manages unified types for OMEGA UI Core, including formats Blueprint V2, entities and nodes of the Manifest, components Rack, and validation issues, with aliases to avoid conflict.
+ * @refactorable false
+ * @classification Type Definition
+ * @complexity Low
+ * @fingerprint exports:1,imports:0,sig:1t4kucx
+ * @lastUpdated 2026-06-15T16:10:23.054Z
+ */
+
+/**
  * Unified type exports for OMEGA UI Core.
  *
  * Re-exports from:

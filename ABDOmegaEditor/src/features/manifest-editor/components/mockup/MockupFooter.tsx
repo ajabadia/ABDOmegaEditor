@@ -1,3 +1,13 @@
+/**
+ * @purpose Renderiza un componente de pie de página para el editor de manifesto OMEGA que muestra el estado de gobernanza y la funcionalidad de exportación con indicadores de carga.
+ * @purpose_en Renders a footer component for the OMEGA manifest editor that displays governance status and export functionality with loading indicators.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:1,sig:6aq9aq
+ * @lastUpdated 2026-06-15T12:48:44.006Z
+ */
+
 import { Download, ShieldCheck, Loader2, AlertTriangle } from 'lucide-react';
 
 interface MockupFooterProps {
@@ -25,6 +35,7 @@ export const MockupFooter = ({ onExport, isExporting, hasCriticalErrors }: Mocku
     <button 
       onClick={onExport}
       disabled={isExporting}
+      aria-label={isExporting ? 'Processing studio render' : 'Save studio render'}
       className="flex items-center gap-2 px-8 py-2.5 rounded-xs text-[8px] font-black uppercase tracking-widest transition-all disabled:opacity-50 bg-primary/20 border border-primary/40 text-primary hover:bg-primary/30 shadow-[0_0_20px_var(--wb-bloom)] cursor-pointer"
     >
       {isExporting ? (

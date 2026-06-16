@@ -1,3 +1,13 @@
+/**
+ * @purpose Renderiza una notificacion emergente con un cargador giratorio y chispas que pulsan, junto con texto descriptivo, para indicar captura de alta fidelidad y escaneo de integridad de layout.
+ * @purpose_en Renders a loading indicator with a spinning loader and pulsating sparks, along with descriptive text, to indicate high-fidelity capturing and layout integrity scanning.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:1,sig:9nnjet
+ * @lastUpdated 2026-06-15T12:48:58.902Z
+ */
+
 import { Loader2, Sparkles } from 'lucide-react';
 
 export const MockupLoading = () => (

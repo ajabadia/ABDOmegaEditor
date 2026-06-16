@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Proporciona una cabecera para adjuntos con botones para agregar fragmentos y acceder a información de ayuda.
- * @lastUpdated 2026-06-14T16:42:31.449Z
+ * @purpose Renderiza un encabezado para archivos de adjuntos con botones para agregar fragmentos y acceder a información de ayuda.
+ * @purpose_en Renders a header for attachments with buttons to add fragments and access help information.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:1,sig:1aryp2e
+ * @lastUpdated 2026-06-15T11:05:30.508Z
  */
 
 import { Paperclip, Info, Plus } from 'lucide-react';
@@ -18,12 +23,13 @@ export default function AttachmentsHeader({ onAdd, onHelp }: AttachmentsHeaderPr
       <div className="flex items-center gap-2">
          <Paperclip className="w-3 h-3 text-primary" />
          <span className="text-[8px] font-black wb-text uppercase tracking-widest">Aesthetic Components</span>
-         <button onClick={() => onHelp?.('attachments')} className="wb-text-muted hover:text-primary transition-colors ml-1">
+         <button onClick={() => onHelp?.('attachments')} aria-label="Help: attachments" className="wb-text-muted hover:text-primary transition-colors ml-1">
             <Info className="w-3 h-3" />
          </button>
       </div>
       <button 
         onClick={onAdd}
+        aria-label="Add aesthetic fragment"
         className="flex items-center gap-1.5 px-2 py-1 bg-primary text-background hover:scale-105 transition-all rounded-xs shadow-lg shadow-primary/20"
       >
         <Plus className="w-2.5 h-2.5" />

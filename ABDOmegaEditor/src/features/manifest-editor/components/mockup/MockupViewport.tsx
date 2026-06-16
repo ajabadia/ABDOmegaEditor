@@ -1,3 +1,13 @@
+/**
+ * @purpose Renderiza una vista de simulación para un editor de manifesto OMEGA, mostrando una captura de rack estilizada y animada con efectos de iluminación del estudio y rendimiento native UCA.
+ * @purpose_en Renders a simulated viewport for an OMEGA manifest editor, displaying a stylized and animated rack snapshot with studio lighting effects and native UCA rendering.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:4,sig:hcai7u
+ * @lastUpdated 2026-06-15T12:49:06.132Z
+ */
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import type { OMEGA_Manifest } from '@/omega-ui-core/types/manifest';

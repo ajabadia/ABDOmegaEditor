@@ -1,30 +1,35 @@
 'use client';
 
 /**
- * @purpose Renderiza una barra de herramientas para el editor de manifesto OMEGA con herramientas para seleccionar, agregar, agrupar y gestionar entidades en modo vivo.
+ * @purpose Rendiza una barra de herramientas para el editor de manifesto OMEGA con herramientas para seleccionar, agregar, agrupar y gestionar entidades en modo vivo.
  * @purpose_en Renders a toolbar for the OMEGA manifest editor with tools for selecting, adding, grouping, and managing entities in live mode.
- * @fingerprint exports:1,imports:5,sig:1yyblne
- * @lastUpdated 2026-06-15T05:55:20.328Z
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:8,sig:mgwi2k
+ * @lastUpdated 2026-06-15T20:48:21.917Z
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ToolbarIconButton from './ToolbarIconButton';
 import { 
   MousePointer2, Plus, Cpu, Sparkles, 
-  Shield, Settings, Zap, Sliders, Radio,
+  Settings, Zap, Sliders, Radio,
   Maximize2, Minimize2,
   Group, Ungroup,
-  Disc, ToggleLeft, Lightbulb, Tv, Type, Volume2, Activity, CircleDot
+  Disc, ToggleLeft, Lightbulb, Tv, Type, Volume2, Activity, CircleDot,
+  GripVertical, Eye, EyeOff, RotateCcw, Settings2
 } from 'lucide-react';
 import { findParentInTree } from '@/omega-ui-core/uca/treeUtils';
 import type { OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
+import { useToolbarCustomization } from '@/features/manifest-editor/hooks/useToolbarCustomization';
+import { TOOLBAR_BUTTONS } from '@/features/manifest-editor/constants/toolbarDefinitions';
  
 interface ToolbarProps {
   isLiveMode: boolean;
   onToggleLive: () => void;
   onOpenGallery: () => void;
-  onOpenAudit: () => void;
   onOpenConfig: () => void;
   onOpenCellStudio: () => void;
   onAddEntity: (type: 'control' | 'jack', template?: Partial<import('@/omega-ui-core/types/manifest').ManifestEntity>) => void;
@@ -49,7 +54,6 @@ export default function Toolbar({
   isLiveMode,
   onToggleLive,
   onOpenGallery,
-  onOpenAudit,
   onOpenConfig,
   onOpenCellStudio,
   onAddEntity,
@@ -65,7 +69,42 @@ export default function Toolbar({
   manifest
 }: ToolbarProps) {
   const [showAddMenu, setShowAddMenu] = useState(false);
+  const [showCustomize, setShowCustomize] = useState(false);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [windowHeight, setWindowHeight] = useState(typeof window !== 'undefined' ? window.innerHeight : 800);
+  const customizeRef = useRef<HTMLDivElement>(null);
+  
+  const {
+    config,
+    moveButton,
+    toggleVisibility,
+    resetToDefault,
+  } = useToolbarCustomization();
+
+  // Close customize popover on click outside or Escape key
+  useEffect(() => {
+    if (!showCustomize) return;
+    const clickHandler = (e: MouseEvent) => {
+      if (customizeRef.current && !customizeRef.current.contains(e.target as Node)) {
+        setShowCustomize(false);
+      }
+    };
+    const escapeHandler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowCustomize(false);
+      }
+    };
+    const timer = setTimeout(() => {
+      document.addEventListener('mousedown', clickHandler);
+      document.addEventListener('keydown', escapeHandler);
+    }, 0);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('mousedown', clickHandler);
+      document.removeEventListener('keydown', escapeHandler);
+    };
+  }, [showCustomize]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -74,6 +113,9 @@ export default function Toolbar({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
  
+  // Get the visible button order from config
+  const orderedIds = config.order.filter(id => !config.hidden.includes(id));
+
   // Group/Ungroup enablement logic
   const isGroupEnabled = multiSelectedIds.length >= 2;
   
@@ -305,6 +347,7 @@ export default function Toolbar({
                         setActiveTool('select');
                       }}
                       className="px-1 py-0.5 rounded-xs text-[7px] font-black uppercase text-center bg-white/5 text-white/70 hover:bg-red-500/20 hover:text-red-400 border border-white/5 transition-colors"
+                      aria-label="Audio input port"
                     >
                       In
                     </button>
@@ -315,6 +358,7 @@ export default function Toolbar({
                         setActiveTool('select');
                       }}
                       className="px-1 py-0.5 rounded-xs text-[7px] font-black uppercase text-center bg-white/5 text-white/70 hover:bg-red-500/20 hover:text-red-400 border border-white/5 transition-colors"
+                      aria-label="Audio output port"
                     >
                       Out
                     </button>
@@ -335,6 +379,7 @@ export default function Toolbar({
                         setActiveTool('select');
                       }}
                       className="px-1 py-0.5 rounded-xs text-[7px] font-black uppercase text-center bg-white/5 text-white/70 hover:bg-amber-500/20 hover:text-amber-400 border border-white/5 transition-colors"
+                      aria-label="CV input port"
                     >
                       In
                     </button>
@@ -345,6 +390,7 @@ export default function Toolbar({
                         setActiveTool('select');
                       }}
                       className="px-1 py-0.5 rounded-xs text-[7px] font-black uppercase text-center bg-white/5 text-white/70 hover:bg-amber-500/20 hover:text-amber-400 border border-white/5 transition-colors"
+                      aria-label="CV output port"
                     >
                       Out
                     </button>
@@ -365,6 +411,7 @@ export default function Toolbar({
                         setActiveTool('select');
                       }}
                       className="px-1 py-0.5 rounded-xs text-[7px] font-black uppercase text-center bg-white/5 text-white/70 hover:bg-emerald-500/20 hover:text-emerald-400 border border-white/5 transition-colors"
+                      aria-label="Gate input port"
                     >
                       In
                     </button>
@@ -375,6 +422,7 @@ export default function Toolbar({
                         setActiveTool('select');
                       }}
                       className="px-1 py-0.5 rounded-xs text-[7px] font-black uppercase text-center bg-white/5 text-white/70 hover:bg-emerald-500/20 hover:text-emerald-400 border border-white/5 transition-colors"
+                      aria-label="Gate output port"
                     >
                       Out
                     </button>
@@ -395,6 +443,7 @@ export default function Toolbar({
                         setActiveTool('select');
                       }}
                       className="px-1 py-0.5 rounded-xs text-[7px] font-black uppercase text-center bg-white/5 text-white/70 hover:bg-purple-500/20 hover:text-purple-400 border border-white/5 transition-colors"
+                      aria-label="MIDI input port"
                     >
                       In
                     </button>
@@ -405,6 +454,7 @@ export default function Toolbar({
                         setActiveTool('select');
                       }}
                       className="px-1 py-0.5 rounded-xs text-[7px] font-black uppercase text-center bg-white/5 text-white/70 hover:bg-purple-500/20 hover:text-purple-400 border border-white/5 transition-colors"
+                      aria-label="MIDI output port"
                     >
                       Out
                     </button>
@@ -468,16 +518,6 @@ export default function Toolbar({
     />
   );
 
-  const auditBtn = (
-    <ToolbarIconButton
-      key="audit"
-      icon={<Shield className="w-3.5 h-3.5" />}
-      onClick={onOpenAudit}
-      title="Compliance Auditor"
-      size="md"
-    />
-  );
-
   const configBtn = (
     <ToolbarIconButton
       key="config"
@@ -513,82 +553,64 @@ export default function Toolbar({
     />
   );
 
-  // Group buttons into list (only containing visible buttons)
-  const buttons: { id: string; element: React.ReactNode }[] = [];
-  buttons.push({ id: 'select', element: selectBtn });
-  buttons.push({ id: 'marquee', element: marqueeBtn });
-  buttons.push({ id: 'add', element: addBtn });
-  if (selectedNodeId) {
-    buttons.push({ id: 'studio', element: studioBtn });
-  }
-  if (isGroupEnabled) {
-    buttons.push({ id: 'group', element: groupBtn });
-  }
-  if (isUngroupEnabled) {
-    buttons.push({ id: 'ungroup', element: ungroupBtn });
-  }
-  buttons.push({ id: 'blueprints', element: blueprintsBtn });
-  buttons.push({ id: 'audit', element: auditBtn });
-  buttons.push({ id: 'config', element: configBtn });
-  buttons.push({ id: 'live', element: liveBtn });
-  buttons.push({ id: 'zen', element: zenBtn });
+  const customizeBtn = (
+    <ToolbarIconButton
+      key="customize"
+      icon={<Settings2 className="w-3 h-3" />}
+      onClick={() => setShowCustomize(prev => !prev)}
+      title="Customize Toolbar"
+      size="md"
+      className="opacity-40 hover:opacity-100 transition-opacity"
+    />
+  );
 
-  // Calculate layout parameters
-  const B = buttons.length;
-  const H_item = 34; // approximate height of row (28px button + 6px gap)
-  const H_other = 36; // top/bottom padding + drag handle
+  // Build button map for quick lookup
+  const buttonMap: Record<string, React.ReactNode> = {
+    select: selectBtn,
+    marquee: marqueeBtn,
+    add: addBtn,
+    studio: selectedNodeId ? studioBtn : null,
+    group: isGroupEnabled ? groupBtn : null,
+    ungroup: isUngroupEnabled ? ungroupBtn : null,
+    blueprints: blueprintsBtn,
+    config: configBtn,
+    live: liveBtn,
+    zen: zenBtn,
+  };
+
+  // Render buttons in persisted order, filtering out conditionally hidden and null entries
+  const renderedButtons: { id: string; element: React.ReactNode }[] = [];
+  for (const id of orderedIds) {
+    const el = buttonMap[id];
+    if (el !== null && el !== undefined) {
+      renderedButtons.push({ id, element: el });
+    }
+  }
+
+  // Calculate layout parameters based on rendered buttons
+  const B = renderedButtons.length;
+  const H_item = 34;
+  const H_other = 36;
   const maxHeight = Math.max(200, windowHeight - 140);
   const maxRows = Math.max(1, Math.floor((maxHeight - H_other) / H_item));
   const cols = Math.ceil(B / maxRows);
 
-  // Construct structured items with dividers for 1-column mode
+  // Build dividers for single-column mode based on groups
+  const buttonGroupMap: Record<string, string> = {
+    select: 'tools', marquee: 'tools', add: 'tools',
+    studio: 'edit', group: 'edit', ungroup: 'edit',
+    blueprints: 'views', config: 'views',
+    live: 'system', zen: 'system',
+  };
   const items: ({ type: 'button'; id: string; element: React.ReactNode } | { type: 'divider' })[] = [];
-  items.push({ type: 'button', id: 'select', element: selectBtn });
-  items.push({ type: 'button', id: 'marquee', element: marqueeBtn });
-  items.push({ type: 'button', id: 'add', element: addBtn });
-  if (selectedNodeId) {
-    items.push({ type: 'button', id: 'studio', element: studioBtn });
-  }
-  
-  items.push({ type: 'divider' });
-
-  if (isGroupEnabled) {
-    items.push({ type: 'button', id: 'group', element: groupBtn });
-  }
-  if (isUngroupEnabled) {
-    items.push({ type: 'button', id: 'ungroup', element: ungroupBtn });
-  }
-
-  items.push({ type: 'divider' });
-
-  items.push({ type: 'button', id: 'blueprints', element: blueprintsBtn });
-  items.push({ type: 'button', id: 'audit', element: auditBtn });
-  items.push({ type: 'button', id: 'config', element: configBtn });
-
-  items.push({ type: 'divider' });
-
-  items.push({ type: 'button', id: 'live', element: liveBtn });
-
-  items.push({ type: 'divider' });
-
-  items.push({ type: 'button', id: 'zen', element: zenBtn });
-
-  // Filter out redundant dividers (leading, trailing, consecutive)
-  const filteredItems: typeof items = [];
-  let lastWasDivider = true;
-  for (const item of items) {
-    if (item.type === 'divider') {
-      if (!lastWasDivider) {
-        filteredItems.push(item);
-        lastWasDivider = true;
-      }
-    } else {
-      filteredItems.push(item);
-      lastWasDivider = false;
+  let lastGroup: string | null = null;
+  for (const btn of renderedButtons) {
+    const group = buttonGroupMap[btn.id] || 'tools';
+    if (lastGroup !== null && group !== lastGroup) {
+      items.push({ type: 'divider' });
     }
-  }
-  if (filteredItems.length > 0 && filteredItems[filteredItems.length - 1].type === 'divider') {
-    filteredItems.pop();
+    items.push({ type: 'button', id: btn.id, element: btn.element });
+    lastGroup = group;
   }
  
   return (
@@ -613,7 +635,7 @@ export default function Toolbar({
  
         {cols === 1 ? (
           <div className="flex flex-col items-center gap-1.5">
-            {filteredItems.map((item, idx) => {
+            {items.map((item, idx) => {
               if (item.type === 'divider') {
                 return (
                   <div 
@@ -624,18 +646,120 @@ export default function Toolbar({
               }
               return item.element;
             })}
+            {/* Separator + Customize button */}
+            <div className="w-6 h-[1px] wb-outline opacity-20 my-1 shrink-0" />
+            {customizeBtn}
           </div>
         ) : (
-          <div 
-            className="grid gap-1.5"
-            style={{
-              gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`
-            }}
-          >
-            {buttons.map(b => b.element)}
-          </div>
+          <>
+            <div 
+              className="grid gap-1.5"
+              style={{
+                gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`
+              }}
+            >
+              {renderedButtons.map(b => b.element)}
+            </div>
+            {/* Customize button below grid */}
+            <div className="w-6 h-[1px] wb-outline opacity-20 my-1 shrink-0" />
+            {customizeBtn}
+          </>
         )}
       </motion.div>
+
+      {/* ── Customize Popover ── */}
+      {showCustomize && (
+        <div
+          ref={customizeRef}
+          className="fixed left-16 top-20 z-[100] w-[260px] wb-surface border wb-outline rounded-xs shadow-2xl backdrop-blur-xl animate-in fade-in zoom-in-95 duration-100"
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between px-3 py-2 border-b wb-outline">
+            <span className="text-[8px] font-black uppercase tracking-[0.15em] wb-text">
+              Customize Toolbar
+            </span>
+            <button
+              onClick={resetToDefault}
+              className="flex items-center gap-1 text-[7px] font-bold uppercase tracking-wider wb-text-muted hover:text-primary transition-colors"
+              title="Reset to default"
+            >
+              <RotateCcw className="w-2.5 h-2.5" />
+              Reset
+            </button>
+          </div>
+
+          {/* List */}
+          <div className="max-h-[300px] overflow-y-auto py-1">
+            {config.order.map((id, idx) => {
+              const def = TOOLBAR_BUTTONS.find(b => b.id === id);
+              if (!def || def.conditional) return null;
+              const hidden = config.hidden.includes(id);
+              const Icon = def.icon;
+
+              return (
+                <div
+                  key={id}
+                  draggable
+                  onDragStart={() => setDragIndex(idx)}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setDragOverIndex(idx);
+                  }}
+                  onDragEnd={() => {
+                    if (dragIndex !== null && dragOverIndex !== null && dragIndex !== dragOverIndex) {
+                      moveButton(dragIndex, dragOverIndex);
+                    }
+                    setDragIndex(null);
+                    setDragOverIndex(null);
+                  }}
+                  className={`flex items-center gap-2 px-3 py-1.5 transition-all ${
+                    dragOverIndex === idx && dragIndex !== idx
+                      ? 'border-t border-primary/40'
+                      : ''
+                  } ${hidden ? 'opacity-40' : ''}`}
+                >
+                  {/* Drag handle */}
+                  <GripVertical className="w-2.5 h-2.5 shrink-0 wb-text-muted cursor-grab active:cursor-grabbing" />
+
+                  {/* Icon */}
+                  <span className="shrink-0 wb-text-muted">
+                    <Icon className="w-3 h-3" />
+                  </span>
+
+                  {/* Label */}
+                  <span className="flex-1 text-[8px] font-bold uppercase tracking-wider wb-text truncate">
+                    {def.label}
+                  </span>
+
+                  {/* Visibility toggle */}
+                  <button
+                    onClick={() => toggleVisibility(id)}
+                    className="p-0.5 rounded-xs hover:bg-white/10 transition-colors"
+                    title={hidden ? 'Show button' : 'Hide button'}
+                    aria-label={hidden ? 'Show button' : 'Hide button'}
+                  >
+                    {hidden ? (
+                      <EyeOff className="w-2.5 h-2.5 wb-text-muted" />
+                    ) : (
+                      <Eye className="w-2.5 h-2.5 text-primary/60" />
+                    )}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Footer */}
+          <div className="px-3 py-1.5 border-t wb-outline flex items-center justify-between">
+            <span className="text-[6px] font-mono wb-text-muted uppercase tracking-wider">
+              Drag to reorder
+            </span>
+            <span className="text-[6px] font-mono wb-text-muted">
+              {config.order.length - config.hidden.length} / {config.order.length} visible
+            </span>
+          </div>
+        </div>
+      )}
     </>
   );
 }

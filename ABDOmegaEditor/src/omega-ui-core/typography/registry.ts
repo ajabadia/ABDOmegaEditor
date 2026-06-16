@@ -1,4 +1,14 @@
 /**
+ * @purpose Gestiona definiciones y categorías de fuentes para el editor de manifesto OMEGA.
+ * @purpose_en Manages definitions and categories of fonts for the OMEGA manifest editor.
+ * @refactorable false
+ * @classification Data/Constants
+ * @complexity Low
+ * @fingerprint exports:5,imports:0,sig:raxq2z
+ * @lastUpdated 2026-06-15T16:10:43.061Z
+ */
+
+/**
  * ⚠️ OMEGA UI CORE — DO NOT EDIT (READ-ONLY REPLICA NOTICE)
  * ---------------------------------------------------------------------------
  * This file is part of the central OMEGA UI Core (abd-ia_synths).

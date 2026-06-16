@@ -1,6 +1,11 @@
 /**
- * @purpose Proporciona un componente KnobEditor para editar propiedades de un nodo de knob en el editor del manifest OMEGA.
- * @lastUpdated 2026-06-14T16:47:33.034Z
+ * @purpose Renderiza un componente KnobEditor para editar propiedades de una noduña knob en el editor de manifesto OMEGA.
+ * @purpose_en Renders a KnobEditor component for editing properties of a knob node in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:2,imports:5,sig:xgbwh8
+ * @lastUpdated 2026-06-15T11:29:58.775Z
  */
 
 import type { ComponentNode } from '../../../../../omega-ui-core/types/rack';

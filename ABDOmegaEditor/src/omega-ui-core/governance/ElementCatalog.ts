@@ -1,4 +1,14 @@
 /**
+ * @purpose Gestiona y proporciona catálogos y capacidades para elementos de interfaz en el editor de manifesto OMEGA.
+ * @purpose_en Manages and provides catalogues and capabilities for UI elements in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Business Service
+ * @complexity Low
+ * @fingerprint exports:6,imports:0,sig:18dqawj
+ * @lastUpdated 2026-06-15T15:18:00.229Z
+ */
+
+/**
  * ═══════════════════════════════════════════════
  * OMEGA ELEMENT CATALOG (Era 7.2.3)
  * ═══════════════════════════════════════════════

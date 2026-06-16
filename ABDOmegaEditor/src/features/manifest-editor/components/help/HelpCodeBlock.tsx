@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Renderiza un bloque de código con resaltado sintáctico y función de copiar para código C++/YAML en el editor del manifiesto OMEGA.
- * @lastUpdated 2026-06-14T16:37:34.667Z
+ * @purpose Renderiza un bloque de código con resaltamiento sintáctico y función de copia para código C++/YAML en el editor de manifesto OMEGA.
+ * @purpose_en Renders a code block with syntax highlighting and copy functionality for C++/YAML code in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:2,sig:1v9idp5
+ * @lastUpdated 2026-06-15T11:03:18.207Z
  */
 
 import { useState } from 'react';

@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona un componente de tarjeta para administrar adjuntos en un editor de manifestos OMEGA, incluyendo mostrar detalles de adjuntos, alternar expansión, eliminar adjuntos y actualizar propiedades de adjuntos.
- * @lastUpdated 2026-06-14T16:41:53.099Z
+ * @purpose Gestiona un componente de tarjeta para mostrar y gestionar anexos en el editor de manifesto OMEGA, incluyendo la activación/expansión, eliminación y actualización de propiedades de los anexos.
+ * @purpose_en Manages a card component for displaying and managing attachments in an OMEGA manifest editor, including toggling expansion, removing, and updating attachment properties.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:4,sig:4qqnb4
+ * @lastUpdated 2026-06-15T11:05:14.303Z
  */
 
 import { ShieldCheck, X, ChevronDown } from 'lucide-react';
@@ -60,6 +65,7 @@ export default function AttachmentCard({
           {!isCore && (
             <button 
               onClick={(e) => { e.stopPropagation(); onRemove(idx as number); }} 
+              aria-label={`Remove ${att.type} attachment`}
               className="p-1 wb-text-muted hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
             >
               <X className="w-3.5 h-3.5" />

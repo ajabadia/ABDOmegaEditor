@@ -1,4 +1,14 @@
 /**
+ * @purpose Renderiza plantillas HTML para componentes LED según las propiedades proporcionadas, como tamaño, color, valor y estilos adicionales.
+ * @purpose_en Renders HTML templates for LED components based on provided properties such as size, color, value, and additional styles.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:2,imports:0,sig:1p1pg6j
+ * @lastUpdated 2026-06-15T15:32:42.442Z
+ */
+
+/**
  * OMEGA UI CORE — Stateless LED Renderer (Era 7.2.3)
  * Single Source of Truth for LED HTML Structure.
  */

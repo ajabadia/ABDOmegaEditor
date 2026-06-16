@@ -1,6 +1,11 @@
 /**
- * @purpose Servicio de persistencia que guarda y recupera el estado canónico del grafo OMEGA en localStorage
- * @lastUpdated 2026-06-14T17:30:00.000Z
+ * @purpose Gestiona el estado persistente del gráfico canónico del editor de manifestaciones OMEGA en localStorage.
+ * @purpose_en Manages the persistence of the OMEGA manifest editor's canonical graph state in localStorage.
+ * @refactorable false
+ * @classification Business Service
+ * @complexity Low
+ * @fingerprint exports:2,imports:2,sig:3sci5j
+ * @lastUpdated 2026-06-15T17:02:48.358Z
  */
 
 import { observabilityService } from './observabilityService';

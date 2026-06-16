@@ -1,4 +1,14 @@
 /**
+ * @purpose Gestiona el estado y las acciones para CellStudio en el editor de manifesto OMEGA, proporcionando un punto de conexión centralizado para manejar diversas aspectos de la funcionalidad de CellStudio.
+ * @purpose_en Manages state and actions for CellStudio in the OMEGA manifest editor, providing a centralized hook for handling various aspects of cell studio functionality.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Custom Hook
+ * @complexity High
+ * @fingerprint exports:8,imports:3,sig:kp5ijt
+ * @lastUpdated 2026-06-15T12:47:31.422Z
+ */
+
+/**
  * Phase 1: State Separation Hook for CellStudio
  * 
  * Extracts all state and related logic from CellStudioContainer into a separate hook.

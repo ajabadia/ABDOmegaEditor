@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona el estado de documentos y coordina acciones como abrir, cerrar, actualizar y guardar documentos en el editor de manifesto OMEGA.
+ * @purpose_en Manages the state of documents and coordinates actions like opening, closing, updating, and saving documents in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Custom Hook
+ * @complexity Medium
+ * @fingerprint exports:1,imports:9,sig:offj5m
+ * @lastUpdated 2026-06-15T13:12:49.381Z
+ */
+
 import { useReducer, useEffect, useCallback, useMemo, useRef } from 'react';
 import type { 
   OMEGA_Manifest, 

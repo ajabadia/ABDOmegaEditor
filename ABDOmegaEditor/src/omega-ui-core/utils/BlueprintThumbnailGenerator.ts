@@ -1,3 +1,13 @@
+/**
+ * @purpose Proporciona una cadena de SVG estática que representa el silhouette visual de un subarbol de plantilla basado en el tipo y posición del componente.
+ * @purpose_en Generates a static SVG thumbnail string representing the visual silhouette of a blueprint subtree based on component type and position.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Helper Utility
+ * @complexity Low
+ * @fingerprint exports:1,imports:1,sig:104vegh
+ * @lastUpdated 2026-06-15T16:55:26.911Z
+ */
+
 import type { OmegaNode } from '../types/manifest';
 
 /**

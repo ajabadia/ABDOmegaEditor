@@ -26,6 +26,46 @@
     background: linear-gradient(135deg, #ffe4e6 0%, #ffd2d6 100%);
   }
 
+  /* Focus-visible ring for keyboard navigation (WCAG AA 2.4.7, 2.4.11) */
+  :focus-visible {
+    outline: 2px solid var(--wb-primary, #00f0ff) !important;
+    outline-offset: 2px !important;
+  }
+
+  /* Remove focus ring for mouse clicks (normal :focus) */
+  :focus:not(:focus-visible) {
+    outline: none !important;
+  }
+
+  /* Force ring on elements with outline-none that receive keyboard focus */
+  .outline-none:focus-visible {
+    outline: 2px solid var(--wb-primary, #00f0ff) !important;
+    outline-offset: 2px !important;
+  }
+
+  /* Skip-to-content link */
+  .skip-to-content {
+    position: absolute;
+    top: -100%;
+    left: 0;
+    z-index: 9999;
+    padding: 8px 16px;
+    background: var(--wb-primary, #00f0ff);
+    color: var(--wb-bg, #050505);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border-radius: 0 0 4px 0;
+    transition: top 0.15s ease-in-out;
+  }
+
+  .skip-to-content:focus-visible {
+    top: 0;
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+  }
+
   /* Global scrollbar override */
   ::-webkit-scrollbar {
     width: 6px;
@@ -123,6 +163,66 @@
   100% { opacity: 0.27; }
 }
 
+/* ═══════════════════════════════════════════════
+   TOOLBAR ACTIVE GLOW PULSE
+   ═══════════════════════════════════════════════ */
+@keyframes tool-glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(var(--glow-rgb, var(--primary-rgb)), 0.15),
+                0 0 16px rgba(var(--glow-rgb, var(--primary-rgb)), 0.05);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(var(--glow-rgb, var(--primary-rgb)), 0.35),
+                0 0 24px rgba(var(--glow-rgb, var(--primary-rgb)), 0.12),
+                0 0 40px rgba(var(--glow-rgb, var(--primary-rgb)), 0.05);
+  }
+}
+
+.tool-active-glow {
+  --glow-rgb: var(--primary-rgb);
+  animation: tool-glow-pulse 2s ease-in-out infinite;
+}
+
+.tool-active-glow-accent {
+  --glow-rgb: var(--accent-rgb);
+  animation: tool-glow-pulse 2s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════
+   CONNECTION OVERLAY ANIMATIONS
+   ═══════════════════════════════════════════════ */
+@keyframes conn-enter {
+  0% {
+    opacity: 0;
+    transform-origin: center;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes conn-pulse-badge {
+  0%, 100% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes conn-ghost-dash {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -24;
+  }
+}
+
 @keyframes scanline-anim {
   0% { bottom: 100%; }
   100% { bottom: 0%; }
@@ -211,6 +311,36 @@
   --color-background: #f8fafc;
 }
 
+/* ═══════════════════════════════════════════════
+   THEME: AMBER — Tailwind Variable Overrides
+   ═══════════════════════════════════════════════ */
+[data-ui-theme="amber"] {
+  --color-primary: #f59e0b;
+  --color-accent: #d97706;
+  --color-foreground: #f0e6d3;
+  --color-background: #0a0804;
+}
+
+/* ═══════════════════════════════════════════════
+   THEME: CYBERPUNK — Tailwind Variable Overrides
+   ═══════════════════════════════════════════════ */
+[data-ui-theme="cyberpunk"] {
+  --color-primary: #ff2d95;
+  --color-accent: #a855f7;
+  --color-foreground: #f0e6ff;
+  --color-background: #05000a;
+}
+
+/* ═══════════════════════════════════════════════
+   THEME: HIGH CONTRAST — Tailwind Variable Overrides
+   ═══════════════════════════════════════════════ */
+[data-ui-theme="high-contrast"] {
+  --color-primary: #ffffff;
+  --color-accent: #00ff88;
+  --color-foreground: #ffffff;
+  --color-background: #000000;
+}
+
 .wb-bg { background-color: var(--wb-bg) !important; }
 .wb-surface { background-color: var(--wb-surface) !important; }
 .wb-surface-subtle { background-color: var(--wb-surface-subtle) !important; }
@@ -260,9 +390,54 @@
 }
 [data-ui-theme="light"] .bg-black\/20 {
   background-color: rgba(0, 0, 0, 0.05) !important;
-}
-/* Standardized Layout Backgrounds (Force all sidebar/panel wrappers to use solid white surface) */
-[data-ui-theme="light"] .bg-\[\#050505\],
+}  /* Apply to amber, cyberpunk, high-contrast as well — map dark hardcoded backgrounds to theme surface */
+  [data-ui-theme="amber"] .bg-\[\#050505\],
+  [data-ui-theme="amber"] .bg-\[\#080808\],
+  [data-ui-theme="amber"] .bg-\[\#0a0a0a\],
+  [data-ui-theme="amber"] .bg-\[\#0a0a0b\],
+  [data-ui-theme="amber"] .bg-\[\#0c0c0d\],
+  [data-ui-theme="amber"] .bg-\[\#080809\],
+  [data-ui-theme="amber"] .bg-\[\#121212\],
+  [data-ui-theme="amber"] .bg-\[\#1a1a1a\],
+  [data-ui-theme="amber"] .bg-\[\#1a1a1b\],
+  [data-ui-theme="amber"] .bg-black\/10,
+  [data-ui-theme="amber"] .bg-black\/20,
+  [data-ui-theme="amber"] .bg-black\/25,
+  [data-ui-theme="amber"] .bg-black\/30 {
+    background-color: var(--wb-surface) !important;
+  }
+  [data-ui-theme="cyberpunk"] .bg-\[\#050505\],
+  [data-ui-theme="cyberpunk"] .bg-\[\#080808\],
+  [data-ui-theme="cyberpunk"] .bg-\[\#0a0a0a\],
+  [data-ui-theme="cyberpunk"] .bg-\[\#0a0a0b\],
+  [data-ui-theme="cyberpunk"] .bg-\[\#0c0c0d\],
+  [data-ui-theme="cyberpunk"] .bg-\[\#080809\],
+  [data-ui-theme="cyberpunk"] .bg-\[\#121212\],
+  [data-ui-theme="cyberpunk"] .bg-\[\#1a1a1a\],
+  [data-ui-theme="cyberpunk"] .bg-\[\#1a1a1b\],
+  [data-ui-theme="cyberpunk"] .bg-black\/10,
+  [data-ui-theme="cyberpunk"] .bg-black\/20,
+  [data-ui-theme="cyberpunk"] .bg-black\/25,
+  [data-ui-theme="cyberpunk"] .bg-black\/30 {
+    background-color: var(--wb-surface) !important;
+  }
+  [data-ui-theme="high-contrast"] .bg-\[\#050505\],
+  [data-ui-theme="high-contrast"] .bg-\[\#080808\],
+  [data-ui-theme="high-contrast"] .bg-\[\#0a0a0a\],
+  [data-ui-theme="high-contrast"] .bg-\[\#0a0a0b\],
+  [data-ui-theme="high-contrast"] .bg-\[\#0c0c0d\],
+  [data-ui-theme="high-contrast"] .bg-\[\#080809\],
+  [data-ui-theme="high-contrast"] .bg-\[\#121212\],
+  [data-ui-theme="high-contrast"] .bg-\[\#1a1a1a\],
+  [data-ui-theme="high-contrast"] .bg-\[\#1a1a1b\],
+  [data-ui-theme="high-contrast"] .bg-black\/10,
+  [data-ui-theme="high-contrast"] .bg-black\/20,
+  [data-ui-theme="high-contrast"] .bg-black\/25,
+  [data-ui-theme="high-contrast"] .bg-black\/30 {
+    background-color: var(--wb-surface) !important;
+  }
+  /* Standardized Layout Backgrounds (Force all sidebar/panel wrappers to use solid white surface) */
+  [data-ui-theme="light"] .bg-\[\#050505\],
 [data-ui-theme="light"] .bg-\[\#080808\],
 [data-ui-theme="light"] .bg-\[\#0a0a0a\],
 [data-ui-theme="light"] .bg-\[\#0a0a0b\],

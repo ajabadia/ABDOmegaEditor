@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona operaciones CRUD para contenedores de diseño en un editor de manifesto OMEGA.
+ * @purpose_en Manages CRUD operations for layout containers in an OMEGA manifest editor.
+ * @refactorable false
+ * @classification Custom Hook
+ * @complexity Low
+ * @fingerprint exports:1,imports:2,sig:t8cqb1
+ * @lastUpdated 2026-06-15T13:10:37.008Z
+ */
+
 import { useCallback } from 'react';
 import type { OMEGA_Manifest, LayoutContainer } from '@/omega-ui-core/types/manifest';
 

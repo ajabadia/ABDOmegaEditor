@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Renderiza un menú de contexto para elementos de rack en el editor de manifesto OMEGA, proporcionando opciones para editar propiedades, duplicar, agrupar, desagrupar, bloquear, desbloquear, mostrar, ocultar y eliminar items.
+ * @purpose_en ** Renders a context menu for rack elements in the OMEGA manifest editor, providing options to edit properties, duplicate, group, ungroup, lock, unlock, show, hide, and delete items.
+ * @refactorable ** false (contains only static declarations/types/constants)
+ * @classification ** UI Component
+ * @complexity ** Low
+ * @fingerprint exports:1,imports:2,sig:1bbtliq
+ * @lastUpdated 2026-06-15T13:01:17.366Z
+ */
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Copy, Trash2, Eye, EyeOff, Lock, Unlock, Layers, Group, Ungroup, Maximize } from 'lucide-react';
 
@@ -146,6 +156,7 @@ function MenuItem({ icon, label, onClick, danger, disabled }: {
     <button
       onClick={onClick}
       disabled={disabled}
+      aria-label={label}
       className={`w-full flex items-center gap-2 px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider transition-all ${
         disabled
           ? 'text-white/30 cursor-not-allowed opacity-40'

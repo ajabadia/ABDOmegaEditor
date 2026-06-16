@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona un nodo estructural en el editor de manifesto OMEGA, maneja arrastre y soltar, muestra información de depuración y renderiza nodos hijos.
+ * @purpose_en Renders a structural node in the OMEGA manifest editor, handling drag and drop, displaying debug information, and rendering child nodes.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:11,sig:zzpesu
+ * @lastUpdated 2026-06-15T15:30:18.795Z
+ */
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import type { OmegaNode, OMEGA_Manifest, CellTemplate } from '../../types/manifest';

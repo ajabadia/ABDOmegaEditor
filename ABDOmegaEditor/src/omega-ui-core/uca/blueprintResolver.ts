@@ -1,3 +1,13 @@
+/**
+ * @purpose Normaliza y canonicaliza las estructuras OmegaNode para instancias de ejecución determinista en el editor de manifesto OMEGA.
+ * @purpose_en Normalizes and canonicalizes OmegaNode structures for deterministic runtime instances in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification Helper Utility
+ * @complexity Low
+ * @fingerprint exports:1,imports:1,sig:1el0ql0
+ * @lastUpdated 2026-06-15T16:10:51.285Z
+ */
+
 import type { OmegaNode, OMEGA_Manifest, LayoutMode } from '../types/manifest';
 
 /**

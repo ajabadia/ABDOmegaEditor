@@ -1,8 +1,13 @@
 "use client";
 
 /**
- * @purpose Gestiona y visualiza un camino de señales en tiempo real con nodos y conexiones dinámicas.
- * @lastUpdated 2026-06-14T15:50:25.584Z
+ * @purpose Renderiza un camino de señal dinámico con nodos y conexiones en tiempo real para las displays de telemetría modular y estática.
+ * @purpose_en Renders a dynamic signal path with nodes and connections in real-time for modular and static telemetry displays.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:4,sig:1i0mjs1
+ * @lastUpdated 2026-06-15T10:52:17.720Z
  */
 
 

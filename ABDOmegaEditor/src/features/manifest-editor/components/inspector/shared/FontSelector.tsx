@@ -1,5 +1,15 @@
 'use client';
- 
+
+/**
+ * @purpose Gestiona un menú desplegable para seleccionar fuentes en el editor de manifesto OMEGA.
+ * @purpose_en Manages a dropdown menu for selecting fonts in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:4,sig:1xgocea
+ * @lastUpdated 2026-06-15T11:49:34.655Z
+ */
+
 import { Type } from 'lucide-react';
 import type { OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
 import { OMEGA_OFFICIAL_FONTS } from '@/omega-ui-core/typography/registry';

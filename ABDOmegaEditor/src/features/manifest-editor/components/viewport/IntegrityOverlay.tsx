@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Renderiza una capa con iconos que indican problemas de integridad para un nodo según los resultados del auditoria.
+ * @purpose_en Renders an overlay with icons indicating integrity issues for a node based on audit results.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:4,sig:117uwt8
+ * @lastUpdated 2026-06-15T13:01:04.649Z
+ */
+
 import { motion } from 'framer-motion';
 import type { OmegaNode } from '@/omega-ui-core/types/manifest';
 import type { AuditResult } from '@/services/auditService';

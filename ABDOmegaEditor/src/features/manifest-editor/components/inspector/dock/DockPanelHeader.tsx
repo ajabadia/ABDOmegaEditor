@@ -3,8 +3,11 @@
 /**
  * @purpose Renderiza un componente de cabecera reutilizable para pestañas de panel con título personalizable, icono y función de cierre.
  * @purpose_en Renders a reusable header component for dock panels with customizable title, icon, and close functionality.
- * @fingerprint exports:2,imports:2,sig:12vxt7q
- * @lastUpdated 2026-06-15T08:25:02.715Z
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:2,imports:2,sig:1nitn19
+ * @lastUpdated 2026-06-15T11:14:00.969Z
  */
 
 /**

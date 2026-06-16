@@ -1,4 +1,14 @@
 /**
+ * @purpose Gestiona el arrastre y soltar de plantillas dentro de manifestaciones OMEGA a través de una serie de pasos que incluyen compilación, gobernanza de identidad, integración de árbol y resolución automática del arrastre.
+ * @purpose_en Manages the drag-and-drop of templates within OMEGA manifestations through a series of steps including compilation, identity governance, tree integration, and auto-drag resolution.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Business Service
+ * @complexity Medium
+ * @fingerprint exports:1,imports:5,sig:1x99asf
+ * @lastUpdated 2026-06-15T16:54:34.152Z
+ */
+
+/**
  * OMEGA UCA INJECTION SERVICE - Phase 16
  * Canonical Orchestrator for Blueprint Materialization and Integration.
  */

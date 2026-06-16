@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona y renderiza configuraciones de tipografía como fuente, tamaño, alineación y espaciado según datos del manifesto y capacidades del usuario.
+ * @purpose_en Manages and renders typography settings such as font, size, alignment, and spacing based on manifest data and user capabilities.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:2,sig:mzfcky
+ * @lastUpdated 2026-06-15T11:41:28.753Z
+ */
+
 import { AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
 import type { OMEGA_Manifest, OmegaStyleNode } from '@/types/manifest';
 
@@ -50,6 +60,7 @@ export default function TypographyGovernance({ values, capabilities, manifest, o
                 }}
                 className="w-full wb-surface-inset border wb-outline rounded-xs px-2 py-1.5 text-[8px] font-mono wb-text outline-none focus:border-accent/40 text-center"
                 placeholder="Inherit"
+                aria-label="Font size in pixels"
               />
             </div>
           )}
@@ -68,6 +79,7 @@ export default function TypographyGovernance({ values, capabilities, manifest, o
                   <button 
                     key={align.id}
                     onClick={() => onChange({ alignment: align.id as NonNullable<OmegaStyleNode['alignment']> })}
+                    aria-label={`Align ${align.id}`}
                     className={`flex-1 py-1.5 flex items-center justify-center transition-all ${values.alignment === align.id ? 'bg-primary text-black' : 'wb-text-muted hover:bg-white/5'}`}
                   >
                     <align.icon className="w-3 h-3" />
@@ -89,6 +101,7 @@ export default function TypographyGovernance({ values, capabilities, manifest, o
                 }}
                 className="w-full wb-surface-inset border wb-outline rounded-xs px-2 py-1.5 text-[8px] font-mono wb-text outline-none focus:border-accent/40 text-center"
                 placeholder="0.0"
+                aria-label="Character spacing"
               />
             </div>
           )}

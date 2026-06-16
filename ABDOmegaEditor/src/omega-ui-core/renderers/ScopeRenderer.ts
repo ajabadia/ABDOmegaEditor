@@ -1,4 +1,14 @@
 /**
+ * @purpose Renderiza plantillas HTML para un elemento de escopo primitivo en el editor de manifesto OMEGA.
+ * @purpose_en Renders HTML templates for a primitive scope element in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:2,imports:0,sig:lbhjmw
+ * @lastUpdated 2026-06-15T16:09:03.688Z
+ */
+
+/**
  * OMEGA Scope Primitive Renderer
  * Era 7.2.3 Industrial Aseptic
  */

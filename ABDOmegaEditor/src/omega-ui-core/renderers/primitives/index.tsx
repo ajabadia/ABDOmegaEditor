@@ -1,3 +1,13 @@
+/**
+ * @purpose Renderiza elementos UI básicos según las nodos de componente para el editor de manifesto OMEGA.
+ * @purpose_en Renders UI primitives based on component nodes for the OMEGA manifest editor.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:2,imports:10,sig:1nv3xhm
+ * @lastUpdated 2026-06-15T16:08:28.322Z
+ */
+
 import React from 'react';
 import type { ComponentNode } from '../../types/rack';
 import { Knob } from './Knob';
@@ -63,7 +73,7 @@ export function renderComponentNode(
     case 'switch':
       return <Switch id={node.id} size={node.size} style={node.style} bind={node.bind} value={value} />;
     case 'button':
-      return <Button id={node.id} label={node.label} size={node.size} style={node.style} bind={node.bind} value={value} />;
+      return <Button id={node.id} label={node.label} size={node.size} style={node.style} bind={node.bind} value={value} aria-label={node.label} />;
     case 'display':
       return <Display id={node.id} size={node.size} style={node.style} bind={node.bind} value={value} />;
     case 'label':

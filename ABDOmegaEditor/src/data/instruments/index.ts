@@ -1,6 +1,11 @@
 /**
- * @purpose Exporta e expone los instrumentos disponibles en el editor de manifiestos OMEGA, incluyendo sus tipos y definiciones específicas.
- * @lastUpdated 2026-06-14T15:55:21.438Z
+ * @purpose Proporciona instrumentos disponibles en el editor de manifesto OMEGA, incluyendo sus tipos y definiciones.
+ * @purpose_en Exports available instruments in the OMEGA manifest editor, including their types and definitions.
+ * @refactorable false
+ * @classification Data/Constants
+ * @complexity Low
+ * @fingerprint exports:1,imports:4,sig:118eztn
+ * @lastUpdated 2026-06-15T10:52:36.937Z
  */
 
 import { junio601 } from "./junio-601";

@@ -1,4 +1,14 @@
 /**
+ * @purpose Renderiza plantillas HTML para un componente de visualización basado en las propiedades proporcionadas.
+ * @purpose_en Renders HTML templates for a display component based on provided properties.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:2,imports:0,sig:8g9jqy
+ * @lastUpdated 2026-06-15T15:31:23.863Z
+ */
+
+/**
  * OMEGA UI CORE — Stateless Display Renderer (Era 7.2.3)
  * Single Source of Truth for Display HTML Structure.
  */

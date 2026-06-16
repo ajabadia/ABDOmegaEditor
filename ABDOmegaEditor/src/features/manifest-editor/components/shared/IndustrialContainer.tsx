@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona un contenedor industrial utilizando CellRenderer basado en LayoutContainer y OMEGA_Manifest.
+ * @purpose_en ** Renders an industrial container using CellRenderer based on LayoutContainer and OMEGA_Manifest.
+ * @refactorable ** true (contains too many state variables and UI parts)
+ * @classification ** UI Component
+ * @complexity ** Medium
+ * @fingerprint exports:1,imports:3,sig:8n64cd
+ * @lastUpdated 2026-06-15T13:00:22.461Z
+ */
+
 import type { LayoutContainer, OMEGA_Manifest, ManifestEntity } from '@/omega-ui-core/types/manifest';
 import { CellRenderer } from '@/omega-ui-core/renderers/CellRenderer';
 import { adaptManifestEntityToNode } from '@/features/manifest-editor/hooks/entities/ucaInspectorAdapter';

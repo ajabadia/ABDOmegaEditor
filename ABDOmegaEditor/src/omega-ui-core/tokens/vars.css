@@ -96,6 +96,111 @@
 }
 
 /* ═══════════════════════════════════════════════
+   THEME: AMBER (Warm Analog Accent)
+   ═══════════════════════════════════════════════ */
+[data-ui-theme="amber"] {
+    --wb-bg: #0a0804;
+    --wb-surface: #120f08;
+    --wb-surface-hover: #1c1710;
+    --wb-surface-subtle: rgba(255, 255, 255, 0.03);
+    --wb-surface-strong: rgba(255, 255, 255, 0.06);
+    --wb-surface-inset: #1f1a12;
+    --wb-outline: rgba(255, 255, 255, 0.08);
+    --wb-text: #f0e6d3;
+    --wb-text-muted: rgba(240, 230, 211, 0.4);
+    --wb-bloom: rgba(245, 158, 11, 0.3);
+    --wb-primary: #f59e0b;
+    --wb-accent: #d97706;
+    --primary-rgb: 245, 158, 11;
+    --color-primary-rgb: 245, 158, 11;
+
+    --primitive-bg: #1a150e;
+    --primitive-bg-dark: #0d0a05;
+    --primitive-border-color: #3d2e14;
+    --primitive-border: 2px solid var(--primitive-border-color);
+    --primitive-marker-glow: 0 0 8px rgba(245, 158, 11, 0.6);
+    --primitive-accent: var(--wb-primary);
+
+    --omega-shadow-color: rgba(0, 0, 0, 0.6);
+    --resolved-shadow-color: var(--omega-global-shadow-color, var(--omega-shadow-color));
+
+    --omega-accent: var(--wb-primary);
+    --omega-surface: #1a150e;
+    --omega-weak: #5c4a28;
+    --omega-text: #f0e6d3;
+}
+
+/* ═══════════════════════════════════════════════
+   THEME: CYBERPUNK (Neon Magenta + Deep Violet)
+   ═══════════════════════════════════════════════ */
+[data-ui-theme="cyberpunk"] {
+    --wb-bg: #05000a;
+    --wb-surface: #0d0515;
+    --wb-surface-hover: #1a0a2e;
+    --wb-surface-subtle: rgba(255, 255, 255, 0.03);
+    --wb-surface-strong: rgba(255, 255, 255, 0.08);
+    --wb-surface-inset: #1f0d38;
+    --wb-outline: rgba(255, 45, 149, 0.15);
+    --wb-text: #f0e6ff;
+    --wb-text-muted: rgba(240, 230, 255, 0.4);
+    --wb-bloom: rgba(255, 45, 149, 0.35);
+    --wb-primary: #ff2d95;
+    --wb-accent: #a855f7;
+    --primary-rgb: 255, 45, 149;
+    --color-primary-rgb: 255, 45, 149;
+
+    --primitive-bg: #120820;
+    --primitive-bg-dark: #080310;
+    --primitive-border-color: #3a1a60;
+    --primitive-border: 2px solid var(--primitive-border-color);
+    --primitive-marker-glow: 0 0 8px rgba(255, 45, 149, 0.6);
+    --primitive-accent: var(--wb-primary);
+
+    --omega-shadow-color: rgba(168, 85, 247, 0.3);
+    --resolved-shadow-color: var(--omega-global-shadow-color, var(--omega-shadow-color));
+
+    --omega-accent: var(--wb-primary);
+    --omega-surface: #0d0515;
+    --omega-weak: #3a1a60;
+    --omega-text: #f0e6ff;
+}
+
+/* ═══════════════════════════════════════════════
+   THEME: HIGH CONTRAST (Max Legibility)
+   ═══════════════════════════════════════════════ */
+[data-ui-theme="high-contrast"] {
+    --wb-bg: #000000;
+    --wb-surface: #0a0a0a;
+    --wb-surface-hover: #1a1a1a;
+    --wb-surface-subtle: rgba(255, 255, 255, 0.05);
+    --wb-surface-strong: rgba(255, 255, 255, 0.12);
+    --wb-surface-inset: #222222;
+    --wb-outline: rgba(255, 255, 255, 0.2);
+    --wb-text: #ffffff;
+    --wb-text-muted: rgba(255, 255, 255, 0.65);
+    --wb-bloom: rgba(255, 255, 255, 0.15);
+    --wb-primary: #ffffff;
+    --wb-accent: #00ff88;
+    --primary-rgb: 255, 255, 255;
+    --color-primary-rgb: 255, 255, 255;
+
+    --primitive-bg: #111;
+    --primitive-bg-dark: #000;
+    --primitive-border-color: #555;
+    --primitive-border: 2px solid var(--primitive-border-color);
+    --primitive-marker-glow: 0 0 8px rgba(255, 255, 255, 0.6);
+    --primitive-accent: var(--wb-primary);
+
+    --omega-shadow-color: rgba(0, 0, 0, 0.7);
+    --resolved-shadow-color: var(--omega-global-shadow-color, var(--omega-shadow-color));
+
+    --omega-accent: var(--wb-primary);
+    --omega-surface: #0a0a0a;
+    --omega-weak: #555555;
+    --omega-text: #ffffff;
+}
+
+/* ═══════════════════════════════════════════════
    RACK VIEWPORT ISOLATION
    Force dark primitives inside the rack viewport
    regardless of the active UI theme.

@@ -1,8 +1,13 @@
 "use client";
 
 /**
- * @purpose El archivo CalibrationPanel.tsx es un componente de interfaz de usuario (UI) que proporciona una zona de calibración para ajustar parámetros y tablas de voltajes en el editor de manifiestos OMEGA (ABDOmegaEditor).
- * @lastUpdated 2026-06-14T15:28:17.734Z
+ * @purpose Renderiza una pestaña de calibración para ajustar parámetros y tablas de voltaje en el ABDOmegaEditor.
+ * @purpose_en Renders a calibration panel for adjusting parameters and voltage tables in the ABDOmegaEditor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:5,sig:icb09i
+ * @lastUpdated 2026-06-16T17:35:34.884Z
  */
 
 
@@ -37,6 +42,7 @@ export function CalibrationPanel() {
         <button
           onClick={() => setIsParamsOpen(!isParamsOpen)}
           className="w-full flex items-center justify-between p-6 hover:bg-white/[0.02] transition-colors group text-left"
+          aria-label={isParamsOpen ? 'Collapse calibration parameters' : 'Expand calibration parameters'}
         >
           <div className="flex items-center gap-3">
             <Sliders className={`w-5 h-5 transition-colors ${isParamsOpen ? "text-primary animate-pulse" : "text-zinc-500"}`} />
@@ -152,6 +158,7 @@ export function CalibrationPanel() {
         <button
           onClick={() => setIsTablesOpen(!isTablesOpen)}
           className="w-full flex items-center justify-between p-6 hover:bg-white/[0.02] transition-colors group text-left"
+          aria-label={isTablesOpen ? 'Collapse CSV data tables' : 'Expand CSV data tables'}
         >
           <div className="flex items-center gap-3">
             <FileSpreadsheet className={`w-5 h-5 transition-colors ${isTablesOpen ? "text-primary animate-pulse" : "text-zinc-500"}`} />

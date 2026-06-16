@@ -1,24 +1,35 @@
 'use client';
 
 /**
- * @purpose Renderiza un mapa mini del bastidor con capacidades de zoom y navegación, mostrando visualizaciones de nodos simplificadas y un indicador de viewport arrastrable.
- * @fingerprint exports:1,imports:4,sig:1coxolb
- * @lastUpdated 2026-06-14T23:34:46.305Z
+ * @purpose Renderiza una mini-mapa del bastidor con capacidades de zoom y navegación, mostrando vistas simplificadas de los nodos y un indicador de viewport arrastrable.
+ * @purpose_en Renders a mini-map of the rack with zoom and navigation capabilities, displaying simplified node views and an arrastrable viewport indicator.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:3,imports:4,sig:vcz6v9
+ * @lastUpdated 2026-06-15T13:01:23.338Z
  */
 
-import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo, startTransition } from 'react';
 import { Maximize, Eye, EyeOff, Target, Filter, RotateCcw } from 'lucide-react';
 import type { OMEGA_Manifest, OmegaNode } from '@/omega-ui-core/types/manifest';
 import { useViewportRect } from '@/features/manifest-editor/hooks/useViewportRect';
 
 // ── Constants ─────────────────────────────────────────────────────────
 
-const MINI_MAP_MAX_W = 180;
-const MINI_MAP_MAX_H = 120;
+const MINI_MAP_MAX_W = 184;
+const MINI_MAP_MAX_H = 184;
 const LS_KEY_HIDDEN_KINDS = 'omega-mini-map-hidden-kinds';
 const LS_KEY_PANEL_OFFSET = 'omega-mini-map-panel-offset';
 const URL_PARAM_HIDE = 'hide';
 const SNAP_THRESHOLD = 8;
+
+// Panel positioning & clamping constants
+export const PANEL_CSS_TOP = 40;               // CSS `top` value (must match Tailwind class)
+export const PANEL_CSS_RIGHT = 10;              // CSS `right` value (must match Tailwind class)
+const PANEL_CLAMP_TOP_MAX = -20;               // Maximum upward offset — keeps >=20px of the header visible
+const PANEL_CLAMP_MIN_VISIBLE_LEFT = 70;       // Minimum px to keep visible on the left edge
+const PANEL_CLAMP_MIN_VISIBLE_BOTTOM = 60;     // Minimum px to keep visible at the bottom edge
 
 // ── Helpers ───────────────────────────────────────────────────────────
 
@@ -93,6 +104,8 @@ interface RackMiniMapProps {
   selectedItemId?: string | null;
   onSelectItem?: (id: string | null) => void;
   lockedNodeIds?: string[];
+  isVisible?: boolean;
+  onToggleVisible?: () => void;
 }
 
 // ── Component ─────────────────────────────────────────────────────────
@@ -111,19 +124,21 @@ export default function RackMiniMap({
   selectedItemId,
   onSelectItem,
   lockedNodeIds = [],
+  isVisible: isVisibleProp,
+  onToggleVisible,
 }: RackMiniMapProps) {
-  const [isVisible, setIsVisible] = useState(true);
+  const [localIsVisible, setLocalIsVisible] = useState(true);
+  const isVisible = isVisibleProp !== undefined ? isVisibleProp : localIsVisible;
   const [showKindFilter, setShowKindFilter] = useState(false);
   const [panelOffset, setPanelOffset] = useState({ x: 0, y: 0 });
 
   // Read panel offset from localStorage on client-side mount
-  useEffect(() => {
-    try {
+  useEffect(() => {      try {
       const raw = localStorage.getItem(LS_KEY_PANEL_OFFSET);
       if (raw) {
         const parsed = JSON.parse(raw);
         if (typeof parsed.x === 'number' && typeof parsed.y === 'number') {
-          setPanelOffset(parsed);
+          startTransition(() => setPanelOffset(parsed));
         }
       }
     } catch { /* ignore */ }
@@ -136,15 +151,17 @@ export default function RackMiniMap({
   const panelDragStart = useRef({ mouseX: 0, mouseY: 0, offsetX: 0, offsetY: 0, pw: 0, ph: 0, panelW: 0, panelH: 0 });
   const [hiddenKinds, setHiddenKinds] = useState<Set<string>>(new Set());
 
+  // Derived: panel is at the top clamp limit
+  const isAtTopLimit = panelOffset.y === PANEL_CLAMP_TOP_MAX;
+
   // Clamp persisted offset on mount to prevent unreachable positions after refresh
   useEffect(() => {
     if (containerWidth > 0) {
-      setPanelOffset((prev: { x: number; y: number }) => ({
-        x: Math.max(-(containerWidth - 70), Math.min(10, prev.x)),
-        y: Math.max(-20, Math.min(containerHeight - 100, prev.y)),
-      }));
+      startTransition(() => setPanelOffset((prev: { x: number; y: number }) => ({
+        x: Math.max(-(containerWidth - PANEL_CLAMP_MIN_VISIBLE_LEFT), Math.min(PANEL_CSS_RIGHT, prev.x)),
+        y: Math.max(PANEL_CLAMP_TOP_MAX, Math.min(containerHeight - (PANEL_CSS_TOP + PANEL_CLAMP_MIN_VISIBLE_BOTTOM), prev.y)),
+      })));
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [containerWidth, containerHeight]);
 
   // Persist panel offset to localStorage
@@ -170,39 +187,39 @@ export default function RackMiniMap({
       let snapped = false;
       if (pw > 0 && ph > 0) {
         // Visual position from CSS (top:40px, right:10px) + transform offset
-        const visualLeft = pw - panelW - 10 + newX;
-        const visualTop = 40 + newY;
+        const visualLeft = pw - panelW - PANEL_CSS_RIGHT + newX;
+        const visualTop = PANEL_CSS_TOP + newY;
 
         // Left edge
         if (Math.abs(visualLeft) < SNAP_THRESHOLD) {
-          newX = -(pw - panelW - 10);
+          newX = -(pw - panelW - PANEL_CSS_RIGHT);
           snapped = true;
         }
-        // Right edge (right gap = 10 - newX)
-        if (Math.abs(10 - newX) < SNAP_THRESHOLD) {
-          newX = 10;
+        // Right edge (right gap = PANEL_CSS_RIGHT - newX)
+        if (Math.abs(PANEL_CSS_RIGHT - newX) < SNAP_THRESHOLD) {
+          newX = PANEL_CSS_RIGHT;
           snapped = true;
         }
         // Top edge
         if (Math.abs(visualTop) < SNAP_THRESHOLD) {
-          newY = -40;
+          newY = -PANEL_CSS_TOP;
           snapped = true;
         }
         // Bottom edge
         const bottomGap = ph - (visualTop + panelH);
         if (Math.abs(bottomGap) < SNAP_THRESHOLD) {
-          newY = ph - 40 - panelH;
+          newY = ph - PANEL_CSS_TOP - panelH;
           snapped = true;
         }
       }
 
-      // Clamp to keep the panel reachable — at least 70px must remain visible
+      // Clamp to keep the panel reachable
       if (pw > 0 && ph > 0) {
-        // Horizontal: right edge must not go past parent right (offsetX <= 10)
-        //           : left side must keep at least 70px visible
-        newX = Math.max(-(pw - 70), Math.min(10, newX));
-        // Vertical: top must not go off-screen, keep at least 60px visible from bottom
-        newY = Math.max(-20, Math.min(ph - 40 - 60, newY));
+        // Horizontal: right edge must not go past parent right
+        //           : left side must keep at least PANEL_CLAMP_MIN_VISIBLE_LEFT px visible
+        newX = Math.max(-(pw - PANEL_CLAMP_MIN_VISIBLE_LEFT), Math.min(PANEL_CSS_RIGHT, newX));
+        // Vertical: top must stay within PANEL_CLAMP_TOP_MAX, keep PANEL_CLAMP_MIN_VISIBLE_BOTTOM px visible
+        newY = Math.max(PANEL_CLAMP_TOP_MAX, Math.min(ph - PANEL_CSS_TOP - PANEL_CLAMP_MIN_VISIBLE_BOTTOM, newY));
       }
 
       setPanelOffset({ x: newX, y: newY });
@@ -241,17 +258,18 @@ export default function RackMiniMap({
         panelH = panelEl.offsetHeight;
       }
     }
+    // Use container props as fallback when panel ref is null (collapsed mode)
     panelDragStart.current = {
       mouseX: e.clientX,
       mouseY: e.clientY,
       offsetX: panelOffset.x,
       offsetY: panelOffset.y,
-      pw,
-      ph,
+      pw: pw || containerWidth,
+      ph: ph || containerHeight,
       panelW,
       panelH,
     };
-  }, [panelOffset]);
+  }, [panelOffset, containerWidth, containerHeight]);
 
   // Sync hiddenKinds to localStorage + URL query param.
   // On first mount, read URL FIRST (higher priority) before any write.
@@ -265,7 +283,7 @@ export default function RackMiniMap({
         if (raw) {
           const kinds = raw.split(',').map((s) => s.trim()).filter(Boolean);
           if (kinds.length > 0) {
-            setHiddenKinds(new Set(kinds));
+            startTransition(() => setHiddenKinds(new Set(kinds)));
             return; // skip sync — state change will re-trigger this effect
           }
         }
@@ -275,7 +293,7 @@ export default function RackMiniMap({
         if (raw) {
           const arr = JSON.parse(raw);
           if (Array.isArray(arr)) {
-            setHiddenKinds(new Set(arr));
+            startTransition(() => setHiddenKinds(new Set(arr)));
             return;
           }
         }
@@ -302,8 +320,12 @@ export default function RackMiniMap({
   const didDragRef = useRef(false);
   const mouseUpHandledRef = useRef(false);
   const panRef = useRef(pan);
-  panRef.current = pan;
   const miniMapRef = useRef<HTMLDivElement>(null);
+
+  // Sync panRef to latest pan value (avoid ref mutation during render)
+  useEffect(() => {
+    panRef.current = pan;
+  }, [pan]);
 
   // Compute mini-map scale to fit within the max dimensions
   const scale = useMemo(() => {
@@ -313,6 +335,10 @@ export default function RackMiniMap({
 
   const miniW = rackWidth * scale;
   const miniH = rackHeight * scale;
+
+  // Center offsets for centering the rack in the square canvas
+  const offsetX = useMemo(() => (MINI_MAP_MAX_W - miniW) / 2, [miniW]);
+  const offsetY = useMemo(() => (MINI_MAP_MAX_H - miniH) / 2, [miniH]);
 
   // Flatten node tree for simplified rendering (filtered by hidden kinds)
   const nodes = useMemo(() => {
@@ -366,12 +392,12 @@ export default function RackMiniMap({
       }
       const rect = miniMapRef.current?.getBoundingClientRect();
       if (!rect) return;
-      const clickX = e.clientX - rect.left;
-      const clickY = e.clientY - rect.top;
+      const clickX = e.clientX - rect.left - 8 - offsetX;
+      const clickY = e.clientY - rect.top - 8 - offsetY;
       const newPan = miniCoordToPan(clickX, clickY);
       onPan(newPan.x - panRef.current.x, newPan.y - panRef.current.y);
     },
-    [miniCoordToPan, onPan]
+    [miniCoordToPan, onPan, offsetX, offsetY]
   );
 
   // Drag viewport indicator to navigate
@@ -423,8 +449,8 @@ export default function RackMiniMap({
         // Click without drag on viewport rect — navigate to click position
         const p = panRef.current;
         const rect = miniMapRef.current.getBoundingClientRect();
-        const clickX = e.clientX - rect.left;
-        const clickY = e.clientY - rect.top;
+        const clickX = e.clientX - rect.left - 8 - offsetX;
+        const clickY = e.clientY - rect.top - 8 - offsetY;
         const rackX = clickX / scale;
         const rackY = clickY / scale;
         onPan(rackWidth / 2 - rackX - p.x, rackHeight / 2 - rackY - p.y);
@@ -439,9 +465,15 @@ export default function RackMiniMap({
       window.removeEventListener('mousemove', handleMove);
       window.removeEventListener('mouseup', handleUp);
     };
-  }, [isDragging, scale, onPan]);
+  }, [isDragging, scale, onPan, offsetX, offsetY, rackWidth, rackHeight]);
 
-  const toggleVisibility = useCallback(() => setIsVisible((prev) => !prev), []);
+  const toggleVisibility = useCallback(() => {
+    if (onToggleVisible) {
+      onToggleVisible();
+    } else {
+      setLocalIsVisible((prev) => !prev);
+    }
+  }, [onToggleVisible]);
 
   // Collect all distinct node kinds present in the current tree
   const availableKinds = useMemo(() => {
@@ -467,6 +499,8 @@ export default function RackMiniMap({
         onMouseDown={handleHeaderMouseDown}
         className={`absolute top-[40px] right-[10px] z-[70] p-1.5 wb-surface backdrop-blur-md border wb-outline rounded-xs shadow-2xl hover:bg-primary/10 text-primary/60 hover:text-primary transition-colors ${
           isDraggingVisual ? 'shadow-[0_0_15px_rgba(0,242,255,0.3)] ring-1 ring-primary/30' : ''
+        } ${
+          isAtTopLimit ? 'shadow-[inset_0_1px_0_rgba(0,242,255,0.12)]' : ''
         }`}
         style={{ transform: `translate(${panelOffset.x}px, ${panelOffset.y}px)` }}
         title="Show Mini Map · Drag to reposition"
@@ -484,11 +518,13 @@ export default function RackMiniMap({
           isDraggingVisual ? 'shadow-[0_0_20px_rgba(0,242,255,0.25)] ring-1 ring-primary/20' : ''
         } ${
           isSnapped ? 'ring-2 ring-accent/40 shadow-[0_0_12px_rgba(251,191,36,0.25)]' : ''
+        } ${
+          isAtTopLimit ? 'shadow-[inset_0_1px_0_rgba(0,242,255,0.12)]' : ''
         }`}
       style={{
-        minWidth: miniW + 16 + 40,
+        width: MINI_MAP_MAX_W + 16,
         transform: `translate(${panelOffset.x}px, ${panelOffset.y}px)`,
-      }} // extra width for zoom label
+      }}
     >
       {/* Header */}
       <div className="flex items-center justify-between px-2 py-1 border-b wb-outline select-none">
@@ -531,6 +567,7 @@ export default function RackMiniMap({
                         type="checkbox"
                         checked={!isHidden}
                         onChange={() => toggleKindFilter(kind)}
+                        aria-label={`Show ${kind} nodes`}
                         className="w-2.5 h-2.5 accent-primary"
                       />
                       {/* Color dot matching the node's getNodeColor */}
@@ -604,10 +641,10 @@ export default function RackMiniMap({
       {/* Mini-map canvas */}
       <div
         ref={miniMapRef}
-        className="relative cursor-pointer"
+        className="relative cursor-pointer bg-black/20"
         style={{
-          width: miniW + 16,
-          height: miniH + 16,
+          width: MINI_MAP_MAX_W + 16,
+          height: MINI_MAP_MAX_H + 16,
           padding: 8,
         }}
         onClick={handleMiniMapClick}
@@ -617,8 +654,8 @@ export default function RackMiniMap({
           data-testid="mini-map-rack"
           className="absolute rounded-[1px]"
           style={{
-            top: 8,
-            left: 8,
+            top: 8 + offsetY,
+            left: 8 + offsetX,
             width: miniW,
             height: miniH,
             background: 'rgba(255,255,255,0.03)',
@@ -674,8 +711,8 @@ export default function RackMiniMap({
           data-testid="mini-map-viewport"
           className="absolute cursor-grab rounded-[1px] border border-primary/60 bg-primary/5 transition-opacity hover:opacity-80"
           style={{
-            top: 8 + viewportRect.y,
-            left: 8 + viewportRect.x,
+            top: 8 + offsetY + viewportRect.y,
+            left: 8 + offsetX + viewportRect.x,
             width: viewportRect.w,
             height: viewportRect.h,
           }}

@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Renderiza una vista para mostrar y copiar código fuente con un título del contrato técnico.
+ * @purpose_en Renders a view for displaying and copying source code with a technical contract title.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:2,sig:khzrsr
+ * @lastUpdated 2026-06-15T11:50:05.719Z
+ */
+
 import React from 'react';
 import { Copy, Check, Terminal } from 'lucide-react';
 

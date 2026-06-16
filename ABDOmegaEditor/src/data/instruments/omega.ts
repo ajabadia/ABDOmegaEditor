@@ -1,6 +1,11 @@
 /**
- * @purpose Define y exporta los detalles del instrumento ABD OMEGA para su uso en el editor de manifiestos OMEGA (ABDOmegaEditor).
- * @lastUpdated 2026-06-14T15:55:28.475Z
+ * @purpose Gestiona los detalles del instrumento ABD OMEGA para su uso en el editor de manifesto OMEGA.
+ * @purpose_en Defines the details of the ABD OMEGA instrument for use in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification Data/Constants
+ * @complexity Low
+ * @fingerprint exports:1,imports:1,sig:1svx54r
+ * @lastUpdated 2026-06-15T10:52:52.120Z
  */
 
 import type { Instrument } from "./types";

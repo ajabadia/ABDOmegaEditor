@@ -1,6 +1,11 @@
 /**
- * @purpose Proporciona un formulario para editar propiedades de un manifiesto de rack, incluyendo ID, nombre, autor, versión, dimensiones, separación de cuadrícula y piel.
- * @lastUpdated 2026-06-14T16:48:26.119Z
+ * @purpose Renderiza una forma para editar propiedades de un manifesto de rack, incluyendo ID, nombre, autor, versión, dimensiones, espacio de grilla y piel.
+ * @purpose_en Renders a form for editing properties of a rack manifest, including ID, name, author, version, dimensions, grid spacing, and skin.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:2,imports:1,sig:gyuoql
+ * @lastUpdated 2026-06-15T11:30:23.785Z
  */
 
 import type { RackManifest } from '../../../../../omega-ui-core/types/rack';

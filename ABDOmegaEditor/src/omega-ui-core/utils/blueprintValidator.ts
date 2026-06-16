@@ -1,6 +1,11 @@
 /**
- * @purpose Validador de grafos de blueprint que verifica unicidad de IDs, presencia de campos requeridos y emite errores/warnings estructurales
- * @lastUpdated 2026-06-14T17:45:00.000Z
+ * @purpose Valida gráficos OmegaNode buscando IDs duplicados, campos requeridos faltantes y emitiendo errores y advertencias estructurados.
+ * @purpose_en Validates OmegaNode graphs by checking for duplicate IDs, missing required fields, and emitting structured errors and warnings.
+ * @refactorable false
+ * @classification Helper Utility
+ * @complexity Low
+ * @fingerprint exports:1,imports:1,sig:okq0bv
+ * @lastUpdated 2026-06-15T16:55:31.942Z
  */
 
 import type { OmegaNode, OMEGA_Manifest } from '../types/manifest';

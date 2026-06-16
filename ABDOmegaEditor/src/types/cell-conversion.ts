@@ -1,4 +1,14 @@
 /**
+ * @purpose Gestiona conversión bidireccional entre OmegaNode y nuevos tipos de células para compatibilidad y migración en ABDOmegaEditor.
+ * @purpose_en Manages bidirectional conversion between OmegaNode and new cell types for compatibility and migration in ABDOmegaEditor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Helper Utility
+ * @complexity Low
+ * @fingerprint exports:11,imports:3,sig:hwp210
+ * @lastUpdated 2026-06-15T17:03:45.556Z
+ */
+
+/**
  * ADR-046: Cell Philosophy Redesign — Conversion Utilities
  * 
  * Phase 2: Conversion utilities for migrating between OmegaNode and new types.

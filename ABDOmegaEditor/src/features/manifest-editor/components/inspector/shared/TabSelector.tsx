@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Renderiza un componente selector de tablas para seleccionar tablas en el editor de manifesto OMEGA, permitiendo múltiples selecciones si se especifica.
+ * @purpose_en Renders a tab selector component for choosing tabs in the OMEGA manifest editor, allowing multiple selections if specified.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:1,sig:1qgjuri
+ * @lastUpdated 2026-06-15T11:50:23.056Z
+ */
+
 import type { TabName } from '@/types/manifest';
 
 interface TabSelectorProps {

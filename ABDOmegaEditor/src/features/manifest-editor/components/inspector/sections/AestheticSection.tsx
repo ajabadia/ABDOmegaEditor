@@ -1,5 +1,15 @@
 'use client';
- 
+
+/**
+ * @purpose Renderiza una sección para editar propiedades estéticas de componentes UI en el editor de manifesto OMEGA.
+ * @purpose_en Renders a section for editing aesthetic properties of UI components in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:17,sig:14gmqig
+ * @lastUpdated 2026-06-15T11:38:08.547Z
+ */
+
 import React from 'react';
 import { Palette, Shield, Box, Terminal } from 'lucide-react';
 import KnobProperties from '@/features/manifest-editor/components/inspector/primitives/KnobProperties';
@@ -113,6 +123,7 @@ export default function AestheticSection({
              <div className="flex items-center gap-2 pt-1">
                 <button 
                   onClick={() => setShowSource(!showSource)}
+                  aria-label={showSource ? 'Hide source view' : 'Show source view'}
                   className={`flex items-center gap-1.5 px-2 py-1 rounded-xs border transition-all ${showSource ? 'bg-accent/20 border-accent text-accent' : 'wb-surface-subtle wb-outline wb-text-muted hover:wb-text'}`}
                 >
                    <Terminal className="w-2.5 h-2.5" />

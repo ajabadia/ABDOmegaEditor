@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona una lista de archivos de ingesta categorizados por tipo y proporciona controles para establecer archivos principales y alternar selecciones.
- * @lastUpdated 2026-06-14T16:38:21.334Z
+ * @purpose Gestiona una lista de archivos de ingestión categorizados por tipo y proporciona controles para establecer archivos principales y activar selecciones.
+ * @purpose_en Renders a list of ingestion files categorized by type and provides controls to set primary files and toggle selections.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:2,sig:14umscg
+ * @lastUpdated 2026-06-15T11:03:40.202Z
  */
 
 import { FileCode, Binary, ScrollText, Image as ImageIcon, Check } from 'lucide-react';
@@ -34,6 +39,7 @@ export default function IngestionFileList({ ingestionList, setPrimary, toggleSel
                 <button
                   key={item.id}
                   onClick={() => setPrimary(item.id)}
+                  aria-label={`Set ${item.file.name} as primary`}
                   className={`w-full flex items-center justify-between p-3 rounded-xs border transition-all ${
                     item.selected 
                       ? 'bg-primary/5 border-primary/40 text-primary' 
@@ -67,6 +73,7 @@ export default function IngestionFileList({ ingestionList, setPrimary, toggleSel
               <button
                 key={item.id}
                 onClick={() => toggleSelect(item.id)}
+                aria-label={`Toggle ${item.file.name} selection`}
                 className={`flex items-center gap-3 p-2 rounded-xs border transition-all ${
                   item.selected 
                     ? 'bg-black/10 wb-outline wb-text' 

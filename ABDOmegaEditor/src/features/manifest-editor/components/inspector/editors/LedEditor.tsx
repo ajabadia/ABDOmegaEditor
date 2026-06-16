@@ -1,6 +1,11 @@
 /**
- * @purpose Gestiona un componente para editar propiedades LED en el editor del manifiesto OMEGA.
- * @lastUpdated 2026-06-14T16:47:58.424Z
+ * @purpose Gestiona un componente para editar propiedades de LED en el editor de manifesto OMEGA.
+ * @purpose_en Manages a component for editing LED properties in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:2,imports:4,sig:1fwe7vo
+ * @lastUpdated 2026-06-15T11:30:09.421Z
  */
 
 import type { ComponentNode, LedPolarity } from '../../../../../omega-ui-core/types/rack';

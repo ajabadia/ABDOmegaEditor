@@ -3,8 +3,13 @@ import type { OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
 import { observabilityService } from './observabilityService';
 
 /**
- * @purpose Servicio del motor de historial industrial con soporte de branching, que gestiona undo/redo del manifiesto
- * @lastUpdated 2026-06-14T17:45:00.000Z
+ * @purpose Gestiona la funcionalidad de deshacer y rehacer para las entradas de historia del editor de manifest OMEGA con soporte de ramificación.
+ * @purpose_en Manages undo/redo functionality for OMEGA manifest editor history entries with branching support.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Business Service
+ * @complexity Medium
+ * @fingerprint exports:1,imports:3,sig:1dpdp05
+ * @lastUpdated 2026-06-15T16:59:59.204Z
  */
 class HistoryService {
   private history: HistoryEntry[] = [];

@@ -1,5 +1,15 @@
 'use client';
- 
+
+/**
+ * @purpose Renderiza una superficie para visualizar y interactuar con nodos en un manifesto OMEGA utilizando una disposición orbital.
+ * @purpose_en Renders a canvas for visualizing and interacting with nodes in an OMEGA manifest using an orbital layout.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:7,sig:uiecl4
+ * @lastUpdated 2026-06-15T20:49:12.628Z
+ */
+
 import { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
  
@@ -89,11 +99,6 @@ export default function NodeCanvas({ manifest, contract, selectedItemId, multiSe
         />
       </div>
  
-      <div className="absolute bottom-8 left-8 text-[9px] font-mono wb-text-muted uppercase tracking-widest leading-relaxed">
-        Engine: OMEGA v7.2.3 (Sovereign)<br />
-        Mode: Orbital Hub<br />
-        Status: {items.length} Canonical Elements Online
-      </div>
     </div>
   );
 }

@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Renderiza un panel para inspeccionar y editar propiedades de entidades seleccionadas en el editor de manifesto OMEGA.
+ * @purpose_en ** Renders a panel for inspecting and editing properties of selected entities in the OMEGA manifest editor.
+ * @refactorable ** true (contains too many state variables and UI parts)
+ * @classification ** UI Component
+ * @complexity ** Medium
+ * @fingerprint exports:1,imports:6,sig:25tm5r
+ * @lastUpdated 2026-06-15T11:50:40.352Z
+ */
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 
@@ -11,7 +21,7 @@ import { findNodeInTree } from '@/features/manifest-editor/hooks/entities/ucaIns
 interface WorkbenchInspectorProps {
   // isVisible: boolean; (unused)
   isLiveMode: boolean;
-  uiTheme: 'dark' | 'light';
+  uiTheme: 'dark' | 'light' | 'amber' | 'cyberpunk' | 'high-contrast';
   manifest: OMEGA_Manifest;
   selectedItem: ManifestEntity | OmegaNode | OMEGA_Manifest | null;
   selectedItemId: string | null;
@@ -141,7 +151,6 @@ export function WorkbenchInspector({
                 const isGroup = props.selectedItem && 'kind' in props.selectedItem && (props.selectedItem.kind === 'group' || props.selectedItem.kind === 'container');
                 const descendantCellIds = isGroup ? (() => {
                   const ids: string[] = [];
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   const walk = (n: any) => {
                     if (n.kind === 'cell' || n.kind === 'port') {
                       ids.push(n.id);

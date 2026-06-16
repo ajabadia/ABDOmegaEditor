@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona y renderiza una biblioteca para variantes de estilo en componentes del editor de manifestos OMEGA.
- * @lastUpdated 2026-06-14T16:40:30.764Z
+ * @purpose Gestiona y renderiza una biblioteca para estilos variados en el editor de manifesto de OMEGA componentes.
+ * @purpose_en Manages and renders a library for variant styles in OMEGA manifest editor components.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:11,sig:f203gl
+ * @lastUpdated 2026-06-15T11:04:37.567Z
  */
 
 import React from 'react';
@@ -166,6 +171,7 @@ export default function ModuleStyleLibrary({ manifest, onUpdate, resolveAsset, a
              </div>
              <button 
                 onClick={() => setShowAll(!showAll)}
+                aria-label={showAll ? 'Show only elements used in rack' : 'Show all elements'}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-xs border text-[7px] font-black uppercase transition-all ${showAll ? 'bg-amber-500/10 border-amber-500/40 text-amber-500' : 'bg-primary/10 border-primary/40 text-primary'}`}
              >
                 {showAll ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
@@ -227,6 +233,7 @@ export default function ModuleStyleLibrary({ manifest, onUpdate, resolveAsset, a
                       <span className="text-[7px] font-black uppercase text-primary/60 tracking-widest">Library Variants</span>
                       <button 
                         onClick={() => addVariation(type)}
+                        aria-label={`Add style variant to ${def.label}`}
                         className="flex items-center gap-1.5 px-2 py-0.5 rounded-xs border text-[7px] font-black uppercase transition-all wb-surface-subtle wb-outline hover:border-primary/40 text-primary"
                       >
                         <Plus className="w-2.5 h-2.5" />

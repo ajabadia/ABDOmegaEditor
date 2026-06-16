@@ -1313,3 +1313,383 @@ if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'e') {
 | Code review | ✅ Sin issues |
 
 ---
+
+## Sesión: Shortcuts UI Audit, Alignment Improvements & UI/UX Proposals (Era 9.7.0)
+
+### Fecha: 2026-06-14
+
+### Resumen
+Auditoría exhaustiva de todos los shortcuts del teclado, implementación de atajos de alineación contextuales con resolución de colisiones, indicadores visuales en MenuBar y ViewportToolbar, limpieza de elementos deprecated, y propuesta de 11 mejoras UI/UX priorizadas.
+
+### 1. Alignment Shortcuts — Resolución de Colisiones (Ctrl+Shift → panel toggles)
+
+**Problema:** Los atajos Ctrl+Shift+L/H/R/B colisionaban entre los handlers de alineación (useAlignment.ts) y los toggles de panel (useWorkbenchShortcuts.ts). No se podían tener ambos activos simultáneamente.
+
+**Solución:** Prioridad contextual — cuando hay ≥2 elementos seleccionados, alignment gana:
+
+| Atajo | Con 0-1 items | Con ≥2 items |
+|-------|:-------------:|:------------:|
+| `Ctrl+Shift+L` | Toggle Layers | **Align Left** |
+| `Ctrl+Shift+H` | Toggle History | **Center Horizontally** |
+| `Ctrl+Shift+R` | Reset Workspace | **Align Right** |
+| `Ctrl+Shift+B` | Toggle Blueprints | **Align Bottom** |
+| `Ctrl+Shift+T` | Siempre Align Top | Siempre Align Top |
+| `Ctrl+Shift+M` | Siempre Center Vertically | Siempre Center Vertically |
+| `Ctrl+Shift+V` | Siempre Distribute Vertically | Siempre Distribute Vertically |
+| `Ctrl+Shift+D` | Siempre Distribute Horizontally | Siempre Distribute Horizontally |
+
+**Archivos modificados:** `useWorkbenchShortcuts.ts`, `useAlignment.ts`, `alignmentConstants.ts`
+
+**Cambio clave en useWorkbenchShortcuts.ts:** Los handlers de panel toggles ahora chequean `multiSelectedIds.length < 2` antes de ejecutarse, cediendo a alignment cuando hay multi-selección.
+
+### 2. Ctrl+Alt+E — Distribute Evenly Both Axes
+
+Nuevo shortcut que distribuye elementos uniformemente en ambos ejes simultáneamente (grid layout).
+
+| Archivo | Cambio |
+|---------|--------|
+| `alignmentConstants.ts` | `DistType` extendido con `'dist-both'`; `SHORTCUT_TO_ALIGN['e']`, `SHORTCUT_LABELS['e']`, `GHOST_TYPE_MAP['dist-both']` |
+| `useAlignment.ts` | Nueva función `computeDistributedBothPositions()` (distribuye X e Y independientemente y combina); nuevo callback `handleDistributeBoth`; nuevo `useEffect` para `Ctrl+Alt+E` |
+| `helpData.ts` | `Ctrl+Alt+E — Distribute Evenly both axes` añadido |
+
+### 3. Auditoría Global de Shortcuts
+
+Revisión completa de todos los shortcuts en helpData.ts vs implementación real:
+
+| Categoría | Documentados | Implementados | Estado |
+|-----------|:-----------:|:------------:|:------:|
+| **ks_file** | 3 | 3 | ✅ |
+| **ks_edit** | 8 | 8 | ✅ |
+| **ks_view** | 4 | 4 | ✅ |
+| **ks_view_toggles** | 2 | 2 | ✅ |
+| **ks_windows** | 8 | 8 | ✅ |
+| **ks_tools** | 14 | 14 | ✅ |
+| **ks_alignment** | 9 | 9 | ✅ |
+| **ks_help** | 1 | 1 | ✅ |
+| **Total** | **49** | **49** | **✅** |
+
+### Discrepancias Encontradas y Resueltas
+
+| # | Discrepancia | Solución |
+|---|-------------|----------|
+| 1 | Alignment shortcuts funcionales pero no documentados como reales | ✅ helpData.ts ya los mostraba como reales tras implementación |
+| 2 | `Ctrl+Shift+A` en MenuBar > Help (deprecated) vs helpData > Window | ✅ Movido a Window como panel toggle legítimo |
+| 3 | Arrow keys (nudge) + Enter/Escape (ghost) no documentados | ✅ Añadidos a helpData.ts (4 nuevos entries) |
+
+**Shortcuts faltantes añadidos a helpData.ts:**
+```
+↑/↓/←/→ — Nudge selected node 1px (Rack viewport)
+Shift+↑/↓/←/→ — Nudge selected node by grid spacing (Rack viewport)
+Enter — Confirm ghost preview (blueprint placement)
+Escape — Cancel ghost preview / close context menu
+```
+
+### 4. Indicadores Visuales de Prioridad en MenuBar
+
+Cuando ≥2 items están seleccionados, los ítems del menú con atajos conflictivos (Layers, History, Blueprints, Reset) muestran:
+- Shortcut en color ámbar (`text-amber-400/70`) en lugar de gris (`text-white/25`)
+- Badge `→Align Left / Center Horizontally / Align Right / Align Bottom`
+- Tooltip explicativo: "≥2 items selected: alignment takes priority"
+
+**Archivo:** `MenuBar.tsx` — nuevo `ALIGNMENT_OVERRIDE` map + `hasMultiSelection` prop.
+
+### 5. Tooltip Contextual en ViewportToolbar
+
+El contador `Sel: N` en ViewportToolbar ahora muestra tooltip completo con información de prioridad:
+```
+3 selected. Click any align button.
+Ctrl+Shift+L/H/R/B now align instead of panel toggles/reset.
+```
+
+**Archivo:** `ViewportToolbar.tsx`
+
+### 6. Limpieza de Elementos Deprecated
+
+Se eliminó `highlight: 'deprecated'` de 4 ítems funcionales en MenuBar:
+- File > Link Workspace Folder
+- File > Blueprints
+- File > Deploy to Engine
+- Edit > Module Global Configuration
+
+### 7. E2E Tests — Full Suite (52 tests)
+
+| Suite | Tests | Estado |
+|-------|:-----:|:------:|
+| blueprint-injection | 8 | ✅ 8/8 |
+| blueprint-store | 5 | ⚠️ 3/5 (2 pre-existing failures) |
+| bulk-upload-validation | 5 | ✅ 5/5 |
+| distilled-json-import | 5 | ✅ 5/5 |
+| layers-panel-filters | 10 | ✅ 10/10 |
+| omega-project | 5 | ✅ 5/5 |
+| rack-features | 9 | ✅ 9/9 |
+| smoke-tests | 5 | ✅ 5/5 |
+| **Total** | **52** | **✅ 50/52** |
+
+**Fix aplicado:** 4 tests de layers-panel-filters fallaban por strict mode violation: el locator `button:has-text("Clear")` coincidía con dos botones ("Clear" de filtros + "Clear all filters" de estado vacío). Cambiado a `button[title*="Clear all filters"]`. **4 tests reparados.**
+
+### 8. Propuesta de 11 Mejoras UI/UX Priorizadas
+
+Basado en análisis exhaustivo del código, ADRs, roadmap y estado actual, se propusieron las siguientes mejoras:
+
+| Prioridad | Mejora | Esfuerzo | Impacto |
+|:---------:|--------|:--------:|:-------:|
+| **1** | 🍞 Toast Notification System | 🟢 Bajo | Alto |
+| **2** | 🔍 Command Palette (Ctrl+K) | 🟢 Bajo | Alto |
+| **3** | 📊 Status Bar (dirty, validación) | 🟢 Bajo | Medio |
+| **4** | 🎓 Onboarding Walkthrough | 🟡 Medio | Alto |
+| **5** | 🖼️ Mini-Map del Rack | 🟡 Medio | Medio |
+| **6** | ⏪ Undo Timeline Visual | 🟡 Medio | Medio |
+| **7** | 🎨 Temas Visuales Adicionales | 🟢 Bajo | Medio |
+| **8** | 🔧 Floating Toolbar Customizable | 🟡 Medio | Medio |
+| **9** | 📐 Resizable Panels | 🔴 Alto | Alto |
+| **10** | ♿ Accesibilidad WCAG | 🔴 Alto | Alto |
+| **11** | 🔌 Editor Visual de Conexiones | 🔴 Alto | Muy alto |
+
+---
+
+## Sesión: Mini-Map Avanzado — Filtros, Flotante, Tests (v9.8.0)
+
+### Fecha: 2026-06-14
+
+### Resumen
+Implementación de 8 features para el Mini-Map del Rack: filtro por tipo de nodo, indicador locked, persistencia localStorage + URL query params, color legend, Clear all filters, panel flotante arrastrable, y 10 unit tests.
+
+### Archivos Modificados
+| Archivo | Cambios |
+|---------|---------|
+| `src/features/manifest-editor/components/viewport/RackMiniMap.tsx` | +12 líneas netas: hiddenKinds filter state, lockedNodeIds prop, filter dropdown UI, color dots, Clear all filters, panelOffset drag state, localStorage persist, URL sync, posición `top-[40px] right-[10px]`, drag handlers |
+| `src/features/manifest-editor/components/viewport/WorkbenchViewport.tsx` | Pasa `lockedNodeIds` al RackMiniMap |
+| `src/features/manifest-editor/components/viewport/__tests__/RackMiniMap.spec.tsx` | 10 nuevos tests de filtros + fix localStorage.clear() en beforeEach |
+
+### Features Implementadas
+
+**1. Filtro por tipo de nodo en Mini-Map**
+- Botón Filter (icono Filter) en la cabecera del Navigator
+- Dropdown con checkboxes para cada tipo de nodo presente en el árbol (cell, group, container, layer, rack, etc.)
+- Nodos ocultos filtrados del renderizado vía `useMemo`
+- Botón se ilumina en ámbar cuando hay filtros activos (`text-accent bg-accent/10`)
+- Círculos de 8px coloreados con `getNodeColor(kind)` en cada entrada del dropdown
+
+**2. Indicador locked en nodos**
+- Nueva prop `lockedNodeIds?: string[]` en `RackMiniMapProps`
+- Nodos bloqueados: `opacity: 0.45` + overlay con emoji 🔒 centrado (`flex items-center justify-center`)
+- Tooltip (`title`) prepende 🔒 para locked nodes
+- WorkbenchViewport pasa `lockedNodeIds` al Mini-Map
+
+**3. Persistencia localStorage**
+- Lazy initializer de `useState` lee `localStorage.getItem('omega-mini-map-hidden-kinds')`
+- `useEffect` serializa hiddenKinds (Set → Array → JSON) a localStorage en cada cambio
+- Todo envuelto en try/catch para SSR/privacy-mode safety
+
+**4. URL query params**
+- `?hide=cell,group` en la URL sobrevive a recargas
+- Sincronización vía `history.replaceState` (sin pushState para no ensuciar el historial)
+- URL tiene prioridad sobre localStorage en carga inicial (isFirstMountRef guard)
+- Bug crítico encontrado y corregido durante code review: race condition entre dos useEffects (URL write antes de URL read)
+
+**5. Clear all filters**
+- Botón "Clear all filters" al final del dropdown de tipos
+- Solo visible cuando `hiddenKinds.size > 0`
+- Estilo en rojo (`text-red-400/70`) para distinción visual
+- Llama a `setHiddenKinds(new Set())` para resetear todos los filtros
+
+**6. Navigator flotante y arrastrable**
+- Posición cambiada de `bottom-[10px] left-[10px]` a `top-[40px] right-[10px]`
+- Panel arrastrable por el texto "Navigator" con `cursor-move`
+- `handleHeaderMouseDown` almacena posición del mouse + offset actual en ref
+- Window-level `useEffect` con listeners siempre adjuntos (sin early return — bug crítico encontrado por code review)
+- `e.buttons !== 1` guard auto-cancela drag si se suelta fuera de la ventana
+- Posición persistida en localStorage (clave `omega-mini-map-panel-offset`)
+
+**7. Unit Tests (10 nuevos, 42 total)**
+- Render del botón Filter en header
+- Toggle de visibilidad del dropdown
+- Muestra tipos de nodo disponibles (cell, group)
+- Puntos de color con color correcto por tipo
+- Ocultar nodos al desmarcar un tipo
+- Restaurar nodos al re-marcar
+- Estilo highlight en botón Filter con filtros activos
+- Botón Clear all filters visible solo con filtros activos
+- Reset de todos los filtros al hacer clic en Clear
+- No afecta nodos que nunca fueron ocultados
+
+**Bug localizado y corregido:** localStorage pollution entre tests. El `useEffect` del componente sincroniza hiddenKinds a localStorage, pero `beforeEach` solo limpiaba mocks (no localStorage). Fix: `localStorage.clear()` en beforeEach.
+
+**Bug crítico corregido:** `active:cursor-grabbing` en el span Navigator coincidía con el selector `[class*="cursor-grab"]` que los tests usaban para encontrar el viewport indicator, causando 3 falsos negativos (estilo vacío, drag no funcional). Fix: eliminar `active:cursor-grabbing`, usar solo `cursor-move`.
+
+### Verificación
+| Check | Resultado |
+|-------|:---------:|
+| `npx tsc --noEmit` | ✅ 0 errores |
+| `npx jest RackMiniMap.spec.tsx` | ✅ **42/42 passed** |
+| Code review | ✅ 3 revisiones. Bugs corregidos secuencialmente. |
+
+---
+
+## Sesión: Mini-Map Drag & Drop — Reset Button, Snap, Glow, Docs (v9.8.1)
+
+### Fecha: 2026-06-14
+
+### Resumen
+Mejoras de UX en el drag & drop del Navigator: botón Reset position, snap a bordes del viewport, glow visual al arrastrar, botón colapsado arrastrable, doble-click para resetear posición, y actualización de documentación.
+
+### Archivos Modificados
+| Archivo | Cambios |
+|---------|---------|
+| `src/features/manifest-editor/components/viewport/RackMiniMap.tsx` | +botón Reset position (RotateCcw), +snap a bordes (panelRef, SNAP_THRESHOLD=8), +isDraggingVisual state con glow cyan, +collapsed button draggable (onMouseDown), +double-click reset en Navigator, +transition-colors fix en collapsed (transition-all → transition-colors), +setIsDraggingVisual(false) en e.buttons guard |
+| `src/features/manifest-editor/components/viewport/__tests__/RackMiniMap.spec.tsx` | Titulo del collapsed button actualizado a "Show Mini Map · Drag to reposition" |
+
+### Features Implementadas
+
+**1. Botón Reset position**
+- Icono `RotateCcw` en el header del panel expandido (entre Filter y Center View)
+- `onClick={() => setPanelOffset({ x: 0, y: 0 })}` — resetea a posición inicial `top-[40px] right-[10px]`
+- Tooltip: "Reset panel position"
+
+**2. Snap a bordes del viewport**
+- Nuevo `panelRef` en el contenedor expandido para medir dimensiones
+- En `handleMove`, calcula la posición visual (CSS `top:40 right:10` + `transform: translate(offsetX, offsetY)`) y snap si está dentro de `SNAP_THRESHOLD = 8`px
+- 4 bordes: left (`visualLeft < 8px`), right (`right gap < 8px`), top (`visualTop < 8px`), bottom (`bottom gap < 8px`)
+- Snaps multi-eje simultáneos (esquinas)
+- Solo funciona en el panel expandido (collapsed button no tiene ref — es demasiado pequeño para snap útil)
+- Bug corregido durante code review: `SNAP_THRESHOLD = 20` causaba snap automático a la derecha en posición inicial (gap derecho = 10px < 20). Reducido a 8.
+
+**3. Glow visual al arrastrar**
+- `isDraggingVisual` state (useState)
+- Panel expandido: `shadow-[0_0_20px_rgba(0,242,255,0.25)] ring-1 ring-primary/20`
+- Botón colapsado: `shadow-[0_0_15px_rgba(0,242,255,0.3)] ring-1 ring-primary/30`
+- `setIsDraggingVisual(true)` en `handleHeaderMouseDown`
+- `setIsDraggingVisual(false)` en `handleUp` y en `e.buttons !== 1` guard (drag cancelado fuera de ventana)
+
+**4. Botón colapsado (EyeOff) arrastrable**
+- `onMouseDown={handleHeaderMouseDown}` añadido al botón EyeOff
+- Reutiliza la misma lógica de drag que el texto Navigator
+- `transition-all` → `transition-colors` para evitar lag de 150ms en transform durante drag
+- Título actualizado a "Show Mini Map · Drag to reposition"
+
+**5. Doble-click en Navigator**
+- `onDoubleClick={() => setPanelOffset({ x: 0, y: 0 })}` en el span "Navigator"
+- Tooltip: "Double-click to reset position"
+
+### Bugs Corregidos
+
+| Bug | Síntoma | Causa | Fix |
+|-----|---------|-------|-----|
+| Glow persistente | Brillo no desaparecía si se soltaba el mouse fuera de la ventana | `e.buttons !== 1` no llamaba `setIsDraggingVisual(false)` | Añadido `setIsDraggingVisual(false)` en el guard |
+| Snap falso a derecha | Panel saltaba 10px a la derecha al iniciar drag desde posición inicial | `SNAP_THRESHOLD = 20` > gap derecho default (10px) | Reducido threshold a 8 |
+| Ref TS type error | `useRef<HTMLDivElement | HTMLButtonElement>(null)` no asignable a `<button>` ni `<div>` | Union type en RefObject no compatible | Cambiado a `useRef<HTMLDivElement>(null)`, ref solo en expanded div |
+
+### Verificación
+| Check | Resultado |
+|-------|:---------:|
+| `npx tsc --noEmit` | ✅ 0 errores |
+| `npx jest RackMiniMap.spec.tsx` | ✅ **42/42 passed** |
+| Code review | ✅ Snap math verificado (4 bordes), drag glow sincronizado, sin issues críticos |
+
+---
+
+## Sesión: Mini-Map Clamping Fix, Constants Refactor, Test Suite + Toast System
+
+### Fecha: 2026-06-15
+
+### Resumen
+Corrección del bug crítico donde el mini-map se podía arrastrar por encima del viewport quedando atascado detrás del toolbar. Refactor completo de magic numbers a constantes nombradas. Sistema de notificaciones Toast global. Suite de 60 tests unitarios para el RackMiniMap.
+
+### Bug Fix: Mini-map stuck behind toolbar
+
+**Síntoma:** El panel del mini-map se podía arrastrar hasta `offsetY: -80`, quedando el header "Navigator" fuera del viewport (`overflow-hidden`). Sin header visible, el usuario no podía agarrar el drag handle ni devolver el panel al canvas.
+
+**Root Cause:** El clamp superior permitía `Math.max(-80, ...)`, y con CSS `top: 40px`, el panel quedaba visualmente en `40 - 80 = -40px` — completamente fuera del viewport.
+
+**Fix:** Top clamp reducido de `-80` a `-20` en dos lugares:
+| Lugar | Antes | Después |
+|-------|-------|--------|
+| Drag handler | `Math.max(-80, ...)` | `Math.max(-20, ...)` |
+| Mount clamp | `Math.max(-80, ...)` | `Math.max(-20, ...)` |
+
+**Matemáticas:** `top: 40px + offsetY >= -20` → panel top siempre ≥ `20px` del viewport, header completamente visible.
+
+### Clamp Constants Refactor
+
+Se reemplazaron todos los magic numbers del clamp y snap logic por 5 constantes nombradas:
+
+| Constante | Valor | Propósito |
+|-----------|-------|-----------|
+| `PANEL_CSS_TOP` | `40` | CSS `top` del panel (snap + clamp) |
+| `PANEL_CSS_RIGHT` | `10` | CSS `right` + límite derecho del clamp |
+| `PANEL_CLAMP_TOP_MAX` | `-20` | Máximo offset hacia arriba (header visible) |
+| `PANEL_CLAMP_MIN_VISIBLE_LEFT` | `70` | Mínimo px visibles a la izquierda |
+| `PANEL_CLAMP_MIN_VISIBLE_BOTTOM` | `60` | Mínimo px visibles abajo |
+
+**Expresiones compuestas:** `ph - 40 - 60` → `ph - PANEL_CSS_TOP - PANEL_CLAMP_MIN_VISIBLE_BOTTOM` y `containerHeight - 100` → `containerHeight - (PANEL_CSS_TOP + PANEL_CLAMP_MIN_VISIBLE_BOTTOM)` — la intención queda explícita.
+
+**Export:** `PANEL_CSS_TOP` y `PANEL_CSS_RIGHT` ahora son `export const` para poder referenciarlos en tests de consistencia.
+
+### Top Clamp Limit Indicator
+
+Derived state `const isAtTopLimit = panelOffset.y === PANEL_CLAMP_TOP_MAX` controla un sutil glow cyan en el borde superior del panel:
+- `shadow-[inset_0_1px_0_rgba(0,242,255,0.12)]` — inset shadow solo en top edge
+- También se muestra en el botón colapsado (EyeOff) para consistencia
+- Sin `useState` extra — es estado derivado
+- Baja prominencia visual: compite con drag glow (full ring) y snap glow (amber ring)
+
+### Bug Fix: Collapsed Mode Clamp
+
+**Síntoma:** El botón colapsado (EyeOff) se podía arrastrar fuera del viewport porque `panelRef.current` es `null` cuando el panel está colapsado.
+
+**Root Cause:** El mount clamp leía `panelRef.current.getBoundingClientRect()` que daba `pw=0, ph=0`, y el guard `if (pw > 0 && ph > 0)` saltaba todo el clamp.
+
+**Fix:** `handleHeaderMouseDown` ahora usa `containerWidth`/`containerHeight` de props como fallback:
+```tsx
+pw: pw || containerWidth,
+ph: ph || containerHeight,
+```
+Deps actualizadas: `[panelOffset, containerWidth, containerHeight]`
+
+### Toast Notification System
+
+Sistema global de toasts animados con framer-motion:
+- **`ToastProvider.tsx`**: Proveedor de contexto en layout.tsx
+- **`useToast()`**: Hook para disparar toasts desde cualquier componente
+- **4 variantes**: info (cyan), success (green), warn (yellow), error (red)
+- **`addLog` bridge**: editor.addLog existente ahora también produce toasts visuales
+- **Auto-dismiss**: 4s con animación fade-out
+- **Stacking**: Múltiples toasts se apilan desde esquina superior derecha
+
+### Tests: 60 Unit Tests en RackMiniMap (antes 42)
+
+| Test | Assert |
+|------|--------|
+| Mount extreme x negativo | `translate(-530px, 0px)` |
+| Mount extreme x positivo | `translate(10px, 0px)` |
+| Mount extreme y positivo | `translate(0px, 200px)` |
+| Mount extreme y negativo | `translate(0px, -20px)` |
+| Mount valores normales | `translate(5px, -20px)` |
+| Drag right extreme | `offsetX ≤ 10` |
+| **Drag up extreme** | **`offsetY === -20`** |
+| **Drag down extreme** | **`offsetY ≤ 200`** |
+| **Drag left extreme** | **`offsetX === -530`** |
+| **Top limit inset shadow visible at clamp** | **`className` contiene inset shadow class** |
+| **Top limit inset shadow removed after drag away** | **`className` ya no contiene inset shadow** |
+| **Collapsed button drag right** | **`offsetX ≤ 10`** |
+| **Collapsed button drag up** | **`offsetY === -20`** |
+| **Constants match Tailwind classes** | **`PANEL_CSS_TOP=40` coincide con `top-[40px]`, `PANEL_CSS_RIGHT=10` coincide con `right-[10px]`** |
+| Existing tests (42) | ✅ Todos pasan |
+
+### Archivos Modificados
+| Archivo | Cambio |
+|---------|--------|
+| `src/features/manifest-editor/components/viewport/RackMiniMap.tsx` | Top clamp -80→-20, snap indicator, clamp constants refactor, exported constants, top limit indicator, collapsed mode clamp fix |
+| `src/features/manifest-editor/components/viewport/__tests__/RackMiniMap.spec.tsx` | +18 tests (drag up, drag down, drag left, collapsed mode x2, top limit indicator, constant consistency) |
+| `CHANGELOG.md` | Actualizado v9.3.3 con todos los cambios |
+| `ROADMAP.md` | P1 Toast marcado completado, P5 Mini-Map actualizado (60 tests), nueva sección v9.3.3 |
+| `chat_log.md` | Esta sesión |
+
+### Verificación
+| Check | Resultado |
+|-------|:---------:|
+| `npx tsc --noEmit` | ✅ 0 errores |
+| `npx jest RackMiniMap.spec.tsx` | ✅ **60/60 tests** |
+| Code review | ✅ 4 revisiones sin issues críticos |
+
+---

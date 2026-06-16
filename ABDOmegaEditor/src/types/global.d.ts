@@ -1,4 +1,10 @@
 /**
+ * @purpose Amplía la interfaz de ventana con el API de acceso al sistema de archivos (showSaveFilePicker) para guardar archivos en ABDOmegaEditor.
+ * @fingerprint exports:0,imports:0,sig:28h23e
+ * @lastUpdated 2026-06-14T18:53:03.111Z
+ */
+
+/**
  * OMEGA Global Type Declarations
  *
  * Augments the Window interface with the File System Access API

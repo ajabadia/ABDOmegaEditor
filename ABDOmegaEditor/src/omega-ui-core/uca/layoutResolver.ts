@@ -2,8 +2,13 @@ import type { OmegaNode } from '../types/manifest';
 import { getNodeSize } from './spatialConstraints';
 
 /**
- * @purpose Resolvedor de layouts recursivo que calcula posiciones absolutas de hijos en modos stack-v, stack-h y absolute con justify/align/stretch
- * @lastUpdated 2026-06-14T17:45:00.000Z
+ * @purpose Gestiona y resuelve posiciones absolutas para nodos de niños en un layout basados en su tamaño, modo, gap y propiedades de alineación.
+ * @purpose_en Calculates and resolves absolute positions for children nodes in a layout based on their size, mode, gap, and alignment properties.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Helper Utility
+ * @complexity Medium
+ * @fingerprint exports:1,imports:2,sig:1lua0zd
+ * @lastUpdated 2026-06-15T16:54:05.908Z
  */
 export function resolveLayout(node: OmegaNode, providedSize?: { width: number; height: number }): OmegaNode {
   const mode = node.layout?.mode || 'absolute';

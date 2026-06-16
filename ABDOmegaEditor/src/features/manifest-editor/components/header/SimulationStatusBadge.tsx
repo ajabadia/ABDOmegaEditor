@@ -1,6 +1,11 @@
 /**
- * @purpose Renderiza una insignia que muestra el estado actual de sincronización de simulación incluyendo un icono y etiqueta con tiempo de última sincronización y botón para forzar resincronización opcionalmente para estados de error.
- * @lastUpdated 2026-06-14T16:08:33.092Z
+ * @purpose Renderiza una notificacion emergente que muestra el estado actual de sincronizacion de simulacion con un icono, etiqueta y botón de resincronizar forzado para estados de error.
+ * @purpose_en Renders a badge displaying the current simulation synchronization status with an icon, label, and optional force resync button for error states.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:4,sig:1rx926b
+ * @lastUpdated 2026-06-15T11:03:07.614Z
  */
 
 import React from 'react';
@@ -108,6 +113,7 @@ export const SimulationStatusBadge: React.FC<SimulationStatusBadgeProps> = ({
           onClick={onForceResync}
           className="p-1 hover:bg-white/10 rounded-full transition-colors text-white/40 hover:text-white"
           title="Force Manual Resync"
+          aria-label="Force manual resync"
         >
           <RefreshCw className="w-3 h-3" />
         </button>

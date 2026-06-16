@@ -1,11 +1,21 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+/**
+ * @purpose Renderiza una vista para editar manifestos OMEGA, incluyendo un canvas, controles y panel de historia según el modo de visualización.
+ * @purpose_en Renders a viewport for editing OMEGA manifests, including a canvas, controls, and history panel based on the view mode.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:16,sig:rprat3
+ * @lastUpdated 2026-06-15T22:05:31.894Z
+ */
+
+import { useState, useCallback, useEffect, useRef, startTransition } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import NodeCanvas from './NodeCanvas';
 import VirtualRack from './VirtualRack';
 import ViewportControls from './ViewportControls';
 import RulerOverlay from './RulerOverlay';
 import ViewportToolbar from './ViewportToolbar';
-import type { OMEGA_Manifest, LayoutContainer, OMEGA_Contract, HybridEntityUpdate, GridGuide, OmegaNode } from '@/omega-ui-core/types/manifest';
+import type { OMEGA_Manifest, LayoutContainer, OMEGA_Contract, OMEGA_Modulation, HybridEntityUpdate, GridGuide, OmegaNode } from '@/omega-ui-core/types/manifest';
 import { toggleGridField, updateGuides } from '../../utils/gridHelpers';
 import type { OmegaContract } from '@/services/wasmLoader';
 import type { AuditResult } from '@/services/auditService';
@@ -13,6 +23,8 @@ import type { UpdateManifestFn, GhostItem } from '@/features/manifest-editor/uti
 
 import { HistoryPanel } from '../inspector/HistoryPanel';
 import type { HistoryEntry } from '../../types/document';
+import RackMiniMap from './RackMiniMap';
+import { useRackLayout } from '@/features/manifest-editor/hooks/rack/useRackLayout';
 
 interface WorkbenchViewportProps {
   viewMode: 'orbital' | 'rack' | 'source' | 'history';
@@ -52,7 +64,7 @@ interface WorkbenchViewportProps {
   onGroupSelected?: (ids: string[]) => void;
   onUngroupNode?: (groupId: string) => void;
   activeTool?: 'select' | 'marquee' | 'add' | 'studio' | null | undefined;
-  uiTheme?: string | undefined;
+  uiTheme?: 'dark' | 'light' | 'amber' | 'cyberpunk' | 'high-contrast' | undefined;
 
   // v9.1.7-dev — RackStartupAssistant wiring (REGRESSION_RECOVERY_PLAN.md item 23)
   onOpenGallery?: (() => void) | undefined;
@@ -68,6 +80,12 @@ interface WorkbenchViewportProps {
   onGhostMouseMove?: ((clientX: number, clientY: number) => void) | undefined;
   onGhostClick?: ((x: number, y: number) => void) | undefined;
   onGhostCancel?: (() => void) | undefined;
+  showMiniMap?: boolean | undefined;
+  onToggleMiniMap?: (() => void) | undefined;
+
+  // P11 — Visual Connection Editor
+  onAddModulation?: ((mod: OMEGA_Modulation) => void) | undefined;
+  onRemoveModulation?: ((id: string) => void) | undefined;
 }
 
 
@@ -141,29 +159,40 @@ export function WorkbenchViewport({
   isGhostVisible,
   onGhostMouseMove,
   onGhostClick,
-  onGhostCancel
+  onGhostCancel,
+  showMiniMap = true,
+  onToggleMiniMap,
+  onAddModulation,
+  onRemoveModulation,
 }: WorkbenchViewportProps) {
+  const { width: rackWidth, height: rackHeight } = useRackLayout(manifest);
   
   const grid = manifest.ui?.layout?.grid;
   const manifestShowGuides = grid?.showGuides ?? false;
+  const [isBindingMode, setIsBindingMode] = useState(false);
+  const toggleBindingMode = useCallback(() => setIsBindingMode(prev => !prev), []);
+
   const [showGuides, setShowGuides] = useState(manifestShowGuides);
   const [guides, setGuides] = useState<GridGuide[]>(() => grid?.guides ?? []);
 
-  // Adjust state during render when manifest values change to avoid useEffect setState warnings
-  const [prevShowGuides, setPrevShowGuides] = useState(manifestShowGuides);
-  if (manifestShowGuides !== prevShowGuides) {
-    setPrevShowGuides(manifestShowGuides);
-    setShowGuides(manifestShowGuides);
-  }
-
-  const externalGuides = grid?.guides;
-  const [prevExternalGuides, setPrevExternalGuides] = useState(externalGuides);
-  if (externalGuides !== prevExternalGuides) {
-    setPrevExternalGuides(externalGuides);
-    if (externalGuides) {
-      setGuides(externalGuides);
+  // Sync local state with manifest props — using useRef to track previous values
+  // avoids setState-in-render anti-pattern which can cause "Maximum update depth exceeded"
+  const prevShowGuidesRef = useRef(manifestShowGuides);
+  useEffect(() => {
+    if (manifestShowGuides !== prevShowGuidesRef.current) {
+      prevShowGuidesRef.current = manifestShowGuides;
+      setShowGuides(manifestShowGuides);
     }
-  }
+  }, [manifestShowGuides]);
+
+  const prevGuidesRef = useRef(grid?.guides);
+  useEffect(() => {
+    const newGuides = grid?.guides;
+    if (newGuides !== prevGuidesRef.current) {
+      prevGuidesRef.current = newGuides;
+      if (newGuides) startTransition(() => setGuides(newGuides));
+    }
+  }, [grid?.guides]);
 
   const sectionRef = useRef<HTMLElement>(null);
   
@@ -277,6 +306,21 @@ export function WorkbenchViewport({
     setAlignGhostType(alignType ?? '');
   }, []);
 
+  // ── Container size tracking for Mini-Map ──────────────────────────
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const updateSize = () => {
+      setContainerSize({ width: el.clientWidth, height: el.clientHeight });
+    };
+    updateSize();
+    const ro = new ResizeObserver(updateSize);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   const TOOLBAR_H = 28;
   
   return (
@@ -332,9 +376,30 @@ export function WorkbenchViewport({
           toolbarHeight={TOOLBAR_H}
           pan={pan}
           zoom={zoom}
-          rackWidth={manifest.ui?.dimensions?.width || 800}
-          rackHeight={manifest.ui?.dimensions?.height || 400}
+          rackWidth={rackWidth}
+          rackHeight={rackHeight}
           uiTheme={uiTheme}
+        />
+      )}
+
+      {/* MINI-MAP — rack view only */}
+      {viewMode === 'rack' && (
+        <RackMiniMap
+          manifest={manifest}
+          zoom={zoom}
+          pan={pan}
+          onPan={handlePan}
+          onResetViewport={handleResetViewport}
+          onFitViewport={() => handleFitViewport(viewMode)}
+          rackWidth={rackWidth}
+          rackHeight={rackHeight}
+          containerWidth={containerSize.width}
+          containerHeight={containerSize.height}
+          selectedItemId={selectedItemId}
+          onSelectItem={onSelectItem}
+          lockedNodeIds={lockedNodeIds}
+          isVisible={showMiniMap ?? true}
+          onToggleVisible={() => onToggleMiniMap?.()}
         />
       )}
  
@@ -362,10 +427,16 @@ export function WorkbenchViewport({
                 onUpdateItem={updateItem}
                 onUpdateManifest={onUpdateManifest ?? undefined}
                 onGhostPreviewChange={handleGhostPreviewChange}
+                showMiniMap={showMiniMap ?? true}
+                onToggleMiniMap={() => onToggleMiniMap?.()}
+                isBindingMode={isBindingMode}
+                onToggleBindingMode={toggleBindingMode}
               />
             )}
             <VirtualRack 
               manifest={manifest} 
+              contract={contract}
+              isBindingMode={isBindingMode}
               onSelectItem={onSelectItem} 
               selectedItemId={selectedItemId} 
               multiSelectedIds={multiSelectedIds}
@@ -381,6 +452,8 @@ export function WorkbenchViewport({
               pushParameterUpdate={pushParameterUpdate}
               hiddenNodeIds={hiddenNodeIds}
               lockedNodeIds={lockedNodeIds}
+              {...(onAddModulation != null ? { onAddModulation } : {})}
+              {...(onRemoveModulation != null ? { onRemoveModulation } : {})}
               {...(onDuplicateItem != null ? { onDuplicateItem } : {})}
               {...(onRemoveItem != null ? { onRemoveItem } : {})}
               {...(onToggleLock != null ? { onToggleLock } : {})}

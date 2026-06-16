@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona operaciones de arrastre para nodos UCA en el editor de manifesto OMEGA, actualizando posiciones y manejo de reordenamiento según la entrada del usuario.
+ * @purpose_en Manages drag operations for UCA nodes in the OMEGA manifest editor, updating positions and handling reordering based on user input.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Custom Hook
+ * @complexity Medium
+ * @fingerprint exports:1,imports:6,sig:nucy0v
+ * @lastUpdated 2026-06-15T15:31:30.159Z
+ */
+
 import React from 'react';
 import type { PanInfo } from 'framer-motion';
 import type { OmegaNode, OMEGA_Manifest, Position, GridConfig } from '../../types/manifest';

@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona solicitudes GET para obtener metadata de audio asociadas a un ID específico de instrumento, filtrando y analizando formatos de archivo utilizando la biblioteca music-metadata.
+ * @purpose_en Manages GET requests to retrieve metadata for audio tracks associated with a specific instrument ID, filtering and analyzing file formats using the music-metadata library.
+ * @refactorable false
+ * @classification Business Service
+ * @complexity Medium
+ * @fingerprint exports:1,imports:4,sig:1d2fgwu
+ * @lastUpdated 2026-06-15T17:04:00.763Z
+ */
+
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";

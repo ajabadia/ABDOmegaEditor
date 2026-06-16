@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona las propiedades de anclaje en el editor del manifiesto OMEGA.
- * @lastUpdated 2026-06-14T16:41:36.006Z
+ * @purpose Renderiza un componente para gestionar propiedades de adherencia en el editor de manifesto OMEGA, incluyendo tipo, campos de lógica, gobernanza de estilo y desplazamientos precisos.
+ * @purpose_en Renders a component for managing attachment properties in the OMEGA manifest editor, including type, logic fields, style governance, and precision offsets.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:5,sig:74o4yh
+ * @lastUpdated 2026-06-15T11:05:07.138Z
  */
 
 import AttachmentTypeAnchor from './attachments/AttachmentTypeAnchor';

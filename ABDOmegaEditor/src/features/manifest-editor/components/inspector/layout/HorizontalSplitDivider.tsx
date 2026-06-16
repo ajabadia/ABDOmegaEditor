@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona las interacciones del usuario para dividir un diseño horizontalmente arrastrando una división.
- * @lastUpdated 2026-06-14T16:50:09.139Z
+ * @purpose Gestiona las interacciones del usuario para dividir horizontalmente un diseño arrastrando un divisor y notificando al componente padre de los eventos de arrastre.
+ * @purpose_en Manages user interactions to horizontally split a design by dragging a divider and notifies the parent component of the drag events.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:1,sig:1ha64az
+ * @lastUpdated 2026-06-15T11:31:07.887Z
  */
 
 import React, { useCallback } from 'react';

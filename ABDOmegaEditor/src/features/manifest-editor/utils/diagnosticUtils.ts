@@ -1,4 +1,14 @@
 /**
+ * @purpose Gestiona y prioriza diagnósticos desde múltiples fuentes para el editor de manifesto OMEGA.
+ * @purpose_en Manages and prioritizes diagnostics from multiple sources for the OMEGA manifest editor.
+ * @refactorable false
+ * @classification Helper Utility
+ * @complexity Low
+ * @fingerprint exports:2,imports:1,sig:170jrga
+ * @lastUpdated 2026-06-15T15:17:06.108Z
+ */
+
+/**
  * OMEGA ERA 7.2.3 - Diagnostic Utilities
  * Logic for merging and prioritizing multi-source diagnostics.
  */

@@ -1,4 +1,14 @@
 /**
+ * @purpose Gestiona y exporta una serie de plantillas de módulo industrial para su uso en el editor de manifesto OMEGA.
+ * @purpose_en Manages and exports a set of industrial module templates for use in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification Data/Constants
+ * @complexity Low
+ * @fingerprint exports:1,imports:1,sig:15c5j5w
+ * @lastUpdated 2026-06-15T13:10:04.000Z
+ */
+
+/**
  * OMEGA ERA 7.2.3 - Industrial Template Registry
  * Canonical blueprints for modular synthesis architecture.
  */

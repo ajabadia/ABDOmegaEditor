@@ -1,8 +1,11 @@
 /**
  * @purpose Renderiza una etiqueta de corto circuito reutilizable para el pie de footer del OMEGA Workbench.
  * @purpose_en Renders a reusable keyboard shortcut badge for the OMEGA Workbench footer.
- * @fingerprint exports:0,imports:1,sig:1gbdghr
- * @lastUpdated 2026-06-15T07:31:14.244Z
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:0,imports:1,sig:ahjxpw
+ * @lastUpdated 2026-06-15T12:48:01.487Z
  */
 
 /**
@@ -55,6 +58,7 @@ const ShortcutBadge: React.FC<ShortcutBadgeProps> = ({
       disabled={disabled}
       className={`${responsive} ${baseClass} ${stateClass}`}
       title={title}
+      aria-label={title || `${keys.join('+')} shortcut`}
     >
       {keys.map((key, i) => (
         <React.Fragment key={key}>

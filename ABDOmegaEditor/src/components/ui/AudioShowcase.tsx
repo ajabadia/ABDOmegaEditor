@@ -1,8 +1,13 @@
 "use client";
 
 /**
- * @purpose El archivo AudioShowcase.tsx es un componente de interfaz de usuario que muestra una presentación de audio para un instrumento específico en el editor de manifiestos OMEGA (ABDOmegaEditor).
- * @lastUpdated 2026-06-14T15:28:13.122Z
+ * @purpose Renderiza un componente UI para mostrar pistas de audio relacionadas con una pista específica de instrumento en el editor de manifestos OMEGA.
+ * @purpose_en Renders a UI component to showcase audio tracks for a specific instrument in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:10,sig:1hq2aja
+ * @lastUpdated 2026-06-15T10:50:46.749Z
  */
 
 

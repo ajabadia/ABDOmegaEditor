@@ -1,6 +1,11 @@
 /**
- * @purpose Constantes de manifiesto por defecto y función de normalización que garantiza la integridad estructural de cualquier manifiesto cargado
- * @lastUpdated 2026-06-14T17:45:00.000Z
+ * @purpose Gestiona valores por defecto del manifest y normaliza los manifests cargados para asegurar la integridad estructural.
+ * @purpose_en Manages default manifest values and normalizes loaded manifests to ensure structural integrity.
+ * @refactorable false
+ * @classification Data/Constants
+ * @complexity Low
+ * @fingerprint exports:2,imports:1,sig:ecz3so
+ * @lastUpdated 2026-06-15T13:02:42.421Z
  */
 
 import type { OMEGA_Manifest } from '../types/document';

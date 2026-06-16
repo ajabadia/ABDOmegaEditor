@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona el estado de pan y zoom para el bastidor del editor de manifesto.
+ * @purpose_en Manages pan and zoom state for the manifest editor canvas/rack.
+ * @refactorable false
+ * @classification Custom Hook
+ * @complexity Low
+ * @fingerprint exports:1,imports:1,sig:w2hux9
+ * @lastUpdated 2026-06-15T15:15:17.417Z
+ */
+
 import { useState, useCallback } from 'react';
 
 /**

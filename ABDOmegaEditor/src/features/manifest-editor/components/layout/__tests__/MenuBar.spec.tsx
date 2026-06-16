@@ -13,6 +13,7 @@ jest.mock('framer-motion', () => ({
   motion: {
     div: ({ children, ...props }: { children?: React.ReactNode; [key: string]: unknown }) => {
       // Strip framer-motion-specific props that React doesn't recognize
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { initial, animate, exit, transition, ...cleanProps } = props as Record<string, unknown>;
       return <div {...cleanProps}>{children}</div>;
     },
@@ -73,15 +74,15 @@ describe('MenuBar — Help > Guided Tour', () => {
     expect(tourIdx).toBeGreaterThan(engIdx);
   });
 
-  it('should show "Guided Tour" before "Compliance Report" in the Help menu', () => {
+  it('should show "Guided Tour" before "About OMEGA" in the Help menu', () => {
     openHelpMenu();
     const helpDropdown = screen.getByText('Help').parentElement!;
     const items = helpDropdown.querySelectorAll('button');
     const labels = Array.from(items).map(btn => btn.textContent?.trim());
     const tourIdx = labels.indexOf('Guided Tour');
-    const compIdx = labels.indexOf('Compliance Report');
+    const aboutIdx = labels.indexOf('About OMEGA');
     expect(tourIdx).toBeGreaterThanOrEqual(0);
-    expect(compIdx).toBeGreaterThan(tourIdx);
+    expect(aboutIdx).toBeGreaterThan(tourIdx);
   });
 
   it('should call onToggleTour when "Guided Tour" is clicked', () => {
@@ -130,7 +131,21 @@ describe('MenuBar — Help menu other items', () => {
     expect(onHelp).toHaveBeenCalledTimes(1);
   });
 
-  it('should still show "About OMEGA" and call onOpenAbout', () => {
+  it('should show "Compliance (Audit)" in Window menu with toggle', () => {
+    const onToggleWindow = jest.fn();
+    render(<MenuBar {...BASE_PROPS} onToggleWindow={onToggleWindow} windowStates={{
+      window_layers: false, window_properties: false, window_rack_properties: false,
+      window_blueprints: false, window_compliance: false, window_info: false,
+      window_history: false, window_logs: false,
+    }} />);
+    fireEvent.click(screen.getByText('Window'));
+    const complianceItem = screen.getByText('Compliance (Audit)');
+    expect(complianceItem).toBeTruthy();
+    fireEvent.click(complianceItem);
+    expect(onToggleWindow).toHaveBeenCalledWith('window_compliance');
+  });
+
+  it('should show "About OMEGA" and call onOpenAbout', () => {
     const onOpenAbout = jest.fn();
     render(<MenuBar {...BASE_PROPS} onOpenAbout={onOpenAbout} />);
     fireEvent.click(screen.getByText('Help'));

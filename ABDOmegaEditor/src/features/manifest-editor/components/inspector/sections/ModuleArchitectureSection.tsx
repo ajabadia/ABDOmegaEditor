@@ -1,5 +1,15 @@
 'use client';
-  
+
+/**
+ * @purpose Renderiza la sección de arquitectura del módulo del editor de manifesto OMEGA, incluyendo subtablas para infraestructura, controles, puertos, rutas, activos y vista de árbol.
+ * @purpose_en Renders the module architecture section of the OMEGA manifest editor, including sub-tabs for infrastructure, controls, ports, routing, assets, and tree view.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:8,sig:1lfkop6
+ * @lastUpdated 2026-06-15T11:39:52.965Z
+ */
+
 import { useState } from 'react';
 import { Layout, Settings2, Zap, Move, Image } from 'lucide-react';
 import type { OMEGA_Manifest, LayoutContainer, OMEGA_Modulation, ExtraResource, UcaDebugConfig, GridConfig } from '@/omega-ui-core/types/manifest';
@@ -71,17 +81,17 @@ export default function ModuleArchitectureSection({
         <div className="flex flex-col">
           <span className={`text-[7px] font-black uppercase tracking-widest ${manifest.ui?.useUCA === false ? 'text-amber-500' : 'text-white/50'}`}>Legacy Rendering Fallback</span>
           <span className={`text-[6px] font-medium ${manifest.ui?.useUCA === false ? 'text-amber-500/70' : 'text-white/30'}`}>Temporarily revert to flat-array pipeline</span>
-        </div>
-        <button
-          onClick={() => onUpdate({ ui: { ...manifest.ui, useUCA: manifest.ui?.useUCA === false ? true : false } })}
-          className={`px-3 py-1 text-[8px] font-black uppercase rounded-full border transition-all ${
-            manifest.ui?.useUCA === false
-              ? 'bg-amber-500 border-amber-500 text-black' 
-              : 'border-white/20 text-white/50 hover:bg-white/10'
-          }`}
-        >
-          {manifest.ui?.useUCA === false ? 'ACTIVE' : 'OFF'}
-        </button>
+        </div>            <button
+              onClick={() => onUpdate({ ui: { ...manifest.ui, useUCA: manifest.ui?.useUCA === false ? true : false } })}
+              aria-label={manifest.ui?.useUCA === false ? 'Disable legacy fallback' : 'Enable legacy fallback'}
+              className={`px-3 py-1 text-[8px] font-black uppercase rounded-full border transition-all ${
+                manifest.ui?.useUCA === false
+                  ? 'bg-amber-500 border-amber-500 text-black' 
+                  : 'border-white/20 text-white/50 hover:bg-white/10'
+              }`}
+            >
+              {manifest.ui?.useUCA === false ? 'ACTIVE' : 'OFF'}
+            </button>
       </div>
 
       {/* UCA DEBUG INSPECTOR */}
@@ -105,6 +115,7 @@ export default function ModuleArchitectureSection({
                   } as UcaDebugConfig
                 } 
               })}
+              aria-label={manifest.ui?.ucaDebug?.enabled ? 'Disable UCA debug' : 'Enable UCA debug'}
               className={`px-3 py-1 text-[8px] font-black uppercase rounded-full border transition-all ${
                 manifest.ui?.ucaDebug?.enabled 
                   ? 'bg-purple-500 border-purple-500 text-black' 
@@ -203,6 +214,7 @@ export default function ModuleArchitectureSection({
                 } 
               } 
             })}
+            aria-label={manifest.ui?.layout?.grid?.enabled ? 'Disable grid snapping' : 'Enable grid snapping'}
             className={`px-3 py-1 text-[8px] font-black uppercase rounded-full border transition-all ${
               manifest.ui?.layout?.grid?.enabled 
                 ? 'bg-emerald-500 border-emerald-500 text-black' 
@@ -238,6 +250,7 @@ export default function ModuleArchitectureSection({
                       } 
                     });
                   }}
+                  aria-label="Grid spacing X"
                   className="w-8 bg-black/40 border border-emerald-500/20 rounded-sm px-1 text-[8px] outline-none focus:border-emerald-500/50"
                 />
              </div>
@@ -265,6 +278,7 @@ export default function ModuleArchitectureSection({
                       } 
                     });
                   }}
+                  aria-label="Grid spacing Y"
                   className="w-8 bg-black/40 border border-emerald-500/20 rounded-sm px-1 text-[8px] outline-none focus:border-emerald-500/50"
                 />
              </div>
@@ -277,8 +291,8 @@ export default function ModuleArchitectureSection({
         {subTabs.map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActiveSubTab(tab.id)}
-            className={`flex-1 py-1.5 flex flex-col items-center gap-1 rounded-xs transition-all ${
+            onClick={() => setActiveSubTab(tab.id)}              aria-label={`Select ${tab.label} tab`}
+              className={`flex-1 py-1.5 flex flex-col items-center gap-1 rounded-xs transition-all ${
               activeSubTab === tab.id 
                 ? 'bg-primary/10 border border-primary/20 text-primary' 
                 : 'wb-text-muted hover:wb-text hover:bg-white/5 border border-transparent'

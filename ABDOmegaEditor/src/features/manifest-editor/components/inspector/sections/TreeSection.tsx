@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Renderiza una estructura de árbol para navegar y seleccionar elementos en un editor de manifesto OMEGA.
+ * @purpose_en Renders a tree structure for navigating and selecting elements in an OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:3,sig:zxdyfa
+ * @lastUpdated 2026-06-15T11:40:09.650Z
+ */
+
 import { useState, useMemo, type KeyboardEvent } from 'react';
 import type { OmegaNode, OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
 import { ChevronRight, ChevronDown, Layers, LayoutPanelLeft, Container, Settings2, BoxSelect } from 'lucide-react';

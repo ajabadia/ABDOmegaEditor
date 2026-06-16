@@ -1,6 +1,11 @@
 /**
- * @purpose Gestiona un componente para mostrar y actualizar propiedades de visualización como variante tecnológica y precisión UI visual en un editor de manifest OMEGA.
- * @lastUpdated 2026-06-14T16:51:26.650Z
+ * @purpose Gestiona y renderiza propiedades de visualización como tecnología de panel y precisión UI en el editor manifest OMEGA.
+ * @purpose_en Manages and renders display properties such as panel technology and UI precision in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:3,sig:1f0vuns
+ * @lastUpdated 2026-06-15T11:31:35.681Z
  */
 
 import { Monitor, Hash } from 'lucide-react';
@@ -47,6 +52,7 @@ export default function DisplayProperties({ item, manifest, onUpdate, setActiveS
             <button
               key={t.id}
               onClick={() => updateVariant(t.id)}
+              aria-label={`Select ${t.label} display`}
               className={`w-full p-3 border rounded-xs transition-all flex flex-col items-start gap-1 group relative overflow-hidden ${
                 currentVariant === t.id 
                   ? 'bg-primary/10 border-primary shadow-[0_0_15px_rgba(0,240,255,0.1)]' 
@@ -74,6 +80,7 @@ export default function DisplayProperties({ item, manifest, onUpdate, setActiveS
         <div className="flex items-center gap-4 bg-black/40 border border-outline/10 p-3 rounded-xs">
            <input 
              type="range" 
+             aria-label="Visual UI precision"
              min="0" 
              max="6" 
              value={precision}

@@ -1,6 +1,11 @@
 /**
- * @purpose Renderiza un formulario para editar propiedades de puerto en el editor de manifest OMEGA, incluyendo orientación, polaridad, color y vinculación.
- * @lastUpdated 2026-06-14T16:48:10.878Z
+ * @purpose Renderiza un formulario para editar propiedades de puerto en el editor de manifesto OMEGA, incluyendo orientación, polaridad, color y vinculación.
+ * @purpose_en Renders a form for editing port properties in the OMEGA manifest editor, including orientation, polarity, color, and binding.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:2,imports:4,sig:5vp0s1
+ * @lastUpdated 2026-06-15T11:30:18.905Z
  */
 
 import type { ComponentNode, PortOrientation, PortPolarity } from '../../../../../omega-ui-core/types/rack';

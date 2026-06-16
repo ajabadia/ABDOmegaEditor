@@ -1,5 +1,15 @@
 "use client";
 
+/**
+ * @purpose Renderiza un campo de entrada estilizado con propiedades personalizables para su uso en el editor de manifesto OMEGA.
+ * @purpose_en Renders a styled input field with customizable properties for use in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:3,imports:1,sig:21szo4
+ * @lastUpdated 2026-06-15T12:59:33.853Z
+ */
+
 import * as React from "react";
 
 export type IndustrialInputSize = "xs" | "sm" | "md";
@@ -20,6 +30,8 @@ export type IndustrialInputProps = {
 
   hasError?: boolean | undefined;
   className?: string | undefined;
+  /** Accessible label for screen readers */
+  ariaLabel?: string | undefined;
 };
 
 const baseStyles =
@@ -79,6 +91,7 @@ export function IndustrialInput(props: IndustrialInputProps) {
       placeholder={placeholder}
       disabled={disabled}
       readOnly={readOnly}
+      aria-label={props.ariaLabel}
       className={[
         baseStyles,
         sizeStyles[size],

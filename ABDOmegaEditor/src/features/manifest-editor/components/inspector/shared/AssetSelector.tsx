@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona el seleccionado y visualizado de activos dentro del editor de manifesto OMEGA, permitiendo a los usuarios navegar, seleccionar y subir activos para sus proyectos.
+ * @purpose_en Manages the selection and visualization of assets within the OMEGA manifest editor, allowing users to navigate, select, and upload assets for their projects.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:2,imports:6,sig:tt5k7b
+ * @lastUpdated 2026-06-15T11:41:46.895Z
+ */
+
 import React from 'react';
 import { Image as ImageIcon, Plus, Trash2, Folder, ChevronLeft, Film } from 'lucide-react';
 import Image from 'next/image';
@@ -164,6 +174,7 @@ export default function AssetSelector({
             <button 
                 onClick={() => onSelect(undefined)}
                 className="flex items-center gap-1 px-1.5 py-0.5 bg-red-500/10 border border-red-500/20 rounded-[2px] text-[6px] font-black uppercase text-red-500 hover:bg-red-500/20 transition-all"
+                aria-label="Clear selected asset"
             >
                <Trash2 className="w-2 h-2" />
                Clear Asset
@@ -181,6 +192,7 @@ export default function AssetSelector({
                  setCurrentPath(parts.length > 0 ? parts.join('/') : null);
                }}
                className="p-2 rounded-xs border wb-outline bg-black/40 flex flex-col gap-2 items-center justify-center hover:border-primary/40 transition-all group min-h-[80px]"
+               aria-label="Go back to parent folder"
              >
                <ChevronLeft className="w-4 h-4 text-primary/40 group-hover:text-primary transition-colors" />
                <span className="text-[6px] font-black uppercase tracking-widest text-foreground/40">Back</span>
@@ -191,6 +203,7 @@ export default function AssetSelector({
              <button
                onClick={() => setCurrentPath('lib:sequences')}
                className="p-2 rounded-xs border wb-outline bg-black/40 flex flex-col gap-2 items-center justify-center hover:border-accent/40 transition-all group min-h-[100px]"
+               aria-label="Open system library"
              >
                <Film className="w-5 h-5 text-accent/40 group-hover:text-accent transition-colors" />
                <span className="text-[6px] font-black uppercase tracking-[0.2em] text-foreground/60">System Library</span>
@@ -204,6 +217,7 @@ export default function AssetSelector({
               setCurrentPath(folderName);
             }}
             className="p-2 rounded-xs border wb-outline bg-black/40 flex flex-col gap-2 items-center justify-center hover:border-accent/40 transition-all group min-h-[100px]"
+            aria-label={`Open folder ${folderName.toUpperCase()}`}
           >
             <Folder className="w-5 h-5 text-accent/40 group-hover:text-accent transition-colors" />
             <span className="text-[6px] font-black uppercase tracking-[0.2em] text-foreground/60">{folderName.toUpperCase()}</span>
@@ -220,6 +234,7 @@ export default function AssetSelector({
                     key={item.id}
                     onClick={() => setCurrentPath(item.path || null)}
                     className="p-2 rounded-xs border wb-outline bg-black/40 flex flex-col gap-2 items-center justify-center transition-all group min-h-[80px] hover:border-primary/40"
+                    aria-label={`Open folder ${item.name}`}
                   >
                     <Folder className="w-5 h-5 text-primary/40 group-hover:text-primary transition-colors" />
                     <span className="text-[6px] font-black uppercase tracking-[0.2em] text-foreground/60">{item.name}</span>
@@ -233,6 +248,7 @@ export default function AssetSelector({
                   key={item.id}
                   onClick={() => handleLibrarySelect(item)}
                   className="p-2 rounded-xs border wb-outline bg-black/40 flex flex-col gap-1 items-center transition-all group overflow-hidden min-h-[80px] hover:border-primary/40"
+                  aria-label={`Select ${item.name}`}
                 >
                   <div className="w-full flex-1 bg-black/60 rounded-xs flex items-center justify-center overflow-hidden border border-white/5 relative aspect-square">
                       {isSequence ? (
@@ -281,6 +297,7 @@ export default function AssetSelector({
                       ? 'border-primary bg-primary/10 text-primary' 
                       : 'border-outline text-foreground/40 hover:border-primary/50'}
               `}
+              aria-label={`Select ${asset.id?.split('/').pop() || 'Untitled'}`}
             >
               <div className="w-full flex-1 bg-black/40 rounded-xs flex items-center justify-center overflow-hidden border border-white/5 relative aspect-square">
                   <Image 
@@ -361,6 +378,7 @@ export default function AssetSelector({
       <input 
         type="file" 
         ref={fileInputRef} 
+        aria-label="Upload asset file"
         style={{ display: 'none' }} 
         onChange={(e) => {
           if (e.target.files && e.target.files.length > 0) {

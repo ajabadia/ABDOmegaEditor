@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Renderiza una capa de regla con guías horizontales y verticales para una posición precisa dentro del viewport del editor de manifesto OMEGA.
+ * @purpose_en Renders a ruler overlay with horizontal and vertical guides for precise positioning within the OMEGA manifest editor viewport.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:2,sig:bp8p4y
+ * @lastUpdated 2026-06-15T13:01:36.330Z
+ */
+
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import type { GridGuide } from '@/omega-ui-core/types/rack';
 
@@ -12,7 +22,7 @@ interface RulerOverlayProps {
   zoom?: number | undefined;
   rackWidth?: number | undefined;
   rackHeight?: number | undefined;
-  uiTheme?: string | undefined;
+  uiTheme?: 'dark' | 'light' | 'amber' | 'cyberpunk' | 'high-contrast' | undefined;
 }
 
 const RULER_SIZE = 22;
@@ -114,7 +124,7 @@ export default function RulerOverlay({
     };
     rafId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafId);
-  }, []);
+  }, [wrapperRef, setBaseRackPos, setDims]);
 
   // ──────────────────────────────────────────────
   // Horizontal ruler drawing
@@ -179,7 +189,7 @@ export default function RulerOverlay({
       ctx.fillStyle = 'rgba(0, 180, 255, 0.6)';
       ctx.fillRect(canvasY, 0, 2, RULER_SIZE);
     }
-  }, [dims.w, creating, pan?.x, pan?.y, zoom, baseRackPos.x, baseRackPos.y, toolbarHeight, rackWidth, rackHeight, uiTheme]);
+  }, [dims.w, creating, pan, zoom, baseRackPos, toolbarHeight, rackWidth, rackHeight, uiTheme]);
 
   // ──────────────────────────────────────────────
   // Vertical ruler drawing
@@ -247,7 +257,7 @@ export default function RulerOverlay({
       ctx.fillStyle = 'rgba(0, 180, 255, 0.6)';
       ctx.fillRect(0, canvasX, RULER_SIZE, 2);
     }
-  }, [dims.h, creating, pan?.x, pan?.y, zoom, baseRackPos.x, baseRackPos.y, toolbarHeight, rackWidth, rackHeight, uiTheme]);
+  }, [dims.h, creating, pan, zoom, baseRackPos, toolbarHeight, rackWidth, rackHeight, uiTheme]);
 
   // ──────────────────────────────────────────────
   // CREATING guides: mousedown on ruler
@@ -372,7 +382,7 @@ export default function RulerOverlay({
       window.removeEventListener('mousemove', handleMove);
       window.removeEventListener('mouseup', handleUp);
     };
-  }, [creating, dragging, guides, onGuidesChange, rackWidth, rackHeight]);
+  }, [creating, dragging, guides, onGuidesChange, rackWidth, rackHeight, setCreating, setDragging]);
 
   // ──────────────────────────────────────────────
   // RENDER — pre-compute overlays outside JSX to avoid IIFE TS issues

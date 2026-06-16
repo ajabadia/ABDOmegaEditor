@@ -1,6 +1,11 @@
 /**
- * @purpose Mostrador de información de pista de audio en el editor de manifiestos OMEGA.
- * @lastUpdated 2026-06-14T15:28:06.489Z
+ * @purpose Renderiza información sobre el track de audio actual en el editor de manifesto OMEGA UI, incluyendo arte de portada, estado de reproducción y metadatos.
+ * @purpose_en Renders information about the current audio track in the OMEGA manifest editor UI, including cover art, playback status, and metadata.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:4,sig:1v2lbuz
+ * @lastUpdated 2026-06-16T17:35:30.885Z
  */
 
 import { Info } from "lucide-react";
@@ -58,6 +63,7 @@ export function AudioTrackInfo({ currentTrack, isPlaying, showMeta, setShowMeta,
           "p-3 rounded-sm border transition-all",
           showMeta ? "bg-primary text-black border-primary" : "bg-white/5 border-white/5 text-zinc-600 hover:text-white"
         )}
+        aria-label={showMeta ? 'Hide metadata' : 'Show metadata'}
       >
         <Info size={20} />
       </button>

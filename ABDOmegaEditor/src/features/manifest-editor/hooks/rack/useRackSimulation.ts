@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona el ciclo de simulación en tiempo real y la lógica de actividad del contenedor (mapa de calor) para el editor de manifesto OMEGA.
+ * @purpose_en Manages the real-time simulation loop and container activity (heatmap) logic for the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Custom Hook
+ * @complexity Medium
+ * @fingerprint exports:1,imports:4,sig:161zkce
+ * @lastUpdated 2026-06-15T13:11:24.811Z
+ */
+
 import { useState, useEffect, useCallback } from 'react';
 import type { ManifestEntity } from '@/omega-ui-core/types/manifest';
 import { wasmRuntime } from '@/services/wasmRuntime';

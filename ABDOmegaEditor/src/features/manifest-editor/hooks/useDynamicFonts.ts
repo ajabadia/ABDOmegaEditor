@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona carga de fuentes dinámicas para el editor de manifesto OMEGA Omega para asegurar que la vista de rack coincida con el motor de producción.
+ * @purpose_en Manages dynamic font loading for the OMEGA manifest editor to ensure rack preview matches the production engine.
+ * @refactorable false
+ * @classification Custom Hook
+ * @complexity Low
+ * @fingerprint exports:1,imports:2,sig:7k3mgb
+ * @lastUpdated 2026-06-15T13:12:59.685Z
+ */
+
 import { useEffect } from 'react';
 import type { OMEGA_Manifest, OMEGA_Font } from '@/omega-ui-core/types/manifest';
  

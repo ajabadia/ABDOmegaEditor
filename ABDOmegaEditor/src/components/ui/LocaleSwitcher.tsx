@@ -1,8 +1,13 @@
 "use client";
 
 /**
- * @purpose Gestiona el cambio de idioma entre inglés y español.
- * @lastUpdated 2026-06-14T15:50:15.466Z
+ * @purpose Gestiona el cambio de idioma entre inglés y español en el editor de manifesto OMEGA (ABDOmegaEditor).
+ * @purpose_en ** Manages the language switch between English and Spanish in the OMEGA manifest editor (ABDOmegaEditor).
+ * @refactorable false
+ * @classification ** UI Component
+ * @complexity ** Low
+ * @fingerprint exports:1,imports:4,sig:1cqpdrg
+ * @lastUpdated 2026-06-15T10:52:12.757Z
  */
 
 

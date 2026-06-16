@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona cálculos espaciales y detección de colisiones para nodos en un editor de manifesto OMEGA.
+ * @purpose_en Manages spatial calculations and collision detection for nodes in an OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Helper Utility
+ * @complexity Medium
+ * @fingerprint exports:3,imports:1,sig:7f445n
+ * @lastUpdated 2026-06-15T16:55:59.680Z
+ */
+
 import type { OMEGA_Manifest, OmegaNode } from '../types/manifest';
 
 interface CollisionBox {

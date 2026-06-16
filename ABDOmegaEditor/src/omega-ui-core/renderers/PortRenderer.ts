@@ -1,4 +1,14 @@
 /**
+ * @purpose Gestiona estilos y colores de señal según las propiedades de entrada.
+ * @purpose_en Renders HTML for port components in the OMEGA manifest editor, managing styles and signal colors based on input properties.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:3,imports:1,sig:2v53w3
+ * @lastUpdated 2026-06-15T16:08:12.044Z
+ */
+
+/**
  * OMEGA UI CORE — Stateless Port (Jack) Renderer (Era 7.2.3)
  * Single Source of Truth for Port HTML Structure.
  */

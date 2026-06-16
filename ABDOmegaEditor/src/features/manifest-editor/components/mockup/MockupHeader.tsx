@@ -1,8 +1,11 @@
 /**
- * @purpose Renderiza un encabezado para una simulación en el editor de manifesto OMEGA, mostrando el nombre de la simulación, la pestaña activa y proporcionando una opción para cerrar la simulación.
+ * @purpose Renderiza un encabezado para una mockup en el editor de manifesto OMEGA, mostrando el nombre de la mockup, la pestaña activa y proporcionando una opción para cerrar la mockup.
  * @purpose_en Renders a header for a mockup in the OMEGA manifest editor, displaying the mockup name, active tab, and providing an option to close the mockup.
- * @fingerprint exports:1,imports:1,sig:3butzh
- * @lastUpdated 2026-06-15T06:28:52.098Z
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:2,sig:qajofz
+ * @lastUpdated 2026-06-15T12:48:51.378Z
  */
 
 import ModalCloseButton from '../modals/ModalCloseButton';

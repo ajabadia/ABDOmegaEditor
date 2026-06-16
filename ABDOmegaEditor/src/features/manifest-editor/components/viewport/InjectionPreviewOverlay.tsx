@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona una capa de previsualización fantasma para visualizar plantillas en el editor de manifesto OMEGA.
+ * @purpose_en Manages a ghostly preview overlay for blueprint visualization in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:3,sig:ht0gg6
+ * @lastUpdated 2026-06-15T13:01:00.054Z
+ */
+
 import React from 'react';
 import type { OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
 import { UniversalRenderer } from '@/omega-ui-core/renderers/UniversalRenderer';

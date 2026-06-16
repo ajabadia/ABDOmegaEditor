@@ -1,3 +1,13 @@
+/**
+ * @purpose Normaliza y resuelve objetos OmegaNode estableciendo roles y layouts por defecto, garantizando una estructura consistente para los procesos en el editor de manifesto OMEGA.
+ * @purpose_en Normalizes and resolves OmegaNode objects by setting default roles and layouts, ensuring a consistent structure for processes in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification Helper Utility
+ * @complexity Low
+ * @fingerprint exports:1,imports:1,sig:169ytir
+ * @lastUpdated 2026-06-15T16:55:21.526Z
+ */
+
 import type { OmegaNode } from '../types/manifest';
 
 export class BlueprintResolver {

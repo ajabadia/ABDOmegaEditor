@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona una sección colapsable para mostrar y gestionar entidades en el editor de manifesto OMEGA, incluyendo agregar, duplicar y eliminar elementos con soporte para agrupar por contenedores.
+ * @purpose_en Manages a collapsible section for displaying and managing entities in the OMEGA manifest editor, including adding, duplicating, and removing items with support for grouping by containers.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:5,sig:ry1sll
+ * @lastUpdated 2026-06-15T11:38:38.545Z
+ */
+
 import { Plus, Settings2, Zap, Layout, Copy, Trash2, Database } from 'lucide-react';
 import type { OMEGA_Manifest, LayoutContainer, ManifestEntity } from '@/types/manifest';
 

@@ -1,8 +1,13 @@
 "use client";
 
 /**
- * @purpose Gestiona la visualización de información de instrumentos musicales en una tarjeta de interfaz de usuario.
- * @lastUpdated 2026-06-14T15:50:10.009Z
+ * @purpose Renderiza una tarjeta UI para mostrar información sobre instrumentos musicales, incluyendo imágenes, encabezados, descripciones, especificaciones y un pie de página con un enlace de detalle.
+ * @purpose_en Renders a UI card for displaying information about musical instruments, including images, headers, descriptions, specifications, and a footer with a detail link.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:7,sig:1gxrm9v
+ * @lastUpdated 2026-06-15T10:52:08.133Z
  */
 
 

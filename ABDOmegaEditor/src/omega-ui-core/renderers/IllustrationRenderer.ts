@@ -1,4 +1,14 @@
 /**
+ * @purpose Renderiza imágenes estáticas, logotipos y dibujos técnicos utilizando URLs y propiedades de tamaño y opacidad opcionales.
+ * @purpose_en Renders static images, logos, and technical drawings using URLs and optional size and opacity properties.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:2,imports:0,sig:187dspf
+ * @lastUpdated 2026-06-15T15:32:25.751Z
+ */
+
+/**
  * OMEGA UI CORE — Illustration Renderer (Fase 13)
  * Renders static images, logos, and technical drawings.
  */

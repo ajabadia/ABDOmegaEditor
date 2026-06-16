@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona tipos para componentes y configuraciones de bastidores en el editor de manifesto OMEGA.
+ * @purpose_en Defines types for components and configurations of racks in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification Type Definition
+ * @complexity Low
+ * @fingerprint exports:12,imports:1,sig:j00s29
+ * @lastUpdated 2026-06-15T16:10:34.612Z
+ */
+
 import type { Position, Dimensions, GridConfig } from './manifest';
 
 export type ComponentType =

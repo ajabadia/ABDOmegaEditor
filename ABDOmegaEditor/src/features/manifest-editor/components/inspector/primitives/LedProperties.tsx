@@ -1,6 +1,11 @@
 /**
- * @purpose Proporciona un componente para editar propiedades LED en el editor del manifiesto OMEGA, permitiendo a los usuarios sobreescribir parámetros físicos y seleccionar estilos.
- * @lastUpdated 2026-06-14T16:52:01.898Z
+ * @purpose Renderiza un componente para editar propiedades de LED en el editor de manifesto OMEGA, permitiendo a los usuarios superponer parámetros físicos y seleccionar estilos.
+ * @purpose_en Renders a component for editing LED properties in the OMEGA manifest editor, allowing users to override physical parameters and select styles.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:3,sig:17j3pmm
+ * @lastUpdated 2026-06-15T11:31:48.241Z
  */
 
 import { Maximize, Circle } from 'lucide-react';

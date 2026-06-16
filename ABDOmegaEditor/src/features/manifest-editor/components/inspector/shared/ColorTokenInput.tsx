@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Renderiza un componente de entrada de token de color con un selector de colores y un campo de valor RGBA.
+ * @purpose_en Renders a color token input component with a color picker and an RGBA value field.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:0,sig:124gp1e
+ * @lastUpdated 2026-06-15T11:49:25.899Z
+ */
+
 ;
 
 interface ColorTokenInputProps {
@@ -35,6 +45,7 @@ export default function ColorTokenInput({
             value={previewColor} 
             onChange={(e) => onChange(e.target.value)}
             className="w-8 h-8 rounded-xs border wb-outline bg-transparent cursor-pointer p-0.5 transition-transform group-hover:scale-105"
+            aria-label={`${label} color picker`}
           />
           {isRGBA && (
              <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
@@ -48,6 +59,7 @@ export default function ColorTokenInput({
           placeholder={placeholder}
           onChange={(e) => onChange(e.target.value)}
           className="flex-1 wb-surface-strong border wb-outline rounded-xs px-2 py-1 text-[9px] font-mono wb-text outline-none focus:border-primary/50 transition-colors"
+          aria-label={`${label} value`}
         />
       </div>
     </div>

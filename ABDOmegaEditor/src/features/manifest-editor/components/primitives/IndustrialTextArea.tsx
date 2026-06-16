@@ -1,5 +1,15 @@
 "use client";
 
+/**
+ * @purpose Renderiza un componente textarea personalizable con propiedades ajustables para tamaño, estilo de fuente, manejo de errores y apariencia.
+ * @purpose_en Renders a styled textarea component with customizable properties for size, font style, error handling, and appearance.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:2,imports:0,sig:an0t37
+ * @lastUpdated 2026-06-15T12:59:43.340Z
+ */
+
 ;
 
 export type IndustrialTextAreaProps = {

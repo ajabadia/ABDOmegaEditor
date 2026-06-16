@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona transiciones de estado para documentos en el editor de manifesto OMEGA.
+ * @purpose_en Manages state transitions for documents in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Business Service
+ * @complexity Medium
+ * @fingerprint exports:3,imports:4,sig:1lsxwoh
+ * @lastUpdated 2026-06-15T13:11:03.612Z
+ */
+
 import type { OMEGA_Manifest } from '../../types/document';
 import type { DocumentState, OrchestratorState, OrchestratorAction } from '../../types/document';
 import type { HistoryEntry } from '../../types/document';

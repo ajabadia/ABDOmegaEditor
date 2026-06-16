@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona el estado y las acciones para editar documentos en el editor de manifesto OMEGA.
+ * @purpose_en Manages the state and actions for editing documents in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification Business Service
+ * @complexity Medium
+ * @fingerprint exports:5,imports:3,sig:141sl0f
+ * @lastUpdated 2026-06-15T15:16:31.840Z
+ */
+
 import type { OMEGA_Manifest, OMEGA_Contract, OmegaNode } from '@/omega-ui-core/types/manifest';
 import type { OmegaContract } from '@/services/wasmLoader';
 import type { HistoryState, HistoryEntry } from './history';

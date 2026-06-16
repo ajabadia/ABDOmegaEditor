@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Renderiza un componente desplegable para seleccionar y actualizar la pestaña en la presentación de una entidad ArchPlane.
- * @lastUpdated 2026-06-14T16:38:41.335Z
+ * @purpose Gestiona un componente colapsable para seleccionar y actualizar la pestaña en la presentación de una entidad ArchPlane.
+ * @purpose_en Renders a collapsible component for selecting and updating the tab in an ArchPlane entity's presentation.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:3,sig:pn2kvs
+ * @lastUpdated 2026-06-15T11:03:49.848Z
  */
 
 import { Layers } from 'lucide-react';
@@ -35,6 +40,7 @@ export default function ArchPlaneSelector({ item, onUpdate, onHelp }: ArchPlaneS
                 } as Presentation 
               });
             }}
+            aria-label={`Select tab ${t}`}
             className={`py-2 text-[7px] font-black uppercase rounded-xs border transition-all text-center ${
               (item.presentation?.tab || 'MAIN') === t 
                 ? 'bg-primary/20 border-primary text-primary shadow-[0_0_10px_rgba(0,240,255,0.1)]' 

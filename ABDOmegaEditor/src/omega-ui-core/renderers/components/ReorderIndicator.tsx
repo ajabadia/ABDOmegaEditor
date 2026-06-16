@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Renderiza un indicador visual para reordenar elementos en una pila, destacando el índice objetivo con un punto coloreado y etiqueta.
+ * @purpose_en Renders a visual indicator for reordering elements in a stack, highlighting the target index with a colored dot and label.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:0,sig:1uy9lr5
+ * @lastUpdated 2026-06-15T15:30:12.449Z
+ */
+
 interface ReorderIndicatorProps {
   targetIndex: number | null | undefined;
   mode: 'stack-v' | 'stack-h';

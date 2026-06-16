@@ -1,3 +1,13 @@
+/**
+ * @purpose Convierte un arreglo plano de manifest en un árbol OmegaNode recursivo para la renderización en el editor de manifest OMEGA.
+ * @purpose_en Converts a flat manifest array into a recursive OmegaNode tree for rendering in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Helper Utility
+ * @complexity Medium
+ * @fingerprint exports:1,imports:1,sig:7r2fhv
+ * @lastUpdated 2026-06-15T16:16:17.105Z
+ */
+
 import type { OMEGA_Manifest, OmegaNode } from '../../types/manifest';
 
 /**

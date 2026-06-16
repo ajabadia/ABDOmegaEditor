@@ -1,6 +1,11 @@
 /**
- * @purpose Genera la cabecera de un componente de interfaz de usuario (UI) para mostrar información básica sobre un elemento en el editor de manifiestos OMEGA.
- * @lastUpdated 2026-06-14T15:31:16.542Z
+ * @purpose Renderiza un encabezado para componentes UI en ABDOmegaEditor, mostrando el nombre del elemento, su etiqueta, versión y color primario.
+ * @purpose_en Renders a header for UI components in ABDOmegaEditor, displaying an element's name, tagline, version, and primary color.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:0,sig:1x4xtv0
+ * @lastUpdated 2026-06-15T10:51:05.397Z
  */
 
 

@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona operaciones CRUD para entidades, modulaciones y contenedores de layout en el editor de manifesto OMEGA.
+ * @purpose_en Manages CRUD operations for entities, modulations, and layout containers in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification Custom Hook
+ * @complexity Medium
+ * @fingerprint exports:1,imports:5,sig:1vaofxn
+ * @lastUpdated 2026-06-15T13:21:36.435Z
+ */
+
 import { useEntityCRUD } from './entities/useEntityCRUD';
 import { useModulationCRUD } from './entities/useModulationCRUD';
 import { useLayoutCRUD } from './entities/useLayoutCRUD';

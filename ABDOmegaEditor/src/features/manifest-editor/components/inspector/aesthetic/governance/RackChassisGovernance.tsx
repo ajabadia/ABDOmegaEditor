@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona y renderiza los ajustes de gobernanza para hardware de carcasa de rack en el editor del manifiesto OMEGA, incluyendo conteo de tornillos, desplazamiento, selección de estilo y resolución de activos.
- * @lastUpdated 2026-06-14T16:39:27.914Z
+ * @purpose Gestiona y renderiza configuraciones de gobierno para el hardware del bastidor en el editor de manifesto OMEGA, incluyendo conteo de tornillos, desplazamiento, selección de estilo y resolución de activos.
+ * @purpose_en Manages and renders governance settings for rack chassis hardware in the OMEGA manifest editor, including screw count, offset, style selection, and asset resolution.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:5,sig:1t13hda
+ * @lastUpdated 2026-06-15T11:04:08.585Z
  */
 
 import React from 'react';
@@ -88,9 +93,10 @@ export default function MasterHardwareGovernance({ manifest, onUpdate, resolveAs
               </div>
               <div className="flex gap-1">
                  {[0, 4, 6, 8].map(count => (
-                   <button 
+                   <button
                      key={count}
                      onClick={() => updateHardware({ screwCount: count as 0 | 4 | 6 | 8 })}
+                     aria-label={`Set screw count to ${count}`}
                      className={`px-4 py-1.5 border rounded-xs text-[8px] font-black transition-all ${hardware.screwCount === count ? 'bg-primary/20 border-primary/40 text-primary' : 'bg-black/40 border-outline/10 text-foreground/40 hover:border-primary/20'}`}
                    >
                      {count} PTS
@@ -111,12 +117,14 @@ export default function MasterHardwareGovernance({ manifest, onUpdate, resolveAs
                    value={hardware.screwOffset ?? 8} 
                    onChange={(e) => updateHardware({ screwOffset: parseInt(e.target.value) })}
                    className="flex-1 h-1 bg-outline/20 rounded-full appearance-none cursor-pointer accent-accent"
+                   aria-label="Screw corner offset in pixels"
                  />
                  <div className="flex gap-0.5">
                     {[4, 8, 12, 16].map(val => (
-                      <button 
+                      <button
                         key={val}
                         onClick={() => updateHardware({ screwOffset: val })}
+                        aria-label={`Set screw offset to ${val}px`}
                         className={`w-6 h-4 flex items-center justify-center text-[5px] font-black border rounded-xs transition-all ${hardware.screwOffset === val ? 'bg-accent text-black border-accent' : 'bg-black/40 border-outline/20 text-foreground/40 hover:border-accent/40'}`}
                       >
                          {val}px
@@ -185,6 +193,7 @@ export default function MasterHardwareGovernance({ manifest, onUpdate, resolveAs
               </div>
               <button 
                 onClick={() => updateHardware({ showRails: !hardware.showRails })}
+                aria-label={hardware.showRails ? 'Hide structural rails' : 'Show structural rails'}
                 className={`px-4 py-1.5 rounded-xs border text-[7px] font-black uppercase transition-all ${hardware.showRails ? 'bg-primary/20 border-primary/40 text-primary' : 'bg-black/40 border-outline/20 text-foreground/40'}`}
               >
                 {hardware.showRails ? 'Active' : 'Disabled'}
@@ -198,9 +207,10 @@ export default function MasterHardwareGovernance({ manifest, onUpdate, resolveAs
                        <label className="text-[7px] font-black uppercase wb-text-muted px-1">Rail Profile</label>
                        <div className="grid grid-cols-2 gap-1">
                           {railStyles.map(style => (
-                            <button 
+                            <button
                               key={style}
                               onClick={() => updateHardware({ railStyle: style })}
+                              aria-label={`Set rail profile to ${style}`}
                               className={`py-1.5 border rounded-xs text-[6px] font-black uppercase transition-all ${hardware.railStyle === style ? 'bg-accent/20 border-accent/40 text-accent' : 'bg-black/20 wb-outline wb-text-muted hover:border-accent/20'}`}
                             >
                                {style}
@@ -227,9 +237,10 @@ export default function MasterHardwareGovernance({ manifest, onUpdate, resolveAs
                          const sUrl = resolveAsset(sAsset);
 
                          return (
-                           <button 
+                           <button
                              key={style.id}
                              onClick={() => updateHardware({ variant: style.id })}
+                             aria-label={`Select hardware style: ${style.label}`}
                              className={`
                                p-1.5 border rounded-xs flex flex-col gap-1.5 items-center transition-all group
                                ${isActive ? 'bg-primary/20 border-primary shadow-[0_0_10px_rgba(0,242,255,0.15)]' : 'bg-black/40 wb-outline hover:border-primary/40'}

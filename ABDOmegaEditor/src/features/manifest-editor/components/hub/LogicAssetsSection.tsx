@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona una sección para administrar activos lógicos en el editor del manifiesto OMEGA, incluyendo botones para subir diferentes tipos de activos y mostrar información contractual.
- * @lastUpdated 2026-06-14T16:38:10.616Z
+ * @purpose Gestiona una sección para gestionar activos lógicos en el editor de manifesto OMEGA, incluyendo botones para subir diferentes tipos de activos y mostrar información de contrato.
+ * @purpose_en Manages a section for managing logical assets in the OMEGA manifest editor, including buttons for uploading different types of assets and displaying contract information.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:4,sig:x6xs10
+ * @lastUpdated 2026-06-15T11:03:35.362Z
  */
 
 import React from 'react';
@@ -38,6 +43,7 @@ export default function LogicAssetsSection({ manifest, contract, triggerUpload }
       <div className="flex flex-col gap-2">
         <button 
           onClick={() => triggerUpload('folder-upload')} 
+          aria-label="Ingest module folder"
           className="w-full flex items-center justify-between p-3.5 bg-primary/10 border border-primary/20 rounded-sm hover:bg-primary/20 transition-all group relative overflow-hidden"
         >
           <div className="flex items-center gap-3">
@@ -88,7 +94,7 @@ function AssetButton({ onClick, icon: Icon, label, color, active }: AssetButtonP
   const indicatorClass = color === 'primary' ? 'bg-primary/20' : color === 'accent' ? 'bg-accent/20' : 'bg-cyan-400/20';
 
   return (
-    <button onClick={onClick} className={`flex flex-col items-center justify-center gap-1.5 p-3 wb-surface border wb-outline rounded-sm transition-all group relative overflow-hidden ${borderClass}`}>
+    <button onClick={onClick} title={`Upload ${label}`} aria-label={`Upload ${label}`} className={`flex flex-col items-center justify-center gap-1.5 p-3 wb-surface border wb-outline rounded-sm transition-all group relative overflow-hidden ${borderClass}`}>
       <Icon className={`w-3 h-3 ${iconClass} group-hover:scale-125 transition-transform`} />
       <span className="text-[7px] font-bold uppercase tracking-tighter wb-text-muted">{label}</span>
       {active && <div className={`absolute top-0 right-0 w-1 h-full ${indicatorClass}`} />}

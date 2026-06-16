@@ -1,5 +1,15 @@
 'use client';
- 
+
+/**
+ * @purpose Renderiza un nodo en una disposición orbital para el editor de manifesto OMEGA, gestionando selecciones, auditorías y mostrando líneas de conexión y herramientas de ayuda.
+ * @purpose_en Renders a node in an orbital layout for the OMEGA manifest editor, handling selections, audits, and displaying connection lines and help tools.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:5,sig:1u21lec
+ * @lastUpdated 2026-06-15T12:59:14.662Z
+ */
+
 import { motion } from 'framer-motion';
 import { IntegrityOverlay } from '@/features/manifest-editor/components/viewport/IntegrityOverlay';
 import type { OmegaNode, OMEGA_Contract } from '@/omega-ui-core/types/manifest';

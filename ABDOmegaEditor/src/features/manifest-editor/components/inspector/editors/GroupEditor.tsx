@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona componentes para editar nodos de grupo en el editor del manifiesto OMEGA, permitiendo a los usuarios administrar componentes hijos y guardar configuraciones como planchas.
- * @lastUpdated 2026-06-14T16:47:09.921Z
+ * @purpose Gestiona la edición de nodos de grupo en el editor de manifesto OMEGA, permitiendo a los usuarios gestionar componentes hijos y guardar configuraciones como plantillas.
+ * @purpose_en Manages the editing of group nodes in the OMEGA manifest editor, allowing users to manage child components and save configurations as blueprints.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:2,imports:4,sig:1a0vt11
+ * @lastUpdated 2026-06-15T11:29:51.207Z
  */
 
 import { useState } from 'react';

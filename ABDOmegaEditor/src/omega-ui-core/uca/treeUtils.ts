@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona y manipula nodos en una estructura de árbol para el editor de manifesto OMEGA, incluyendo mover nodos, calcular índices de inserción, fusionar overrides, aplicar mapeos de slots y encontrar nodos dentro del árbol.
+ * @purpose_en Manages and manipulates nodes in a tree structure for the OMEGA manifest editor, including moving nodes, calculating insertion indices, merging overrides, applying slot mappings, and finding nodes within the tree.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Helper Utility
+ * @complexity Medium
+ * @fingerprint exports:9,imports:1,sig:jw13qi
+ * @lastUpdated 2026-06-15T16:54:20.140Z
+ */
+
 import type { OmegaNode, ModuleTemplate, OverridePolicy } from '../types/manifest';
 
 /**

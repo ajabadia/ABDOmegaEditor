@@ -1,3 +1,13 @@
+/**
+ * @purpose Renderiza un componente de tornillo personalizable para el editor de manifesto OMEGA.
+ * @purpose_en Renders a customizable knob component for the OMEGA manifest editor.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:2,imports:2,sig:1xjn3k9
+ * @lastUpdated 2026-06-15T16:08:33.510Z
+ */
+
 import React from 'react';
 import type { ComponentStyle, BindConfig } from '../../types/rack';
 

@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Renderiza una vista previa del ítem OmegaNode con contenido desplegable y efecto de escaneo.
- * @lastUpdated 2026-06-14T16:43:30.101Z
+ * @purpose Renderiza una previsualización de un item OmegaNode con contenido colapsable y efecto de línea de escaneo.
+ * @purpose_en Renders a preview of an OmegaNode item with collapsible content and scanline effect.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:5,sig:us9n5n
+ * @lastUpdated 2026-06-15T11:05:54.035Z
  */
 
 import React from 'react';
@@ -26,6 +31,7 @@ export default function CellPreview({ item, skin = 'industrial', resolveAsset }:
       {/* COLLAPSE TOGGLE */}
       <button 
         onClick={() => setIsCollapsed(!isCollapsed)}
+        aria-label={isCollapsed ? "Expand preview" : "Collapse preview"}
         className="absolute top-2 right-2 z-50 p-1.5 rounded-xs wb-surface-strong hover:bg-primary/10 border wb-outline wb-text-muted hover:wb-text transition-all opacity-0 group-hover:opacity-100"
         title={isCollapsed ? "Expand Preview" : "Collapse Preview"}
       >

@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona la conversión de plantillas de módulo y datos de planificación V2 en definiciones de blueprint formal para su uso en el editor de manifesto OMEGA, asegurando la normalización industrial y proporcionando valores por defecto cuando sea necesario.
+ * @purpose_en Manages the conversion of ModuleTemplates and V2BlueprintData into formal BlueprintDefinitions for use in the OMEGA manifest editor, ensuring industrial normalization and providing default values where necessary.
+ * @refactorable false (contains only static declarations/types/constants)
+ * @classification Helper Utility
+ * @complexity Low
+ * @fingerprint exports:3,imports:2,sig:2s49yj
+ * @lastUpdated 2026-06-15T15:17:00.781Z
+ */
+
 import type { 
   ModuleTemplate, 
   BlueprintDefinition, 

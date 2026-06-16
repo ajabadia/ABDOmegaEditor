@@ -32,6 +32,70 @@ try {
 // Extracted files and their dependencies
 const dependencies = new Map(); // file -> Set of resolved dependencies
 const dependents = new Map(); // file -> Set of resolved dependents
+const purposes = new Map(); // file -> purpose string
+const purposesEn = new Map(); // file -> purposeEn string
+const refactorables = new Map(); // file -> refactorable string
+const classifications = new Map(); // file -> classification string
+const complexities = new Map(); // file -> complexity string
+const fileStats = new Map(); // file -> { sizeKb, linesCount, tag, categoryLabel, exportsList }
+const externalDeps = new Map(); // file -> Set of external packages
+
+
+function getExternalPackage(importPath) {
+  if (importPath.startsWith('.') || importPath.startsWith('@/')) {
+    return null;
+  }
+  if (importPath.startsWith('node:')) {
+    return importPath;
+  }
+  const parts = importPath.split('/');
+  if (importPath.startsWith('@')) {
+    return parts.slice(0, 2).join('/');
+  }
+  return parts[0];
+}
+
+
+function getFileCategory(file) {
+  const name = path.basename(file);
+  if (file.startsWith('app/')) {
+    return { tag: 'route', label: 'Next.js App Route 🌐' };
+  }
+  if (file.includes('/components/') || file.includes('/ui/')) {
+    return { tag: 'component', label: 'Componente de Interfaz (UI) 🎨' };
+  }
+  if (name.startsWith('use') && file.includes('/hooks/')) {
+    return { tag: 'hook', label: 'Custom Hook ⚓' };
+  }
+  if (file.includes('/services/') || file.includes('/rpc/')) {
+    return { tag: 'service', label: 'Servicio de Negocio ⚙️' };
+  }
+  if (file.includes('/types/') || name.endsWith('types.ts') || name.endsWith('Types.ts') || file.endsWith('.d.ts')) {
+    return { tag: 'types', label: 'Declaraciones de Tipo 🏷️' };
+  }
+  return { tag: 'utility', label: 'Utilidades / Lógica de Soporte 🛠️' };
+}
+
+function extractExports(content) {
+  const exportsList = [];
+  let match;
+
+  // Regex for named exports
+  const namedExportRegex = /^\s*export\s+(?:type|interface|const|let|var|function|class|enum|async\s+function)\s+([a-zA-Z0-9_$]+)/gm;
+  while ((match = namedExportRegex.exec(content)) !== null) {
+    exportsList.push(match[1]);
+  }
+
+  // Regex for export default
+  const defaultExportRegex = /^\s*export\s+default\s+(?:async\s+)?(?:function|class|const|let)?\s*([a-zA-Z0-9_$]+)?/gm;
+  while ((match = defaultExportRegex.exec(content)) !== null) {
+    const name = match[1] ? `${match[1]} (Default)` : 'default';
+    exportsList.push(name);
+  }
+
+  return Array.from(new Set(exportsList)).slice(0, 15);
+}
+
 
 // Walk directory recursively
 function walk(dir, fileList = []) {
@@ -62,6 +126,7 @@ const relativeFiles = allFiles.map(f => path.relative(PROJECT_ROOT, f).replace(/
 for (const file of relativeFiles) {
   dependencies.set(file, new Set());
   dependents.set(file, new Set());
+  externalDeps.set(file, new Set());
 }
 
 // Resolve import path to a relative file path in the project
@@ -153,9 +218,51 @@ for (let i = 0; i < allFiles.length; i++) {
   
   try {
     const content = fs.readFileSync(filePath, 'utf8');
+    
+    // Extract metadata metrics
+    const linesCount = content.split(/\r?\n/).length;
+    const sizeBytes = fs.statSync(filePath).size;
+    const sizeKb = (sizeBytes / 1024).toFixed(1);
+    const cat = getFileCategory(relativePath);
+    const exportsList = extractExports(content);
+
+    const purposeMatch = content.match(/@purpose\s+(.+)/);
+    if (purposeMatch) {
+      purposes.set(relativePath, purposeMatch[1].trim());
+    }
+    const purposeEnMatch = content.match(/@purpose_en\s+(.+)/);
+    if (purposeEnMatch) {
+      purposesEn.set(relativePath, purposeEnMatch[1].trim());
+    }
+    const refactorableMatch = content.match(/@refactorable\s+(.+)/);
+    if (refactorableMatch) {
+      refactorables.set(relativePath, refactorableMatch[1].trim());
+    }
+    const classificationMatch = content.match(/@classification\s+(.+)/);
+    if (classificationMatch) {
+      classifications.set(relativePath, classificationMatch[1].trim());
+    }
+    const complexityMatch = content.match(/@complexity\s+(.+)/);
+    if (complexityMatch) {
+      complexities.set(relativePath, complexityMatch[1].trim());
+    }
+
+    fileStats.set(relativePath, {
+      sizeKb,
+      linesCount,
+      tag: cat.tag,
+      categoryLabel: cat.label,
+      exportsList
+    });
+
     const importedPaths = extractImports(content);
     
     for (const imp of importedPaths) {
+      const extPkg = getExternalPackage(imp);
+      if (extPkg) {
+        externalDeps.get(relativePath).add(extPkg);
+      }
+      
       const resolved = resolveImport(imp, fileDir);
       if (resolved && resolved !== relativePath) {
         dependencies.get(relativePath).add(resolved);
@@ -182,10 +289,54 @@ for (const file of relativeFiles) {
   
   const fileDeps = Array.from(dependencies.get(file) || []).sort();
   const fileDepsOf = Array.from(dependents.get(file) || []).sort();
+  const fileExtDeps = Array.from(externalDeps.get(file) || []).sort();
+  const stats = fileStats.get(file) || { sizeKb: '0.0', linesCount: 0, tag: 'general', categoryLabel: 'Archivo 📁', exportsList: [] };
+  const filePurpose = purposes.get(file);
+  const filePurposeEn = purposesEn.get(file);
+  const fileRefactorable = refactorables.get(file);
+  const fileClassification = classifications.get(file);
+  const fileComplexity = complexities.get(file);
   
-  let mdContent = `# ${file}\n\n`;
+  let mdContent = `---\n`;
+  mdContent += `tags: [${stats.tag}]\n`;
+  mdContent += `---\n`;
+  mdContent += `# ${file}\n\n`;
+
+  const isExcluded = ORPHAN_EXCLUSIONS.some(pattern => {
+    if (pattern.endsWith('/')) {
+      return file.startsWith(pattern);
+    }
+    return file === pattern;
+  });
+  if (fileDepsOf.length === 0 && !isExcluded) {
+    mdContent += `> [!WARNING] Archivo Aislado o Huérfano\n`;
+    mdContent += `> Este archivo no es importado por ningún otro archivo del proyecto. Podría ser código muerto o un punto de entrada independiente.\n\n`;
+  }
+
   mdContent += `> [!NOTE]\n`;
-  mdContent += `> Ruta del archivo: \`${file}\`\n\n`;
+  mdContent += `> - **Ruta:** \`${file}\`\n`;
+  mdContent += `> - **Categoría:** ${stats.categoryLabel}\n`;
+  mdContent += `> - **Dimensiones:** ${stats.sizeKb} KB (${stats.linesCount} líneas de código)\n`;
+  mdContent += `> - **Acoplamiento:** ${fileDeps.length} dependencias internas, ${fileDepsOf.length} dependientes\n`;
+  if (filePurpose) {
+    mdContent += `> - **Propósito (ES):** ${filePurpose}\n`;
+  }
+  if (filePurposeEn) {
+    mdContent += `> - **Purpose (EN):** ${filePurposeEn}\n`;
+  }
+  if (fileRefactorable) {
+    mdContent += `> - **Refactorizable:** ${fileRefactorable}\n`;
+  }
+  if (fileClassification) {
+    mdContent += `> - **Clasificación:** ${fileClassification}\n`;
+  }
+  if (fileComplexity) {
+    mdContent += `> - **Complejidad:** ${fileComplexity}\n`;
+  }
+  if (stats.exportsList.length > 0) {
+    mdContent += `> - **API Pública (Exports):** \`${stats.exportsList.join('`, `')}\`\n`;
+  }
+  mdContent += `\n`;
   
   mdContent += `## 🔌 Dependencias (Imports / Usos)\n`;
   if (fileDeps.length === 0) {
@@ -194,6 +345,15 @@ for (const file of relativeFiles) {
     for (const dep of fileDeps) {
       const displayName = path.basename(dep);
       mdContent += `- [[docs/grafos/${dep}|${displayName}]] (\`${dep}\`)\n`;
+    }
+  }
+  
+  mdContent += `\n### 📦 Librerías Externas (npm)\n`;
+  if (fileExtDeps.length === 0) {
+    mdContent += `*Este archivo no depende de librerías externas de npm.*\n`;
+  } else {
+    for (const extDep of fileExtDeps) {
+      mdContent += `- \`${extDep}\`\n`;
     }
   }
   

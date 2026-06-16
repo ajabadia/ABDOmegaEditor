@@ -3,8 +3,11 @@
 /**
  * @purpose Renderiza una modalidad que muestra documentación OMEGA con categorías de usuario y desarrollador, permitiendo a los usuarios expandir secciones para obtener información detallada.
  * @purpose_en Renders a modal displaying OMEGA documentation with user and developer categories, allowing users to expand sections for detailed information.
- * @fingerprint exports:1,imports:5,sig:1fwi2h3
- * @lastUpdated 2026-06-15T06:31:07.332Z
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:7,sig:1ahwuhz
+ * @lastUpdated 2026-06-15T20:48:55.673Z
  */
 
 import { useState, useEffect, useRef } from 'react';
@@ -12,6 +15,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ModalCloseButton from './ModalCloseButton';
 import ModalActionButton from './ModalActionButton';
 import { HELP_DATA } from './helpData';
+import { useFocusTrap } from '@/features/manifest-editor/hooks/useFocusTrap';
 import { HelpSectionItem } from '../help/HelpSectionItem';
 
 interface HelpModalProps {
@@ -21,6 +25,7 @@ interface HelpModalProps {
 }
 
 export default function HelpModal({ isOpen, onClose, initialSectionId }: HelpModalProps) {
+  const focusTrapRef = useFocusTrap(isOpen);
   const [activeCategory, setActiveCategory] = useState<'user' | 'developer'>('user');
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -61,7 +66,13 @@ export default function HelpModal({ isOpen, onClose, initialSectionId }: HelpMod
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 md:p-12">
+      <div 
+        className="fixed inset-0 z-[1000] flex items-center justify-center p-4 md:p-12"
+        ref={focusTrapRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="OMEGA Engineering Manual"
+      >
         <motion.div 
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
           onClick={onClose} className="absolute inset-0 bg-black/90 backdrop-blur-xl"
@@ -96,12 +107,14 @@ export default function HelpModal({ isOpen, onClose, initialSectionId }: HelpMod
             <div className="flex bg-black/20 p-1 rounded-xs border wb-outline">
                <button 
                  onClick={() => { setActiveCategory('user'); setExpandedSection('introduccion'); }}
+                 aria-label="Switch to user manual"
                  className={`px-6 py-1.5 rounded-xs text-[9px] font-black uppercase tracking-widest transition-all ${activeCategory === 'user' ? 'bg-primary/20 border border-primary/40 text-primary' : 'wb-text-muted hover:wb-text'}`}
                >
                  Manual Usuario
                </button>
                <button 
                  onClick={() => { setActiveCategory('developer'); setExpandedSection('sdk_core'); }}
+                 aria-label="Switch to developer guide"
                  className={`px-6 py-1.5 rounded-xs text-[9px] font-black uppercase tracking-widest transition-all ${activeCategory === 'developer' ? 'bg-accent/20 border border-accent/40 text-accent' : 'wb-text-muted hover:wb-text'}`}
                >
                  Guía SDK (Dev)

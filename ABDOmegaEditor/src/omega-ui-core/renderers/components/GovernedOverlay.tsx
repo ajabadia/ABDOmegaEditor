@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Renderiza un overlay gobernado con fondo azul y texto "Layout Gobernado" cuando se activa.
+ * @purpose_en Renders a governed overlay with a blue background and "Layout Governed" text when enabled.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:0,sig:dre3zh
+ * @lastUpdated 2026-06-15T15:18:33.541Z
+ */
+
 ;
 
 interface GovernedOverlayProps {

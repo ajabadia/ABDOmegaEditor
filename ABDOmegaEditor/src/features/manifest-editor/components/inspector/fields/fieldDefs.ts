@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Define tipos y utilidades de campos para manejar campos de formulario en el editor del manifiesto OMEGA.
- * @lastUpdated 2026-06-14T16:49:24.655Z
+ * @purpose Gestiona tipos y utilidades para el manejo de campos de formulario en el componente inspector del editor manifest OMEGA.
+ * @purpose_en Manages types and utilities for managing form fields in the OMEGA manifest editor's inspector component.
+ * @refactorable false
+ * @classification Type Definition
+ * @complexity Low
+ * @fingerprint exports:5,imports:1,sig:1tky67n
+ * @lastUpdated 2026-06-15T11:30:42.063Z
  */
 
 import type { LucideIcon } from 'lucide-react';

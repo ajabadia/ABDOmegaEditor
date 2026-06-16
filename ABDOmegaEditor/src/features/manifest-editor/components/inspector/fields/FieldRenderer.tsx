@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Renderiza campos según definiciones y datos para edición en una interfaz de editor de manifiesto.
- * @lastUpdated 2026-06-14T16:49:33.774Z
+ * @purpose Renderiza campos para edición en una interfaz de editor de manifesto según las definiciones de campo y datos.
+ * @purpose_en Renders fields for editing in a manifest editor interface based on field definitions and data.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:6,sig:1sji66s
+ * @lastUpdated 2026-06-15T11:30:45.208Z
  */
 
 import React from 'react';
@@ -128,6 +133,7 @@ function renderField<T>(
                     onUpdate(buildPatch(data, field.path, opt.value));
                   }
                 }}
+                aria-label={`Select: ${opt.label}`}
                 className={`flex flex-col items-center justify-center py-2 px-1 text-center transition-all border-b-2 ${
                   isActive
                     ? 'bg-primary/15 text-primary border-primary font-black'

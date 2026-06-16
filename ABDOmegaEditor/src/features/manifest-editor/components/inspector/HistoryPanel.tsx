@@ -2,7 +2,12 @@
 
 /**
  * @purpose Gestiona un panel para administrar la historia de documentos con opciones para comparar y revertir a estados anteriores.
- * @lastUpdated 2026-06-14T16:49:58.605Z
+ * @purpose_en Manages a panel for administrating document history with options to compare and revert to previous states.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:4,sig:1k01dzk
+ * @lastUpdated 2026-06-15T11:30:53.163Z
  */
 
 import React from 'react';

@@ -1,5 +1,15 @@
 'use client';
- 
+
+/**
+ * @purpose Gestiona una sección para gestionar las modificaciones de rutas internas en un editor de manifesto OMEGA, incluyendo agregar y actualizar modificaciones.
+ * @purpose_en Manages a section for managing internal routing modulations in an OMEGA manifest editor, including adding and updating modulations.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:7,sig:rwzbtz
+ * @lastUpdated 2026-06-15T11:39:35.328Z
+ */
+
 import React from 'react';
 import { Plus, Activity, LayoutGrid } from 'lucide-react';
 import type { OMEGA_Manifest, OMEGA_Modulation, ManifestEntity } from '@/omega-ui-core/types/manifest';

@@ -1,6 +1,11 @@
 /**
- * @purpose Renderizador maestro que despacha todos los tipos de celda OMEGA (rack, contenedor, knobs, ports, displays, switches, etc.) a sus renderizadores específicos
- * @lastUpdated 2026-06-14T17:45:00.000Z
+ * @purpose Gestiona el renderizado de diferentes tipos de células OMEGA enviando cada una a su correspondiente renderer.
+ * @purpose_en Manages rendering of various OMEGA cell types by dispatching them to their specific renderers.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Custom Hook
+ * @complexity Medium
+ * @fingerprint exports:2,imports:21,sig:1papeh7
+ * @lastUpdated 2026-06-15T15:18:18.502Z
  */
 
 import { renderKnobHTML } from './KnobRenderer';

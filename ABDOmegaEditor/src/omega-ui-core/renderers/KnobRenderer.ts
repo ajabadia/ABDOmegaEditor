@@ -1,4 +1,14 @@
 /**
+ * @purpose Renderiza plantillas HTML para un componente de tornillo según las propiedades proporcionadas, como tamaño, color, valor y otros atributos visuales.
+ * @purpose_en Renders HTML for a knob component based on provided properties such as size, color, value, and other visual attributes.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:2,imports:1,sig:8ej6ng
+ * @lastUpdated 2026-06-15T15:32:33.737Z
+ */
+
+/**
  * OMEGA UI CORE — Stateless Knob Renderer (Era 7.2.3)
  * Single Source of Truth for Knob HTML Structure.
  */

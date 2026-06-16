@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Renderiza una interfaz de usuario de depuración para un nodo de manifesto OMEGA, mostrando su tipo, ID, mundo y posición local, junto con un indicador de problemas de auditoría.
+ * @purpose_en Renders a debug HUD for an OMEGA manifest node, displaying its type, ID, world and local positions, and optional audit issues indicator.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:3,sig:yi6brq
+ * @lastUpdated 2026-06-15T15:30:25.672Z
+ */
+
 import React from 'react';
 import type { OmegaNode, Position } from '../../types/manifest';
 import type { UCADebugContext } from '../ucaTypes';

@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona IDs únicos para nodos en un manifesto OMEGA, asegurando la unicidad de los IDs a través de la rama UCA y proporcionando funcionalidad para generar nuevos IDs y remapear existentes.
+ * @purpose_en Manages unique IDs for nodes in an OMEGA manifest, ensuring ID uniqueness across the UCA tree and providing functionality to generate new IDs and remap existing ones.
+ * @refactorable false
+ * @classification Business Service
+ * @complexity Medium
+ * @fingerprint exports:1,imports:1,sig:79sd86
+ * @lastUpdated 2026-06-15T16:54:56.688Z
+ */
+
 import type { OmegaNode, OMEGA_Manifest } from '../../types/manifest';
 
 /**

@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona y renderiza componentes UI para estilizar propiedades de etiquetas como posición, tamaño, color de fondo y alineación en el editor de manifesto OMEGA.
+ * @purpose_en Manages and renders UI components for styling label properties such as position, size, background color, and padding in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:3,sig:1xjocda
+ * @lastUpdated 2026-06-15T11:40:41.060Z
+ */
+
 import { Move, Maximize, Box } from 'lucide-react';
 import type { OMEGA_Manifest, OmegaStyleNode } from '@/omega-ui-core/types/manifest';
 import SmartColorPicker from '../SmartColorPicker';
@@ -31,6 +41,7 @@ export default function LabelGovernance({ values, capabilities, manifest, onChan
               value={values.labelX || 0}
               onChange={(e) => onChange({ labelX: parseInt(e.target.value) })}
               className="w-full wb-surface-inset border wb-outline rounded-xs px-2 py-1.5 text-[8px] font-mono wb-text outline-none focus:border-accent/40 text-center"
+              aria-label="Label X offset"
             />
           </div>
           <div className="space-y-1">
@@ -42,6 +53,7 @@ export default function LabelGovernance({ values, capabilities, manifest, onChan
               value={values.labelY || 0}
               onChange={(e) => onChange({ labelY: parseInt(e.target.value) })}
               className="w-full wb-surface-inset border wb-outline rounded-xs px-2 py-1.5 text-[8px] font-mono wb-text outline-none focus:border-accent/40 text-center"
+              aria-label="Label Y offset"
             />
           </div>
         </div>
@@ -58,6 +70,7 @@ export default function LabelGovernance({ values, capabilities, manifest, onChan
               onChange={(e) => onChange({ labelWidth: parseInt(e.target.value) })}
               className="w-full wb-surface-inset border wb-outline rounded-xs px-2 py-1.5 text-[8px] font-mono wb-text outline-none focus:border-accent/40 text-center"
               placeholder="Auto"
+              aria-label="Label explicit width"
             />
           </div>
           <div className="space-y-1">
@@ -70,6 +83,7 @@ export default function LabelGovernance({ values, capabilities, manifest, onChan
               onChange={(e) => onChange({ labelHeight: parseInt(e.target.value) })}
               className="w-full wb-surface-inset border wb-outline rounded-xs px-2 py-1.5 text-[8px] font-mono wb-text outline-none focus:border-accent/40 text-center"
               placeholder="Auto"
+              aria-label="Label explicit height"
             />
           </div>
         </div>
@@ -97,6 +111,7 @@ export default function LabelGovernance({ values, capabilities, manifest, onChan
               value={values.labelRounding || 0}
               onChange={(e) => onChange({ labelRounding: parseInt(e.target.value) })}
               className="w-full wb-surface-inset border wb-outline rounded-xs px-2 py-1.5 text-[8px] font-mono wb-text outline-none focus:border-accent/40 text-center"
+              aria-label="Label rounding in pixels"
             />
           </div>
           <div className="space-y-1">
@@ -108,6 +123,7 @@ export default function LabelGovernance({ values, capabilities, manifest, onChan
               value={values.labelPadding || 4}
               onChange={(e) => onChange({ labelPadding: parseInt(e.target.value) })}
               className="w-full wb-surface-inset border wb-outline rounded-xs px-2 py-1.5 text-[8px] font-mono wb-text outline-none focus:border-accent/40 text-center"
+              aria-label="Label padding in pixels"
             />
           </div>
         </div>

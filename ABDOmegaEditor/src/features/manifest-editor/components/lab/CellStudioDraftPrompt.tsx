@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Renderiza una notificacion emergente que solicita al usuario restaurar un borrador no guardado o empezar de nuevo en el editor CellStudio.
+ * @purpose_en Renders a modal prompting the user to restore an unsaved draft or start fresh in the CellStudio editor.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:1,sig:19dhf7z
+ * @lastUpdated 2026-06-15T12:46:57.204Z
+ */
+
 import { Cpu } from 'lucide-react';
 
 interface CellStudioDraftPromptProps {
@@ -38,12 +48,14 @@ export function CellStudioDraftPrompt({
           <div className="flex items-center justify-end gap-3">
             <button
               onClick={onDismiss}
+              title="Start fresh, discard draft"
               className="px-4 py-2 rounded-xs border wb-outline wb-text-muted hover:wb-text text-[9px] font-black uppercase tracking-widest transition-all cursor-pointer"
             >
               Start Fresh
             </button>
             <button
               onClick={onRestore}
+              title="Restore saved draft"
               className="px-6 py-2 rounded-xs bg-accent text-black hover:brightness-110 text-[9px] font-black uppercase tracking-widest transition-all cursor-pointer"
             >
               Restore Draft

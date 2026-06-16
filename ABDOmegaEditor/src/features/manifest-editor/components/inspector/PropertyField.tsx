@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Renderiza un componente de campo de propiedad personalizable para mostrar y editar valores con indicadores de estado opcionales y texto de ayuda.
+ * @purpose_en Renders a customizable property field component for displaying and editing values with optional status indicators and help text.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:1,sig:1i6cium
+ * @lastUpdated 2026-06-15T11:37:54.081Z
+ */
+
 import React from 'react';
 
 interface PropertyFieldProps {

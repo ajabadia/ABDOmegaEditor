@@ -1,4 +1,14 @@
 /**
+ * @purpose Proporciona acceso a materiales predefinidos y skins para el editor de manifesto OMEGA.
+ * @purpose_en Manages and provides access to pre-defined materials and skins for the OMEGA manifest editor.
+ * @refactorable false
+ * @classification Data/Constants
+ * @complexity Low
+ * @fingerprint exports:6,imports:1,sig:1j238dp
+ * @lastUpdated 2026-06-15T15:16:08.413Z
+ */
+
+/**
  * OMEGA ERA 7.2.3 - Industrial Aesthetic Registry
  * Canonical source for materials, textures, and global visual tokens.
  */

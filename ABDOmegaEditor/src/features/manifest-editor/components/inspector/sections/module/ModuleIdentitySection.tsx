@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona una sección para editar la identidad y metadata de un módulo en el editor de manifesto OMEGA.
+ * @purpose_en Manages a section for editing the identity and metadata of a module in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:8,sig:1xg8d2u
+ * @lastUpdated 2026-06-15T11:39:45.681Z
+ */
+
 import React from 'react';
 import { Box, User, Copy, Check } from 'lucide-react';
 import Image from 'next/image';

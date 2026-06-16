@@ -1,3 +1,13 @@
+/**
+ * @purpose Valida manifestación OMEGA para problemas de modulación circular detectando ciclos en conexiones de nodos.
+ * @purpose_en Validates OMEGA manifest for circular modulation issues by detecting cycles in node connections.
+ * @refactorable false
+ * @classification Helper Utility
+ * @complexity Medium
+ * @fingerprint exports:1,imports:2,sig:4hfafa
+ * @lastUpdated 2026-06-15T16:55:36.343Z
+ */
+
 import type { OMEGA_Manifest, OMEGA_Modulation } from '../types/manifest';
 import type { ValidationIssue } from '../types/validation';
 

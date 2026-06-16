@@ -1,8 +1,13 @@
 "use client";
 
 /**
- * @purpose Servicio de presentación de componentes emulados para el editor de manifiestos OMEGA.
- * @lastUpdated 2026-06-14T15:31:30.014Z
+ * @purpose Renderiza una lista de componentes emulados para el editor de manifesto OMEGA, incluyendo sus iconos, nombres, taglines, características y descripciones detalladas en ambos inglés y español.
+ * @purpose_en Renders a list of emulated components for the OMEGA manifest editor, including their icons, names, taglines, features, and detailed descriptions in both English and Spanish.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:3,sig:g0x40a
+ * @lastUpdated 2026-06-15T10:51:40.343Z
  */
 
 

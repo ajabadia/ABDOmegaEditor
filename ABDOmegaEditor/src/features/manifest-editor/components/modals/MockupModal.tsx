@@ -1,8 +1,19 @@
+/**
+ * @purpose Gestiona y renderiza un modal para mostrar y exportar mockups según una manifestación OMEGA.
+ * @purpose_en Manages and renders a modal for displaying and exporting mockups based on an OMEGA manifest.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:10,sig:1hldw5i
+ * @lastUpdated 2026-06-15T22:05:15.812Z
+ */
+
 import React, { useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toPng } from 'html-to-image';
 import type { OMEGA_Manifest } from '@/types/manifest';
 import type { AuditResult } from '@/services/auditService';
+import { useFocusTrap } from '@/features/manifest-editor/hooks/useFocusTrap';
 
 // Atomic Mockup Components
 import { MockupHeader } from '../mockup/MockupHeader';
@@ -37,6 +48,8 @@ export default function MockupModal({ isOpen, onClose, manifest, audit, resolveA
       setTimeout(() => setStatus('idle'), 0);
     }
   }, [isOpen]);
+
+  const focusTrapRef = useFocusTrap(isOpen);
 
   if (!isOpen) return null;
 
@@ -104,7 +117,13 @@ export default function MockupModal({ isOpen, onClose, manifest, audit, resolveA
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 md:p-12">
+      <div 
+        ref={focusTrapRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Mockup preview and export"
+        className="fixed inset-0 z-[1000] flex items-center justify-center p-4 md:p-12"
+      >
         {/* Backdrop */}
         <motion.div 
           initial={{ opacity: 0 }}

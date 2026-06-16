@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona un sistema de archivos virtuales (hierarquia de carpetas) a partir de activos de biblioteca y activos del manifesto local para su uso en el editor de manifesto OMEGA.
+ * @purpose_en Builds a virtual file system (folder hierarchy) from library assets and local manifest assets for use in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Custom Hook
+ * @complexity Medium
+ * @fingerprint exports:1,imports:3,sig:1h4hti8
+ * @lastUpdated 2026-06-15T11:50:30.004Z
+ */
+
 import { useMemo } from 'react';
 import type { LibraryAsset, OMEGA_Asset } from '@/omega-ui-core/types/manifest';
 import type { AssetSelectionMetadata } from './AssetSelector';

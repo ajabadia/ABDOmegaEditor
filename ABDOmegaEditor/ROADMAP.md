@@ -167,30 +167,20 @@ Basado en análisis exhaustivo del código, ADRs y estado actual del editor.
 
 | Prioridad | Mejora | Esfuerzo | Impacto | Descripción |
 |:---------:|--------|:--------:|:-------:|-------------|
-| **P1** | 🍞 **Toast Notification System** | 🟢 **Completado en v9.3.3** | 🟢 Alto | Sistema global de toasts animados (framer-motion) desde esquina superior derecha. `ToastProvider`, `useToast`, `addLog` bridge para notificaciones visuales. |
-| **P2** | 🔍 **Command Palette (Ctrl+K)** | 🟢 **Completado en v9.4.0** | 🟢 Alto | Paleta de comandos estilo VS Code/Linear: buscar nodos por nombre/ID, ejecutar acciones del menú, mostrar atajos. Ctrl+K badge en footer. 35 unit tests. |
-| **P3** | 📊 **Status Bar (dirty/validación)** | 🟢 **Completado** | 🟡 Medio | Barra de estado inferior con indicador Modified/Saved, timestamp último guardado, conteo de errores de validación en vivo, estado watchdog. 45 tests (38 unit + 7 integration + 6 snapshots). |
-| **P4** | 🎓 **Onboarding Walkthrough** | 🟢 **Completado en v9.6.0** | 🟢 Alto | Tour interactivo paso a paso con 7 pasos (Welcome, Header & Menu Bar, Tool Palette, Work Canvas, Inspector Panel, Status Bar, Keyboard Shortcuts). Auto-open en primera visita vía localStorage + Highlight Ring animado. Accesible desde Command Palette (Ctrl+K > Help > "Take a Guided Tour"). |
-| **P5** | 🖼️ **Mini-Map del Rack** | 🟢 **Completado** | 🟢 Alto | Mini-mapa funcional en esquina superior derecha, arrastrable con el ratón. Filtro por tipo de nodo (cell, group, layer, rack) con checkboxes, persistencia localStorage + URL query params, indicador de locked, color legend en dropdown, botón Clear all filters, snap a bordes, reset position button, glow visual al arrastrar, botón colapsado arrastrable, doble-click para reset, top clamp fix (no stuck behind toolbar), top limit indicator (cyan inset glow), clamp constants refactor, collapsed mode clamp, constant Tailwind consistency. **60 unit tests pasando.** |
-| **P6** | ⏪ **Undo Timeline Visual** | 🟡 Medio | 🟡 Medio | Popover/timeline mostrando últimos N pasos del historial semántico. Similar a Photoshop history o Cursor branch. Extiende batchHistory existente. |
-| **P7** | 🎨 **Temas Visuales Adicionales** | 🟢 Bajo | 🟡 Medio | Extender ThemeToggle con selector de temas (Amber, Cyberpunk, High Contrast) que cambien variables CSS `--primary-rgb` y colores de acento. |
-| **P8** | 🔧 **Floating Toolbar Customizable** | 🟡 Medio | 🟡 Medio | Personalizar orden de herramientas en Toolbar flotante: arrastrar para reordenar, ocultar/mostrar, estado persistido en localStorage. |
-| **P9** | 📐 **Resizable Panels** | 🔴 Alto | 🟢 Alto | Splitters redimensionables entre paneles (inspector, layers, logs) usando react-resizable-panels. Layouts personalizados persistidos. |
+| **P6** | ⏪ **Undo Timeline Visual** | 🟢 **Completado** | 🟡 Medio | Popover/timeline mostrando últimos N pasos del historial semántico + batch history (hide/lock/group). Sección "Batch" con entradas coloreadas por variante y undo individual. 47 tests pasando. |
+| **P8** | 🔧 **Floating Toolbar Customizable** | 🟢 **Completado** | 🟡 Medio | 11 botones configurables con drag-and-drop en popover. `useToolbarCustomization` hook con `moveButton`/`toggleVisibility`/`resetToDefault`. localStorage (`omega_toolbar_config`) con validación de integridad. Agrupados en 4 categorías (tools/edit/views/system). |
+| **P9** | 📐 **Resizable Panels** | 🟢 **Completado** | 🟢 Alto | `react-resizable-panels` en RightDockContainer con `PanelGroup`/`Panel`/`PanelResizeHandle`. 7 paneles con splitters, tamaños persistidos en localStorage (`omega_dock_panel_sizes`). `minSize` previene colapso. 0 TS errors. |
 | **P10** | ♿ **Accesibilidad WCAG AA** | 🔴 Alto | 🟢 Alto | Auditoría de contraste, aria-label/role en todos los componentes interactivos, navegación completa por teclado (Tab, Enter, Escape). |
-| **P11** | 🔌 **Editor Visual de Conexiones** | 🔴 Alto | 🟢 Muy alto | Editar conexiones directamente en viewport: click puerto → arrastrar línea a destino. Curvas Bezier animadas como SynthEdit/V CV Rack. |
+| **P11** | 🔌 **Pipeline de Integridad WASM & Contratos** | 🟢 **Completado** | 🟢 Alto | `deployManifest()` con verificación real de bindings contra `OmegaContract`. `verifyBindings()` — validación contrato-árbol con detección de binds huérfanos. `reconcileStateDetailed()` — ciclo completo de reconciliación con detección de divergencias. `instantiateBlueprint()` refactorizado (sync, reusa verifyBindings). Protección contra referencias circulares en tree walk. Singleton lazy via Proxy (sin timers en import). 17 tests de integración del pipeline (14 existentes + 3 casos borde: empty tree, deep nesting 100 niveles, circular ref). |
 
-### Próximas Direcciones — Priorizadas (Actualizado)
+### UI Cleanup — Redundancia y Textos Decorativos Eliminados (v9.9.1)
 
-| Prioridad | Mejora | Esfuerzo | Impacto | Descripción |
-|:---------:|--------|:--------:|:-------:|-------------|
-| **P3** | 📊 **Status Bar (dirty/validación)** | 🟢 **Completado** | 🟡 Medio | Barra de estado inferior con indicador Modified/Saved, timestamp último guardado, conteo de errores de validación en vivo, estado watchdog. 45 tests (38 unit + 7 integration + 6 snapshots). |
-| **P4** | 🎓 **Onboarding Walkthrough** | 🟢 **Completado en v9.6.0** | 🟢 Alto | Tour interactivo paso a paso (como Linear/Figma) usando overlay modal existente. Guía de primeros pasos en el editor. |
-| **P6** | ⏪ **Undo Timeline Visual** | 🟡 Medio | 🟡 Medio | Popover/timeline mostrando últimos N pasos del historial semántico. Similar a Photoshop history o Cursor branch. Extiende batchHistory existente. |
-| **P7** | 🎨 **Temas Visuales Adicionales** | 🟢 Bajo | 🟡 Medio | Extender ThemeToggle con selector de temas (Amber, Cyberpunk, High Contrast) que cambien variables CSS `--primary-rgb` y colores de acento. |
-| **P8** | 🔧 **Floating Toolbar Customizable** | 🟡 Medio | 🟡 Medio | Personalizar orden de herramientas en Toolbar flotante: arrastrar para reordenar, ocultar/mostrar, estado persistido en localStorage. |
-| **P9** | 📐 **Resizable Panels** | 🔴 Alto | 🟢 Alto | Splitters redimensionables entre paneles (inspector, layers, logs) usando react-resizable-panels. Layouts personalizados persistidos. |
-| **P10** | ♿ **Accesibilidad WCAG AA** | 🔴 Alto | 🟢 Alto | Auditoría de contraste, aria-label/role en todos los componentes interactivos, navegación completa por teclado (Tab, Enter, Escape). |
-| **P11** | 🔌 **Editor Visual de Conexiones** | 🔴 Alto | 🟢 Muy alto | Editar conexiones directamente en viewport: click puerto → arrastrar línea a destino. Curvas Bezier animadas como SynthEdit/V CV Rack. |
+| Acción | Justificación | Componentes |
+|:-------|:-------------|:------------|
+| ❌ **Audit button eliminado de floating toolbar** | Redundante: Compliance ya está en DockIconStrip (Shield), Window menu (Ctrl+Shift+A), y ComplianceBadge en Header | `Toolbar.tsx`, `toolbarDefinitions.tsx`, `ToolbarCustomizePopover.spec.tsx` |
+| ❌ **5 ShortcutBadge duplicados eliminados** | Los mini iconos (Orbital/Rack/Source/History/Mini Map) ya tenían botones equivalentes; los badges solo duplicaban info. Shortcuts movidos a tooltip hover | `WorkbenchFooter.tsx`, `WorkbenchFooter.spec.tsx` |
+| ❌ **Engine info overlay de Orbital view** | Texto puramente decorativo: versión engine, modo, conteo de elementos — sin funcionalidad | `NodeCanvas.tsx` |
+| 🔀 **Compliance Report movido de Help a Window** | Estaba marcado deprecated en Help; ahora es toggle legítimo en Window, consistente con Layers/Blueprints/etc. | `MenuBar.tsx`, `MenuBar.spec.tsx` |
 
 ### Próximas Direcciones — Alternativas
 

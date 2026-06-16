@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Renderiza el área de contenido para gestionar fragmentos, comportamientos, recetas y propiedades en el editor de manifesto OMEGA.
+ * @purpose_en Renders the content area for managing fragments, behaviors, recipes, and properties in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity High
+ * @fingerprint exports:1,imports:10,sig:1h86auf
+ * @lastUpdated 2026-06-15T12:46:51.725Z
+ */
+
 import { Box, ChevronUp, ChevronDown, Layout, Trash2 } from 'lucide-react';
 import { OMEGA_ELEMENT_CATALOG } from '@/omega-ui-core/governance/ElementCatalog';
 import type { ManifestEntity, OMEGA_Manifest } from '@/omega-ui-core/types/manifest';

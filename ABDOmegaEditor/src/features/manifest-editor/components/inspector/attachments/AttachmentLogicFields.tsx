@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Renderiza campos de formulario para editar propiedades de adjuntos en el editor de manifest OMEGA, incluyendo opciones de vinculación dinámica y sobrecarga de texto/literal según tipo de adjunto.
- * @lastUpdated 2026-06-14T16:42:09.005Z
+ * @purpose Renderiza campos para editar propiedades de adjuntos en el editor de manifesto OMEGA, incluyendo opciones de vinculación dinámica y superposiciones de texto/literal según tipo de adjunto.
+ * @purpose_en Renders fields for editing attachment properties in the OMEGA manifest editor, including dynamic binding options and text/literal overrides based on attachment type.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:2,sig:xtdh7g
+ * @lastUpdated 2026-06-15T11:05:20.911Z
  */
 
 import { Link2, Type } from 'lucide-react';
@@ -53,6 +58,7 @@ export default function AttachmentLogicFields({ att, availableBinds, onUpdate }:
           </label>
           <input 
             type="text" 
+            aria-label={isStepper ? 'Button literal text' : 'Static content text'}
             value={att.text || ''} 
             onChange={(e) => onUpdate({ text: e.target.value })}
             placeholder={isStepper ? 'e.g. +, -, <, >' : 'Label text...'}

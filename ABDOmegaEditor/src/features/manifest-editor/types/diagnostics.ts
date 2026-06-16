@@ -1,4 +1,14 @@
 /**
+ * @purpose Gestiona tipos y interfaces para diagnósticos en el editor de manifesto OMEGA, incluyendo niveles de gravedad diagnóstica, estructuras, resultados de auditoría y fuentes para extraer diagnósticos de manifests.
+ * @purpose_en Manages types and interfaces for diagnostics in the OMEGA manifest editor, including diagnostic severity levels, structures, audit results, and sources for extracting diagnostics from manifests.
+ * @refactorable false
+ * @classification Type Definition
+ * @complexity Low
+ * @fingerprint exports:8,imports:2,sig:my9hpb
+ * @lastUpdated 2026-06-15T15:16:23.435Z
+ */
+
+/**
  * OMEGA ERA 7.2.3 - Diagnostic System Types
  * Formal contracts for multi-source validation aggregation.
  */

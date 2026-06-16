@@ -1,4 +1,14 @@
 /**
+ * @purpose Gestiona la instantiación y extracción de contratos OMEGA de módulos WASM auto-descriptivos.
+ * @purpose_en Manages the instantiation and extraction of OMEGA contracts from self-descriptive WASM modules.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Business Service
+ * @complexity Medium
+ * @fingerprint exports:2,imports:0,sig:1hqkusy
+ * @lastUpdated 2026-06-15T17:03:37.719Z
+ */
+
+/**
  * OMEGA WASM Loader Service
  * Handles instantiation and contract extraction from self-descriptive WASM modules.
  */

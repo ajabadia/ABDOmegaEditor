@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona un componente para ajustar desplazamientos verticales y horizontales de anclajes en el editor del manifiesto OMEGA.
- * @lastUpdated 2026-06-14T16:42:21.323Z
+ * @purpose Renderiza un componente para ajustar los desplazamientos verticales y horizontales de las conexiones en el editor de manifesto OMEGA.
+ * @purpose_en Renders a component for adjusting vertical and horizontal offsets of attachments in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:2,sig:1h8smnk
+ * @lastUpdated 2026-06-15T11:05:26.052Z
  */
 
 import { Move } from 'lucide-react';
@@ -34,6 +39,7 @@ export default function AttachmentPrecisionOffsets({ offsetX, offsetY, onUpdate 
             value={offsetY || 0} 
             onChange={(e) => onUpdate({ offsetY: parseInt(e.target.value) })}
             className="w-full accent-primary h-1 wb-surface-inset rounded-full appearance-none cursor-pointer transition-colors"
+            aria-label="Vertical offset in pixels (Y)"
           />
         </div>
 
@@ -47,6 +53,7 @@ export default function AttachmentPrecisionOffsets({ offsetX, offsetY, onUpdate 
             value={offsetX || 0} 
             onChange={(e) => onUpdate({ offsetX: parseInt(e.target.value) })}
             className="w-full accent-primary h-1 wb-surface-inset rounded-full appearance-none cursor-pointer transition-colors"
+            aria-label="Horizontal offset in pixels (X)"
           />
         </div>
       </div>

@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona el consumo y secuenciado de archivos para crear tiras de película de alta calidad industrial en el editor de manifesto OMEGA.
+ * @purpose_en Manages the ingestion and sequencing of files to create industrial-grade filmstrips in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:3,sig:nayral
+ * @lastUpdated 2026-06-15T11:41:16.031Z
+ */
+
 import { useState, useEffect, useRef } from 'react';
 import { X, ArrowRight, ArrowDown, MoveUp, MoveDown, Check, AlertCircle, RefreshCw } from 'lucide-react';
 
@@ -106,7 +116,7 @@ export default function SequenceIngestionLab({ files, onComplete, onCancel }: Se
               <p className="text-[9px] font-bold uppercase text-white/20 tracking-[0.3em]">Industrial Ingestion Pipeline / Era 7.2.4</p>
             </div>
           </div>
-          <button onClick={onCancel} className="p-2 hover:bg-white/5 rounded-full transition-colors text-white/40">
+          <button onClick={onCancel} aria-label="Cancel ingestion" className="p-2 hover:bg-white/5 rounded-full transition-colors text-white/40">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -120,12 +130,14 @@ export default function SequenceIngestionLab({ files, onComplete, onCancel }: Se
                <div className="flex gap-1">
                  <button 
                   onClick={() => setOrientation('v')}
+                  aria-label="Set vertical orientation"
                   className={`px-3 py-1 rounded text-[8px] font-black uppercase transition-all ${orientation === 'v' ? 'bg-accent text-black' : 'bg-white/5 text-white/40'}`}
                  >
                    Vertical
                  </button>
                  <button 
                   onClick={() => setOrientation('h')}
+                  aria-label="Set horizontal orientation"
                   className={`px-3 py-1 rounded text-[8px] font-black uppercase transition-all ${orientation === 'h' ? 'bg-accent text-black' : 'bg-white/5 text-white/40'}`}
                  >
                    Horizontal
@@ -140,8 +152,8 @@ export default function SequenceIngestionLab({ files, onComplete, onCancel }: Se
                       <span className="text-[10px] font-mono text-accent truncate max-w-[200px]">{file.name}</span>
                    </div>
                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => moveItem(i, 'up')} className="p-1 hover:bg-accent/20 rounded text-white/40 hover:text-accent"><MoveUp className="w-3 h-3" /></button>
-                      <button onClick={() => moveItem(i, 'down')} className="p-1 hover:bg-accent/20 rounded text-white/40 hover:text-accent"><MoveDown className="w-3 h-3" /></button>
+                      <button onClick={() => moveItem(i, 'up')} title="Move frame up" aria-label="Move frame up" className="p-1 hover:bg-accent/20 rounded text-white/40 hover:text-accent"><MoveUp className="w-3 h-3" /></button>
+                      <button onClick={() => moveItem(i, 'down')} title="Move frame down" aria-label="Move frame down" className="p-1 hover:bg-accent/20 rounded text-white/40 hover:text-accent"><MoveDown className="w-3 h-3" /></button>
                    </div>
                 </div>
               ))}
@@ -175,9 +187,10 @@ export default function SequenceIngestionLab({ files, onComplete, onCancel }: Se
                    </p>
                 </div>
                 
-                <button 
+                <button
                   onClick={handleStitch}
                   disabled={isProcessing || orderedFiles.length === 0}
+                  aria-label="Fuse frames into sequence"
                   className="w-full py-4 bg-accent text-black font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-white transition-all disabled:opacity-20 disabled:grayscale"
                 >
                   <Check className="w-5 h-5" />

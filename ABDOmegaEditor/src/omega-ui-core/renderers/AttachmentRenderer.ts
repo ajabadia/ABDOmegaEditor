@@ -1,4 +1,14 @@
 /**
+ * @purpose Gestiona el renderizado de HTML para elementos de UI según las propiedades proporcionadas.
+ * @purpose_en Manages rendering HTML for various UI elements based on provided properties.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Custom Hook
+ * @complexity Medium
+ * @fingerprint exports:2,imports:2,sig:1vsdkpg
+ * @lastUpdated 2026-06-15T15:18:13.905Z
+ */
+
+/**
  * ⚠️ OMEGA UI CORE — ATTACHMENT RENDERER (Era 7.2.3)
  * ---------------------------------------------------------------------------
  * Specialized renderer for "slave" fragments (labels, leds, graphics).

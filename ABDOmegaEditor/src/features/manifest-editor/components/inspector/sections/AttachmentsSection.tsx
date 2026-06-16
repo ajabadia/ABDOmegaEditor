@@ -1,5 +1,15 @@
 'use client';
- 
+
+/**
+ * @purpose Gestiona una sección para gestionar las conexiones de señal en el editor de manifesto OMEGA, incluyendo agregar, eliminar y actualizar conexiones.
+ * @purpose_en Manages a section for managing signal attachments in the OMEGA manifest editor, including adding, removing, and updating attachments.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:7,sig:1qf3ffv
+ * @lastUpdated 2026-06-15T11:38:14.518Z
+ */
+
 import { Paperclip } from 'lucide-react';
 import type { ManifestEntity, OMEGA_Manifest, Attachment, OmegaNode } from '@/omega-ui-core/types/manifest';
 import { useAttachmentsLogic } from '@/features/manifest-editor/hooks/useAttachmentsLogic';

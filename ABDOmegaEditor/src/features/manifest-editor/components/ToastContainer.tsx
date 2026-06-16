@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Toast notification system with framer-motion animations — provides ToastContext, useToast hook, ToastProvider, and animated ToastContainer.
- * @fingerprint exports:3 (ToastProvider, useToast, ToastContainer)
+ * @purpose Gestiona y renderiza notificaciones emergentes con animaciones de Framer-Motion en el editor de manifestos OMEGA.
+ * @purpose_en Manages and renders toast notifications with Framer-Motion animations in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:4,imports:3,sig:ozj1n9
+ * @lastUpdated 2026-06-15T13:00:37.421Z
  */
 
 import { createContext, useContext, useState, useCallback, useRef, type ReactNode } from 'react';

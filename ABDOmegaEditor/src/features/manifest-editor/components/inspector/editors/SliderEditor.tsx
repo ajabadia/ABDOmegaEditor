@@ -1,6 +1,11 @@
 /**
- * @purpose Proporciona un componente editor de deslizador para el editor del manifiesto OMEGA que permite a los usuarios personalizar las propiedades del deslizador como orientación, color, activo, marcos y ajustes de vinculación según el nivel de inspector seleccionado.
- * @lastUpdated 2026-06-14T16:48:48.353Z
+ * @purpose Gestiona un componente editor de slider para el editor de manifesto OMEGA, permitiendo a los usuarios personalizar las propiedades del slider como orientación, color y configuraciones de enlaza según el nivel seleccionado del inspector.
+ * @purpose_en Renders a slider editor component for the OMEGA manifest editor, allowing users to customize slider properties such as orientation, color, and binding settings based on the selected inspector level.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:2,imports:4,sig:ug3b06
+ * @lastUpdated 2026-06-15T11:30:29.812Z
  */
 
 import type { ComponentNode, SliderOrientation } from '../../../../../omega-ui-core/types/rack';

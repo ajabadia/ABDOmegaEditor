@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona un componente para especificar y actualizar variantes de anexos en el editor del manifiesto OMEGA.
- * @lastUpdated 2026-06-14T16:42:52.690Z
+ * @purpose Gestiona un componente para especificar y actualizar variantes de anexos en el editor de manifesto OMEGA.
+ * @purpose_en Manages a component for specifying and updating attachment variants in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:2,sig:a2bnrc
+ * @lastUpdated 2026-06-15T11:05:39.472Z
  */
 
 import { Box } from 'lucide-react';
@@ -28,6 +33,7 @@ export default function AttachmentVariantSpec({ variant, onUpdate }: AttachmentV
           type="text" 
           value={currentVariant} 
           onChange={(e) => onUpdate({ variant: e.target.value })}
+          aria-label="Attachment variant"
           placeholder="e.g. A_red, B_cyan"
           className="flex-1 wb-surface-inset border wb-outline rounded-xs p-1.5 text-[9px] text-primary font-mono outline-none transition-colors duration-500 shadow-sm"
         />
@@ -39,6 +45,7 @@ export default function AttachmentVariantSpec({ variant, onUpdate }: AttachmentV
                 const parts = currentVariant.split('_');
                 onUpdate({ variant: `${s}_${parts[1] || 'cyan'}` });
               }}
+              aria-label={`Set size ${s}`}
               className={`w-5 h-5 flex items-center justify-center text-[8px] font-black rounded-xs border transition-all ${currentVariant.startsWith(s) ? 'bg-primary/20 border-primary text-primary' : 'bg-black/40 border-outline text-white/20'}`}
             >
               {s}

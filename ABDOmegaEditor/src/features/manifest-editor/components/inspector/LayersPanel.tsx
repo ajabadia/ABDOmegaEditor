@@ -1,18 +1,21 @@
 'use client';
 
 /**
- * @purpose Panel jerárquico de capas con virtual scrolling, filtros avanzados, drag & drop, ghost preview, operaciones batch y edición inline de nombres
- * @lastUpdated 2026-06-14T17:45:00.000Z
+ * @purpose Gestiona un panel para administrar capas en un editor de manifesto OMEGA, incluyendo características como filtrado, deshabilitación de visibilidad, bloqueo y operaciones en lotes.
+ * @purpose_en Renders a panel for managing layers in an OMEGA manifest editor, including features like filtering, visibility toggling, locking, and batch operations.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:12,sig:64hv5y
+ * @lastUpdated 2026-06-15T11:31:03.390Z
  */
 
-import { useState, useMemo, useCallback, useEffect, createElement, useRef } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { List, useListRef } from 'react-window';
-import type { RowComponentProps } from 'react-window';
 import { motion } from 'framer-motion';
 import { 
-  Search, Sliders, Radio, ListFilter, ChevronRight, ChevronDown,
-  Folder, FolderOpen, Disc, ToggleLeft, Tv, Type,
-  Eye, EyeOff, Lock, Unlock, Clock, CircleDot, Volume2, Layers, GripVertical,
+  Search, Sliders, Radio, ListFilter,
+  Folder, FolderOpen, Eye, EyeOff, Lock, Unlock, Clock
 } from 'lucide-react';
 import type { OMEGA_Manifest, OmegaNode } from '@/omega-ui-core/types/manifest';
 import { findParentInTree, findNodeInTree } from '@/features/manifest-editor/hooks/entities/ucaInspectorAdapter';
@@ -20,6 +23,8 @@ import { useBatchHistory, BATCH_VARIANT_PILL, BATCH_VARIANT_TOOLTIP, BATCH_VARIA
 import type { HistoryEntry } from '@/features/manifest-editor/hooks/useBatchHistory';
 import { useLayerFilters, getNodeComponentType } from '@/features/manifest-editor/hooks/useLayerFilters';
 import { type ComponentTypeFilter, COMPONENT_FILTERS } from '@/features/manifest-editor/hooks/useLayerFilters';
+import { LayerRow } from './LayerRow';
+import type { FlatTreeItem, DropTarget, LayerRowData } from './LayerRow';
 
 interface LayersPanelProps {
   manifest: OMEGA_Manifest;
@@ -56,77 +61,8 @@ interface ContextMenuState {
   isGroup: boolean;
 }
 
-interface FlatTreeItem {
-  id: string;
-  node: OmegaNode;
-  depth: number;
-  hasChildren: boolean;
-  isExpanded: boolean;
-}
-
-interface DropTarget {
-  rowIndex: number;
-  position: 'top' | 'bottom' | 'inside';
-  nodeId: string;
-}
-
-// ── Row data passed via rowProps to every row ────────────────────────────
-interface LayerRowData {
-  items: FlatTreeItem[];
-  selectedItemId: string | null;
-  multiSelectedIds: string[];
-  hiddenNodeIds: string[];
-  lockedNodeIds: string[];
-  onSelectItem: (id: string | null) => void;
-  onSelectMultiple: ((ids: string[]) => void) | undefined;
-  onToggleVisibility: (id: string) => void;
-  onToggleLock: (id: string) => void;
-  onRemoveItem: ((id: string) => void) | undefined;
-  onContextMenu: (e: React.MouseEvent, nodeId: string, isGroup: boolean) => void;
-  onUpdateItem: ((id: string, updates: Partial<OmegaNode>) => void) | undefined;
-  onDragGhostStart: ((nodeId: string, color: string, label: string, clientX: number, clientY: number) => void) | undefined;
-  toggleExpand: (id: string) => void;
-  dropTarget: DropTarget | null;
-}
-
 // ── Constants ────────────────────────────────────────────────────────────
 const ROW_HEIGHT = 26;
-
-// ── Node type color map (R1a) ───────────────────────────────────────────
-const NODE_TYPE_COLORS: Record<string, string> = {
-  knob: '#f97316',
-  port: '#06b6d4',
-  slider: '#22c55e',
-  display: '#a855f7',
-  container: '#3b82f6',
-  label: '#6b7280',
-  switch: '#eab308',
-  button: '#ec4899',
-};
-
-function getNodeColor(node: OmegaNode): string {
-  const nodeType = getNodeComponentType(node);
-  return NODE_TYPE_COLORS[nodeType] ?? '#6b7280';
-}
-
-function getNodeIcon(node: OmegaNode): typeof Disc {
-  if (node.kind === 'container' || node.kind === 'rack' || node.kind === 'face' || node.kind === 'group') return Folder;
-  if (node.kind === 'port') return Radio;
-  const type = node.cellRef?.toLowerCase() || '';
-  if (type === 'knob') return Disc;
-  if (type.includes('slider')) return Sliders;
-  if (type === 'switch') return ToggleLeft;
-  if (type === 'button' || type === 'push') return CircleDot;
-  if (type === 'display') return Tv;
-  if (type === 'label') return Type;
-  if (type === 'lfo' || type === 'osc' || type === 'oscillator') return Volume2;
-  if (type === 'layer') return Layers;
-  return GripVertical;
-}
-
-function countDirectChildren(node: OmegaNode): number {
-  return node.children?.length ?? 0;
-}
 
 // ── Filter check helper ──────────────────────────────────────────────────
 interface FilterParams {
@@ -220,219 +156,6 @@ function flattenVisibleTree(
   buildList(root, 0);
   return { items, flatNodeIds, visibleCount };
 }
-
-// ── Row renderer for react-window List ───────────────────────────────────
-const LayerRow = ({
-  index, style,
-  items, selectedItemId, multiSelectedIds,
-  hiddenNodeIds, lockedNodeIds,
-  onSelectItem, onSelectMultiple, onToggleVisibility, onToggleLock, onRemoveItem,
-  onContextMenu, onUpdateItem, onDragGhostStart,
-  toggleExpand, dropTarget,
-}: RowComponentProps<LayerRowData>) => {
-  const item = items[index];
-  if (!item) return null;
-
-  const { node, depth, hasChildren, isExpanded } = item;
-  const isContainer = node.kind === 'container' || node.kind === 'rack' || node.kind === 'face' || node.kind === 'group';
-  const isHidden = hiddenNodeIds.includes(node.id);
-  const isLocked = lockedNodeIds.includes(node.id);
-  const isSelected = selectedItemId === node.id || multiSelectedIds.includes(node.id);
-  const nodeColor = getNodeColor(node);
-  const childCount = countDirectChildren(node);
-  const indent = depth * 12;
-
-  const [isEditing, setIsEditing] = useState(false);
-  const [editValue, setEditValue] = useState((node.meta?.label as string) || node.id);
-
-  const handleNodeClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (!onSelectMultiple) { onSelectItem(node.id); return; }
-    if (e.ctrlKey || e.metaKey) {
-      const activeIds = [...multiSelectedIds];
-      const idx = activeIds.indexOf(node.id);
-      if (idx !== -1) activeIds.splice(idx, 1);
-      else activeIds.push(node.id);
-      onSelectMultiple(activeIds);
-      onSelectItem(activeIds.length > 0 ? activeIds[activeIds.length - 1] : null);
-    } else if (e.shiftKey && selectedItemId) {
-      const startIdx = items.findIndex((fi: FlatTreeItem) => fi.id === selectedItemId);
-      const endIdx = items.findIndex((fi: FlatTreeItem) => fi.id === node.id);
-      if (startIdx !== -1 && endIdx !== -1) {
-        const range = items.slice(Math.min(startIdx, endIdx), Math.max(startIdx, endIdx) + 1).map((fi: FlatTreeItem) => fi.id);
-        onSelectMultiple(range);
-      }
-    } else {
-      onSelectItem(node.id);
-      onSelectMultiple([node.id]);
-    }
-  };
-
-  const handleContextMenuEvent = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!multiSelectedIds.includes(node.id)) {
-      onSelectItem(node.id);
-      onSelectMultiple?.([node.id]);
-    }
-    onContextMenu(e, node.id, isContainer);
-  };
-
-  const handleRenameSubmit = () => {
-    setIsEditing(false);
-    const trimmed = editValue.trim();
-    if (trimmed && trimmed !== ((node.meta?.label as string) || node.id) && onUpdateItem) {
-      onUpdateItem(node.id, { meta: { ...node.meta, label: trimmed } });
-    }
-  };
-
-  const handleDragStart = (e: React.DragEvent) => {
-    if (node.kind === 'rack') { e.preventDefault(); return; }
-    e.dataTransfer.setData('text/plain', node.id);
-    e.dataTransfer.effectAllowed = 'move';
-    const canvas = document.createElement('canvas');
-    canvas.width = 1; canvas.height = 1;
-    e.dataTransfer.setDragImage(canvas, 0, 0);
-    onDragGhostStart?.(node.id, nodeColor, (node.meta?.label as string) || node.id, e.clientX, e.clientY);
-  };
-
-  const isDropTop = dropTarget?.nodeId === node.id && dropTarget?.position === 'top';
-  const isDropBottom = dropTarget?.nodeId === node.id && dropTarget?.position === 'bottom';
-  const isDropInside = dropTarget?.nodeId === node.id && dropTarget?.position === 'inside';
-
-  return (
-    <div style={style}>
-      <div style={{ paddingLeft: `${indent}px` }}>
-        <div
-          onClick={handleNodeClick}
-          onContextMenu={handleContextMenuEvent}
-          draggable={node.kind !== 'rack'}
-          onDragStart={handleDragStart}
-          className={`flex items-center justify-between px-2 border rounded-xs cursor-pointer transition-all group relative ${
-            isSelected
-              ? 'bg-primary/10 border-primary/40 text-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.05)]'
-              : 'wb-surface-subtle border-transparent hover:wb-surface-strong hover:wb-outline wb-text'
-          } ${isDropInside ? 'ring-1 ring-primary/60 bg-primary/5' : ''} ${isHidden ? 'opacity-40' : ''} ${isLocked ? 'border-l-amber-400/30 border-l-2' : ''}`}
-          style={{
-            borderLeftColor: isSelected ? undefined : (isLocked ? undefined : nodeColor),
-            borderLeftWidth: isSelected ? undefined : '2px',
-            height: ROW_HEIGHT - 2,
-          }}
-        >
-          {isDropTop && (
-            <motion.div
-              initial={{ opacity: 0, scaleX: 0.3 }}
-              animate={{ opacity: 1, scaleX: 1 }}
-              transition={{ duration: 0.15, ease: 'easeOut' }}
-              className="absolute top-0 left-0 right-0 h-[3px] z-10 origin-left"
-              style={{
-                background: 'linear-gradient(90deg, rgba(var(--primary-rgb),0.9), rgba(var(--primary-rgb),0.4), transparent)',
-                boxShadow: '0 0 12px rgba(var(--primary-rgb),0.6), 0 0 24px rgba(var(--primary-rgb),0.3)',
-              }}
-            />
-          )}
-          {isDropBottom && (
-            <motion.div
-              initial={{ opacity: 0, scaleX: 0.3 }}
-              animate={{ opacity: 1, scaleX: 1 }}
-              transition={{ duration: 0.15, ease: 'easeOut' }}
-              className="absolute bottom-0 left-0 right-0 h-[3px] z-10 origin-left"
-              style={{
-                background: 'linear-gradient(90deg, rgba(var(--primary-rgb),0.9), rgba(var(--primary-rgb),0.4), transparent)',
-                boxShadow: '0 0 12px rgba(var(--primary-rgb),0.6), 0 0 24px rgba(var(--primary-rgb),0.3)',
-              }}
-            />
-          )}
-
-          <div className="flex items-center gap-1.5 overflow-hidden mr-2">
-            {hasChildren ? (
-              <button
-                onClick={(e) => { e.stopPropagation(); toggleExpand(node.id); }}
-                className="p-0.5 shrink-0 wb-text-muted hover:wb-text"
-              >
-                {isExpanded ? <ChevronDown className="w-2.5 h-2.5" /> : <ChevronRight className="w-2.5 h-2.5" />}
-              </button>
-            ) : (
-              <span className="w-3.5 shrink-0" />
-            )}
-            {createElement(getNodeIcon(node), {
-              className: `w-3 h-3 shrink-0 ${isSelected ? 'text-primary' : ''}`,
-              style: { color: isSelected ? undefined : nodeColor },
-            })}
-            {isEditing ? (
-              <input
-                type="text"
-                value={editValue}
-                onChange={(e) => setEditValue(e.target.value)}
-                onBlur={handleRenameSubmit}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleRenameSubmit();
-                  if (e.key === 'Escape') {
-                    setEditValue((node.meta?.label as string) || node.id);
-                    setIsEditing(false);
-                  }
-                }}
-                className="bg-black/80 border border-primary/50 text-[8px] font-mono uppercase px-1 py-0.5 rounded-xs text-white focus:outline-none max-w-[120px]"
-                autoFocus
-                onClick={(e) => e.stopPropagation()}
-              />
-            ) : (
-              <div className="flex flex-col overflow-hidden min-w-0" onDoubleClick={() => { setIsEditing(true); setEditValue((node.meta?.label as string) || node.id); }}>
-                <span className="font-mono text-[8px] uppercase tracking-wider truncate leading-tight">{node.id}</span>
-                {(node.meta?.label as string) && (
-                  <span className="text-[7px] opacity-50 uppercase tracking-widest truncate leading-tight">{node.meta?.label as string}</span>
-                )}
-              </div>
-            )}
-          </div>
-
-          <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
-            {hasChildren && childCount > 0 && (
-              <span
-                className="inline-flex items-center justify-center min-w-[12px] h-3 px-[3px] rounded-[2px] text-[6px] font-black leading-none tabular-nums"
-                style={{
-                  backgroundColor: `${nodeColor}22`,
-                  color: nodeColor,
-                  border: `1px solid ${nodeColor}44`,
-                }}
-                title={`${childCount} child${childCount !== 1 ? 'ren' : ''}`}
-              >
-                {childCount}
-              </span>
-            )}
-            {isHidden && <span className="text-[6px] font-black text-red-400/60 uppercase tracking-widest mr-0.5" title="Hidden">H</span>}
-            {isLocked && <span className="text-[6px] font-black text-amber-400/60 uppercase tracking-widest mr-0.5" title="Locked">L</span>}
-            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button
-                onClick={() => onToggleVisibility(node.id)}
-                className={`p-1 rounded hover:bg-primary/10 transition-colors ${isHidden ? 'text-red-400' : 'wb-text-muted hover:wb-text'}`}
-                title={isHidden ? 'Show' : 'Hide'}
-              >
-                {isHidden ? <EyeOff className="w-2.5 h-2.5" /> : <Eye className="w-2.5 h-2.5" />}
-              </button>
-              <button
-                onClick={() => onToggleLock(node.id)}
-                className={`p-1 rounded hover:bg-primary/10 transition-colors ${isLocked ? 'text-amber-400' : 'wb-text-muted hover:wb-text'}`}
-                title={isLocked ? 'Unlock' : 'Lock'}
-              >
-                {isLocked ? <Lock className="w-2.5 h-2.5" /> : <Unlock className="w-2.5 h-2.5" />}
-              </button>
-              {onRemoveItem && node.kind !== 'rack' && (
-                <button
-                  onClick={() => onRemoveItem(node.id)}
-                  className="p-1 rounded wb-text-muted hover:text-red-400 hover:bg-primary/10 transition-colors"
-                  title="Delete"
-                >
-                  <span className="text-[7px] font-black">DEL</span>
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 function variantClass<T>(map: Record<string, T>, key: string): string {
   return (map as unknown as Record<string, string>)[key] ?? '';
@@ -688,6 +411,58 @@ export default function LayersPanel({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedItemId, onMoveNodeUpDown]);
 
+  // ── Keyboard shortcuts: Ctrl+Shift+Alt+H/L/A/T/C for filter toggles ──
+  useEffect(() => {
+    const handleFilterKeyDown = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey) || !e.shiftKey || !e.altKey) return;
+      const key = e.key.toLowerCase();
+      switch (key) {
+        case 'h':
+          e.preventDefault();
+          e.stopPropagation();
+          setShowHidden(!showHidden);
+          break;
+        case 'l':
+          e.preventDefault();
+          e.stopPropagation();
+          setShowLocked(!showLocked);
+          break;
+        case 'a':
+          e.preventDefault();
+          e.stopPropagation();
+          setShowAuditIssues(!showAuditIssues);
+          break;
+        case 't':
+          e.preventDefault();
+          e.stopPropagation();
+          setShowTemplates(!showTemplates);
+          break;
+        case 'c':
+          e.preventDefault();
+          e.stopPropagation();
+          clearAllFilters();
+          break;
+      }
+    };
+    window.addEventListener('keydown', handleFilterKeyDown);
+    return () => window.removeEventListener('keydown', handleFilterKeyDown);
+  }, [showHidden, showLocked, showAuditIssues, showTemplates, setShowHidden, setShowLocked, setShowAuditIssues, setShowTemplates, clearAllFilters]);
+
+  // ── Keyboard shortcuts: Ctrl+Shift+Alt+0-8 for component type filters ─
+  useEffect(() => {
+    const handleTypeKeyDown = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey) || !e.shiftKey || !e.altKey) return;
+      const num = parseInt(e.key, 10);
+      if (isNaN(num) || num < 0 || num > 8) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const types: ComponentTypeFilter[] = ['all', 'knob', 'port', 'slider', 'display', 'container', 'label', 'switch', 'button'];
+      setTypeFilter(types[num]);
+    };
+    window.addEventListener('keydown', handleTypeKeyDown);
+    return () => window.removeEventListener('keydown', handleTypeKeyDown);
+  }, [setTypeFilter]);
+
   // ── Row props for List ──────────────────────────────────────────────
   const rowProps: LayerRowData = useMemo(() => ({
     items: flatItems,
@@ -723,10 +498,11 @@ export default function LayersPanel({
             placeholder="Search layers..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            aria-label="Search layers by name or ID"
             className="w-full pl-7 pr-3 py-1.5 wb-surface-strong border wb-outline text-[9px] uppercase tracking-wider rounded-xs wb-text placeholder-wb-text-muted/40 focus:outline-none focus:border-primary/50 transition-colors"
           />
           {searchTerm && (
-            <button onClick={() => setSearchTerm('')} className="absolute right-1 p-1 text-white/30 hover:text-white transition-colors">✕</button>
+            <button onClick={() => setSearchTerm('')} title="Clear search" className="absolute right-1 p-1 text-white/30 hover:text-white transition-colors">✕</button>
           )}
         </div>
 
@@ -740,7 +516,8 @@ export default function LayersPanel({
                   ? 'bg-primary/20 border-primary text-primary shadow-[0_0_6px_rgba(var(--primary-rgb),0.1)]'
                   : 'wb-surface-strong wb-outline wb-text-muted hover:wb-text hover:border-white/20'
               } text-[7px] font-black`}
-              title={`Filter by ${label}`}
+              title={`Filter by ${label} (Ctrl+Shift+Alt+${COMPONENT_FILTERS.findIndex(f => f.type === type)})`}
+              aria-label={`Filter by ${label}`}
             >
               <Icon className="w-2.5 h-2.5" /> {label}
             </button>
@@ -749,24 +526,24 @@ export default function LayersPanel({
 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <button onClick={() => setShowHidden(!showHidden)}
+            <button onClick={() => setShowHidden(!showHidden)} title="Toggle show hidden (Ctrl+Shift+Alt+H)"
               className={`inline-flex items-center gap-1 px-1.5 py-0.5 border rounded-xs uppercase tracking-widest transition-all text-[7px] font-black ${
                 showHidden ? 'bg-red-400/20 border-red-400/50 text-red-400' : 'wb-surface-strong wb-outline wb-text-muted hover:wb-text'}`}
             ><EyeOff className="w-2.5 h-2.5" /> Hidden</button>
-            <button onClick={() => setShowLocked(!showLocked)}
+            <button onClick={() => setShowLocked(!showLocked)} title="Toggle show locked (Ctrl+Shift+Alt+L)"
               className={`inline-flex items-center gap-1 px-1.5 py-0.5 border rounded-xs uppercase tracking-widest transition-all text-[7px] font-black ${
                 showLocked ? 'bg-amber-400/20 border-amber-400/50 text-amber-400' : 'wb-surface-strong wb-outline wb-text-muted hover:wb-text'}`}
             ><Lock className="w-2.5 h-2.5" /> Locked</button>
-            <button onClick={() => setShowAuditIssues(!showAuditIssues)}
+            <button onClick={() => setShowAuditIssues(!showAuditIssues)} title="Toggle show audit issues (Ctrl+Shift+Alt+A)"
               className={`inline-flex items-center gap-1 px-1.5 py-0.5 border rounded-xs uppercase tracking-widest transition-all text-[7px] font-black ${
                 showAuditIssues ? 'bg-purple-400/20 border-purple-400/50 text-purple-400' : 'wb-surface-strong wb-outline wb-text-muted hover:wb-text'}`}
             ><ListFilter className="w-2.5 h-2.5" /> Audit</button>
-            <button onClick={() => setShowTemplates(!showTemplates)}
+            <button onClick={() => setShowTemplates(!showTemplates)} title="Toggle show templates (Ctrl+Shift+Alt+T)"
               className={`inline-flex items-center gap-1 px-1.5 py-0.5 border rounded-xs uppercase tracking-widest transition-all text-[7px] font-black ${
                 showTemplates ? 'bg-sky-400/20 border-sky-400/50 text-sky-400' : 'wb-surface-strong wb-outline wb-text-muted hover:wb-text'}`}
             ><Folder className="w-2.5 h-2.5" /> Templates</button>
             {(typeFilter !== 'all' || showHidden || showLocked || showAuditIssues || showTemplates || searchTerm || propertySearchTerm) && (
-              <button onClick={clearAllFilters} className="text-[6px] font-mono text-primary/60 hover:text-primary transition-colors uppercase tracking-widest">Clear</button>
+              <button onClick={clearAllFilters} title="Clear all filters (Ctrl+Shift+Alt+C)" className="text-[6px] font-mono text-primary/60 hover:text-primary transition-colors uppercase tracking-widest">Clear</button>
             )}
           </div>
           <span className="text-[6px] font-mono wb-text-muted opacity-50">{filterVisibleCount}/{totalCount}</span>
@@ -776,10 +553,11 @@ export default function LayersPanel({
           <Search className="absolute left-2 w-3 h-3 wb-text-muted opacity-30" />
           <input type="text" placeholder="Property → bind, value, min, max..."
             value={propertySearchTerm} onChange={(e) => setPropertySearchTerm(e.target.value)}
+            aria-label="Search by property value"
             className="w-full pl-7 pr-3 py-1.5 wb-surface-strong border wb-outline text-[8px] uppercase tracking-wider rounded-xs wb-text placeholder-wb-text-muted/30 focus:outline-none focus:border-purple/50 transition-colors font-mono"
           />
           {propertySearchTerm && (
-            <button onClick={() => setPropertySearchTerm('')} className="absolute right-1 p-1 text-white/30 hover:text-white transition-colors">✕</button>
+            <button onClick={() => setPropertySearchTerm('')} title="Clear property search" className="absolute right-1 p-1 text-white/30 hover:text-white transition-colors">✕</button>
           )}
         </div>
 
@@ -834,6 +612,7 @@ export default function LayersPanel({
                   <button onClick={() => setShowHistory(!showHistory)} onMouseEnter={() => setHoverHistory(true)} onMouseLeave={() => setHoverHistory(false)}
                     className={`inline-flex items-center gap-1 px-1 py-0.5 rounded-xs border transition-all text-[7px] font-black uppercase tracking-widest ${showHistory ? 'bg-primary/15 border-primary/40 text-primary' : 'border-white/10 text-white/40 hover:text-white/70 hover:border-white/30'}`}
                     title={showHistory ? 'Hide batch history' : 'Show batch history'}
+                    aria-label={showHistory ? 'Hide batch history' : 'Show batch history'}
                   ><Clock className="w-2.5 h-2.5" />{batchHistory.length > 0 && <span className="tabular-nums">{batchHistory.length}</span>}</button>
                   {hoverHistory && !showHistory && (
                     <div onMouseEnter={() => setHoverHistory(true)} onMouseLeave={() => setHoverHistory(false)}
@@ -874,7 +653,7 @@ export default function LayersPanel({
         <div className="border-b wb-outline bg-black/30 shrink-0 max-h-36 overflow-y-auto">
           <div className="px-2 py-1 flex items-center justify-between">
             <span className="text-[6px] font-black uppercase tracking-widest text-white/30">Batch History ({batchHistory.length})</span>
-            <button onClick={clearBatchHistory} className="text-[6px] font-mono text-white/20 hover:text-red-400 transition-colors uppercase tracking-wider">Clear</button>
+            <button onClick={clearBatchHistory} title="Clear batch history" className="text-[6px] font-mono text-white/20 hover:text-red-400 transition-colors uppercase tracking-wider">Clear</button>
           </div>
           <div className="flex flex-col gap-0.5 px-2 pb-1.5">
             {batchHistory.map((entry: HistoryEntry, i: number) => {
@@ -955,11 +734,11 @@ export default function LayersPanel({
         <div className="shrink-0 px-1.5 pb-1.5">
           <div className="pt-2 border-t wb-outline flex flex-col gap-1">
             <div className="px-1.5 text-[7px] font-black wb-text-muted uppercase tracking-widest">Quick Add</div>
-            <button onClick={() => onAddEntity('control')}
+            <button onClick={() => onAddEntity('control')} title="Add parameter control"
               className="w-full flex items-center gap-2 px-2 py-1.5 rounded-xs text-[8px] font-bold uppercase text-left hover:bg-primary/20 hover:text-primary transition-colors wb-text-muted">
               <Sliders className="w-3.5 h-3.5" /> <span>Param Control</span>
             </button>
-            <button onClick={() => onAddEntity('jack')}
+            <button onClick={() => onAddEntity('jack')} title="Add signal port"
               className="w-full flex items-center gap-2 px-2 py-1.5 rounded-xs text-[8px] font-bold uppercase text-left hover:bg-primary/20 hover:text-primary transition-colors wb-text-muted">
               <Radio className="w-3.5 h-3.5" /> <span>Signal Port</span>
             </button>
@@ -975,33 +754,49 @@ export default function LayersPanel({
         >
           {multiSelectedIds.length >= 2 && onGroupSelected && (
             <button onClick={() => { onGroupSelected(); closeContextMenu(); }}
-              className="w-full text-left px-2 py-1.5 hover:bg-primary/20 hover:text-primary text-[8px] font-black uppercase tracking-widest text-white/80 transition-colors">Group Selected</button>
+              className="w-full text-left px-2 py-1.5 hover:bg-primary/20 hover:text-primary text-[8px] font-black uppercase tracking-widest text-white/80 transition-colors"
+              aria-label="Group selected elements"
+            >Group Selected</button>
           )}
           {multiSelectedIds.length === 1 && onGroupDown && (
             <button onClick={() => { onGroupDown(contextMenu.nodeId); closeContextMenu(); }}
-              className="w-full text-left px-2 py-1.5 hover:bg-primary/20 hover:text-primary text-[8px] font-black uppercase tracking-widest text-white/80 transition-colors">Group Down</button>
+              className="w-full text-left px-2 py-1.5 hover:bg-primary/20 hover:text-primary text-[8px] font-black uppercase tracking-widest text-white/80 transition-colors"
+              aria-label="Group down"
+            >Group Down</button>
           )}
           {multiSelectedIds.length === 1 && onMoveNodeUpDown && (<>
             <button onClick={() => { onMoveNodeUpDown(contextMenu.nodeId, 'up'); closeContextMenu(); }}
-              className="w-full text-left px-2 py-1.5 hover:bg-primary/20 hover:text-primary text-[8px] font-black uppercase tracking-widest text-white/80 transition-colors">Move Up (Alt+▲)</button>
+              className="w-full text-left px-2 py-1.5 hover:bg-primary/20 hover:text-primary text-[8px] font-black uppercase tracking-widest text-white/80 transition-colors"
+              aria-label="Move up"
+            >Move Up (Alt+▲)</button>
             <button onClick={() => { onMoveNodeUpDown(contextMenu.nodeId, 'down'); closeContextMenu(); }}
-              className="w-full text-left px-2 py-1.5 hover:bg-primary/20 hover:text-primary text-[8px] font-black uppercase tracking-widest text-white/80 transition-colors">Move Down (Alt+▼)</button>
+              className="w-full text-left px-2 py-1.5 hover:bg-primary/20 hover:text-primary text-[8px] font-black uppercase tracking-widest text-white/80 transition-colors"
+              aria-label="Move down"
+            >Move Down (Alt+▼)</button>
           </>)}
           {multiSelectedIds.length === 1 && !contextMenu.isGroup && onDuplicateItem && (
             <button onClick={() => { onDuplicateItem(contextMenu.nodeId); closeContextMenu(); }}
-              className="w-full text-left px-2 py-1.5 hover:bg-primary/20 hover:text-primary text-[8px] font-black uppercase tracking-widest text-white/80 transition-colors border-t border-white/5 pt-1">Duplicate Layer</button>
+              className="w-full text-left px-2 py-1.5 hover:bg-primary/20 hover:text-primary text-[8px] font-black uppercase tracking-widest text-white/80 transition-colors border-t border-white/5 pt-1"
+              aria-label="Duplicate layer"
+            >Duplicate Layer</button>
           )}
           {multiSelectedIds.length === 1 && contextMenu.isGroup && onDuplicateGroup && (
             <button onClick={() => { onDuplicateGroup(contextMenu.nodeId); closeContextMenu(); }}
-              className="w-full text-left px-2 py-1.5 hover:bg-primary/20 hover:text-primary text-[8px] font-black uppercase tracking-widest text-white/80 transition-colors border-t border-white/5 pt-1">Duplicate Group</button>
+              className="w-full text-left px-2 py-1.5 hover:bg-primary/20 hover:text-primary text-[8px] font-black uppercase tracking-widest text-white/80 transition-colors border-t border-white/5 pt-1"
+              aria-label="Duplicate group"
+            >Duplicate Group</button>
           )}
           {multiSelectedIds.length === 1 && contextMenu.isGroup && onUngroupNode && (
             <button onClick={() => { onUngroupNode(contextMenu.nodeId); closeContextMenu(); }}
-              className="w-full text-left px-2 py-1.5 hover:bg-primary/20 hover:text-primary text-[8px] font-black uppercase tracking-widest text-white/80 transition-colors">Ungroup</button>
+              className="w-full text-left px-2 py-1.5 hover:bg-primary/20 hover:text-primary text-[8px] font-black uppercase tracking-widest text-white/80 transition-colors"
+              aria-label="Ungroup"
+            >Ungroup</button>
           )}
           {multiSelectedIds.length === 1 && contextMenu.isGroup && onSaveGroupAsBlueprint && (
             <button onClick={() => { onSaveGroupAsBlueprint(contextMenu.nodeId); closeContextMenu(); }}
-              className="w-full text-left px-2 py-1.5 hover:bg-primary/20 hover:text-primary text-[8px] font-black uppercase tracking-widest text-white/80 transition-colors border-t border-white/5 pt-1.5">Save as Blueprint...</button>
+              className="w-full text-left px-2 py-1.5 hover:bg-primary/20 hover:text-primary text-[8px] font-black uppercase tracking-widest text-white/80 transition-colors border-t border-white/5 pt-1.5"
+              aria-label="Save as blueprint"
+            >Save as Blueprint...</button>
           )}
         </div>
       )}

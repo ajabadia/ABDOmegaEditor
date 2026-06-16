@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona un grid para configurar conexiones de señal en una matriz editora industrial, permitiendo a los usuarios agregar, eliminar y actualizar modulaciones entre fuentes y objetivos.
+ * @purpose_en Manages a grid for configuring signal connections in an industrial matrix editor, allowing users to add, remove, and update modulations between sources and targets.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:4,sig:1d2h9di
+ * @lastUpdated 2026-06-15T12:50:32.719Z
+ */
+
 import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import type { OMEGA_Manifest, OMEGA_Modulation } from '@/types/manifest';
@@ -65,7 +75,7 @@ export default function ModulationGrid({ manifest, onAdd, onRemove, onUpdate, on
             <h2 className="text-xs font-black uppercase tracking-[0.3em] text-primary">Engineering Modulation Matrix</h2>
             <span className="text-[8px] font-bold text-white/30 uppercase tracking-widest">Signal Cross-Routing Engine — Era 7.1</span>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-full text-white/40 hover:text-white transition-all">
+          <button onClick={onClose} title="Close modulation matrix" className="p-2 hover:bg-white/5 rounded-full text-white/40 hover:text-white transition-all">
             <X className="w-4 h-4" />
           </button>
         </div>

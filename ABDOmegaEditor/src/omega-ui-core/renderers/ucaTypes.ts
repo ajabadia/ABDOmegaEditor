@@ -1,3 +1,13 @@
+/**
+ * @purpose Proporciona tipos para UCADebugContext y UniversalRendererProps utilizados en el editor de manifesto OMEGA renderers.
+ * @purpose_en Defines types for UCADebugContext and UniversalRendererProps used in the OMEGA manifest editor renderers.
+ * @refactorable false
+ * @classification Type Definition
+ * @complexity Low
+ * @fingerprint exports:2,imports:1,sig:p9zc1z
+ * @lastUpdated 2026-06-15T16:09:34.265Z
+ */
+
 import type { OmegaNode, OMEGA_Manifest, CellTemplate, Position } from '../types/manifest';
 
 export interface UCADebugContext {

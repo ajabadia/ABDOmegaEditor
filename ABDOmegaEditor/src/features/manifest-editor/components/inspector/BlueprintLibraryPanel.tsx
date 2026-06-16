@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona un panel para seleccionar y administrar planos en el editor del manifiesto OMEGA, incluyendo opciones tanto del almacén oficial como de la biblioteca del usuario.
- * @lastUpdated 2026-06-14T16:43:08.377Z
+ * @purpose Renderiza un panel para seleccionar y gestionar plantillas en el editor de manifesto OMEGA, incluyendo opciones del tienda oficial y biblioteca del usuario.
+ * @purpose_en Renders a panel for selecting and managing blueprints in the OMEGA manifest editor, including options from the official store and user library.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:5,sig:10kwccm
+ * @lastUpdated 2026-06-15T11:05:45.015Z
  */
 
 import React, { useState } from 'react';
@@ -145,6 +150,7 @@ export default function BlueprintLibraryPanel({
       <div className="flex border-b border-outline bg-black/40 backdrop-blur-md p-1 rounded-[8px] gap-2 mx-2 mt-2 mb-1">
         <button
           onClick={() => setActiveTab('official')}
+          aria-label="Official store blueprints"
           className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-[8px] font-black uppercase tracking-wider rounded-[6px] transition-all duration-300 ${
             activeTab === 'official'
               ? 'bg-primary text-black shadow-[0_0_12px_rgba(0,240,255,0.3)]'
@@ -156,6 +162,7 @@ export default function BlueprintLibraryPanel({
         </button>
         <button
           onClick={() => setActiveTab('library')}
+          aria-label="User library blueprints"
           className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-[8px] font-black uppercase tracking-wider rounded-[6px] transition-all duration-300 ${
             activeTab === 'library'
               ? 'bg-primary text-black shadow-[0_0_12px_rgba(0,240,255,0.3)]'
@@ -177,6 +184,7 @@ export default function BlueprintLibraryPanel({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-7 pr-3 py-1.5 wb-surface-strong border wb-outline text-[9px] uppercase tracking-wider rounded-xs wb-text placeholder-wb-text-muted/40 focus:outline-none focus:border-primary/50 transition-colors"
+            aria-label="Search blueprints"
           />
         </div>
 
@@ -187,6 +195,7 @@ export default function BlueprintLibraryPanel({
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
+                aria-label={`Filter by category: ${cat}`}
                 className={`px-2 py-0.5 border rounded-xs uppercase tracking-widest text-[7px] font-black transition-all ${
                   activeCategory === cat
                     ? 'bg-primary/20 border-primary text-primary shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]'
@@ -269,6 +278,7 @@ export default function BlueprintLibraryPanel({
             {/* LOAD BUTTON */}
             <button
               onClick={onLoadAcepack}
+              aria-label="Load acepack blueprint"
               className="flex items-center justify-center gap-2 px-3 py-2 border border-dashed border-primary/30 rounded-xs hover:border-primary/60 hover:bg-primary/5 transition-all wb-surface-subtle text-[8px] font-black uppercase tracking-wider wb-text-muted hover:text-primary"
             >
               <Upload className="w-3.5 h-3.5" />
@@ -306,6 +316,7 @@ export default function BlueprintLibraryPanel({
                           // Safe encoding for SVG (handles non-ASCII characters)
                           const encoded = encodeURIComponent(thumbSvg);
                           return (
+                            // eslint-disable-next-line @next/next/no-img-element
                             <img
                               src={`data:image/svg+xml;charset=utf-8,${encoded}`}
                               alt={bp.label}

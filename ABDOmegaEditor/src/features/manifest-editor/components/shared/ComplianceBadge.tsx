@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Renderiza una notificacion emergente que indica el estado de cumplimiento con los resultados de auditoria, incluyendo iconos, etiquetas y indicadores de salud.
+ * @purpose_en Renders a badge indicating compliance status with an audit result, including icons, labels, and health indicators.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:5,sig:15ivvhr
+ * @lastUpdated 2026-06-15T13:00:11.374Z
+ */
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Shield, ShieldAlert, Award } from 'lucide-react';
@@ -57,6 +67,7 @@ export function ComplianceBadge({ audit, onClick }: ComplianceBadgeProps) {
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
       className={`flex items-center gap-2.5 px-2 py-1 rounded-sm border ${config.bg} ${config.border} transition-all group relative overflow-visible`}
+      aria-label={`Compliance: ${config.label} (${score}%)`}
     >
       {config.pulse && (
         <motion.div 

@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona operaciones de archivo para manifestos, WASM y bundles en el editor de manifesto OMEGA.
+ * @purpose_en Orchestrates file operations for manifests, WASM, and bundles in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification Custom Hook
+ * @complexity Medium
+ * @fingerprint exports:1,imports:6,sig:12ihd5
+ * @lastUpdated 2026-06-15T13:21:50.719Z
+ */
+
 import { useManifestTransfer } from './io/useManifestTransfer';
 import { useWasmTransfer } from './io/useWasmTransfer';
 import { useBundleTransfer } from './io/useBundleTransfer';

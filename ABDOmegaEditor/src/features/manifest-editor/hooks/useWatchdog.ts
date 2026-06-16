@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona actualizaciones en tiempo real a archivos manifest en entornos de desarrollo locales utilizando un servicio de monitoreo.
+ * @purpose_en Manages real-time updates to manifest files using a watchdog service in local development environments.
+ * @refactorable false
+ * @classification Custom Hook
+ * @complexity Medium
+ * @fingerprint exports:1,imports:1,sig:p9mw16
+ * @lastUpdated 2026-06-15T15:15:27.118Z
+ */
+
 import { useEffect, useState, useRef } from 'react';
 
 interface WatchdogMessage {

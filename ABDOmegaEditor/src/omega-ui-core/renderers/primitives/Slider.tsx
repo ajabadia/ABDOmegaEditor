@@ -1,3 +1,13 @@
+/**
+ * @purpose Renderiza un componente de slider personalizable para el editor de manifesto OMEGA.
+ * @purpose_en Renders a customizable slider component for the OMEGA manifest editor.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:2,imports:2,sig:0sr4md
+ * @lastUpdated 2026-06-15T16:08:55.819Z
+ */
+
 import React from 'react';
 import type { ComponentStyle, BindConfig } from '../../types/rack';
 

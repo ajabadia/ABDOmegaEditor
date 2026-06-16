@@ -1,4 +1,14 @@
 /**
+ * @purpose Gestiona plantillas de Blueprint para uso del editor de manifesto OMEGA.
+ * @purpose_en Converts legacy BlueprintDefinitions to GroupNode format for OMEGA manifest editor usage.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Helper Utility
+ * @complexity Low
+ * @fingerprint exports:2,imports:1,sig:nbax0t
+ * @lastUpdated 2026-06-15T16:55:15.921Z
+ */
+
+/**
  * Blueprint migration utility: converts legacy BlueprintDefinition
  * (OmegaBlueprintNode tree) to new GroupNode format.
  *

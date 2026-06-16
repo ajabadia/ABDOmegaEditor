@@ -8,6 +8,8 @@ exports[`DockIconBar — snapshots should match snapshot with custom className 1
     class="flex flex-col items-center gap-1.5"
   >
     <button
+      aria-label="Alpha"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Alpha"
     >
@@ -18,6 +20,8 @@ exports[`DockIconBar — snapshots should match snapshot with custom className 1
       </span>
     </button>
     <button
+      aria-label="Beta"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Beta"
     >
@@ -28,6 +32,8 @@ exports[`DockIconBar — snapshots should match snapshot with custom className 1
       </span>
     </button>
     <button
+      aria-label="Gamma"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Gamma"
     >
@@ -54,6 +60,8 @@ exports[`DockIconBar — snapshots should match snapshot with groups and label 1
     class="flex flex-col items-center gap-1.5 "
   >
     <button
+      aria-label="Alpha"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Alpha"
     >
@@ -64,6 +72,8 @@ exports[`DockIconBar — snapshots should match snapshot with groups and label 1
       </span>
     </button>
     <button
+      aria-label="Beta"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Beta"
     >
@@ -81,6 +91,8 @@ exports[`DockIconBar — snapshots should match snapshot with groups and label 1
     class="flex flex-col items-center gap-1.5 "
   >
     <button
+      aria-label="Gamma"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Gamma"
     >
@@ -107,6 +119,8 @@ exports[`DockIconBar — snapshots should match snapshot with per-group classNam
     class="flex flex-col items-center gap-1.5 "
   >
     <button
+      aria-label="Alpha"
+      aria-pressed="true"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]"
       title="Alpha"
     >
@@ -124,6 +138,8 @@ exports[`DockIconBar — snapshots should match snapshot with per-group classNam
     class="flex flex-col items-center gap-1.5 overflow-y-auto max-h-[50vh]"
   >
     <button
+      aria-label="Beta"
+      aria-pressed="true"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]"
       title="Beta"
     >
@@ -134,6 +150,8 @@ exports[`DockIconBar — snapshots should match snapshot with per-group classNam
       </span>
     </button>
     <button
+      aria-label="Gamma"
+      aria-pressed="true"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]"
       title="Gamma"
     >
@@ -155,6 +173,8 @@ exports[`DockIconBar — snapshots should match snapshot without groups, all ina
     class="flex flex-col items-center gap-1.5"
   >
     <button
+      aria-label="Alpha"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Alpha"
     >
@@ -165,6 +185,8 @@ exports[`DockIconBar — snapshots should match snapshot without groups, all ina
       </span>
     </button>
     <button
+      aria-label="Beta"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Beta"
     >
@@ -175,6 +197,8 @@ exports[`DockIconBar — snapshots should match snapshot without groups, all ina
       </span>
     </button>
     <button
+      aria-label="Gamma"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Gamma"
     >
@@ -196,6 +220,8 @@ exports[`DockIconBar — snapshots should match snapshot without groups, some ac
     class="flex flex-col items-center gap-1.5"
   >
     <button
+      aria-label="Alpha"
+      aria-pressed="true"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]"
       title="Alpha"
     >
@@ -206,6 +232,8 @@ exports[`DockIconBar — snapshots should match snapshot without groups, some ac
       </span>
     </button>
     <button
+      aria-label="Beta"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Beta"
     >
@@ -216,6 +244,8 @@ exports[`DockIconBar — snapshots should match snapshot without groups, some ac
       </span>
     </button>
     <button
+      aria-label="Gamma"
+      aria-pressed="true"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]"
       title="Gamma"
     >

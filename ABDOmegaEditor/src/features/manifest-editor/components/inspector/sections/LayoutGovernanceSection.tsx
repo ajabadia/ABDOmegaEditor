@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona un sección colapsable en el editor de manifesto OMEGA para ajustar las configuraciones de gobernanza del layout, incluyendo la selección del modo y las propiedades de alineación.
+ * @purpose_en Manages a collapsible section in the OMEGA manifest editor for adjusting layout governance settings, including mode selection and alignment properties.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:4,sig:1a6ypm9
+ * @lastUpdated 2026-06-15T11:39:21.935Z
+ */
+
 import React from 'react';
 import { Layout, ArrowDown, ArrowRight, MousePointer2 } from 'lucide-react';
 import type { OmegaNode, LayoutMode } from '@/types/manifest';
@@ -34,6 +44,7 @@ export default function LayoutGovernanceSection({ node, onUpdate }: LayoutGovern
             <button
               key={m.id}
               onClick={() => onUpdate({ layout: { ...node.layout, pos: node.layout?.pos || { x: 0, y: 0 }, mode: m.id } })}
+              aria-label={`Layout mode: ${m.label}`}
               className={`flex flex-col items-center gap-1 py-2 rounded-xs transition-all ${
                 mode === m.id 
                   ? 'bg-primary/20 border border-primary/40 text-primary' 

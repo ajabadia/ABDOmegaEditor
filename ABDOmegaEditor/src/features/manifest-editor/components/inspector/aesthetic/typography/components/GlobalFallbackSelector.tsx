@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Renderiza un selector desplegable para elegir una fuente de letra predeterminada global con opciones desde las fuentes disponibles.
- * @lastUpdated 2026-06-14T16:41:12.172Z
+ * @purpose Renderiza un selector de dropdown para seleccionar una fuente de fuentes globales con opciones de las fuentes disponibles.
+ * @purpose_en Renders a dropdown selector for choosing a global default font with options from available fonts.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:1,sig:ltii1w
+ * @lastUpdated 2026-06-15T11:04:54.003Z
  */
 
 import { Shield } from 'lucide-react';

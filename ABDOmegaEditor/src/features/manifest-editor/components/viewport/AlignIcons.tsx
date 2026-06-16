@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Renderiza iconos de alineación y distribución para uso en el componente de vista previa del editor de manifesto OMEGA.
+ * @purpose_en Renders alignment and distribution icons for use in the OMEGA manifest editor's viewport component.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:8,imports:0,sig:tk7a4h
+ * @lastUpdated 2026-06-15T13:00:48.602Z
+ */
+
 interface IconProps {
   className?: string;
   size?: number;

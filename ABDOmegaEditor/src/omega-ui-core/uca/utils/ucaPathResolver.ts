@@ -1,4 +1,14 @@
 /**
+ * @purpose Gestiona rutas jerárquicas para OmegaNodes y parámetros DSP en el editor de manifesto OMEGA.
+ * @purpose_en Manages hierarchical paths for OmegaNodes and DSP parameters in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Helper Utility
+ * @complexity Low
+ * @fingerprint exports:2,imports:1,sig:d7yi9o
+ * @lastUpdated 2026-06-15T16:55:05.929Z
+ */
+
+/**
  * OMEGA UCA PATH RESOLVER (Phase 20.2)
  * Authority for Hierarchical Path Addressing (HPA).
  * Ensures deterministic and stable mapping between OmegaNodes and DSP parameters.

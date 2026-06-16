@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona visualización espacial de alta precisión para diseño y depuración en un editor de manifesto OMEGA.
+ * @purpose_en Manages high-precision spatial visualization for design and debugging in an OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:2,imports:2,sig:1dj870i
+ * @lastUpdated 2026-06-15T15:18:23.181Z
+ */
+
 import type { OmegaNode, OMEGA_Manifest, GridConfig } from '../../types/manifest';
 import { getParentRect, getNodeSize, snapToGrid, clampChildToParent } from '../../uca/spatialConstraints';
 

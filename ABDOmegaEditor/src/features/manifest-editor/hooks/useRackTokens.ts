@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona y devuelve tokens de color y tipografía para el tema OMEGA según el manifest proporcionado.
+ * @purpose_en Manages and returns color and typography tokens for the OMEGA theme based on the provided manifest.
+ * @refactorable false
+ * @classification Custom Hook
+ * @complexity Low
+ * @fingerprint exports:1,imports:2,sig:11l49c6
+ * @lastUpdated 2026-06-15T13:22:43.408Z
+ */
+
 import { useMemo } from 'react';
 import type { OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
 

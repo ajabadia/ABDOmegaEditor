@@ -1,10 +1,13 @@
 'use client';
 
 /**
- * @purpose Renderiza una capa de selección de activos para un nivel en el editor de manifesto OMEGA.
+ * @purpose Renderiza una capa de selección de activos para un capa en el editor de manifesto OMEGA.
  * @purpose_en Renders an overlay for selecting assets for a layer in the OMEGA manifest editor.
- * @fingerprint exports:1,imports:3,sig:8whoiw
- * @lastUpdated 2026-06-15T05:51:17.571Z
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:3,sig:z1xzu5
+ * @lastUpdated 2026-06-15T12:46:38.579Z
  */
 
 import ModalCloseButton from '../modals/ModalCloseButton';

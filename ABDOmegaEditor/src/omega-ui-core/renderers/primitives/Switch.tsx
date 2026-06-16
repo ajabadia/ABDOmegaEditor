@@ -1,3 +1,13 @@
+/**
+ * @purpose Renderiza un componente de botón según las propiedades y estilos proporcionados.
+ * @purpose_en Renders a switch component based on provided properties and styles.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:2,imports:1,sig:141ngui
+ * @lastUpdated 2026-06-15T16:08:59.389Z
+ */
+
 import type { ComponentStyle, BindConfig } from '../../types/rack';
 
 export interface SwitchRendererProps {

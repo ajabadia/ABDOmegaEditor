@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona un componente de tarjeta para mostrar y gestionar variantes de estilo en el editor del manifiesto OMEGA, incluyendo opciones para editar, copiar, eliminar, descargar e aplicar estilos.
- * @lastUpdated 2026-06-14T16:40:20.728Z
+ * @purpose Gestiona un componente de tarjeta para mostrar y gestionar variantes de estilo en el editor de manifesto OMEGA, incluyendo opciones para editar, copiar, eliminar, descargar y aplicar estilos.
+ * @purpose_en Manages a card component for displaying and managing style variants in the OMEGA manifest editor, including options to edit, copy, delete, download, and apply styles.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:1,sig:iysnmb
+ * @lastUpdated 2026-06-15T11:04:32.408Z
  */
 
 import { Copy, Trash2, CheckCircle2, Layout, Download } from 'lucide-react';
@@ -62,6 +67,7 @@ export default function StyleVariantCard({
             <button 
               onClick={(e) => { e.stopPropagation(); downloadVariant(); }} 
               title="Export as JSON"
+              aria-label="Export style as JSON"
               className="hover:scale-110 transition-transform"
             >
               <Download className="w-2 h-2 wb-text-muted hover:text-primary" />
@@ -69,6 +75,7 @@ export default function StyleVariantCard({
             <button 
               onClick={(e) => { e.stopPropagation(); onCopy(); }} 
               title="Copy to Clipboard"
+              aria-label="Copy style to clipboard"
               className="hover:scale-110 transition-transform"
             >
               <Copy className="w-2 h-2 wb-text-muted hover:text-primary" />
@@ -76,6 +83,7 @@ export default function StyleVariantCard({
             <button 
               onClick={(e) => { e.stopPropagation(); onRemove(); }} 
               title="Delete"
+              aria-label="Delete style variant"
               className="hover:scale-110 transition-transform"
             >
               <Trash2 className="w-2 h-2 text-red-500/40 hover:text-red-500" />
@@ -87,6 +95,7 @@ export default function StyleVariantCard({
           type="text" 
           value={style.label}
           onChange={(e) => onLabelChange(e.target.value)}
+          aria-label={`Style variant label: ${style.label}`}
           className={`bg-transparent border-none outline-none text-[8px] font-black uppercase transition-colors w-full overflow-hidden text-ellipsis ${isApplied ? 'text-primary' : 'wb-text'}`}
         />
         
@@ -96,6 +105,7 @@ export default function StyleVariantCard({
              {isRack && onApply && !isApplied && (
                 <button 
                   onClick={(e) => { e.stopPropagation(); onApply(); }}
+                  aria-label="Apply style to plane"
                   className="px-1.5 py-0.5 bg-accent/10 border border-accent/20 rounded-[2px] text-[5px] font-black uppercase text-accent hover:bg-accent/20 flex items-center gap-1"
                 >
                   <Layout className="w-1.5 h-1.5" />
@@ -110,6 +120,7 @@ export default function StyleVariantCard({
              )}
              <button 
                onClick={onEdit}
+               aria-label="Edit style variant"
                className="px-1.5 py-0.5 bg-primary/10 border border-primary/20 rounded-[2px] text-[5px] font-black uppercase text-primary hover:bg-primary/20"
              >
                Edit

@@ -1,10 +1,13 @@
 'use client';
 
 /**
- * @purpose Renderiza un menú de barra con secciones y submenús para operaciones de archivo, configuración de visualización, control de ventanas y recursos de ayuda en el editor de manifesto OMEGA.
+ * @purpose Renderiza un menú de barra con secciones y submenús para operaciones de archivo, configuración de visualización, control de ventana y recursos de ayuda en el editor de manifesto OMEGA.
  * @purpose_en Renders a menu bar with various sections and submenus for file operations, view settings, window controls, and help resources in the OMEGA manifest editor.
- * @fingerprint exports:1,imports:4,sig:yyyvhk
- * @lastUpdated 2026-06-15T06:34:52.753Z
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:4,sig:1fs9703
+ * @lastUpdated 2026-06-15T12:47:49.553Z
  */
 
 import { useState, useRef, useEffect } from 'react';
@@ -267,6 +270,13 @@ export default function MenuBar(props: MenuBarProps) {
           onClick: () => props.onToggleWindow?.('window_properties')
         },
         {
+          label: 'Compliance (Audit)',
+          icon: Shield,
+          checked: props.windowStates?.window_compliance,
+          onClick: () => props.onToggleWindow?.('window_compliance'),
+          shortcut: 'Ctrl+Shift+A'
+        },
+        {
           label: 'Blueprints Library',
           icon: Zap,
           checked: props.windowStates?.window_blueprints,
@@ -298,7 +308,6 @@ export default function MenuBar(props: MenuBarProps) {
       items: [
         { label: 'Engineering Manual', icon: HelpCircle, onClick: props.onHelp },
         { label: 'Guided Tour', icon: HelpCircle, onClick: () => props.onToggleTour?.() },
-        { label: 'Compliance Report', icon: Shield, onClick: props.onOpenAudit, highlight: 'deprecated' },
         { type: 'divider' },
         { label: 'About OMEGA', icon: Shield, onClick: props.onOpenAbout },
       ]
@@ -358,6 +367,7 @@ function MenuItem({ item, closeMenu }: { item: any, closeMenu: () => void }) {
     >
       <button
         disabled={item.disabled}
+        aria-label={item.label}
         onClick={() => {
           if (!item.submenu) {
             item.onClick();
@@ -398,6 +408,7 @@ function MenuItem({ item, closeMenu }: { item: any, closeMenu: () => void }) {
             {item.submenu.map((sub: any, idx: number) => (
               <button
                 key={idx}
+                aria-label={sub.label}
                 onClick={() => {
                   sub.onClick();
                   closeMenu();

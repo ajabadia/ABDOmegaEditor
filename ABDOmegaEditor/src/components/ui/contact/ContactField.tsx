@@ -1,6 +1,11 @@
 /**
- * @purpose Renderiza un campo de contacto con opciones para ser un área de texto o un input simple.
- * @lastUpdated 2026-06-14T15:31:20.511Z
+ * @purpose Renderiza un componente de campo de contacto que puede ser tanto un input como una textarea según las propiedades.
+ * @purpose_en Renders a contact field component that can be either an input or a textarea based on props.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:1,sig:1q9d3jw
+ * @lastUpdated 2026-06-16T17:35:42.848Z
  */
 
 import { cn } from "@/lib/utils";
@@ -44,6 +49,7 @@ export function ContactField({
           rows={rows}
           placeholder={placeholder}
           className={cn(inputClasses, "resize-none")}
+          aria-label={label}
         />
       ) : (
         <input
@@ -54,6 +60,7 @@ export function ContactField({
           type={type}
           placeholder={placeholder}
           className={inputClasses}
+          aria-label={label}
         />
       )}
     </div>

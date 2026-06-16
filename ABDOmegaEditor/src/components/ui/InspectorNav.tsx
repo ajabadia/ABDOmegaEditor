@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona una navegación de secciones en un inspector.
- * @lastUpdated 2026-06-14T15:50:01.781Z
+ * @purpose Renderiza una barra de navegación para secciones en un inspector, permitiendo a los usuarios cambiar entre diferentes secciones haciendo clic en botones con iconos y etiquetas.
+ * @purpose_en Renders a navigation bar for sections in an inspector, allowing users to switch between different sections by clicking on buttons with icons and labels.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:2,imports:1,sig:ntcphg
+ * @lastUpdated 2026-06-15T10:52:02.233Z
  */
 
 
@@ -33,6 +38,7 @@ export default function InspectorNav({ sections, activeSection, setActiveSection
               ? 'wb-surface-hover wb-text' 
               : 'wb-text-muted hover:wb-text hover:wb-surface-hover/50'
           }`}
+          aria-label={section.label}
         >
           <section.icon className={`w-3.5 h-3.5 ${activeSection === section.id ? section.color : ''}`} />
           <span className="text-[7px] font-black uppercase tracking-tighter">{section.label}</span>

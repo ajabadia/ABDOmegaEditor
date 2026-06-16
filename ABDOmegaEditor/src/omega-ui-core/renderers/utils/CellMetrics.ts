@@ -1,4 +1,14 @@
 /**
+ * @purpose Proporciona un radio para componentes industriales según su tipo, tamaño y datos manifestados, con un fallback a valores fijos por defecto.
+ * @purpose_en Calculates and returns the radius for industrial components based on their type, size, and manifest data, with a fallback to hardcoded values if necessary.
+ * @refactorable false
+ * @classification Helper Utility
+ * @complexity Low
+ * @fingerprint exports:1,imports:2,sig:e3m4c6
+ * @lastUpdated 2026-06-15T16:09:49.752Z
+ */
+
+/**
  * OMEGA Cell Metrics (Era 7.2.3)
  * Physical dimensions and geometric mapping for industrial components.
  * 

@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona una sección colapsable para la gobernanza de identidad y activos en el editor de manifesto OMEGA, incluyendo selección de variantes, seleccionador de activos, estrategia de ajuste y configuración de filmstrip.
+ * @purpose_en Manages a collapsible section for identity and asset governance in the OMEGA manifest editor, including variant selection, asset picker, fitting strategy, and filmstrip settings.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:7,sig:1vt3osd
+ * @lastUpdated 2026-06-15T11:40:34.972Z
+ */
+
 import { Fingerprint, Settings2 } from 'lucide-react';
 import type { AestheticCapability } from '@/omega-ui-core/governance/ElementCatalog';
 import { OMEGA_ELEMENT_CATALOG } from '@/omega-ui-core/governance/ElementCatalog';
@@ -130,6 +140,7 @@ export default function IdentityGovernance({
                       value={values.frames || 1}
                       onChange={(e) => onChange({ frames: parseInt(e.target.value) || 1 })}
                       className="w-full bg-black/40 border border-white/5 rounded px-2 py-1 text-[8px] font-mono text-accent outline-none"
+                      aria-label="Total frames"
                    />
                 </div>
                 <div className="space-y-1">
@@ -139,6 +150,7 @@ export default function IdentityGovernance({
                       value={values.zeroAnchor || 0}
                       onChange={(e) => onChange({ zeroAnchor: parseInt(e.target.value) || 0 })}
                       className="w-full bg-black/40 border border-white/5 rounded px-2 py-1 text-[8px] font-mono text-accent outline-none"
+                      aria-label="Zero anchor"
                    />
                 </div>
              </div>

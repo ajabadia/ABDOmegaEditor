@@ -1,8 +1,11 @@
 /**
  * @purpose Gestiona tipos y interfaces para el manejo del estado y las acciones del panel de trabajo en el editor de manifesto OMEGA.
  * @purpose_en Manages types and interfaces for managing the state and actions of the workbench in the OMEGA manifest editor.
- * @fingerprint exports:12,imports:2,sig:nylon8
- * @lastUpdated 2026-06-15T09:19:53.144Z
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Type Definition
+ * @complexity Low
+ * @fingerprint exports:12,imports:2,sig:ka0av0
+ * @lastUpdated 2026-06-15T20:50:04.738Z
  */
 
 import type { LucideIcon } from "lucide-react";
@@ -79,7 +82,7 @@ export interface WorkbenchState {
   helpState: { isOpen: boolean; sectionId?: string | undefined };
   mockupOpen: boolean;
   blueprintGalleryOpen: boolean;
-  isAuditModalOpen: boolean;
+  // isAuditModalOpen removed — use CompliancePanel in right dock instead
   isAboutModalOpen: boolean;
   isCellEditorOpen: boolean;
   isOnboardingOpen: boolean;
@@ -96,7 +99,7 @@ export interface WorkbenchState {
   window_logs: boolean;
   hiddenNodeIds: string[];
   lockedNodeIds: string[];
-  uiTheme: "dark" | "light";
+  uiTheme: "dark" | "light" | "amber" | "cyberpunk" | "high-contrast";
   pendingFiles: File[];
   
   // Phase 9.2 History Diff
@@ -131,7 +134,7 @@ export type WorkbenchAction =
   | { type: "SET_PINNED_NODE"; payload: { nodeId: string | null } }
   | { type: "SET_EXPANDED_NODE_IDS"; payload: { nodeIds: string[] } }
   | { type: "CAPTURE_TAB_VIEW_STATE"; payload: { tabId: string; viewState: Partial<WorkbenchTabViewState> } }
-  | { type: "TOGGLE_UI_STATE"; payload: { key: keyof Pick<WorkbenchState, 'showLogs' | 'isLiveMode' | 'showModGrid' | 'mockupOpen' | 'blueprintGalleryOpen' | 'isAuditModalOpen' | 'isAboutModalOpen' | 'isCellEditorOpen' | 'isDiffModalOpen' | 'isOnboardingOpen'>, value?: boolean } }
+  | { type: "TOGGLE_UI_STATE"; payload: { key: keyof Pick<WorkbenchState, 'showLogs' | 'isLiveMode' | 'showModGrid' | 'mockupOpen' | 'blueprintGalleryOpen' | 'isAboutModalOpen' | 'isCellEditorOpen' | 'isDiffModalOpen' | 'isOnboardingOpen'>, value?: boolean } }
   | { type: "TOGGLE_RIGHT_PANEL" }
   | { type: "TOGGLE_ZEN_MODE" }
   | { type: "TOGGLE_WINDOW"; payload: { name: 'window_layers' | 'window_properties' | 'window_rack_properties' | 'window_blueprints' | 'window_compliance' | 'window_info' | 'window_history' | 'window_logs' } }
@@ -141,7 +144,7 @@ export type WorkbenchAction =
   | { type: "BATCH_SET_LOCK"; payload: { nodeIds: string[]; locked: boolean } }
   | { type: "SET_STUDIO_MODE"; payload: StudioModeState } // Phase 15 Action
   | { type: "SET_HELP_STATE"; payload: { isOpen: boolean; sectionId?: string | undefined } }
-  | { type: "SET_UI_THEME"; payload: { theme: "light" | "dark" } }
+  | { type: "SET_UI_THEME"; payload: { theme: "dark" | "light" | "amber" | "cyberpunk" | "high-contrast" } }
   | { type: "SET_PENDING_FILES"; payload: { files: File[] } }
   | { type: "SET_ACTIVE_DIFF"; payload: { diff: import("../types/diff").ManifestDiffResult | null } }
   | { type: "TOGGLE_HORIZONTAL_SPLIT"; payload: { paneId: "primary" | "secondary" } }

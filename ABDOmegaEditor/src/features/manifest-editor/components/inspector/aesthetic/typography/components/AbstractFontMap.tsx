@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona un componente para administrar mapeos de fuentes abstractas en el editor del manifiesto OMEGA, permitiendo a los usuarios definir y actualizar etiquetas y familias de fuentes para punteros específicos.
- * @lastUpdated 2026-06-14T16:40:48.210Z
+ * @purpose Gestiona un componente para mapear fuentes abstractas en el editor de manifesto OMEGA, permitiendo a los usuarios definir y actualizar etiquetas de fuentes y familias para puntos específicos.
+ * @purpose_en Manages a component for abstract font mapping in the OMEGA manifest editor, allowing users to define and update font labels and families for specific pointers.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:1,sig:1p1czm0
+ * @lastUpdated 2026-06-15T11:04:44.095Z
  */
 
 import { Layout } from 'lucide-react';

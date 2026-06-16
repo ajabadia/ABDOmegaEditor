@@ -2,6 +2,7 @@
 
 exports[`ModalCloseButton — snapshots should match snapshot with title 1`] = `
 <button
+  aria-label="Close inspection"
   class="p-1.5 rounded-xs border wb-outline wb-text-muted hover:wb-text hover:bg-red-500/10 hover:border-red-500/30 transition-all"
   title="Close inspection"
 >
@@ -30,6 +31,7 @@ exports[`ModalCloseButton — snapshots should match snapshot with title 1`] = `
 
 exports[`ModalCloseButton — snapshots should match snapshot without title 1`] = `
 <button
+  aria-label="Close modal"
   class="p-1.5 rounded-xs border wb-outline wb-text-muted hover:wb-text hover:bg-red-500/10 hover:border-red-500/30 transition-all"
 >
   <svg

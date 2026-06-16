@@ -1,6 +1,11 @@
 /**
- * @purpose Presenta un desafío matemático que permite al usuario resolver una ecuación y verificar su respuesta con un valor calculado.
- * @lastUpdated 2026-06-14T15:31:23.727Z
+ * @purpose Renderiza un componente desafío matemático que muestra una ecuación y permite al usuario ingresar su respuesta para su verificación.
+ * @purpose_en Renders a mathematical challenge component that displays an equation and allows the user to input their answer for verification.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:1,sig:cpcvu7
+ * @lastUpdated 2026-06-16T17:35:54.022Z
  */
 
 import { Loader2 } from "lucide-react";
@@ -31,6 +36,7 @@ export function MathChallenge({ challenge, label }: MathChallengeProps) {
             type="number"
             placeholder="?"
             className="w-full bg-zinc-900/50 border border-white/10 rounded-none h-[64px] text-center text-2xl text-white font-headline font-bold focus:outline-none focus:border-primary transition-all placeholder:text-zinc-800"
+            aria-label={label}
           />
         </div>
       </div>

@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona un componente para inspeccionar y editar las mapas de comportamiento en el editor de manifesto OMEGA, incluyendo fuente de entrada, modo de mapeo, rango de cuadros y validación.
+ * @purpose_en Renders a component for inspecting and editing behavior mappings in the OMEGA manifest editor, including input source, mapping mode, frame range, and validation.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:2,sig:1aec8ei
+ * @lastUpdated 2026-06-15T16:50:36.898Z
+ */
+
 import type { BehaviorMapping, BehaviorMappingMode } from '@/omega-ui-core/types/assetBehavior';
 import { Zap, Target, ArrowRightLeft, Layers } from 'lucide-react';
  
@@ -68,6 +78,7 @@ export default function BehaviorMappingInspector({ mapping, onChange, resolvedFr
               value={mapping.frameRange?.start ?? 0}
               onChange={(e) => onChange({ frameRange: { start: parseInt(e.target.value), end: mapping.frameRange?.end ?? 0 } })}
               className="w-full bg-[#0a0a0b] border border-[#222] rounded p-1.5 text-[8px] font-mono text-white outline-none focus:border-accent/40"
+              aria-label="Start frame"
             />
             {(resolvedFrame ?? 0) === (mapping.frameRange?.start ?? 0) && (
               <div className="absolute -top-1 -right-1 w-2 h-2 bg-accent rounded-full animate-pulse shadow-[0_0_5px_rgba(0,242,255,0.5)]" />
@@ -80,6 +91,7 @@ export default function BehaviorMappingInspector({ mapping, onChange, resolvedFr
               value={mapping.frameRange?.end ?? 1}
               onChange={(e) => onChange({ frameRange: { start: mapping.frameRange?.start ?? 0, end: parseInt(e.target.value) } })}
               className="w-full bg-[#0a0a0b] border border-[#222] rounded p-1.5 text-[8px] font-mono text-white outline-none focus:border-accent/40"
+              aria-label="End frame"
             />
             {(resolvedFrame ?? 0) === (mapping.frameRange?.end ?? 1) && (
               <div className="absolute -top-1 -right-1 w-2 h-2 bg-accent rounded-full animate-pulse shadow-[0_0_5px_rgba(0,242,255,0.5)]" />

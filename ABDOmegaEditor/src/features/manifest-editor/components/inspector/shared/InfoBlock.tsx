@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Renderiza una pestaña informativa estándar para notas técnicas y documentación industrial con título personalizable, mensaje, icono y estilos variados.
+ * @purpose_en Renders a standardized informational panel for technical notes and industrial documentation with customizable title, message, icon, and variant styles.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:1,sig:19ke8mv
+ * @lastUpdated 2026-06-15T11:49:51.120Z
+ */
+
 import { Info, type LucideIcon } from 'lucide-react';
 
 interface InfoBlockProps {

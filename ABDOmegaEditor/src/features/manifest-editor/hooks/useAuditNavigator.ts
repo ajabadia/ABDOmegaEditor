@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona navegación y resaltado dentro del editor de manifesto OMEGA según las interacciones del usuario con los problemas.
+ * @purpose_en Manages navigation and highlighting within an OMEGA manifest editor based on user interactions with issues.
+ * @refactorable false
+ * @classification Custom Hook
+ * @complexity Medium
+ * @fingerprint exports:1,imports:2,sig:7ynx9j
+ * @lastUpdated 2026-06-15T13:12:01.594Z
+ */
+
 import { useCallback, useState } from 'react';
 import type { OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
 

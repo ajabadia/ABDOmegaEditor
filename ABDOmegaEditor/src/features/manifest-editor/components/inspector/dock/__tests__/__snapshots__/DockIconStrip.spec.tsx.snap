@@ -8,6 +8,8 @@ exports[`DockIconStrip — snapshots should match snapshot when collapsed overri
     class="flex flex-col items-center gap-1.5"
   >
     <button
+      aria-label="Layers"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Layers"
     >
@@ -36,6 +38,8 @@ exports[`DockIconStrip — snapshots should match snapshot when collapsed overri
       </svg>
     </button>
     <button
+      aria-label="Rack Properties"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Rack Properties"
     >
@@ -63,6 +67,8 @@ exports[`DockIconStrip — snapshots should match snapshot when collapsed overri
       </svg>
     </button>
     <button
+      aria-label="Element Properties"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Element Properties"
     >
@@ -109,6 +115,8 @@ exports[`DockIconStrip — snapshots should match snapshot when collapsed overri
       </svg>
     </button>
     <button
+      aria-label="Blueprint Library"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Blueprint Library"
     >
@@ -131,6 +139,8 @@ exports[`DockIconStrip — snapshots should match snapshot when collapsed overri
       </svg>
     </button>
     <button
+      aria-label="Compliance"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Compliance"
     >
@@ -153,6 +163,8 @@ exports[`DockIconStrip — snapshots should match snapshot when collapsed overri
       </svg>
     </button>
     <button
+      aria-label="Information"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Information"
     >
@@ -183,6 +195,8 @@ exports[`DockIconStrip — snapshots should match snapshot when collapsed overri
       </svg>
     </button>
     <button
+      aria-label="History"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="History"
     >
@@ -211,6 +225,8 @@ exports[`DockIconStrip — snapshots should match snapshot when collapsed overri
       </svg>
     </button>
     <button
+      aria-label="Terminal Logs"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Terminal Logs"
     >
@@ -247,6 +263,8 @@ exports[`DockIconStrip — snapshots should match snapshot with all windows inac
     class="flex flex-col items-center gap-1.5"
   >
     <button
+      aria-label="Layers"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Layers"
     >
@@ -275,6 +293,8 @@ exports[`DockIconStrip — snapshots should match snapshot with all windows inac
       </svg>
     </button>
     <button
+      aria-label="Rack Properties"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Rack Properties"
     >
@@ -302,6 +322,8 @@ exports[`DockIconStrip — snapshots should match snapshot with all windows inac
       </svg>
     </button>
     <button
+      aria-label="Element Properties"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Element Properties"
     >
@@ -348,6 +370,8 @@ exports[`DockIconStrip — snapshots should match snapshot with all windows inac
       </svg>
     </button>
     <button
+      aria-label="Blueprint Library"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Blueprint Library"
     >
@@ -370,6 +394,8 @@ exports[`DockIconStrip — snapshots should match snapshot with all windows inac
       </svg>
     </button>
     <button
+      aria-label="Compliance"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Compliance"
     >
@@ -392,6 +418,8 @@ exports[`DockIconStrip — snapshots should match snapshot with all windows inac
       </svg>
     </button>
     <button
+      aria-label="Information"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Information"
     >
@@ -422,6 +450,8 @@ exports[`DockIconStrip — snapshots should match snapshot with all windows inac
       </svg>
     </button>
     <button
+      aria-label="History"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="History"
     >
@@ -450,6 +480,8 @@ exports[`DockIconStrip — snapshots should match snapshot with all windows inac
       </svg>
     </button>
     <button
+      aria-label="Terminal Logs"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Terminal Logs"
     >
@@ -486,6 +518,8 @@ exports[`DockIconStrip — snapshots should match snapshot with some windows act
     class="flex flex-col items-center gap-1.5"
   >
     <button
+      aria-label="Layers"
+      aria-pressed="true"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]"
       title="Layers"
     >
@@ -514,6 +548,8 @@ exports[`DockIconStrip — snapshots should match snapshot with some windows act
       </svg>
     </button>
     <button
+      aria-label="Rack Properties"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Rack Properties"
     >
@@ -541,6 +577,8 @@ exports[`DockIconStrip — snapshots should match snapshot with some windows act
       </svg>
     </button>
     <button
+      aria-label="Element Properties"
+      aria-pressed="true"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]"
       title="Element Properties"
     >
@@ -587,6 +625,8 @@ exports[`DockIconStrip — snapshots should match snapshot with some windows act
       </svg>
     </button>
     <button
+      aria-label="Blueprint Library"
+      aria-pressed="true"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]"
       title="Blueprint Library"
     >
@@ -609,6 +649,8 @@ exports[`DockIconStrip — snapshots should match snapshot with some windows act
       </svg>
     </button>
     <button
+      aria-label="Compliance"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Compliance"
     >
@@ -631,6 +673,8 @@ exports[`DockIconStrip — snapshots should match snapshot with some windows act
       </svg>
     </button>
     <button
+      aria-label="Information"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Information"
     >
@@ -661,6 +705,8 @@ exports[`DockIconStrip — snapshots should match snapshot with some windows act
       </svg>
     </button>
     <button
+      aria-label="History"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="History"
     >
@@ -689,6 +735,8 @@ exports[`DockIconStrip — snapshots should match snapshot with some windows act
       </svg>
     </button>
     <button
+      aria-label="Terminal Logs"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Terminal Logs"
     >

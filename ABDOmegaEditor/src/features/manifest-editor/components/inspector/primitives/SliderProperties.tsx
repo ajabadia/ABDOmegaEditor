@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona y renderiza un componente para seleccionar y actualizar propiedades de un slider en el editor de manifesto OMEGA, incluyendo opciones para la longitud del fader y variantes de estilo/color.
+ * @purpose_en Manages and renders a component for selecting and updating properties of a slider in the OMEGA manifest editor, including options for fader length and style/color variants.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:3,sig:byna5p
+ * @lastUpdated 2026-06-15T11:32:05.060Z
+ */
+
 import { Box, Palette } from 'lucide-react';
 import type { ManifestEntity, OMEGA_Manifest, Presentation } from '@/omega-ui-core/types/manifest';
 import StyleLibraryLink from '../shared/StyleLibraryLink';
@@ -55,6 +65,7 @@ export default function SliderProperties({ item, manifest, onUpdate, setActiveSe
             <button
               key={s.id}
               onClick={() => updateVariant(s.id, cap)}
+              aria-label={`Select ${s.label} fader`}
               className={`p-3 border rounded-xs transition-all flex flex-col items-center gap-1 ${
                 size === s.id 
                   ? 'bg-primary/10 border-primary shadow-[0_0_15px_rgba(0,240,255,0.1)]' 
@@ -80,6 +91,7 @@ export default function SliderProperties({ item, manifest, onUpdate, setActiveSe
             <button
               key={c.id}
               onClick={() => updateVariant(size, c.id)}
+              aria-label={`Select ${c.label} cap`}
               className={`p-2 border rounded-xs transition-all flex flex-col items-center gap-2 ${
                 cap === c.id 
                   ? 'border-primary/60 bg-primary/10 text-primary' 

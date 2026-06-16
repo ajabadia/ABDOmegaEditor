@@ -1,6 +1,11 @@
 /**
- * @purpose Proporciona componentes del editor y sus props para su uso en el editor de manifest OMEGA.
- * @lastUpdated 2026-06-14T16:47:20.875Z
+ * @purpose Proporciona editores de componentes y sus propiedades para su uso en el editor de manifesto OMEGA.
+ * @purpose_en Exports component editors and their props for use in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification Type Definition
+ * @complexity Low
+ * @fingerprint exports:10,imports:0,sig:1v78wmf
+ * @lastUpdated 2026-06-15T11:29:54.676Z
  */
 
 export { ComponentEditor } from './ComponentEditor';

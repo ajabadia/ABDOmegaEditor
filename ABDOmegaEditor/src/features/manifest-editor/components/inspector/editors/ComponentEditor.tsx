@@ -1,6 +1,11 @@
 /**
- * @purpose Proporciona un editor de componentes basado en el tipo de nodo seleccionado en el editor del manifiesto OMEGA.
- * @lastUpdated 2026-06-14T16:46:36.715Z
+ * @purpose Renderiza un editor para diferentes tipos de nodos en una manifestación según su tipo de selección.
+ * @purpose_en Renders an editor for different types of nodes in a manifest based on their selection type.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:11,sig:1kzwm15
+ * @lastUpdated 2026-06-15T11:29:39.925Z
  */
 
 import type { ComponentNode, GroupNode, RackManifest } from '../../../../../omega-ui-core/types/rack';

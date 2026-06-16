@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona acciones para manifestar historia en OMEGA, incluyendo empujar registros históricos, deshacer y rehacer cambios, actualizar documentos con historia, comparar manifests y manejar entradas de merge.
+ * @purpose_en Manages actions for manifestation of history in OMEGA, including pushing history entries, undoing and redoing changes, updating documents with history, comparing manifests, and handling merge entries.
+ * @refactorable false (contains only static declarations/types/constants)
+ * @classification Custom Hook
+ * @complexity Medium
+ * @fingerprint exports:1,imports:6,sig:3ljcrd
+ * @lastUpdated 2026-06-15T13:22:09.274Z
+ */
+
 import { useCallback, useRef } from 'react';
 import type { OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
 import { calculateManifestDiff, applyDiffEntry } from '../utils/manifestDiff';

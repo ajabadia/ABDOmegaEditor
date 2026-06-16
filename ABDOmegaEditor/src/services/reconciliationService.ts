@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona el detectar y resolver divergencia de estado en OMEGA ERA 7.2.3 utilizando políticas deterministas.
+ * @purpose_en Manages the detection and resolution of state divergence in OMEGA ERA 7.2.3 using deterministic policies.
+ * @refactorable false
+ * @classification Business Service
+ * @complexity Low
+ * @fingerprint exports:1,imports:2,sig:1f406k0
+ * @lastUpdated 2026-06-15T17:03:00.510Z
+ */
+
 import type { ConflictDescriptor, ResolutionPolicy } from './reconciliationTypes';
 import { observabilityService } from './observabilityService';
 

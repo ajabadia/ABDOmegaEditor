@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona una sección colapsable para seleccionar y mostrar el plano activo de construcción en un editor de manifesto OMEGA.
+ * @purpose_en Manages a collapsible section for selecting and displaying the active construction plane in an OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:3,sig:1jygco1
+ * @lastUpdated 2026-06-15T11:38:55.773Z
+ */
+
 import { Layers } from 'lucide-react';
 import type { OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
 import InspectorCollapsible from '@/features/manifest-editor/components/inspector/shared/InspectorCollapsible';
@@ -45,6 +55,7 @@ export default function ModulePlaneSelector({ manifest, onUpdate, standalone }: 
                 }
               });
             }}
+            aria-label={`Select plane: ${plane.label}`}
             className={`flex flex-col items-center justify-center py-2 px-1 text-center transition-all border-b-2 ${
               activeTab === plane.id
                 ? 'bg-accent/15 text-accent border-accent font-black'

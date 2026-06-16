@@ -3,8 +3,11 @@
 /**
  * @purpose Renderiza una galería modal para seleccionar plantillas de módulos con opciones de búsqueda y filtrado.
  * @purpose_en Renders a modal gallery for selecting module templates with search and filter options.
- * @fingerprint exports:1,imports:4,sig:1gzvv1x
- * @lastUpdated 2026-06-15T04:58:47.459Z
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:7,sig:19hvpp0
+ * @lastUpdated 2026-06-15T20:48:15.637Z
  */
 
 
@@ -12,6 +15,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ModalCloseButton from '../modals/ModalCloseButton';
 import ModalActionButton from '../modals/ModalActionButton';
 import { Search, Grid, Layout, Cpu, Box, ChevronRight, Sparkles } from 'lucide-react';
+import { useFocusTrap } from '@/features/manifest-editor/hooks/useFocusTrap';
 import { useTemplateGallery } from '@/features/manifest-editor/hooks/useTemplateGallery';
 import type { ModuleTemplate } from '@/omega-ui-core/types/manifest';
 
@@ -21,6 +25,7 @@ interface TemplateGalleryProps {
 }
 
 export default function TemplateGallery({ onSelect, onClose }: TemplateGalleryProps) {
+  const focusTrapRef = useFocusTrap(true);
   const { 
     templates, 
     categories, 
@@ -32,7 +37,13 @@ export default function TemplateGallery({ onSelect, onClose }: TemplateGalleryPr
   } = useTemplateGallery(onSelect);
 
   return (
-    <div className="fixed inset-0 z-[2000] flex items-center justify-center p-8 bg-black/80 backdrop-blur-md">
+    <div 
+      className="fixed inset-0 z-[2000] flex items-center justify-center p-8 bg-black/80 backdrop-blur-md"
+      ref={focusTrapRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Blueprint Gallery"
+    >
       <motion.div 
         initial={{ opacity: 0, scale: 0.9, y: 40 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -66,6 +77,7 @@ export default function TemplateGallery({ onSelect, onClose }: TemplateGalleryPr
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-black/40 border wb-outline focus:border-primary/40 focus:bg-black/60 rounded-xs py-3 pl-12 pr-4 text-[11px] font-bold tracking-wider wb-text placeholder:text-white/10 outline-none transition-all"
+              aria-label="Search templates"
             />
           </div>
           <div className="flex items-center gap-2">

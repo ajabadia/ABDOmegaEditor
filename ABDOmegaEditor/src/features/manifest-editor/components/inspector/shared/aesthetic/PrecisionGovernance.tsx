@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Gestiona la precisión numérica y el estado lógico del editor de manifesto OMEGA.
+ * @purpose_en Manages numerical precision and logical state in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:1,sig:68xmou
+ * @lastUpdated 2026-06-15T11:40:52.629Z
+ */
+
 import type { OmegaStyleNode } from '@/types/manifest';
 
 interface PrecisionGovernanceProps {
@@ -28,6 +38,7 @@ export default function PrecisionGovernance({ values, capabilities, onChange }: 
                 onChange({ precision: val === '' ? undefined : parseInt(val) });
               }}
               className="w-full wb-surface-inset border wb-outline rounded-xs px-2 py-1.5 text-[8px] font-mono wb-text outline-none focus:border-accent/40 text-center"
+              aria-label="Decimal precision"
             />
           </div>
         )}

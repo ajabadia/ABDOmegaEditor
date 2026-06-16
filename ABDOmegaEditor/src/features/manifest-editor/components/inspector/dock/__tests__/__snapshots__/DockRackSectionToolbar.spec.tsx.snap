@@ -13,6 +13,8 @@ exports[`DockRackSectionToolbar — snapshots should match snapshot with all sec
     class="flex flex-col items-center gap-1.5 "
   >
     <button
+      aria-label="Toggle Identity"
+      aria-pressed="true"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]"
       title="Toggle Identity"
     >
@@ -43,6 +45,8 @@ exports[`DockRackSectionToolbar — snapshots should match snapshot with all sec
       </svg>
     </button>
     <button
+      aria-label="Toggle Essential Identity"
+      aria-pressed="true"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]"
       title="Toggle Essential Identity"
     >
@@ -71,6 +75,8 @@ exports[`DockRackSectionToolbar — snapshots should match snapshot with all sec
       </svg>
     </button>
     <button
+      aria-label="Toggle Identity Branding"
+      aria-pressed="true"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]"
       title="Toggle Identity Branding"
     >
@@ -147,6 +153,8 @@ exports[`DockRackSectionToolbar — snapshots should match snapshot with all sec
     class="flex flex-col items-center gap-1.5 overflow-y-auto max-h-[50vh]"
   >
     <button
+      aria-label="Toggle Global UI Skin"
+      aria-pressed="true"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]"
       title="Toggle Global UI Skin"
     >
@@ -193,6 +201,8 @@ exports[`DockRackSectionToolbar — snapshots should match snapshot with all sec
       </svg>
     </button>
     <button
+      aria-label="Toggle Construction Plane"
+      aria-pressed="true"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]"
       title="Toggle Construction Plane"
     >
@@ -240,6 +250,8 @@ exports[`DockRackSectionToolbar — snapshots should match snapshot with all sec
       </svg>
     </button>
     <button
+      aria-label="Toggle Module Taxonomy"
+      aria-pressed="true"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]"
       title="Toggle Module Taxonomy"
     >
@@ -268,6 +280,8 @@ exports[`DockRackSectionToolbar — snapshots should match snapshot with all sec
       </svg>
     </button>
     <button
+      aria-label="Toggle Physical Emulation Profile"
+      aria-pressed="true"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]"
       title="Toggle Physical Emulation Profile"
     >
@@ -290,6 +304,8 @@ exports[`DockRackSectionToolbar — snapshots should match snapshot with all sec
       </svg>
     </button>
     <button
+      aria-label="Toggle Aesthetics Globals"
+      aria-pressed="true"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]"
       title="Toggle Aesthetics Globals"
     >
@@ -318,6 +334,8 @@ exports[`DockRackSectionToolbar — snapshots should match snapshot with all sec
       </svg>
     </button>
     <button
+      aria-label="Toggle Aesthetics Elements"
+      aria-pressed="true"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]"
       title="Toggle Aesthetics Elements"
     >
@@ -364,6 +382,8 @@ exports[`DockRackSectionToolbar — snapshots should match snapshot with all sec
       </svg>
     </button>
     <button
+      aria-label="Toggle Architecture"
+      aria-pressed="true"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]"
       title="Toggle Architecture"
     >
@@ -396,6 +416,8 @@ exports[`DockRackSectionToolbar — snapshots should match snapshot with all sec
       </svg>
     </button>
     <button
+      aria-label="Toggle Diagnostics"
+      aria-pressed="true"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]"
       title="Toggle Diagnostics"
     >
@@ -434,6 +456,8 @@ exports[`DockRackSectionToolbar — snapshots should match snapshot with all sec
     class="flex flex-col items-center gap-1.5 "
   >
     <button
+      aria-label="Toggle Identity"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Toggle Identity"
     >
@@ -464,6 +488,8 @@ exports[`DockRackSectionToolbar — snapshots should match snapshot with all sec
       </svg>
     </button>
     <button
+      aria-label="Toggle Essential Identity"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Toggle Essential Identity"
     >
@@ -492,6 +518,8 @@ exports[`DockRackSectionToolbar — snapshots should match snapshot with all sec
       </svg>
     </button>
     <button
+      aria-label="Toggle Identity Branding"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Toggle Identity Branding"
     >
@@ -568,6 +596,8 @@ exports[`DockRackSectionToolbar — snapshots should match snapshot with all sec
     class="flex flex-col items-center gap-1.5 overflow-y-auto max-h-[50vh]"
   >
     <button
+      aria-label="Toggle Global UI Skin"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Toggle Global UI Skin"
     >
@@ -614,6 +644,8 @@ exports[`DockRackSectionToolbar — snapshots should match snapshot with all sec
       </svg>
     </button>
     <button
+      aria-label="Toggle Construction Plane"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Toggle Construction Plane"
     >
@@ -661,6 +693,8 @@ exports[`DockRackSectionToolbar — snapshots should match snapshot with all sec
       </svg>
     </button>
     <button
+      aria-label="Toggle Module Taxonomy"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Toggle Module Taxonomy"
     >
@@ -689,6 +723,8 @@ exports[`DockRackSectionToolbar — snapshots should match snapshot with all sec
       </svg>
     </button>
     <button
+      aria-label="Toggle Physical Emulation Profile"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Toggle Physical Emulation Profile"
     >
@@ -711,6 +747,8 @@ exports[`DockRackSectionToolbar — snapshots should match snapshot with all sec
       </svg>
     </button>
     <button
+      aria-label="Toggle Aesthetics Globals"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Toggle Aesthetics Globals"
     >
@@ -739,6 +777,8 @@ exports[`DockRackSectionToolbar — snapshots should match snapshot with all sec
       </svg>
     </button>
     <button
+      aria-label="Toggle Aesthetics Elements"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Toggle Aesthetics Elements"
     >
@@ -785,6 +825,8 @@ exports[`DockRackSectionToolbar — snapshots should match snapshot with all sec
       </svg>
     </button>
     <button
+      aria-label="Toggle Architecture"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Toggle Architecture"
     >
@@ -817,6 +859,8 @@ exports[`DockRackSectionToolbar — snapshots should match snapshot with all sec
       </svg>
     </button>
     <button
+      aria-label="Toggle Diagnostics"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Toggle Diagnostics"
     >
@@ -855,6 +899,8 @@ exports[`DockRackSectionToolbar — snapshots should match snapshot with mixed a
     class="flex flex-col items-center gap-1.5 "
   >
     <button
+      aria-label="Toggle Identity"
+      aria-pressed="true"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]"
       title="Toggle Identity"
     >
@@ -885,6 +931,8 @@ exports[`DockRackSectionToolbar — snapshots should match snapshot with mixed a
       </svg>
     </button>
     <button
+      aria-label="Toggle Essential Identity"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Toggle Essential Identity"
     >
@@ -913,6 +961,8 @@ exports[`DockRackSectionToolbar — snapshots should match snapshot with mixed a
       </svg>
     </button>
     <button
+      aria-label="Toggle Identity Branding"
+      aria-pressed="true"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]"
       title="Toggle Identity Branding"
     >
@@ -989,6 +1039,8 @@ exports[`DockRackSectionToolbar — snapshots should match snapshot with mixed a
     class="flex flex-col items-center gap-1.5 overflow-y-auto max-h-[50vh]"
   >
     <button
+      aria-label="Toggle Global UI Skin"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Toggle Global UI Skin"
     >
@@ -1035,6 +1087,8 @@ exports[`DockRackSectionToolbar — snapshots should match snapshot with mixed a
       </svg>
     </button>
     <button
+      aria-label="Toggle Construction Plane"
+      aria-pressed="true"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]"
       title="Toggle Construction Plane"
     >
@@ -1082,6 +1136,8 @@ exports[`DockRackSectionToolbar — snapshots should match snapshot with mixed a
       </svg>
     </button>
     <button
+      aria-label="Toggle Module Taxonomy"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Toggle Module Taxonomy"
     >
@@ -1110,6 +1166,8 @@ exports[`DockRackSectionToolbar — snapshots should match snapshot with mixed a
       </svg>
     </button>
     <button
+      aria-label="Toggle Physical Emulation Profile"
+      aria-pressed="true"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]"
       title="Toggle Physical Emulation Profile"
     >
@@ -1132,6 +1190,8 @@ exports[`DockRackSectionToolbar — snapshots should match snapshot with mixed a
       </svg>
     </button>
     <button
+      aria-label="Toggle Aesthetics Globals"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Toggle Aesthetics Globals"
     >
@@ -1160,6 +1220,8 @@ exports[`DockRackSectionToolbar — snapshots should match snapshot with mixed a
       </svg>
     </button>
     <button
+      aria-label="Toggle Aesthetics Elements"
+      aria-pressed="true"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]"
       title="Toggle Aesthetics Elements"
     >
@@ -1206,6 +1268,8 @@ exports[`DockRackSectionToolbar — snapshots should match snapshot with mixed a
       </svg>
     </button>
     <button
+      aria-label="Toggle Architecture"
+      aria-pressed="false"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
       title="Toggle Architecture"
     >
@@ -1238,6 +1302,8 @@ exports[`DockRackSectionToolbar — snapshots should match snapshot with mixed a
       </svg>
     </button>
     <button
+      aria-label="Toggle Diagnostics"
+      aria-pressed="true"
       class="flex items-center justify-center rounded-xs transition-all w-7 h-7 bg-primary/20 text-primary border border-primary/20 shadow-[0_0_8px_rgba(var(--primary-rgb),0.1)]"
       title="Toggle Diagnostics"
     >

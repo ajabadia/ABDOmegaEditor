@@ -1,3 +1,13 @@
+/**
+ * @purpose Renderiza una interfaz de usuario para editar recetas de capas en un editor de manifesto OMEGA, permitiendo a los usuarios agregar, eliminar, reordenar y modificar capas.
+ * @purpose_en Renders a user interface for editing layer recipes in an OMEGA manifest editor, allowing users to add, remove, reorder, and modify layers.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:2,sig:egbf7b
+ * @lastUpdated 2026-06-15T12:47:14.839Z
+ */
+
 import type { LayerRecipe, LayerRecipeItem } from '@/omega-ui-core/types/assetBehavior';
 import { Target, Layers, Eye, EyeOff, Lock, Unlock, ChevronUp, ChevronDown, Trash2, Image as ImageIcon, Plus } from 'lucide-react';
  
@@ -60,6 +70,8 @@ export default function LayerRecipeEditor({
         </div>
         <button 
           onClick={addLayer}
+          aria-label="Add new layer"
+          title="Add new layer"
           className="flex items-center gap-1.5 px-3 py-1 bg-accent/10 border border-accent/30 rounded text-[8px] font-black uppercase text-accent hover:bg-accent/20 transition-all"
         >
           <Plus className="w-3 h-3" /> Add Layer
@@ -83,6 +95,8 @@ export default function LayerRecipeEditor({
               <button 
                 disabled={index === 0}
                 onClick={() => moveLayer(index, 'up')}
+                aria-label="Move layer up"
+                title="Move layer up"
                 className="p-1 hover:bg-accent/20 rounded text-white/10 hover:text-accent disabled:opacity-0 transition-all"
               >
                 <ChevronUp className="w-3 h-3" />
@@ -90,6 +104,8 @@ export default function LayerRecipeEditor({
               <button 
                 disabled={index === recipe.layers.length - 1}
                 onClick={() => moveLayer(index, 'down')}
+                aria-label="Move layer down"
+                title="Move layer down"
                 className="p-1 hover:bg-accent/20 rounded text-white/10 hover:text-accent disabled:opacity-0 transition-all"
               >
                 <ChevronDown className="w-3 h-3" />
@@ -100,12 +116,15 @@ export default function LayerRecipeEditor({
             <div className="flex flex-col items-center gap-2">
               <button 
                 onClick={() => updateLayer(layer.id, { visible: !layer.visible })}
+                aria-label={layer.visible ? 'Hide layer' : 'Show layer'}
+                title={layer.visible ? 'Hide layer' : 'Show layer'}
                 className={`p-1.5 rounded-full transition-all ${layer.visible ? 'text-accent bg-accent/5' : 'text-white/20'}`}
               >
                 {layer.visible ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
               </button>
               <button 
                 onClick={() => onSoloChange?.(soloLayerId === layer.id ? null : layer.id)}
+                aria-label="Solo layer"
                 className={`p-1.5 rounded-full transition-all ${soloLayerId === layer.id ? 'text-accent bg-accent/20 font-black' : 'text-white/20 hover:text-accent/40'}`}
                 title="Solo Layer"
               >
@@ -113,6 +132,8 @@ export default function LayerRecipeEditor({
               </button>
               <button 
                 onClick={() => updateLayer(layer.id, { locked: !layer.locked })}
+                aria-label={layer.locked ? 'Unlock layer' : 'Lock layer'}
+                title={layer.locked ? 'Unlock layer' : 'Lock layer'}
                 className={`p-1.5 rounded-full transition-all ${layer.locked ? 'text-amber-500 bg-amber-500/5' : 'text-white/20'}`}
               >
                 {layer.locked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
@@ -128,6 +149,7 @@ export default function LayerRecipeEditor({
                         value={layer.name}
                         onChange={(e) => updateLayer(layer.id, { name: e.target.value })}
                         className="bg-transparent border-b border-transparent focus:border-accent/40 text-[9px] font-black uppercase text-white outline-none w-32"
+                        aria-label="Layer name"
                       />
                       <span className={`text-[6px] font-black uppercase px-1.5 py-0.5 rounded ${
                         layer.role === 'base' ? 'bg-accent text-black' : 
@@ -152,6 +174,8 @@ export default function LayerRecipeEditor({
                 <div className="flex-1" />
                 <button 
                   onClick={() => onSelectAsset(layer.id)}
+                  aria-label="Select layer asset"
+                  title="Select layer asset"
                   className={`flex items-center gap-2 px-3 py-1 rounded text-[8px] font-black uppercase transition-all ${layer.assetId ? 'bg-white/5 border border-white/10 text-white' : 'bg-accent/10 border border-accent/20 text-accent animate-pulse'}`}
                 >
                   <ImageIcon className="w-3 h-3" />
@@ -167,6 +191,7 @@ export default function LayerRecipeEditor({
                     value={layer.opacity ?? 1}
                     onChange={(e) => updateLayer(layer.id, { opacity: parseFloat(e.target.value) })}
                     className="flex-1 accent-accent h-1 bg-white/5 rounded-full appearance-none"
+                    aria-label="Layer opacity"
                   />
                   <span className="text-[6px] font-mono opacity-40 w-6">{( (layer.opacity ?? 1) * 100).toFixed(0)}%</span>
                 </div>
@@ -189,6 +214,8 @@ export default function LayerRecipeEditor({
             {/* DELETE */}
             <button 
               onClick={() => removeLayer(layer.id)}
+              aria-label="Delete layer"
+              title="Delete layer"
               className="p-2 hover:bg-red-500/10 rounded-full text-white/10 hover:text-red-400 transition-all"
             >
               <Trash2 className="w-3.5 h-3.5" />

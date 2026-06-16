@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Renderiza una sección que muestra métricas del estado industrial y la preparación del sistema con opciones de despliegue.
- * @lastUpdated 2026-06-14T16:37:56.151Z
+ * @purpose Renderiza una sección que muestra métricas industriales y estado del sistema con opciones de despliegue.
+ * @purpose_en Renders a section displaying industrial metrics and system status with deployment options.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:3,sig:uvvw3f
+ * @lastUpdated 2026-06-15T11:03:29.005Z
  */
 
 import { motion } from 'framer-motion';
@@ -58,6 +63,7 @@ export default function IndustrialStatusSection({ metrics, sysReady, onDeploy }:
       <div className="space-y-2">
          <button 
            onClick={onDeploy}
+           aria-label="Deploy to engine"
            className={`w-full flex items-center justify-center gap-3 p-4 rounded-sm transition-all shadow-xl group relative overflow-hidden ${sysReady ? 'bg-accent text-white hover:scale-[1.02]' : 'bg-black/5 wb-text-muted border wb-outline hover:bg-black/10'}`}
          >
             <Zap className={`w-4 h-4 ${sysReady ? 'fill-white' : ''} group-hover:scale-125 transition-transform`} />

@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Renderiza un componente para seleccionar propiedades mecánicas y de coloración en el editor de manifesto OMEGA.
+ * @purpose_en Renders a component for selecting mechanical and coloration properties in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:3,sig:igna2x
+ * @lastUpdated 2026-06-15T11:32:08.389Z
+ */
+
 import { ToggleLeft, Palette } from 'lucide-react';
 
 import type { ManifestEntity, OMEGA_Manifest, Presentation } from '@/omega-ui-core/types/manifest';
@@ -57,6 +67,7 @@ export default function SwitchProperties({ item, manifest, onUpdate, setActiveSe
             <button
               key={s.id}
               onClick={() => updateVariant(s.id, color)}
+              aria-label={`Select switch style: ${s.label}`}
               className={`w-full p-3 border rounded-xs transition-all flex flex-col items-start gap-1 group relative overflow-hidden ${
                 style === s.id 
                   ? 'bg-primary/10 border-primary shadow-[0_0_15px_rgba(0,240,255,0.1)]' 
@@ -86,6 +97,7 @@ export default function SwitchProperties({ item, manifest, onUpdate, setActiveSe
             <button
               key={c.id}
               onClick={() => updateVariant(style, c.id)}
+              aria-label={`Select switch color: ${c.label}`}
               className={`p-2 border rounded-xs transition-all flex items-center gap-2 ${
                 color === c.id 
                   ? 'border-primary/60 bg-primary/10 text-primary' 

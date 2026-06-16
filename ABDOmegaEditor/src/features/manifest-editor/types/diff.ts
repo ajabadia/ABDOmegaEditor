@@ -1,4 +1,14 @@
 /**
+ * @purpose Gestiona contratos de datos y interfaces para comparar manifestos estructurales en el editor de manifesto OMEGA.
+ * @purpose_en Defines data contracts and interfaces for managing structural manifest comparisons in the OMEGA manifest editor.
+ * @refactorable false
+ * @classification Type Definition
+ * @complexity Low
+ * @fingerprint exports:4,imports:0,sig:1ku1xv7
+ * @lastUpdated 2026-06-15T15:16:27.928Z
+ */
+
+/**
  * OMEGA Diff System (Phase 9.2)
  * Data contracts for structural manifest comparison.
  */

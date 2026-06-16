@@ -1,5 +1,15 @@
 'use client';
- 
+
+/**
+ * @purpose Renderiza una celda para ajustar los parámetros de modulación en el editor de manifesto OMEGA, permitiendo a los usuarios interactuar y actualizar las cantidades de modulación.
+ * @purpose_en Renders a cell for adjusting modulation parameters in the OMEGA manifest editor, allowing users to interactively toggle and update modulation amounts.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:3,sig:esr9v9
+ * @lastUpdated 2026-06-15T12:50:26.336Z
+ */
+
 import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
 import type { OMEGA_Modulation } from '@/types/manifest';

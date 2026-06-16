@@ -1,3 +1,13 @@
+/**
+ * @purpose Renderiza un componente LED basado en sus propiedades y estilo.
+ * @purpose_en Renders a LED component based on its properties and style.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:2,imports:2,sig:1a01rjc
+ * @lastUpdated 2026-06-15T16:08:44.611Z
+ */
+
 import React from 'react';
 import type { ComponentStyle, BindConfig } from '../../types/rack';
 

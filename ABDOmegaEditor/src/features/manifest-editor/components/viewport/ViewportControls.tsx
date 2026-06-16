@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * @purpose Renderiza una barra de herramientas flotante para la navegación del viewport en el editor de manifesto OMEGA, incluyendo controles de zoom, botones de panning, ajuste a pantalla y bastidores.
+ * @purpose_en Renders a floating toolbar for viewport navigation in the OMEGA manifest editor, including zoom controls, pan buttons, fit to screen, and rack view rulers.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:1,sig:ksoqc2
+ * @lastUpdated 2026-06-15T13:01:49.420Z
+ */
+
 import { Plus, Minus, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Maximize, Target, Ruler } from 'lucide-react';
 
 interface ViewportControlsProps {
@@ -47,23 +57,23 @@ export default function ViewportControls({ zoom, onZoom, onPan, onReset, onFit, 
       <div className="flex items-center wb-surface backdrop-blur-md border wb-outline rounded-xs p-1 shadow-2xl transition-colors duration-500">
         <div className="grid grid-cols-3 grid-rows-3 gap-1">
           <div />
-          <button onClick={() => onPan(0, 50)} className="p-1.5 hover:bg-primary/10 wb-text-muted hover:text-primary transition-all rounded-xs">
+          <button onClick={() => onPan(0, 50)} className="p-1.5 hover:bg-primary/10 wb-text-muted hover:text-primary transition-all rounded-xs" title="Pan Up">
             <ChevronUp className="w-4 h-4" />
           </button>
           <div />
           
-          <button onClick={() => onPan(50, 0)} className="p-1.5 hover:bg-primary/10 wb-text-muted hover:text-primary transition-all rounded-xs">
+          <button onClick={() => onPan(50, 0)} className="p-1.5 hover:bg-primary/10 wb-text-muted hover:text-primary transition-all rounded-xs" title="Pan Left">
             <ChevronLeft className="w-4 h-4" />
           </button>
           <button onClick={onReset} className="p-1.5 hover:bg-primary/10 text-primary transition-all rounded-xs shadow-[0_0_10px_rgba(0,240,255,0.2)]" title="Center View">
             <Target className="w-4 h-4" />
           </button>
-          <button onClick={() => onPan(-50, 0)} className="p-1.5 hover:bg-primary/10 wb-text-muted hover:text-primary transition-all rounded-xs">
+          <button onClick={() => onPan(-50, 0)} className="p-1.5 hover:bg-primary/10 wb-text-muted hover:text-primary transition-all rounded-xs" title="Pan Right">
             <ChevronRight className="w-4 h-4" />
           </button>
 
           <div />
-          <button onClick={() => onPan(0, -50)} className="p-1.5 hover:bg-primary/10 wb-text-muted hover:text-primary transition-all rounded-xs">
+          <button onClick={() => onPan(0, -50)} className="p-1.5 hover:bg-primary/10 wb-text-muted hover:text-primary transition-all rounded-xs" title="Pan Down">
             <ChevronDown className="w-4 h-4" />
           </button>
           <button onClick={onFit} className="p-1.5 hover:bg-accent/10 text-accent transition-all rounded-xs" title="Fit to Screen">

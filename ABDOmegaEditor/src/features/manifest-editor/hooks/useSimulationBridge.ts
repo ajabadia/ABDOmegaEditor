@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona actualizaciones de parámetros en tiempo real y sincronización debuncada de estructura entre el estado del autor de React y el ejecutable WASM en el editor de manifesto OMEGA.
+ * @purpose_en Manages real-time parameter updates and debounced structural synchronization between the React authoring state and the WASM execution runtime in OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Custom Hook
+ * @complexity Medium
+ * @fingerprint exports:3,imports:6,sig:4i9iu0
+ * @lastUpdated 2026-06-15T13:22:50.172Z
+ */
+
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import type { OMEGA_Manifest, OMEGA_Contract } from '@/omega-ui-core/types/manifest';
 import type { OmegaContract } from '@/services/wasmLoader';

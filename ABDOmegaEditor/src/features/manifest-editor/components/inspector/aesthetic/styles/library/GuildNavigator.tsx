@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * @purpose Proporciona un componente de navegación para seleccionar diferentes categorías en el editor del manifiesto OMEGA, permitiendo a los usuarios cambiar entre ver todos los elementos y categorías específicas.
- * @lastUpdated 2026-06-14T16:39:54.564Z
+ * @purpose Renderiza un componente de navegación para seleccionar categorías en el editor de manifesto OMEGA, permitiendo a los usuarios cambiar entre ver todos los elementos y categorías específicas.
+ * @purpose_en Renders a navigation component for selecting categories in the OMEGA manifest editor, allowing users to switch between viewing all elements and specific categories.
+ * @refactorable false
+ * @classification UI Component
+ * @complexity Low
+ * @fingerprint exports:1,imports:1,sig:7laguu
+ * @lastUpdated 2026-06-15T11:04:19.561Z
  */
 
 import type { ElementCategory } from '@/omega-ui-core/governance/ElementCatalog';

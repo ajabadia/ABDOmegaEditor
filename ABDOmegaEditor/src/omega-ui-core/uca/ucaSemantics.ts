@@ -1,3 +1,13 @@
+/**
+ * @purpose Gestiona semánticas de nodo expandiendo plantillas, aplicando overrides y heredando estilos recursivamente.
+ * @purpose_en Manages node semantics by expanding templates, applying overrides, and inheriting styles recursively.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification Helper Utility
+ * @complexity Medium
+ * @fingerprint exports:2,imports:2,sig:ridrya
+ * @lastUpdated 2026-06-15T16:54:38.615Z
+ */
+
 import type { OmegaNode, CellTemplate, OmegaStyleNode, ModuleTemplate } from '../types/manifest';
 import { mergeWithOverrides, applySlotMappings } from './treeUtils';
 

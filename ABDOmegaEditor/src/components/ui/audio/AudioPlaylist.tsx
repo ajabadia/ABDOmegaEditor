@@ -1,6 +1,11 @@
 /**
- * @purpose Componente que muestra una lista de pistas de audio y permite al usuario seleccionar una pista para reproducir.
- * @lastUpdated 2026-06-14T15:28:04.934Z
+ * @purpose Renderiza un componente UI para mostrar y seleccionar pistas de audio en un editor de manifesto OMEGA.
+ * @purpose_en Renders a UI component for displaying and selecting audio tracks in an OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:4,sig:t46ewr
+ * @lastUpdated 2026-06-16T17:35:25.747Z
  */
 
 import { Play, Activity } from "lucide-react";
@@ -46,6 +51,7 @@ export function AudioPlaylist({ tracks, currentTrack, isPlaying, onTrackSelect, 
                 ? "bg-primary/5 border-primary/40 text-white"
                 : "bg-white/[0.02] border-white/5 text-zinc-500 hover:bg-white/[0.05] hover:border-white/10"
             )}
+            aria-label={`Select track: ${track.name}`}
           >
             {track.cover ? (
               <div className="relative w-10 h-10 shrink-0 rounded-sm overflow-hidden border border-white/10">
