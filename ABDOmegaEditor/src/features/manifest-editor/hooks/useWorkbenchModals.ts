@@ -67,7 +67,7 @@ export function useWorkbenchModals(
     } else {
       // AuditModal removed — compliance window toggled elsewhere
     }
-  }, [onOpenAudit, actions]);
+  }, [onOpenAudit]);
 
   // Cell Editor Open Handler - Connected to modern CellStudioContainer (setStudioMode)
   const handleOpenCellEditor = useCallback(() => {

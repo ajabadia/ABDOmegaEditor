@@ -161,13 +161,12 @@ export default function RulerOverlay({
     const z = zoom ?? 1;
     const tickStepPx = TICK_MINOR * z;
 
-    const origin = baseRackPos;
-  const startVal = Math.floor((RULER_SIZE - origin.x) / tickStepPx) * TICK_MINOR;;
-    const endVal = Math.ceil((w + RULER_SIZE - origin.x) / z);
+  const startVal = Math.floor((RULER_SIZE - baseRackPos.x) / tickStepPx) * TICK_MINOR;
+    const endVal = Math.ceil((w + RULER_SIZE - baseRackPos.x) / z);
 
     ctx.textAlign = 'center';
     for (let dv = startVal; dv <= endVal; dv += TICK_MINOR) {
-      const canvasX = origin.x + dv * z - RULER_SIZE;
+      const canvasX = baseRackPos.x + dv * z - RULER_SIZE;
       if (canvasX < -tickStepPx || canvasX > w + tickStepPx) continue;
       const isMajor = dv % TICK_MAJOR === 0;
       const tickH = isMajor ? 10 : 4;
@@ -185,7 +184,7 @@ export default function RulerOverlay({
     }
 
     if (creating?.orientation === 'horizontal') {
-      const canvasY = origin.y + creating.pos * z - toolbarHeight - RULER_SIZE;
+      const canvasY = baseRackPos.y + creating.pos * z - toolbarHeight - RULER_SIZE;
       ctx.fillStyle = 'rgba(0, 180, 255, 0.6)';
       ctx.fillRect(canvasY, 0, 2, RULER_SIZE);
     }
@@ -226,11 +225,11 @@ export default function RulerOverlay({
     const z = zoom ?? 1;
     const tickStepPx = TICK_MINOR * z;
 
-    const startVal = Math.floor((toolbarHeight + RULER_SIZE - origin.y) / tickStepPx) * TICK_MINOR;
-    const endVal = Math.ceil((h + toolbarHeight + RULER_SIZE - origin.y) / z);
+    const startVal = Math.floor((toolbarHeight + RULER_SIZE - baseRackPos.y) / tickStepPx) * TICK_MINOR;
+    const endVal = Math.ceil((h + toolbarHeight + RULER_SIZE - baseRackPos.y) / z);
 
     for (let dv = startVal; dv <= endVal; dv += TICK_MINOR) {
-      const canvasY = origin.y + dv * z - toolbarHeight - RULER_SIZE;
+      const canvasY = baseRackPos.y + dv * z - toolbarHeight - RULER_SIZE;
       if (canvasY < -tickStepPx || canvasY > h + tickStepPx) continue;
       const isMajor = dv % TICK_MAJOR === 0;
       const tickW = isMajor ? 10 : 4;
@@ -253,7 +252,7 @@ export default function RulerOverlay({
     }
 
     if (creating?.orientation === 'vertical') {
-      const canvasX = origin.x + creating.pos * z - RULER_SIZE;
+      const canvasX = baseRackPos.x + creating.pos * z - RULER_SIZE;
       ctx.fillStyle = 'rgba(0, 180, 255, 0.6)';
       ctx.fillRect(0, canvasX, RULER_SIZE, 2);
     }
@@ -272,7 +271,7 @@ export default function RulerOverlay({
     const origin = baseRackPosRef.current;
     const rackY = (e.clientY - sr.top - origin.y) / z;
     setCreating({ orientation: 'horizontal', pos: Math.round(rackY), inZone: false });
-  }, [showGuides, rackWidth, rackHeight]);
+  }, [showGuides]);
 
   const handleVerticalRulerMouseDown = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!showGuides) return;
@@ -284,7 +283,7 @@ export default function RulerOverlay({
     const origin = baseRackPosRef.current;
     const rackX = (e.clientX - sr.left - origin.x) / z;
     setCreating({ orientation: 'vertical', pos: Math.round(rackX), inZone: false });
-  }, [showGuides, rackWidth, rackHeight]);
+  }, [showGuides]);
 
   // ──────────────────────────────────────────────
   // DRAGGING existing guides
