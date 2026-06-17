@@ -262,7 +262,7 @@
   --wb-surface-inset: #1a1a1c;
   --wb-outline: rgba(255, 255, 255, 0.08);
   --wb-text: #e0e0e0;
-  --wb-text-muted: rgba(255, 255, 255, 0.4);
+  --wb-text-muted: rgba(255, 255, 255, 0.55);
   --wb-bloom: rgba(0, 240, 255, 0.3);
   --wb-primary: #00f0ff;
   --wb-accent: #ff8c00;
@@ -319,6 +319,13 @@
   --color-accent: #d97706;
   --color-foreground: #f0e6d3;
   --color-background: #0a0804;
+  --wb-outline: rgba(245, 158, 11, 0.15);
+  --wb-primary: #f59e0b;
+  --primary-rgb: 245, 158, 11;
+  --wb-text: #f0e0c8;
+  --wb-text-muted: rgba(240, 224, 200, 0.6);
+  --wb-bg: #0a0804;
+  --wb-surface: #0f0c06;
 }
 
 /* ═══════════════════════════════════════════════
@@ -329,6 +336,13 @@
   --color-accent: #a855f7;
   --color-foreground: #f0e6ff;
   --color-background: #05000a;
+  --wb-outline: rgba(168, 85, 247, 0.2);
+  --wb-primary: #ff2d95;
+  --primary-rgb: 255, 45, 149;
+  --wb-text: #f0e6ff;
+  --wb-text-muted: rgba(240, 230, 255, 0.55);
+  --wb-bg: #05000a;
+  --wb-surface: #0a0014;
 }
 
 /* ═══════════════════════════════════════════════
@@ -339,6 +353,13 @@
   --color-accent: #00ff88;
   --color-foreground: #ffffff;
   --color-background: #000000;
+  --wb-outline: rgba(255, 255, 255, 0.35);
+  --wb-primary: #ffffff;
+  --primary-rgb: 255, 255, 255;
+  --wb-text: #ffffff;
+  --wb-text-muted: rgba(255, 255, 255, 0.8);
+  --wb-bg: #000000;
+  --wb-surface: #0a0a0a;
 }
 
 .wb-bg { background-color: var(--wb-bg) !important; }

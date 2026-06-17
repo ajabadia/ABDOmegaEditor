@@ -115,7 +115,7 @@ function ToastContainer({ toasts, onDismiss }: ToastContainerProps) {
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none max-w-[380px] w-full">
+    <div className="fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none max-w-[380px] w-full" role="status" aria-live="polite" aria-label="Notifications">
       <AnimatePresence mode="popLayout">
         {toasts.map((toast) => {
           const style = VARIANT_STYLES[toast.variant];

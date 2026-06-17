@@ -3,6 +3,7 @@
 exports[`WorkbenchFooter — snapshots should match snapshot for all props set (maximal state) 1`] = `
 <footer
   class="h-6 border-t wb-outline wb-surface flex items-center justify-between px-4 z-50 shrink-0 transition-colors duration-500 select-none"
+  role="contentinfo"
 >
   <div
     class="flex items-center gap-3 text-[7px] font-mono uppercase tracking-[0.2em] text-foreground/20 min-w-0"
@@ -287,7 +288,10 @@ exports[`WorkbenchFooter — snapshots should match snapshot for all props set (
     </div>
   </div>
   <div
+    aria-label="Status indicators"
+    aria-live="polite"
     class="flex items-center justify-end gap-3 text-[7px] font-mono uppercase tracking-[0.2em] text-foreground/20 min-w-0"
+    role="status"
   >
     <button
       aria-label="No history"
@@ -516,6 +520,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for all props set (
 exports[`WorkbenchFooter — snapshots should match snapshot for clean state with save timestamp, warnings only 1`] = `
 <footer
   class="h-6 border-t wb-outline wb-surface flex items-center justify-between px-4 z-50 shrink-0 transition-colors duration-500 select-none"
+  role="contentinfo"
 >
   <div
     class="flex items-center gap-3 text-[7px] font-mono uppercase tracking-[0.2em] text-foreground/20 min-w-0"
@@ -773,7 +778,10 @@ exports[`WorkbenchFooter — snapshots should match snapshot for clean state wit
     </div>
   </div>
   <div
+    aria-label="Status indicators"
+    aria-live="polite"
     class="flex items-center justify-end gap-3 text-[7px] font-mono uppercase tracking-[0.2em] text-foreground/20 min-w-0"
+    role="status"
   >
     <button
       aria-label="No history"
@@ -1000,6 +1008,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for clean state wit
 exports[`WorkbenchFooter — snapshots should match snapshot for default state (clean, idle, no errors) 1`] = `
 <footer
   class="h-6 border-t wb-outline wb-surface flex items-center justify-between px-4 z-50 shrink-0 transition-colors duration-500 select-none"
+  role="contentinfo"
 >
   <div
     class="flex items-center gap-3 text-[7px] font-mono uppercase tracking-[0.2em] text-foreground/20 min-w-0"
@@ -1257,7 +1266,10 @@ exports[`WorkbenchFooter — snapshots should match snapshot for default state (
     </div>
   </div>
   <div
+    aria-label="Status indicators"
+    aria-live="polite"
     class="flex items-center justify-end gap-3 text-[7px] font-mono uppercase tracking-[0.2em] text-foreground/20 min-w-0"
+    role="status"
   >
     <button
       aria-label="No history"
@@ -1439,6 +1451,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for default state (
 exports[`WorkbenchFooter — snapshots should match snapshot for dirty state with errors and watchdog connected 1`] = `
 <footer
   class="h-6 border-t wb-outline wb-surface flex items-center justify-between px-4 z-50 shrink-0 transition-colors duration-500 select-none"
+  role="contentinfo"
 >
   <div
     class="flex items-center gap-3 text-[7px] font-mono uppercase tracking-[0.2em] text-foreground/20 min-w-0"
@@ -1709,7 +1722,10 @@ exports[`WorkbenchFooter — snapshots should match snapshot for dirty state wit
     </div>
   </div>
   <div
+    aria-label="Status indicators"
+    aria-live="polite"
     class="flex items-center justify-end gap-3 text-[7px] font-mono uppercase tracking-[0.2em] text-foreground/20 min-w-0"
+    role="status"
   >
     <button
       aria-label="No history"
@@ -1937,6 +1953,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for dirty state wit
 exports[`WorkbenchFooter — snapshots should match snapshot for error watchdog with marquee tool 1`] = `
 <footer
   class="h-6 border-t wb-outline wb-surface flex items-center justify-between px-4 z-50 shrink-0 transition-colors duration-500 select-none"
+  role="contentinfo"
 >
   <div
     class="flex items-center gap-3 text-[7px] font-mono uppercase tracking-[0.2em] text-foreground/20 min-w-0"
@@ -2215,7 +2232,10 @@ exports[`WorkbenchFooter — snapshots should match snapshot for error watchdog 
     </div>
   </div>
   <div
+    aria-label="Status indicators"
+    aria-live="polite"
     class="flex items-center justify-end gap-3 text-[7px] font-mono uppercase tracking-[0.2em] text-foreground/20 min-w-0"
+    role="status"
   >
     <button
       aria-label="No history"
@@ -2393,6 +2413,7 @@ exports[`WorkbenchFooter — snapshots should match snapshot for error watchdog 
 exports[`WorkbenchFooter — snapshots should match snapshot for saved with timestamp, no errors, watchdog idle 1`] = `
 <footer
   class="h-6 border-t wb-outline wb-surface flex items-center justify-between px-4 z-50 shrink-0 transition-colors duration-500 select-none"
+  role="contentinfo"
 >
   <div
     class="flex items-center gap-3 text-[7px] font-mono uppercase tracking-[0.2em] text-foreground/20 min-w-0"
@@ -2650,7 +2671,10 @@ exports[`WorkbenchFooter — snapshots should match snapshot for saved with time
     </div>
   </div>
   <div
+    aria-label="Status indicators"
+    aria-live="polite"
     class="flex items-center justify-end gap-3 text-[7px] font-mono uppercase tracking-[0.2em] text-foreground/20 min-w-0"
+    role="status"
   >
     <button
       aria-label="No history"

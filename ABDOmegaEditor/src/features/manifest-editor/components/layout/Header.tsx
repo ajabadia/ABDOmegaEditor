@@ -85,7 +85,7 @@ interface HeaderProps {
  
 export default function Header(props: HeaderProps) {
   return (
-    <header className="h-11 border-b wb-outline wb-surface backdrop-blur-md flex items-center justify-between px-6 z-[100] shrink-0 transition-colors duration-500">
+    <header role="banner" className="h-11 border-b wb-outline wb-surface backdrop-blur-md flex items-center justify-between px-6 z-[100] shrink-0 transition-colors duration-500">
       {/* LEFT: ENGINEERING MENUS */}
       <div className="flex-1 flex items-center gap-4">
         <MenuBar 

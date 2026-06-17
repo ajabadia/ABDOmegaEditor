@@ -16,6 +16,7 @@ import {
   Compass, Layout, Layers, Zap, Shield, Keyboard,
   ChevronRight, ChevronLeft, X, Check,
 } from 'lucide-react';
+import { useFocusTrap } from '@/features/manifest-editor/hooks/useFocusTrap';
 
 // ── Steps Data ─────────────────────────────────────────────────────────
 
@@ -128,6 +129,7 @@ export default function OnboardingWalkthrough({
 }: OnboardingWalkthroughProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [tooltipPos, setTooltipPos] = useState({ top: 0, left: 0 });
+  const overlayRef = useFocusTrap(isOpen);
 
   const step = TOUR_STEPS[currentStep];
   const isFirst = currentStep === 0;
@@ -202,7 +204,17 @@ export default function OnboardingWalkthrough({
   return (
     <AnimatePresence>
       {isOpen && (
-        <>
+        <motion.div
+          ref={overlayRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Onboarding walkthrough"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="fixed inset-0 z-[9998]"
+        >
           {/* Backdrop */}
           <motion.div
             key="backdrop"
@@ -210,7 +222,7 @@ export default function OnboardingWalkthrough({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[9998] bg-black/50 backdrop-blur-sm pointer-events-auto"
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm pointer-events-auto"
             onClick={handleSkip}
           />
 
@@ -223,7 +235,7 @@ export default function OnboardingWalkthrough({
               interfering with framer-motion transforms on the inner div */}
           <div
             key="tooltip-wrapper"
-            className={`fixed z-[9999] ${
+            className={`fixed z-[1] ${
               isCentered
                 ? 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2'
                 : '-translate-x-1/2'
@@ -334,7 +346,7 @@ export default function OnboardingWalkthrough({
               </div>
             </motion.div>
           </div>
-        </>
+        </motion.div>
       )}
     </AnimatePresence>
   );

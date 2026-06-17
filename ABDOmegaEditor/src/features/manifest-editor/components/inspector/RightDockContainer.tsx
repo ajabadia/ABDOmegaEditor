@@ -180,7 +180,7 @@ export default function RightDockContainer(props: RightDockContainerProps) {
   };
 
   return (
-    <div className="h-full flex flex-row select-none">
+    <div className="h-full flex flex-row select-none" role="complementary" aria-label="Inspector panels">
 
       {/* 1. DOCK EXPANDED CONTENT DRAWER — uses react-resizable-panels */}
       <div

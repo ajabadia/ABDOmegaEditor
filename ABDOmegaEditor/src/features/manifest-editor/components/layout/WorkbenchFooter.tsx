@@ -87,7 +87,7 @@ const WorkbenchFooter = ({
   const hasRedo = historyFuture.length > 0;
 
   return (
-    <footer className="h-6 border-t wb-outline wb-surface flex items-center justify-between px-4 z-50 shrink-0 transition-colors duration-500 select-none">
+    <footer role="contentinfo" className="h-6 border-t wb-outline wb-surface flex items-center justify-between px-4 z-50 shrink-0 transition-colors duration-500 select-none">
       {/* LEFT: Build + Watchdog + Active Tool */}
       <div className="flex items-center gap-3 text-[7px] font-mono uppercase tracking-[0.2em] text-foreground/20 min-w-0">
         <span className="text-primary/40 font-black whitespace-nowrap">Build v8.0.0</span>
@@ -166,7 +166,7 @@ const WorkbenchFooter = ({
       </div>
       
       {/* RIGHT: Undo Timeline + Status indicators */}
-      <div className="flex items-center justify-end gap-3 text-[7px] font-mono uppercase tracking-[0.2em] text-foreground/20 min-w-0">
+      <div className="flex items-center justify-end gap-3 text-[7px] font-mono uppercase tracking-[0.2em] text-foreground/20 min-w-0" role="status" aria-live="polite" aria-label="Status indicators">
         {/* Undo Timeline button */}
         <button
           ref={historyBtnRef}
