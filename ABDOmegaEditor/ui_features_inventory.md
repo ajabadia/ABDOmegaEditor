@@ -1,127 +1,305 @@
-# OMEGA Manifest Editor - Inventario y Auditoría de Funcionalidades (Usabilidad)
+# OMEGA Manifest Editor — Inventario de Funcionalidades UI (v9.9.1)
 
-Este documento realiza un análisis metodológico y técnico profundo del workbench del Manifest Editor (Era 7.2.3). Identifica la topología de la interfaz, clasifica cada funcionalidad por su ubicación física, y detalla los hallazgos de **código huérfano (orphan code)** y módulos legacy inactivos en el árbol del proyecto.
-
----
-
-## 1. Inventario de Funcionalidades por Zona de Interfaz
-
-### A. Cabecera (Header / Toolbar Principal)
-Ubicada en la parte superior. Sirve como punto de acceso rápido para control de vista, guardado y sincronización.
-
-| Funcionalidad | Control en UI | Ubicación Lógica | Observaciones / Diagnóstico |
-| :--- | :--- | :--- | :--- |
-| **Menú Archivo / Edición / Vista / Ayuda** | Desplegables de texto (MenuBar) | Correcta (Estándar de escritorio) | Contiene la mayoría de las acciones pesadas. |
-| **Integridad / Diagnósticos de Cumplimiento** | Compliance Badge (Semáforo de cumplimiento) | Correcta | Abre el reporte de conformidad. Duplicado en el menú `Help`. |
-| **Selector de Vista Principal** | Botón deslizante (`ViewModeSelector`) | Correcta | Permite alternar entre Orbital, Rack, Source, History. |
-| **División de Vista (Split)** | Icono de columnas | Correcta | Permite vista partida (ej. Rack + Código Fuente). |
-| **Cambio de Tema (Claro / Oscuro)** | Toggle de icono (Sol/Luna) | Correcta | Control estético directo. |
-| **Configuración Global del Módulo** | Botón de engranaje | Correcta | Abre el modal de configuración de metadatos. Duplicado en menú `Edit`. |
-| **Consola de Logs (Ver/Ocultar)** | Botón de Terminal con texto | Correcta | Activa el panel inferior de logs. Duplicado en menú `View`. |
-
-### B. Menús Desplegables (MenuBar)
-Contiene las acciones de control de archivos, exportación de ingeniería e inicialización de laboratorios.
-
-*   **Menú File (Archivo)**:
-    1.  *Link Workspace Folder*: Enlaza carpeta física usando la API File System. (Duplicidad: También aparece en la barra superior si no está enlazado).
-    2.  *Load submenu*:
-        *   Ingest Module Folder (Carga por lotes).
-        *   WASM (Binarios de DSP).
-        *   Contract (TypeScript/C++ mappings).
-        *   Manifest (.acemm).
-        *   Assets (Gráficos/SVGs).
-    3.  *Blueprints*: Galería de plantillas rápidas.
-    4.  *Save submenu*:
-        *   Manifest (.acemm).
-        *   OmegaPack (.acepack).
-    5.  *Export submenu*:
-        *   Industrial CAD Blueprint.
-        *   Tech Contract (TS).
-        *   Engine Header (C++).
-    6.  *Deploy to Engine*: Envío en caliente del manifiesto al motor WASM.
-    7.  *Exit*: Salir al portal principal.
-
-*   **Menú Edit (Edición)**:
-    1.  *Undo / Redo*: Deshacer/Rehacer histórico. (Duplicidad: Atajos estándar `Ctrl+Z`, `Ctrl+Y`).
-    2.  *Document Timeline*: Cambia a la pestaña de historial.
-    3.  *Universal Cell Laboratory*: Abre el estudio de celdas aisladas. (Faltante: Acceso directo visual fuera del menú).
-    4.  *Module Global Configuration*: Metadatos del módulo. (Duplicidad: Botón de engranaje en cabecera).
-    5.  *Generate Studio Render*: Renderizado de imagen mock del módulo.
-    6.  *Reset Workspace*: Limpieza total del estado de trabajo.
-
-*   **Menú View (Vista)**:
-    1.  *Orbital View*: Pestaña de grafos orbitales.
-    2.  *Virtual Rack*: Pestaña de chasis del rack.
-    3.  *Source Code*: Pestaña del editor de código Monaco.
-    4.  *Toggle Logs Terminal*: Mostrar u ocultar la consola de logs.
-
-*   **Menú Help (Ayuda)**:
-    1.  *Engineering Manual*: Manual interactivo vivo.
-    2.  *Compliance Report*: Auditoría detallada (Cartilla de Inspección).
-    3.  *About OMEGA*: Créditos y versión.
+> **Versión:** v9.9.1 · **Última actualización:** 2026-06-17
+> Basado en análisis del código fuente, CHANGELOG y ADRs.
 
 ---
 
-## 2. Acciones del Panel Lateral Derecho (Docked Inspector)
-El inspector de propiedades interactivo (`WorkbenchInspector.tsx` / `PropertyPanel.tsx`) del elemento seleccionado provee accesos y controles avanzados directamente en la interfaz:
+## 1. Zonas de Interfaz — Mapa Topológico
 
-1.  **Essential Identity**:
-    *   *CellPreview*: Mini-renderizador en vivo del elemento seleccionado.
-    *   *Canonical ID Input*: Entrada de texto con linter de duplicados en caliente.
-    *   *Display Label Input*: Nombre visual del control.
-2.  **Simulation (Dry-Run)**:
-    *   *Start/Stop LFO*: Toggle cliente interactivo para modular controles a 1Hz de forma local (Dry-run).
-3.  **Design & Aesthetics**:
-    *   *Aesthetic Rules*: Edición de tokens de color, bordes, redondeado, z-index y transparencias.
-    *   *Mechanical Specs & Faceplate*: Asignación de tornillos, guías y fondos texturizados (skins).
-4.  **Logic & Ports / Architecture**:
-    *   *Binding inputs*: Vinculación directa con IDs de puertos del contrato DSP.
-    *   *Universal Signal Port editor*: Gestión de la dirección (In/Out) y tipo de señal (audio, CV, MIDI).
-5.  **System Diagnostics**:
-    *   *Diagnostics table*: Monitor de latencia RPC, estatus del watchdog y estados del lock de escritura de sesión.
+```
+┌──────────────────────────────────────────────────────────────┐
+│  HEADER (role="banner")                                      │
+│  ┌──────────────────────────────────────────────────────┐    │
+│  │ MenuBar │      OMEGA Manifest Editor      │ Badges │ │    │
+│  │         │                                  │ Theme  │ │    │
+│  └──────────────────────────────────────────────────────┘    │
+├────┬────────────────────────────────────────────┬─────────────┤
+│    │                                           │             │
+│ T  │                                           │   DOCK      │
+│ O  │           WORKBENCH VIEWPORT              │   DERECHO   │
+│ O  │     (Rack / Orbital / Source / History)    │   (role=    │
+│ L  │                                           │   "comple-  │
+│ B  │                                           │   mentary") │
+│ A  │                                           │             │
+│ R  │                                           │  ┌────────┐ │
+│    │                                           │  │ Layers │ │
+│    │                                           │  ├────────┤ │
+│    │                                           │  │ Prop.  │ │
+│    │                                           │  ├────────┤ │
+│    │                                           │  │ Rack   │ │
+│    │                                           │  ├────────┤ │
+│    │                                           │  │ Compl. │ │
+│    │                                           │  ├────────┤ │
+│    │                                           │  │ Bluepr.│ │
+│    │                                           │  ├────────┤ │
+│    │                                           │  │ Logs   │ │
+│    │                                           │  ├────────┤ │
+│    │                                           │  │ Info   │ │
+│    │                                           │  │ Hist.  │ │
+│    │                                           │  └────────┘ │
+│    │                                           │    DockIcon  │
+│    │                                           │    Strip     │
+├────┴────────────────────────────────────────────┴─────────────┤
+│  FOOTER (role="contentinfo")                                  │
+│  Build v8.0.0 // Watchdog // [Orb|Rack|Src|Hist] // Status   │
+└──────────────────────────────────────────────────────────────┘
+```
 
 ---
 
-## 3. Acciones en Modales Co-existentes
+## 2. Inventario por Zona
 
-1.  **AuditModal (Cartilla de Conformidad)**: Muestra la lista de violaciones y advertencias de diseño. Al hacer clic en un issue, el navegador de auditoría auto-selecciona el elemento conflictivo y enfoca la vista necesaria.
-2.  **GlobalGovernanceModal**: Configuración global del instrumento (nombre, versión, dimensiones del chasis, rieles de alimentación, HP).
-3.  **UniversalCellEditorModal**: Creador y guardado rápido de plantillas de celda en la biblioteca local.
-4.  **ManifestDiffModal**: Línea de tiempo de versiones (Time-travel) que permite comparar diferencias visuales línea por línea y realizar rollbacks controlados.
+### A. Cabecera (Header)
+
+| Funcionalidad | Control | Componente | Ubicación | Versión |
+|:--------------|:--------|:-----------|:----------|:-------:|
+| **Menú Archivo/Edición/Vista/Window/Ayuda** | Desplegables de texto | `MenuBar.tsx` | Izquierda | v7.2.0 |
+| **Identidad del Sistema** | Logo OMEGA + texto | `Header.tsx` | Centro | v7.2.0 |
+| **Compliance Badge** | Badge con semáforo (CERTIFIED/FAIL) | `ComplianceBadge.tsx` | Derecha | v9.3.0 |
+| **ThemeSelector** | Dropdown con 5 temas (Dark/Light/Amber/Cyberpunk/High Contrast) | `ThemeToggle.tsx` | Derecha | **v9.8.1** |
+| **SimulationStatusBadge** | Indicador de conexión HIL en vivo | `SimulationStatusBadge.tsx` | Derecha | v9.2.0 |
+| **Skip-to-content link** | Enlace oculto que aparece al recibir foco (keyboard) | `globals.css` | Fuera de pantalla | **v9.7.0** |
+
+### B. Menú Archivo (MenuBar)
+
+| Ítem | Sub-ítems | Acción | Versión |
+|:-----|:----------|:-------|:-------:|
+| **File** | Link Workspace Folder | Enlazar carpeta local (File System API) | v7.2.0 |
+| | Load > Ingest Module Folder | Carga por lotes | v7.2.0 |
+| | Load > WASM Binary | Carga de binario DSP | v7.2.0 |
+| | Load > Contract (TS/C++) | Subir contrato técnico | v7.2.0 |
+| | Load > Manifest (.acemm) | Subir manifiesto individual | v7.2.0 |
+| | Load > Assets (SVGs) | Recursos gráficos | v7.2.0 |
+| | Blueprints Gallery | Abre galería de plantillas | v7.2.0 |
+| | Save > Manifest (.acemm) | Guardar en modo trabajo | v9.2.0 |
+| | Save > OmegaPack (.acepack) | Guardar paquete comprimido | v9.2.0 |
+| | Export > Industrial CAD Blueprint | Exportación CAD | v9.2.0 |
+| | Export > Tech Contract (TS) | Contrato TypeScript | v8.0.0 |
+| | Export > Engine Header (C++) | Header C++ | v8.0.0 |
+| | Deploy to Engine | Envío en caliente al motor WASM | v9.2.0 |
+| **Edit** | Undo / Redo | Deshacer/Rehacer histórico (Ctrl+Z/Shift+Z) | v7.2.0 |
+| | Document Timeline | Cambia a pestaña de historial | v7.3.0 |
+| | Universal Cell Laboratory | Abre CellStudio (Ctrl+Shift+E) | **v9.6.1** |
+| | Module Global Configuration | Configuración de metadatos del módulo | v7.2.0 |
+| | Generate Studio Render | Renderizado mock del módulo | v8.2.0 |
+| | Reset Workspace | Limpieza total del estado (Ctrl+Shift+R) | v7.2.0 |
+| **View** | Orbital View (Ctrl+1) | Pestaña de grafos orbitales | v7.0.0 |
+| | Virtual Rack (Ctrl+2) | Pestaña de chasis del rack | v7.0.0 |
+| | Source Code (Ctrl+3) | Editor Monaco JSON | v7.0.0 |
+| | Toggle Grid (Ctrl+Shift+G) | Cuadrícula del viewport | v9.7.0 |
+| | Toggle Guides (Ctrl+Shift+U) | Guías de alineación | v9.7.0 |
+| | Toggle Mini Map (Ctrl+Shift+M) | Mini-mapa | v9.3.3 |
+| | Toggle Zen Mode | Modo inmersivo sin header/footer | **v9.9.0** |
+| **Window** | Layers Panel (Ctrl+Shift+L) | Panel de capas | **v9.7.0** |
+| | Element Properties (Ctrl+Shift+P) | Propiedades del elemento | v8.2.0 |
+| | Rack Properties (Ctrl+Shift+R) | Configuración del rack | v8.2.0 |
+| | Blueprint Library (Ctrl+Shift+B) | Biblioteca de blueprints | **v9.7.0** |
+| | Compliance / Audit (Ctrl+Shift+A) | Panel de compliance | **v9.7.0** |
+| | Terminal Logs (Ctrl+Shift+C) | Consola de logs | v7.3.0 |
+| | Information (Ctrl+Shift+I) | Información del elemento | v8.2.0 |
+| | History (Ctrl+Shift+H) | Historial de cambios | **v9.7.0** |
+| **Help** | Engineering Manual (F1) | Manual interactivo | v7.2.0 |
+| | Take a Guided Tour | Tour interactivo de 7 pasos | **v9.8.0** |
+| | About OMEGA | Créditos y versión | v7.2.0 |
+
+### C. Toolbar Flotante (Floating Toolbar)
+
+Toolbar vertical ubicada a la izquierda del viewport. Arrastrable, personalizable (P8).
+
+| Botón | Icono | Acción | Categoría | Shortcut |
+|:------|:-----:|:-------|:---------:|:--------:|
+| Select Tool | Cursor | Seleccionar elementos | tools | V |
+| Marquee Select | Square | Selección por área | tools | M |
+| Add Primitive | Plus | Flyout para añadir controles | tools | A |
+| CPU | Cpu | Abrir CellStudio del elemento seleccionado | tools | Ctrl+Shift+E |
+| Blueprints Gallery | Zap | Abrir galería de blueprints | tools | — |
+| Global Config | Settings | Configuración global del módulo | tools | — |
+| Align Left | AlignStartHorizontal | Alinear bordes izquierdos | edit | Ctrl+Shift+L |
+| Align Center H | AlignCenterHorizontal | Centrar horizontalmente | edit | Ctrl+Shift+H |
+| Align Right | AlignEndHorizontal | Alinear bordes derechos | edit | Ctrl+Shift+R |
+| Align Top | AlignStartVertical | Alinear bordes superiores | edit | Ctrl+Shift+T |
+| Align Center V | AlignCenterVertical | Centrar verticalmente | edit | Ctrl+Shift+M |
+| Align Bottom | AlignEndVertical | Alinear bordes inferiores | edit | Ctrl+Shift+B |
+| Distribute V | ArrowUpDown | Distribuir verticalmente | edit | Ctrl+Shift+D |
+| Distribute H | ArrowLeftRight | Distribuir horizontalmente | edit | Ctrl+Shift+V |
+| Live | Radio | Conexión HIL en vivo | system | — |
+| Zen Mode | Minimize2 | Ocultar header/footer | views | — |
+
+> **v9.9.1:** Botón `Audit` eliminado (redundante con Compliance en dock + Window menu).
+
+### D. Dock Derecho (RightDockContainer)
+
+Panel lateral derecho con 7 paneles redimensionables (P9). `role="complementary"`.
+
+| Panel | Icono | Descripción | Acceso | Versión |
+|:------|:-----:|:------------|:------:|:-------:|
+| **Layers** | Layers | Árbol jerárquico de nodos con virtual scrolling | Window > Layers | v9.2.0 |
+| **Element Properties** | Sliders | Inspector del elemento seleccionado (WorkbenchInspector) | Window > Properties | v7.0.0 |
+| **Rack Properties** | Settings | Configuración global del módulo | Window > Rack Properties | v7.0.0 |
+| **Compliance** | Shield | Auditoría de cumplimiento con issues list | Window > Compliance | **v9.7.0** |
+| **Blueprint Library** | Zap | Biblioteca de blueprints del sistema + usuario | Window > Blueprints | v9.2.0 |
+| **Terminal Logs** | Terminal | Consola de logs del sistema | Window > Logs | v7.3.0 |
+| **Information + History** | Info/History | Info del elemento + timeline de cambios | Window > Info/History | v8.2.0 |
+
+> **v9.9.0:** Todos los paneles ahora son redimensionables con `react-resizable-panels`. Tamaños persistidos en `localStorage` (`omega_dock_panel_sizes`).
+
+### E. Command Palette (Ctrl+K)
+
+Paleta de comandos estilo VS Code/Linear para buscar nodos y ejecutar acciones.
+
+| Característica | Detalle |
+|:---------------|:--------|
+| **Búsqueda** | Fuzzy search por label/ID/kind de nodos |
+| **Acciones** | 28+ acciones del menú con shortcuts visibles |
+| **Navegación** | ↑↓→Esc + Enter para ejecutar |
+| **Cierre** | Escape to clear, backdrop click |
+| **Tests** | 35 tests unitarios |
+
+### F. Status Bar (WorkbenchFooter)
+
+Barra de estado industrial en la parte inferior. `role="contentinfo"`.
+
+| Sección | Indicador | Descripción | Versión |
+|:--------|:----------|:------------|:-------:|
+| **Build** | `Build v8.0.0` | Versión del build | v9.8.0 |
+| **Watchdog** | Indicador conectado/offline/idle | Estado del watchdog SSE | v9.8.0 |
+| **Active Tool** | `[M] Marquee` / `[A] Add` | Herramienta activa en uso | v9.8.0 |
+| **Tab Selector** | Botones Orbital/Rack/Source/History | Selector de vista principal con shortcuts | v7.0.0 |
+| **Split View** | Icono de columnas | Toggle de vista partida | v7.0.0 |
+| **Mini Map** | Icono de mapa | Toggle de mini-mapa | v9.3.3 |
+| **Undo Timeline** | Botón + contador de pasos | Popover con timeline visual + batch history | **v9.9.0** |
+| **ShortcutBadges** | Undo/Redo/Cmd Palette/Save | Atajos rápidos con indicación de keyboard shortcut | v9.5.0 |
+| **Dirty State** | `Modified` (ámbar) / `Saved` (verde) | Estado de cambios sin guardar con timestamp | **v9.8.0** |
+| **Error/Warning Count** | `N errors / M warnings` | Conteo de issues de validación en vivo | **v9.8.0** |
+| **Watchdog Dot** | Punto verde/rojo/gris | Indicador compacto de estado watchdog | v9.8.0 |
+
+### G. Notificaciones (Toast System)
+
+Sistema global de notificaciones con framer-motion. `role="status" aria-live="polite"`.
+
+| Variante | Icono | Color | Duración | Propósito |
+|:---------|:-----:|:-----:|:--------:|:----------|
+| **info** | Info | Azul/cyan | 4s | Notificaciones informativas |
+| **success** | CheckCircle | Verde | 4s | Operaciones exitosas |
+| **warning** | AlertTriangle | Ámbar | 4s | Advertencias no críticas |
+| **error** | AlertCircle | Rojo | 4s | Errores críticos |
+
+> **API:** `useToast()` hook con `showToast(message, variant)`.
+
+### H. Mini-Map del Rack
+
+| Característica | Detalle | Versión |
+|:---------------|:--------|:-------:|
+| **Posición** | Flotante, arrastrable (top-right) | v9.3.3 |
+| **Filtros** | Dropdown con checkboxes por tipo de nodo | **v9.8.0** |
+| **Locked indicator** | Nodos bloqueados con opacity 0.45 + 🔒 | **v9.8.0** |
+| **Persistencia** | localStorage + URL query params (`?hide=cell,group`) | **v9.8.0** |
+| **Snap a bordes** | Snap threshold 8px, multi-eje | **v9.8.0** |
+| **Doble-click reset** | Resetea posición del panel | **v9.8.0** |
+| **Glow al arrastrar** | Brillo cyan + ring durante drag | **v9.8.0** |
+| **Tests** | 60 tests unitarios | v9.3.3 |
+
+### I. Onboarding Walkthrough
+
+| Característica | Detalle |
+|:---------------|:--------|
+| **Pasos** | 7: Welcome → Header & Menu → Tool Palette → Canvas → Inspector → Status Bar → Shortcuts |
+| **Auto-open** | Primera visita vía localStorage |
+| **Highlight** | Glow ring animado alrededor del elemento objetivo |
+| **Acceso** | Command Palette > Help > "Take a Guided Tour" |
 
 ---
 
-## 4. Auditoría y Estado de Limpieza del Código Muerto
+## 3. Modales Co-existentes
 
-Siguiendo la metodología estricta del proyecto, hemos clasificado y gestionado el código inactivo de la siguiente manera:
+Todos los modales tienen `role="dialog"`, `aria-modal="true"`, `aria-label`, y `useFocusTrap`.
 
-### ✅ A. CÓDIGO ELIMINADO (Reemplazado por funciones nuevas)
-Los siguientes archivos han sido eliminados físicamente del espacio de trabajo porque sus funciones fueron asumidas por código moderno y eficiente:
-1.  **Antiguo Editor YAML**:
-    *   `SourceViewer.tsx` (viewport)
-    *   `SourceHeader.tsx` (source)
-    *   `SourceCodeBlock.tsx` (source)
-    *   `useSourceEditor.ts` (hook)
-    *   *Reemplazo*: `SourceView.tsx` (Monaco JSON Editor con esquema integrado de validación, mapeo de diagnósticos y saltos de línea).
-2.  **Sidebar Izquierdo Legacy**:
-    *   `WorkbenchSidebar.tsx` (layout)
-    *   `ModuleHub.tsx` (layout)
-    *   *Reemplazo*: Los controles de ingesta se movieron a `MenuBar`, la telemetría y diagnóstico al `AboutModal`, y el watchdog al Footer.
-3.  **Hooks Redundantes**:
-    *   `usePropertyPanel.ts` (*Reemplazo*: Acordeón vertical nativo en `PropertyPanel.tsx`).
-    *   `useTransaction.ts` (*Reemplazo*: Mapeo de transacciones directo en `useManifestEditor.ts`).
+| Modal | Propósito | Atajo/Llamada | Versión |
+|:------|:----------|:-------------:|:-------:|
+| **AboutModal** | Créditos y versión | Help > About OMEGA | v7.2.0 |
+| **HelpModal** | Manual interactivo vivo | Help > Engineering Manual (F1) | v7.2.0 |
+| **BlueprintPromptDialog** | Personalizar placeholders antes de inyectar blueprint | Al seleccionar blueprint con placeholders | v9.4.0 |
+| **ExposeParametersDialog** | Parametrizar grupo para exportar como blueprint | Context menu > Save as Blueprint | v9.2.0 |
+| **IngestionModal** | Confirmar archivos a ingestar | File > Load > ... | v7.2.0 |
+| **TemplateGallery** | Galería de plantillas predefinidas | File > Blueprints Gallery | v7.2.0 |
+| **MockupModal** | Renderizado y exportación de mockup | Edit > Generate Studio Render | v8.2.0 |
+| **UniversalCellEditorModal** | Editor aislado de celdas | Edit > Universal Cell Laboratory (Ctrl+Shift+E) | v7.2.0 |
+| **ManifestDiffModal** | Comparación visual de versiones (time-travel) | Desde Undo Timeline > Compare | v9.4.0 |
+| **CommandPalette** | Paleta de comandos (Ctrl+K) | Ctrl+K | **v9.4.0** |
+| **VisualModulationMatrix** | Matriz de modulación visual SVG | Desde inspector de modulación | **v9.6.0** |
+| **CellStudioContainer** | Laboratorio aislado de celdas con preview y recetas | Toolbar > CPU (con elemento seleccionado) | v9.2.0 |
 
-### 📦 B. CÓDIGO CONSERVADO (Inactivo / Desconectado — Para análisis)
-Los siguientes archivos **no han sido eliminados** debido a que no cuentan con un reemplazo funcional moderno, y representan módulos valiosos que deben ser re-evaluados:
+### Modales Eliminados / Reemplazados
 
-#### 1. Estudio de Render Fotorrealista (`MockupModal.tsx` y su suite)
-*   **Archivos**: `MockupModal.tsx` (modals) y la carpeta `components/mockup/` conteniendo `MockupHeader.tsx`, `MockupFooter.tsx`, `MockupViewport.tsx`, `MockupLoading.tsx`.
-*   **Estado**: Desactivado y comentado en `EditorModals.tsx`.
-*   **Función**: Captura y exportación de previsualizaciones del rack con simulación de iluminación física y sombras.
-*   **Diagnóstico**: Funcionalidad inconclusa o inestable. Se conserva para decidir si se refactoriza o se reactiva en el futuro.
+| Modal | Estado | Razón |
+|:------|:------:|:------|
+| **AuditModal** | ❌ Eliminado v9.7.0 | Reemplazado por Compliance Panel en dock derecho |
+| **GlobalGovernanceModal** | ❌ Eliminado v9.2.0 | Reemplazado por Rack Properties en dock derecho |
+| **ModulationGrid** | ❌ Eliminado v9.6.0 | Reemplazado por VisualModulationMatrix SVG |
 
-#### 2. Laboratorio Aislado de Celdas (`CellStudioContainer.tsx` y su suite)
-*   **Archivos**: `CellStudioContainer.tsx` (lab), `AssetBehaviorPresetSelector.tsx` (lab), `BehaviorMappingInspector.tsx` (lab) y `LayerRecipeEditor.tsx` (lab).
-*   **Estado**: **Totalmente desconectado**. El componente existe, pero la acción `actions.setStudioMode(true)` nunca es llamada desde ningún botón o menú del editor.
-*   **Función**: Prototipado y edición visual aislada de celdas con recetas de capas y mapeo de animaciones.
-*   **Diagnóstico**: El botón *"Universal Cell Laboratory"* en el menú `Edit` debería abrir este entorno de laboratorio aislado, pero actualmente está configurado para abrir el modal simple `UniversalCellEditorModal`. Es un vacío de usabilidad crítico.
+---
+
+## 4. Auditoría de Código — Estado Actual
+
+### A. Código Eliminado
+
+| Archivo | Razón | Versión |
+|:--------|:------|:-------:|
+| `SourceViewer.tsx` | Reemplazado por Monaco Editor (`SourceView.tsx`) | v7.2.0 |
+| `SourceHeader.tsx` | Reemplazado por Monaco Editor | v7.2.0 |
+| `SourceCodeBlock.tsx` | Reemplazado por Monaco Editor | v7.2.0 |
+| `useSourceEditor.ts` | Reemplazado por Monaco Editor | v7.2.0 |
+| `WorkbenchSidebar.tsx` | Sidebar izquierdo legacy eliminado | v7.2.0 |
+| `ModuleHub.tsx` | Hub legacy eliminado | v7.2.0 |
+| `usePropertyPanel.ts` | Reemplazado por acordeón nativo en PropertyPanel | v7.2.0 |
+| `useTransaction.ts` | Mapeo directo en useManifestEditor | v7.2.0 |
+| `AuditModal.tsx` | Reemplazado por Compliance Panel | v9.7.0 |
+| `GlobalGovernanceModal.tsx` | Reemplazado por Rack Properties dock | v9.2.0 |
+| `ModulationGrid` | Reemplazado por VisualModulationMatrix | v9.6.0 |
+| `WorkbenchLogs.tsx` (drawer) | Reemplazado por panel lateral en dock derecho | v7.3.0 |
+
+### B. Código Conservado (Activo)
+
+| Módulo | Archivos | Estado | Función |
+|:-------|:---------|:------:|:--------|
+| **CellStudioContainer** | `CellStudioContainer.tsx`, `AssetBehaviorPresetSelector.tsx`, `BehaviorMappingInspector.tsx`, `LayerRecipeEditor.tsx` | ✅ **Reconectado v9.6.1** (antes desconectado) | Laboratorio de edición aislada de celdas con recetas |
+| **MockupModal** | `MockupModal.tsx`, `MockupHeader.tsx`, `MockupFooter.tsx`, `MockupViewport.tsx`, `MockupLoading.tsx` | ✅ Activo desde v8.2.0 | Renderizado fotorealista y exportación |
+
+### C. Estado de Limpieza ESLint
+
+| Métrica | Antes | Después | Commit |
+|:--------|:-----:|:-------:|:------:|
+| **Errores** | 45 | 0 | `dd10c59` |
+| **Warnings** | 52 | 0 | `9a39a9d` |
+| `as any` casts | ~30+ | 0 reemplazados con `as unknown as T` | `dd10c59` |
+| `no-unused-vars` | ~37 | 0 suprimidos con eslint-disable específicos | `dd10c59` / `9a39a9d` |
+
+---
+
+## 5. Resumen de Features por Versión
+
+| Versión | Features nuevas |
+|:-------:|:---------------|
+| **v9.9.1** | UI Cleanup (audit button, shortcut badges, engine overlay, Compliance en Window) |
+| **v9.9.0** | Resizable Panels (P9), Floating Toolbar Customizable (P8), Undo Timeline Visual (P6) |
+| **v9.8.1** | Temas Amber/Cyberpunk/High Contrast (P7), ThemeSelector dropdown |
+| **v9.8.0** | Status Bar (P3), Onboarding Walkthrough (P4), Mini-Map filtros/indicador locked/snap |
+| **v9.7.0** | Alignment Shortcuts UI/UX, Ctrl+Alt+E Distribute, Window menu, 49 shortcuts audit |
+| **v9.6.1** | Ctrl+Shift+E CellStudio shortcut, LayersPanel TS fix, 19 shortcut tests |
+| **v9.6.0** | Visual Modulation Matrix, Virtual Scrolling LayersPanel |
+| **v9.5.0** | DockIconBar/DockPanelHeader/ToolbarIconButton refactors |
+| **v9.4.0** | Command Palette (Ctrl+K), Ctrl+K badge in footer |
+| **v9.3.3** | Toast Notification System, Mini-Map clamping/snap/60 tests |
+| **v9.3.2** | Ghost Preview Alt+Click, Bug fixes, E2E 31/32 |
+| **v9.2.0** | Container Format .omega, JUCE pipeline, Layers Panel, Groups, Simulaciones |
+| **v8.2.0** | Viewport state independiente, MockupModal, Window menu, Light mode fix |
+| **v8.0.0** | UCA linter, Contract generator, ID collision guard |
+| **v7.3.0** | Sidebar Logs Panel, SimulationStatusBadge, Modal size standardization |
+| **v7.2.0** | Floating Toolbar, deprecation cues, legacy cleanup (9 files) |
+| **v7.1.0** | Multi-document support, session persistence, clipboard service |
+| **v7.0.0** | Multi-tab layout, docked inspector, view state persistence |
+
+---
+
+*Inventario actualizado: 2026-06-17*
