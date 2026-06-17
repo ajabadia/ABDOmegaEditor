@@ -10,7 +10,7 @@
  * @lastUpdated 2026-06-15T12:47:49.553Z
  */
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FileCode, Package, Layers, Camera, Zap, FolderOpen, 
@@ -20,6 +20,9 @@ import {
 } from 'lucide-react';
 
 import type { OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
+
+// Static menu IDs — never changes between renders
+const MENU_IDS = ['file', 'edit', 'view', 'window', 'help'];
 
 interface MenuBarProps {
   onTriggerUpload: (id: string) => void;
@@ -92,6 +95,104 @@ export default function MenuBar(props: MenuBarProps) {
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Focus first item when a menu opens
+  useEffect(() => {
+    if (!activeMenu) return;
+    const timer = setTimeout(() => {
+      const container = menuRef.current?.querySelector(`[data-menu-id="${activeMenu}"]`);
+      if (container) {
+        const firstItem = container.querySelector<HTMLButtonElement>('button[role="menuitem"], button[role="menuitemcheckbox"]');
+        firstItem?.focus();
+      }
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [activeMenu]);
+
+  const closeMenu = useCallback(() => {
+    setActiveMenu(null);
+  }, []);
+
+  const handleMenuBarKeyDown = useCallback((e: React.KeyboardEvent<HTMLElement>) => {
+    const currentIdx = activeMenu ? MENU_IDS.indexOf(activeMenu) : -1;
+
+    switch (e.key) {
+      case 'ArrowRight': {
+        e.preventDefault();
+        const nextIdx = currentIdx < 0 ? 0 : (currentIdx + 1) % MENU_IDS.length;
+        setActiveMenu(MENU_IDS[nextIdx]);
+        break;
+      }
+      case 'ArrowLeft': {
+        e.preventDefault();
+        const prevIdx = currentIdx < 0 ? 0 : (currentIdx - 1 + MENU_IDS.length) % MENU_IDS.length;
+        setActiveMenu(MENU_IDS[prevIdx]);
+        break;
+      }
+      case 'ArrowDown': {
+        e.preventDefault();
+        if (!activeMenu && MENU_IDS.length > 0) {
+          setActiveMenu(MENU_IDS[0]);
+        }
+        break;
+      }
+      case 'Escape': {
+        e.preventDefault();
+        setActiveMenu(null);
+        break;
+      }
+      case 'Home': {
+        e.preventDefault();
+        if (MENU_IDS.length > 0) setActiveMenu(MENU_IDS[0]);
+        break;
+      }
+      case 'End': {
+        e.preventDefault();
+        if (MENU_IDS.length > 0) setActiveMenu(MENU_IDS[MENU_IDS.length - 1]);
+        break;
+      }
+    }
+  }, [activeMenu]);
+
+  const handleItemKeyDown = useCallback((e: React.KeyboardEvent<HTMLButtonElement>, menuId: string) => {
+    const container = menuRef.current?.querySelector(`[data-menu-id="${menuId}"]`);
+    if (!container) return;
+    const items = Array.from(container.querySelectorAll<HTMLButtonElement>('button[role="menuitem"], button[role="menuitemcheckbox"]'));
+    const currentIdx = items.indexOf(e.currentTarget);
+
+    switch (e.key) {
+      case 'ArrowDown': {
+        e.preventDefault();
+        const next = items[(currentIdx + 1) % items.length];
+        next?.focus();
+        break;
+      }
+      case 'ArrowUp': {
+        e.preventDefault();
+        const prev = items[(currentIdx - 1 + items.length) % items.length];
+        prev?.focus();
+        break;
+      }
+      case 'Escape': {
+        e.preventDefault();
+        setActiveMenu(null);
+        // Restore focus to trigger button
+        const trigger = menuRef.current?.querySelector<HTMLButtonElement>(`[data-menu-trigger="${menuId}"]`);
+        trigger?.focus();
+        break;
+      }
+      case 'Home': {
+        e.preventDefault();
+        items[0]?.focus();
+        break;
+      }
+      case 'End': {
+        e.preventDefault();
+        items[items.length - 1]?.focus();
+        break;
+      }
+    }
   }, []);
 
   const menus = [
@@ -315,12 +416,21 @@ export default function MenuBar(props: MenuBarProps) {
   ];
 
   return (
-    <nav className="flex items-center" ref={menuRef}>
+    <nav
+      className="flex items-center"
+      ref={menuRef}
+      role="menubar"
+      aria-label="Main menu"
+      onKeyDown={handleMenuBarKeyDown}
+    >
       {menus.map((menu) => (
         <div key={menu.id} className="relative">
           <button
             onClick={() => setActiveMenu(activeMenu === menu.id ? null : menu.id)}
             onMouseEnter={() => activeMenu && setActiveMenu(menu.id)}
+            data-menu-trigger={menu.id}
+            aria-haspopup="true"
+            aria-expanded={activeMenu === menu.id}
             className={`px-4 py-1 text-[9px] font-black uppercase tracking-widest transition-colors ${
               activeMenu === menu.id ? 'bg-primary text-black' : 'hover:bg-white/5 wb-text-muted hover:wb-text'
             }`}
@@ -336,9 +446,11 @@ export default function MenuBar(props: MenuBarProps) {
                 exit={{ opacity: 0, y: 5 }}
                 transition={{ duration: 0.1 }}
                 className="absolute left-0 mt-0 w-56 bg-[#0a0a0b] border border-outline shadow-2xl z-[110] py-1"
+                role="menu"
+                data-menu-id={menu.id}
               >
                 {menu.items.map((item, idx) => (
-                  <MenuItem key={idx} item={item} closeMenu={() => setActiveMenu(null)} />
+                  <MenuItem key={idx} item={item} closeMenu={closeMenu} menuId={menu.id} onItemKeyDown={handleItemKeyDown} />
                 ))}
               </motion.div>
             )}
@@ -350,14 +462,15 @@ export default function MenuBar(props: MenuBarProps) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function MenuItem({ item, closeMenu }: { item: any, closeMenu: () => void }) {
+function MenuItem({ item, closeMenu, menuId, onItemKeyDown }: { item: any; closeMenu: () => void; menuId: string; onItemKeyDown: (e: React.KeyboardEvent<HTMLButtonElement>, menuId: string) => void }) {
   const [showSubmenu, setShowSubmenu] = useState(false);
 
   if (item.type === 'divider') {
-    return <div className="h-px bg-outline/20 my-1 mx-2" />;
+    return <div className="h-px bg-outline/20 my-1 mx-2" role="separator" />;
   }
 
   const Icon = item.icon;
+  const isCheckable = item.checked !== undefined;
 
   return (
     <div 
@@ -367,7 +480,28 @@ function MenuItem({ item, closeMenu }: { item: any, closeMenu: () => void }) {
     >
       <button
         disabled={item.disabled}
+        role={isCheckable ? 'menuitemcheckbox' : 'menuitem'}
         aria-label={item.label}
+        aria-checked={isCheckable ? item.checked : undefined}
+        aria-haspopup={item.submenu ? 'true' : undefined}
+        onKeyDown={(e) => {
+          if (e.key === 'ArrowRight' && item.submenu) {
+            e.preventDefault();
+            setShowSubmenu(true);
+            // Focus first submenu item
+            setTimeout(() => {
+              const parentWrapper = e.currentTarget.parentElement;
+              const submenu = parentWrapper?.querySelector('[role="menu"]');
+              const firstSub = submenu?.querySelector<HTMLButtonElement>('button[role="menuitem"], button[role="menuitemcheckbox"]');
+              firstSub?.focus();
+            }, 50);
+          } else if (e.key === 'ArrowLeft' && showSubmenu) {
+            e.preventDefault();
+            setShowSubmenu(false);
+          } else {
+            onItemKeyDown(e, menuId);
+          }
+        }}
         onClick={() => {
           if (!item.submenu) {
             item.onClick();
@@ -379,7 +513,7 @@ function MenuItem({ item, closeMenu }: { item: any, closeMenu: () => void }) {
         } ${item.highlight === 'accent' ? 'text-accent hover:bg-accent hover:text-black' : item.highlight === 'deprecated' ? 'text-red-500/70 hover:bg-red-500 hover:text-black bg-red-500/5 line-through decoration-red-500/40' : 'wb-text'}`}
       >
         <div className="flex items-center gap-2">
-          {item.checked !== undefined && (
+          {isCheckable && (
             <div className="w-3 h-3 flex items-center justify-center shrink-0 border border-outline/30 rounded-xs bg-black/40 group-hover:border-black/50">
               {item.checked && <Check className="w-2 h-2 text-primary group-hover:text-black" />}
             </div>
@@ -403,34 +537,86 @@ function MenuItem({ item, closeMenu }: { item: any, closeMenu: () => void }) {
             exit={{ opacity: 0, x: -5 }}
             transition={{ duration: 0.1 }}
             className="absolute left-full top-0 mt-[-1px] w-56 bg-[#0a0a0b] border border-outline shadow-2xl z-[120] py-1"
+            role="menu"
+            data-menu-id={`${menuId}-sub-${item.label}`}
           >
             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            {item.submenu.map((sub: any, idx: number) => (
-              <button
-                key={idx}
-                aria-label={sub.label}
-                onClick={() => {
-                  sub.onClick();
-                  closeMenu();
-                }}
-                className="w-full flex items-center justify-between px-3 py-1.5 text-[8px] font-black uppercase tracking-widest transition-all hover:bg-primary hover:text-black group"
-              >
-                <div className="flex items-center gap-2">
-                  {sub.checked !== undefined && (
-                    <div className="w-3 h-3 flex items-center justify-center shrink-0 border border-outline/30 rounded-xs bg-black/40 group-hover:border-black/50">
-                      {sub.checked && <Check className="w-2 h-2 text-primary group-hover:text-black" />}
-                    </div>
-                  )}
-                  {sub.icon && <sub.icon className="w-3 h-3" />}
-                  <span>{sub.label}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  {sub.shortcut && (
-                    <span className="text-[7px] text-white/25 font-mono tracking-normal normal-case ml-4">{sub.shortcut}</span>
-                  )}
-                </div>
-              </button>
-            ))}
+            {item.submenu.map((sub: any, idx: number) => {
+              const subIsCheckable = sub.checked !== undefined;
+              return (
+                <button
+                  key={idx}
+                  role={subIsCheckable ? 'menuitemcheckbox' : 'menuitem'}
+                  aria-label={sub.label}
+                  aria-checked={subIsCheckable ? sub.checked : undefined}
+                  onKeyDown={(e) => {
+                    const subContainer = e.currentTarget.closest('[role="menu"]');
+                    if (!subContainer) return;
+                    const subItems = Array.from(subContainer.querySelectorAll<HTMLButtonElement>('button[role="menuitem"], button[role="menuitemcheckbox"]'));
+                    const idx2 = subItems.indexOf(e.currentTarget);
+                    switch (e.key) {
+                      case 'ArrowDown': {
+                        e.preventDefault();
+                        const next = subItems[(idx2 + 1) % subItems.length];
+                        next?.focus();
+                        break;
+                      }
+                      case 'ArrowUp': {
+                        e.preventDefault();
+                        const prev = subItems[(idx2 - 1 + subItems.length) % subItems.length];
+                        prev?.focus();
+                        break;
+                      }
+                      case 'Escape':
+                      case 'ArrowLeft': {
+                        e.preventDefault();
+                        setShowSubmenu(false);
+                        // Focus the menu item that opened this submenu
+                        const parentMenuWrapper = e.currentTarget.closest('.relative');
+                        parentMenuWrapper?.querySelector<HTMLButtonElement>('button[role="menuitem"]')?.focus();
+                        break;
+                      }
+                      case 'Home': {
+                        e.preventDefault();
+                        subItems[0]?.focus();
+                        break;
+                      }
+                      case 'End': {
+                        e.preventDefault();
+                        subItems[subItems.length - 1]?.focus();
+                        break;
+                      }
+                      default:
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          sub.onClick();
+                          closeMenu();
+                        }
+                    }
+                  }}
+                  onClick={() => {
+                    sub.onClick();
+                    closeMenu();
+                  }}
+                  className="w-full flex items-center justify-between px-3 py-1.5 text-[8px] font-black uppercase tracking-widest transition-all hover:bg-primary hover:text-black group"
+                >
+                  <div className="flex items-center gap-2">
+                    {subIsCheckable && (
+                      <div className="w-3 h-3 flex items-center justify-center shrink-0 border border-outline/30 rounded-xs bg-black/40 group-hover:border-black/50">
+                        {sub.checked && <Check className="w-2 h-2 text-primary group-hover:text-black" />}
+                      </div>
+                    )}
+                    {sub.icon && <sub.icon className="w-3 h-3" />}
+                    <span>{sub.label}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {sub.shortcut && (
+                      <span className="text-[7px] text-white/25 font-mono tracking-normal normal-case ml-4">{sub.shortcut}</span>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
           </motion.div>
         )}
       </AnimatePresence>

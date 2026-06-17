@@ -10,7 +10,7 @@
  * @lastUpdated 2026-06-15T20:48:21.917Z
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ToolbarIconButton from './ToolbarIconButton';
 import { 
@@ -146,6 +146,40 @@ export default function Toolbar({
 
   const isUngroupEnabled = targetGroupId !== undefined;
  
+  const handleToolbarKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
+    const buttons = Array.from(
+      ((e.currentTarget as HTMLDivElement).querySelectorAll<HTMLButtonElement>('button[aria-label]'))
+    );
+    const currentIdx = buttons.indexOf(document.activeElement as HTMLButtonElement);
+
+    switch (e.key) {
+      case 'ArrowDown':
+      case 'ArrowRight': {
+        e.preventDefault();
+        const next = buttons[(currentIdx + 1) % buttons.length];
+        next?.focus();
+        break;
+      }
+      case 'ArrowUp':
+      case 'ArrowLeft': {
+        e.preventDefault();
+        const prev = buttons[(currentIdx - 1 + buttons.length) % buttons.length];
+        prev?.focus();
+        break;
+      }
+      case 'Home': {
+        e.preventDefault();
+        buttons[0]?.focus();
+        break;
+      }
+      case 'End': {
+        e.preventDefault();
+        buttons[buttons.length - 1]?.focus();
+        break;
+      }
+    }
+  }, []);
+
   const handleSelectTool = (tool: 'select' | 'marquee' | 'add' | 'studio') => {
     setActiveTool(tool);
     if (tool === 'add') {
@@ -625,6 +659,9 @@ export default function Toolbar({
           touchAction: 'none',
           width: cols === 1 ? 44 : 'auto'
         }}
+        role="toolbar"
+        aria-label="Floating tools"
+        onKeyDown={handleToolbarKeyDown}
       >
         {/* Drag handle dots */}
         <div className="w-5 h-2 flex flex-col gap-0.5 justify-center items-center opacity-30 cursor-move mb-1 shrink-0">

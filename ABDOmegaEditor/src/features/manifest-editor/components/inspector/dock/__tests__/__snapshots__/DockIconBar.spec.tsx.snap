@@ -2,7 +2,9 @@
 
 exports[`DockIconBar — snapshots should match snapshot with custom className 1`] = `
 <div
+  aria-label="Dock panel tabs"
   class="w-10 wb-surface border-l wb-outline flex flex-col items-center py-3 gap-3 shrink-0 z-45 animate-in slide-in-from-right shadow-lg"
+  role="toolbar"
 >
   <div
     class="flex flex-col items-center gap-1.5"
@@ -49,7 +51,9 @@ exports[`DockIconBar — snapshots should match snapshot with custom className 1
 
 exports[`DockIconBar — snapshots should match snapshot with groups and label 1`] = `
 <div
+  aria-label="Dock panel tabs"
   class="w-10 wb-surface border-l wb-outline flex flex-col items-center py-3 gap-3 shrink-0 z-50 shadow-xl"
+  role="toolbar"
 >
   <div
     class="text-[5px] font-black uppercase text-foreground/45 tracking-widest text-center select-none pointer-events-none"
@@ -108,7 +112,9 @@ exports[`DockIconBar — snapshots should match snapshot with groups and label 1
 
 exports[`DockIconBar — snapshots should match snapshot with per-group className (like advanced scrolling) 1`] = `
 <div
+  aria-label="Dock panel tabs"
   class="w-10 wb-surface border-l wb-outline flex flex-col items-center py-3 gap-3 shrink-0 z-50 shadow-xl"
+  role="toolbar"
 >
   <div
     class="text-[5px] font-black uppercase text-foreground/45 tracking-widest text-center select-none pointer-events-none"
@@ -167,7 +173,9 @@ exports[`DockIconBar — snapshots should match snapshot with per-group classNam
 
 exports[`DockIconBar — snapshots should match snapshot without groups, all inactive 1`] = `
 <div
+  aria-label="Dock panel tabs"
   class="w-10 wb-surface border-l wb-outline flex flex-col items-center py-3 gap-3 shrink-0 z-50 shadow-xl"
+  role="toolbar"
 >
   <div
     class="flex flex-col items-center gap-1.5"
@@ -214,7 +222,9 @@ exports[`DockIconBar — snapshots should match snapshot without groups, all ina
 
 exports[`DockIconBar — snapshots should match snapshot without groups, some active 1`] = `
 <div
+  aria-label="Dock panel tabs"
   class="w-10 wb-surface border-l wb-outline flex flex-col items-center py-3 gap-3 shrink-0 z-50 shadow-xl"
+  role="toolbar"
 >
   <div
     class="flex flex-col items-center gap-1.5"

@@ -21,7 +21,7 @@
  * - className personalizable para z-index, shadow, animaciones
  */
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import ToolbarIconButton from '@/features/manifest-editor/components/layout/ToolbarIconButton';
 
 export interface DockIconBarButton {
@@ -77,9 +77,44 @@ export function DockIconBar({
     );
   };
 
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
+    const focusable = Array.from(
+      (e.currentTarget as HTMLDivElement).querySelectorAll<HTMLButtonElement>('button')
+    );
+    const currentIdx = focusable.indexOf(document.activeElement as HTMLButtonElement);
+
+    switch (e.key) {
+      case 'ArrowDown': {
+        e.preventDefault();
+        const next = focusable[(currentIdx + 1) % focusable.length];
+        next?.focus();
+        break;
+      }
+      case 'ArrowUp': {
+        e.preventDefault();
+        const prev = focusable[(currentIdx - 1 + focusable.length) % focusable.length];
+        prev?.focus();
+        break;
+      }
+      case 'Home': {
+        e.preventDefault();
+        focusable[0]?.focus();
+        break;
+      }
+      case 'End': {
+        e.preventDefault();
+        focusable[focusable.length - 1]?.focus();
+        break;
+      }
+    }
+  }, []);
+
   return (
     <div
       className={`w-10 wb-surface border-l wb-outline flex flex-col items-center py-3 gap-3 shrink-0 ${className}`}
+      role="toolbar"
+      aria-label="Dock panel tabs"
+      onKeyDown={handleKeyDown}
     >
       {label && (
         <div className="text-[5px] font-black uppercase text-foreground/45 tracking-widest text-center select-none pointer-events-none">
