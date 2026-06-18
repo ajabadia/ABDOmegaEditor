@@ -6,8 +6,8 @@
  * @refactorable false
  * @classification UI Component
  * @complexity Low
- * @fingerprint exports:1,imports:1,sig:eh8ke2
- * @lastUpdated 2026-06-15T11:04:23.914Z
+ * @fingerprint exports:1,imports:1,sig:1nrkmie
+ * @lastUpdated 2026-06-17T22:31:24.635Z
  */
 
 import { Download, Upload } from 'lucide-react';

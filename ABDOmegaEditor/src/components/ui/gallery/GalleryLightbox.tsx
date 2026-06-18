@@ -4,8 +4,8 @@
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:4,sig:ang6pq
- * @lastUpdated 2026-06-15T10:51:44.707Z
+ * @fingerprint exports:1,imports:4,sig:y3d1im
+ * @lastUpdated 2026-06-17T22:29:40.296Z
  */
 
 import Image from "next/image";

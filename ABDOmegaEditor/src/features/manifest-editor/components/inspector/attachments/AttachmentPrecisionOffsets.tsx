@@ -6,8 +6,8 @@
  * @refactorable false
  * @classification UI Component
  * @complexity Low
- * @fingerprint exports:1,imports:2,sig:1h8smnk
- * @lastUpdated 2026-06-15T11:05:26.052Z
+ * @fingerprint exports:1,imports:2,sig:1a2r7zg
+ * @lastUpdated 2026-06-17T22:32:22.042Z
  */
 
 import { Move } from 'lucide-react';

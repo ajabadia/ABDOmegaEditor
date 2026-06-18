@@ -1,13 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona un componente de tarjeta para mostrar y gestionar anexos en el editor de manifesto OMEGA, incluyendo la activación/expansión, eliminación y actualización de propiedades de los anexos.
+ * @purpose Gestiona un componente de tarjeta para mostrar y gestionar anexos en el editor de manifesto OMEGA, incluyendo el despliegue, eliminación y actualización de propiedades de anexos.
  * @purpose_en Manages a card component for displaying and managing attachments in an OMEGA manifest editor, including toggling expansion, removing, and updating attachment properties.
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:4,sig:4qqnb4
- * @lastUpdated 2026-06-15T11:05:14.303Z
+ * @fingerprint exports:1,imports:4,sig:143svna
+ * @lastUpdated 2026-06-17T22:32:03.934Z
  */
 
 import { ShieldCheck, X, ChevronDown } from 'lucide-react';

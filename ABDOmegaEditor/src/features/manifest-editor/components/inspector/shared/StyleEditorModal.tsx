@@ -16,7 +16,7 @@ import { Wand2, X, Save, RefreshCcw, ShieldCheck, Box, Layout } from 'lucide-rea
 import type { OMEGA_Manifest, ManifestEntity, StyleVariant, LayoutContainer, OmegaStyleNode } from '@/omega-ui-core/types/manifest';
 import IndustrialGovernanceConsole from './IndustrialGovernanceConsole';
 import { CellRenderer } from '@/omega-ui-core/renderers/CellRenderer';
-import { useDesignTokens } from '@/features/manifest-editor/hooks/useDesignTokens';
+import { useDesignTokens } from '@/omega-ui-core/hooks/useDesignTokens';
 import { getElementDefinition } from '@/omega-ui-core/governance/ElementCatalog';
 import IndustrialContainer from '../../shared/IndustrialContainer';
 import { adaptManifestEntityToNode } from '@/features/manifest-editor/hooks/entities/ucaInspectorAdapter';

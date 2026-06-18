@@ -147,6 +147,7 @@ export default function RackMiniMap({
   const panelRef = useRef<HTMLDivElement>(null);
   const [isDraggingVisual, setIsDraggingVisual] = useState(false);
   const [isSnapped, setIsSnapped] = useState(false);
+  const [isMiniMapFocused, setIsMiniMapFocused] = useState(false);
   const isDraggingPanel = useRef(false);
   const panelDragStart = useRef({ mouseX: 0, mouseY: 0, offsetX: 0, offsetY: 0, pw: 0, ph: 0, panelW: 0, panelH: 0 });
   const [hiddenKinds, setHiddenKinds] = useState<Set<string>>(new Set());
@@ -641,13 +642,60 @@ export default function RackMiniMap({
       {/* Mini-map canvas */}
       <div
         ref={miniMapRef}
-        className="relative cursor-pointer bg-black/20"
+        className={`relative cursor-pointer bg-black/20 ${isMiniMapFocused ? 'ring-1 ring-primary/40' : ''}`}
+        tabIndex={0}
+        role="grid"
+        aria-label="Rack Mini Map — use Arrow keys to pan, Enter to toggle filter, Escape to blur"
         style={{
           width: MINI_MAP_MAX_W + 16,
           height: MINI_MAP_MAX_H + 16,
           padding: 8,
         }}
         onClick={handleMiniMapClick}
+        onFocus={() => setIsMiniMapFocused(true)}
+        onBlur={(e) => {
+          // Keep focused state if focus moves to filter dropdown inside
+          if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+            setIsMiniMapFocused(false);
+          }
+        }}
+        onKeyDown={(e) => {
+          const PAN_STEP = 20;
+          switch (e.key) {
+            case 'ArrowUp':
+              e.preventDefault();
+              e.stopPropagation();
+              onPan(0, -PAN_STEP);
+              break;
+            case 'ArrowDown':
+              e.preventDefault();
+              e.stopPropagation();
+              onPan(0, PAN_STEP);
+              break;
+            case 'ArrowLeft':
+              e.preventDefault();
+              e.stopPropagation();
+              onPan(-PAN_STEP, 0);
+              break;
+            case 'ArrowRight':
+              e.preventDefault();
+              e.stopPropagation();
+              onPan(PAN_STEP, 0);
+              break;
+            case 'Enter':
+              e.preventDefault();
+              e.stopPropagation();
+              setShowKindFilter((p) => !p);
+              break;
+            case 'Escape':
+              if (showKindFilter) {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowKindFilter(false);
+              }
+              break;
+          }
+        }}
       >
         {/* Rack background */}
         <div

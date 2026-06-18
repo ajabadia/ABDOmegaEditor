@@ -24,6 +24,7 @@ import type { UCADebugContext } from '../ucaTypes';
 import { useDesignTokens } from '../../hooks/useDesignTokens';
 import { IntegrityOverlay } from '@/features/manifest-editor/components/viewport/IntegrityOverlay';
 import { ReorderIndicator } from './ReorderIndicator';
+import { ResizeHandles } from './ResizeHandles';
 
 const COMP_TYPE_MAP: Record<string, ComponentType> = {
   'knob': 'knob', 'slider-v': 'slider', 'slider-h': 'slider',
@@ -143,7 +144,11 @@ export function CellNode({
   // pan-based drag (no momentum → element lands exactly where pointer releases)
   const isRootNode = node.id === 'root' || node.id === manifest.ui?.tree?.id;
   const isDraggable = !debugContext?.isLiveMode && node.kind !== 'rack' && !isRootNode && !debugContext?.lockedNodeIds?.includes(node.id) && !parentIsDraggableContainer;
-  const panHandlers = isDraggable ? {
+  // 🔴 BUG FIX: When in 'transform' mode with the node selected, disable drag pan handlers
+  // to prevent useUCADrag.handlePanEnd from firing AFTER useUCAResize.handleResizeEnd
+  // and overwriting the resize update with a position-only update (losing the size change).
+  const isResizeMode = isSelected && debugContext?.activeTool === 'transform';
+  const panHandlers = (isDraggable && !isResizeMode) ? {
     onPanStart: handlePanStart,
     onPan: handlePan,
     onPanEnd: handlePanEnd,
@@ -157,6 +162,34 @@ export function CellNode({
     ? debugContext!.activeDragOffset!
     : (dragOffset || { x: 0, y: 0 });
 
+  // Check if we are currently being resized
+  const activeResizeOffset = debugContext?.activeResizeOffset;
+  const isBeingResized = activeResizeOffset && activeResizeOffset.resizedNodeId === node.id;
+  
+  // Calculate dynamic dimensions and positions
+  const currentW = isBeingResized ? activeResizeOffset.width : (node.layout?.size?.width ?? 48);
+  const currentH = isBeingResized ? activeResizeOffset.height : (node.layout?.size?.height ?? 48);
+  const currentX = isBeingResized ? ((node.layout?.pos?.x || 0) + activeResizeOffset.x) : ((node.layout?.pos?.x || 0) + offsetToApply.x);
+  const currentY = isBeingResized ? ((node.layout?.pos?.y || 0) + activeResizeOffset.y) : ((node.layout?.pos?.y || 0) + offsetToApply.y);
+
+
+
+  // Compute visual scale for primitive elements to stretch them in real-time
+  const kind = node.cellRef || node.kind || 'knob';
+  const BASE_SIZES: Record<string, { width: number; height: number }> = {
+    'knob': { width: 36, height: 36 },
+    'slider-v': { width: 20, height: 64 },
+    'slider-h': { width: 64, height: 20 },
+    'button': { width: 24, height: 24 },
+    'switch': { width: 24, height: 40 },
+    'led': { width: 14, height: 14 },
+    'display': { width: 80, height: 40 },
+    'label': { width: 60, height: 16 }
+  };
+  const baseSize = BASE_SIZES[kind] || { width: 48, height: 48 };
+  const scaleX = currentW / baseSize.width;
+  const scaleY = currentH / baseSize.height;
+
   return (
     <motion.div
       id={`uca-${node.id}`}
@@ -166,21 +199,25 @@ export function CellNode({
       onPointerDown={(e) => {
         // Select on pointerdown BEFORE framer-motion pan gesture can suppress click
         handleDebugClick(e as unknown as React.MouseEvent);
-        if (isDraggable) {
+        // Block propagation in resize mode so the event doesn't bubble to the rack's
+        // onClick handler (which calls onSelectItem(null) and deselects the node).
+        if (isDraggable || isResizeMode) {
           e.stopPropagation();
         }
       }}
       {...panHandlers}
       style={{
         position: 'absolute',
-        left: `${(node.layout?.pos?.x || 0) + offsetToApply.x}px`,
-        top: `${(node.layout?.pos?.y || 0) + offsetToApply.y}px`,
-        width: node.layout?.size?.width ? `${node.layout.size.width}px` : '48px', 
-        height: node.layout?.size?.height ? `${node.layout.size.height}px` : '48px',
+        left: `${currentX}px`,
+        top: `${currentY}px`,
+        width: `${currentW}px`, 
+        height: `${currentH}px`,
         zIndex: isSelected ? 100 : (node.layout?.zIndex || 0),
         ...cssVars,
         pointerEvents: debugContext?.isLiveMode ? 'none' : 'auto',
-        outline: (!debugContext?.isLiveMode && isSelected) ? '2px solid #00f2ff' : (!debugContext?.isLiveMode && isMultiSelected) ? '1.5px dashed #a855f7' : 'none',
+        outline: (!debugContext?.isLiveMode && isSelected) 
+          ? (debugContext?.activeTool === 'transform' ? '2px dashed #00f2ff' : '2px solid #00f2ff') 
+          : (!debugContext?.isLiveMode && isMultiSelected) ? '1.5px dashed #a855f7' : 'none',
         outlineOffset: '2px',
         boxShadow: (!debugContext?.isLiveMode && isSelected) ? '0 0 15px rgba(0, 242, 255, 0.4)' : (!debugContext?.isLiveMode && isMultiSelected) ? '0 0 10px rgba(168, 85, 247, 0.3)' : 'none'
       }}
@@ -197,6 +234,14 @@ export function CellNode({
       {!debugContext?.isLiveMode && <IntegrityOverlay node={node} audit={audit} />}
 
       {!debugContext?.isLiveMode && <GovernedOverlay enabled={!!isLayoutGoverned} />}
+
+      {!debugContext?.isLiveMode && isSelected && debugContext?.activeTool === 'transform' && !debugContext?.lockedNodeIds?.includes(node.id) && (
+        <ResizeHandles
+          node={node}
+          manifest={manifest}
+          debugContext={debugContext}
+        />
+      )}
 
       {/* Visual reorder indicator — shows insertion point during drag in governed layouts */}
       {isLayoutGoverned && targetIndex !== null && parentNode?.layout?.mode && (
@@ -216,7 +261,13 @@ export function CellNode({
           />
       )}
 
-      <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+      <div 
+        className="absolute inset-0 pointer-events-none flex items-center justify-center"
+        style={{
+          transform: `scale(${scaleX}, ${scaleY})`,
+          transformOrigin: 'center center'
+        }}
+      >
         {renderedComponent}
       </div>
 

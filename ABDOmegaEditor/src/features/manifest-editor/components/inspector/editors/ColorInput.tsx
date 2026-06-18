@@ -4,8 +4,8 @@
  * @refactorable false
  * @classification UI Component
  * @complexity Low
- * @fingerprint exports:1,imports:0,sig:c4nwl8
- * @lastUpdated 2026-06-15T11:29:29.887Z
+ * @fingerprint exports:1,imports:0,sig:1i5ch90
+ * @lastUpdated 2026-06-17T22:33:36.795Z
  */
 
 interface ColorInputProps {

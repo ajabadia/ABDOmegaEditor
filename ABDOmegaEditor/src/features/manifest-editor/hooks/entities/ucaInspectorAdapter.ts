@@ -176,6 +176,16 @@ export function applyUpdatesToNode(node: OmegaNode, updates: Partial<ManifestEnt
   if (entityPatch.pos) {
     next.layout = { ...next.layout, pos: entityPatch.pos };
   }
+
+  if (entityPatch.size) {
+    next.layout = { ...next.layout, size: entityPatch.size };
+  } else if (entityPatch.presentation?.size) {
+    next.layout = { ...next.layout, size: entityPatch.presentation.size };
+  }
+
+  if (entityPatch.label) {
+    next.meta = { ...next.meta, label: entityPatch.label };
+  }
   
   if (entityPatch.presentation?.style) {
     next.style = { ...next.style, ...entityPatch.presentation.style };

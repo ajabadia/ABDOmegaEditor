@@ -1,428 +1,260 @@
 {
-  "timestamp": "2026-06-12T06:37:25.811Z",
+  "timestamp": "2026-06-18T19:27:20.340Z",
   "counts": {
     "high": 0,
-    "medium": 56,
-    "low": 253,
-    "total": 309
+    "medium": 13,
+    "low": 151,
+    "total": 164
   },
   "details": {
     "HIGH": [],
     "MEDIUM": [
       {
         "file": "src\\components\\ui\\contact\\useContactForm.ts",
-        "line": 55,
+        "line": 66,
         "content": "throw new Error(result.error || t(\"error\"));",
         "pattern": "throw new Error"
       },
       {
-        "file": "src\\features\\manifest-editor\\components\\inspector\\aesthetic\\styles\\library\\GuildNavigator.tsx",
-        "line": 4,
-        "content": "import type { ElementCategory } from '@/omega-ui-core/governance/ElementCatalog';",
-        "pattern": "ElementCatalog"
-      },
-      {
-        "file": "src\\features\\manifest-editor\\components\\inspector\\aesthetic\\styles\\ModuleStyleLibrary.tsx",
-        "line": 6,
-        "content": "import { OMEGA_ELEMENT_CATALOG, type ElementCategory, getElementDefinition } from '@/omega-ui-core/governance/ElementCatalog';",
-        "pattern": "ElementCatalog"
-      },
-      {
         "file": "src\\features\\manifest-editor\\components\\inspector\\attachments\\AttachmentTypeAnchor.tsx",
-        "line": 19,
+        "line": 28,
         "content": "const allowedIds = hostDef?.allowedFragments || [];",
         "pattern": "allowedFragments"
       },
       {
-        "file": "src\\features\\manifest-editor\\components\\inspector\\attachments\\AttachmentTypeAnchor.tsx",
-        "line": 7,
-        "content": "import { OMEGA_ELEMENT_CATALOG, getElementDefinition } from '@/omega-ui-core/governance/ElementCatalog';",
-        "pattern": "ElementCatalog"
-      },
-      {
         "file": "src\\features\\manifest-editor\\components\\inspector\\BlueprintLibraryPanel.tsx",
-        "line": 82,
+        "line": 95,
         "content": "if (!res.ok) throw new Error(`Catalog fetch failed: ${res.status}`);",
         "pattern": "throw new Error"
       },
       {
         "file": "src\\features\\manifest-editor\\components\\inspector\\BlueprintLibraryPanel.tsx",
-        "line": 89,
+        "line": 102,
         "content": "if (!bpRes.ok) throw new Error(`Blueprint fetch failed: ${bpRes.status}`);",
         "pattern": "throw new Error"
       },
       {
-        "file": "src\\features\\manifest-editor\\components\\inspector\\sections\\AestheticSection.tsx",
-        "line": 13,
-        "content": "import { getElementDefinition } from '@/omega-ui-core/governance/ElementCatalog';",
-        "pattern": "ElementCatalog"
+        "file": "src\\features\\manifest-editor\\components\\ToastContainer.tsx",
+        "line": 39,
+        "content": "if (!ctx) throw new Error('useToast must be used within a ToastProvider');",
+        "pattern": "throw new Error"
       },
       {
-        "file": "src\\features\\manifest-editor\\components\\inspector\\sections\\LogicSection.tsx",
-        "line": 11,
-        "content": "import { OMEGA_ELEMENT_CATALOG } from '@/omega-ui-core/governance/ElementCatalog';",
-        "pattern": "ElementCatalog"
-      },
-      {
-        "file": "src\\features\\manifest-editor\\components\\inspector\\sections\\SpatialSection.tsx",
-        "line": 11,
-        "content": "import { getElementDefinition } from '@/omega-ui-core/governance/ElementCatalog';",
-        "pattern": "ElementCatalog"
-      },
-      {
-        "file": "src\\features\\manifest-editor\\components\\inspector\\shared\\aesthetic\\GovernanceRegistry.ts",
-        "line": 1,
-        "content": "import type { AestheticCapability } from \"@/omega-ui-core/governance/ElementCatalog\";",
-        "pattern": "ElementCatalog"
-      },
-      {
-        "file": "src\\features\\manifest-editor\\components\\inspector\\shared\\aesthetic\\IdentityGovernance.tsx",
-        "line": 5,
-        "content": "import type { AestheticCapability } from '@/omega-ui-core/governance/ElementCatalog';",
-        "pattern": "ElementCatalog"
-      },
-      {
-        "file": "src\\features\\manifest-editor\\components\\inspector\\shared\\aesthetic\\IdentityGovernance.tsx",
-        "line": 6,
-        "content": "import { OMEGA_ELEMENT_CATALOG } from '@/omega-ui-core/governance/ElementCatalog';",
-        "pattern": "ElementCatalog"
-      },
-      {
-        "file": "src\\features\\manifest-editor\\components\\inspector\\shared\\aesthetic\\map.md",
-        "line": 2,
-        "content": "Componentes modulares de gobernanza estética impulsados por el ElementCatalog.",
-        "pattern": "ElementCatalog"
-      },
-      {
-        "file": "src\\features\\manifest-editor\\components\\inspector\\shared\\aesthetic\\SequenceIngestionLab.tsx",
-        "line": 42,
-        "content": "return new Promise<HTMLImageElement>((resolve, reject) => {",
-        "pattern": "reject"
-      },
-      {
-        "file": "src\\features\\manifest-editor\\components\\inspector\\shared\\aesthetic\\SequenceIngestionLab.tsx",
-        "line": 45,
-        "content": "img.onerror = reject;",
-        "pattern": "reject"
-      },
-      {
-        "file": "src\\features\\manifest-editor\\components\\inspector\\shared\\aesthetic\\UnifiedGraphicGovernance.tsx",
-        "line": 5,
-        "content": "import { getElementDefinition } from '@/omega-ui-core/governance/ElementCatalog';",
-        "pattern": "ElementCatalog"
-      },
-      {
-        "file": "src\\features\\manifest-editor\\components\\inspector\\shared\\CanonicalStylePreview.tsx",
-        "line": 10,
-        "content": "import { getElementDefinition } from \"@/omega-ui-core/governance/ElementCatalog\";",
-        "pattern": "ElementCatalog"
-      },
-      {
-        "file": "src\\features\\manifest-editor\\components\\inspector\\shared\\IndustrialGovernanceConsole.tsx",
-        "line": 6,
-        "content": "import { getElementDefinition } from '@/omega-ui-core/governance/ElementCatalog';",
-        "pattern": "ElementCatalog"
-      },
-      {
-        "file": "src\\features\\manifest-editor\\components\\inspector\\shared\\map.md",
-        "line": 5,
-        "content": "- [IndustrialGovernanceConsole.tsx](file:///d:/desarrollos/ABDSynthsWeb/abd-ia_synths/src/components/tools/manifest-editor/inspector/shared/IndustrialGovernanceConsole.tsx): Orquestador dinámico que compone la interfaz de edición basándose en las capacidades del ElementCatalog.",
-        "pattern": "ElementCatalog"
-      },
-      {
-        "file": "src\\features\\manifest-editor\\components\\inspector\\shared\\StyleEditorModal.tsx",
-        "line": 10,
-        "content": "import { getElementDefinition } from '@/omega-ui-core/governance/ElementCatalog';",
-        "pattern": "ElementCatalog"
-      },
-      {
-        "file": "src\\features\\manifest-editor\\components\\lab\\CellStudioContentArea.tsx",
-        "line": 5,
-        "content": "import { OMEGA_ELEMENT_CATALOG } from '@/omega-ui-core/governance/ElementCatalog';",
-        "pattern": "ElementCatalog"
-      },
-      {
-        "file": "src\\features\\manifest-editor\\components\\lab\\CellStudioToolbar.tsx",
-        "line": 5,
-        "content": "import { OMEGA_ELEMENT_CATALOG } from '@/omega-ui-core/governance/ElementCatalog';",
-        "pattern": "ElementCatalog"
-      },
-      {
-        "file": "src\\features\\manifest-editor\\components\\views\\SourceView.tsx",
-        "line": 60,
-        "content": "validate: true,",
-        "pattern": "validate"
-      },
-      {
-        "file": "src\\features\\manifest-editor\\components\\WorkbenchContainer.tsx",
-        "line": 47,
-        "content": "import { validateManifestSchema } from '@/omega-ui-core/utils/manifestValidator';",
-        "pattern": "validate"
-      },
-      {
-        "file": "src\\features\\manifest-editor\\components\\WorkbenchContainer.tsx",
-        "line": 273,
-        "content": "// Not distilled — validate schema before loading",
-        "pattern": "validate"
-      },
-      {
-        "file": "src\\features\\manifest-editor\\components\\WorkbenchContainer.tsx",
-        "line": 275,
+        "file": "src\\features\\manifest-editor\\hooks\\io\\useBundleTransfer.ts",
+        "line": 280,
         "content": "const validation = validateManifestSchema(parsed);",
         "pattern": "validate"
       },
       {
         "file": "src\\features\\manifest-editor\\hooks\\io\\useManifestTransfer.ts",
-        "line": 26,
+        "line": 36,
         "content": "if (!parsed || typeof parsed !== 'object') throw new Error(\"Invalid manifest format.\");",
         "pattern": "throw new Error"
       },
       {
         "file": "src\\features\\manifest-editor\\hooks\\io\\useManifestTransfer.ts",
-        "line": 205,
+        "line": 215,
         "content": "if (req !== 'granted') throw new Error('File system write permission denied.');",
         "pattern": "throw new Error"
       },
       {
         "file": "src\\features\\manifest-editor\\hooks\\io\\useWasmTransfer.ts",
-        "line": 95,
+        "line": 105,
         "content": "throw new Error(\"Missing mandatory 'id' or 'ports' fields in contract.\");",
         "pattern": "throw new Error"
       },
       {
-        "file": "src\\features\\manifest-editor\\hooks\\io\\useWasmTransfer.ts",
-        "line": 127,
-        "content": "addLog(`[AUDIT] Contract '${loadedContract.id}' validated and fingerprinted.`);",
-        "pattern": "validate"
-      },
-      {
         "file": "src\\features\\manifest-editor\\hooks\\orchestrator\\useSessionPersistence.ts",
-        "line": 19,
+        "line": 30,
         "content": "BlueprintValidator.validate(persisted.graph, { id: persisted.id });",
         "pattern": "validate"
-      },
-      {
-        "file": "src\\features\\manifest-editor\\hooks\\useAuditEngine.ts",
-        "line": 57,
-        "content": "const baseIssues = ValidationService.validate(manifest, contract as Parameters<typeof ValidationService.validate>[1]) || [];",
-        "pattern": "validate"
-      },
-      {
-        "file": "src\\features\\manifest-editor\\hooks\\useDocumentOrchestrator.ts",
-        "line": 370,
-        "content": "BlueprintValidator.validate(persisted.graph, { id: persisted.id });",
-        "pattern": "validate"
-      },
-      {
-        "file": "src\\features\\manifest-editor\\hooks\\useDocumentOrchestrator.ts",
-        "line": 531,
-        "content": "BlueprintValidator.validate(doc.manifest.ui.tree, doc.manifest);",
-        "pattern": "validate"
-      },
-      {
-        "file": "src\\features\\manifest-editor\\hooks\\useSimulationBridge.ts",
-        "line": 94,
-        "content": "throw new Error('Deployment failed at runtime');",
-        "pattern": "throw new Error"
       },
       {
         "file": "src\\features\\manifest-editor\\services\\StructuralAuditor.ts",
-        "line": 299,
+        "line": 309,
         "content": "const circularityIssues = CircularityAuditor.validate(manifest);",
         "pattern": "validate"
       },
       {
         "file": "src\\features\\manifest-editor\\utils\\blueprintUtils.ts",
-        "line": 23,
+        "line": 33,
         "content": "throw new Error(`[BLUEPRINT] Invalid ModuleTemplate: Missing ID or Base Node.`);",
         "pattern": "throw new Error"
       },
       {
         "file": "src\\features\\manifest-editor\\utils\\blueprintUtils.ts",
-        "line": 102,
+        "line": 112,
         "content": "export function validateBlueprint(blueprint: BlueprintDefinition): { valid: boolean; errors: string[] } {",
         "pattern": "validate"
+      }
+    ],
+    "LOW": [
+      {
+        "file": "src\\features\\manifest-editor\\components\\inspector\\aesthetic\\styles\\library\\GuildNavigator.tsx",
+        "line": 13,
+        "content": "import type { ElementCategory } from '@/omega-ui-core/governance/ElementCatalog';",
+        "pattern": "ElementCatalog"
+      },
+      {
+        "file": "src\\features\\manifest-editor\\components\\inspector\\aesthetic\\styles\\ModuleStyleLibrary.tsx",
+        "line": 16,
+        "content": "import { OMEGA_ELEMENT_CATALOG, type ElementCategory, getElementDefinition } from '@/omega-ui-core/governance/ElementCatalog';",
+        "pattern": "ElementCatalog"
+      },
+      {
+        "file": "src\\features\\manifest-editor\\components\\inspector\\attachments\\AttachmentTypeAnchor.tsx",
+        "line": 16,
+        "content": "import { OMEGA_ELEMENT_CATALOG, getElementDefinition } from '@/omega-ui-core/governance/ElementCatalog';",
+        "pattern": "ElementCatalog"
+      },
+      {
+        "file": "src\\features\\manifest-editor\\components\\inspector\\sections\\AestheticSection.tsx",
+        "line": 23,
+        "content": "import { getElementDefinition } from '@/omega-ui-core/governance/ElementCatalog';",
+        "pattern": "ElementCatalog"
+      },
+      {
+        "file": "src\\features\\manifest-editor\\components\\inspector\\sections\\LogicSection.tsx",
+        "line": 20,
+        "content": "import { OMEGA_ELEMENT_CATALOG } from '@/omega-ui-core/governance/ElementCatalog';",
+        "pattern": "ElementCatalog"
+      },
+      {
+        "file": "src\\features\\manifest-editor\\components\\inspector\\sections\\SpatialSection.tsx",
+        "line": 21,
+        "content": "import { getElementDefinition } from '@/omega-ui-core/governance/ElementCatalog';",
+        "pattern": "ElementCatalog"
+      },
+      {
+        "file": "src\\features\\manifest-editor\\components\\inspector\\shared\\aesthetic\\GovernanceRegistry.ts",
+        "line": 11,
+        "content": "import type { AestheticCapability } from \"@/omega-ui-core/governance/ElementCatalog\";",
+        "pattern": "ElementCatalog"
+      },
+      {
+        "file": "src\\features\\manifest-editor\\components\\inspector\\shared\\aesthetic\\IdentityGovernance.tsx",
+        "line": 14,
+        "content": "import type { AestheticCapability } from '@/omega-ui-core/governance/ElementCatalog';",
+        "pattern": "ElementCatalog"
+      },
+      {
+        "file": "src\\features\\manifest-editor\\components\\inspector\\shared\\aesthetic\\IdentityGovernance.tsx",
+        "line": 15,
+        "content": "import { OMEGA_ELEMENT_CATALOG } from '@/omega-ui-core/governance/ElementCatalog';",
+        "pattern": "ElementCatalog"
+      },
+      {
+        "file": "src\\features\\manifest-editor\\components\\inspector\\shared\\aesthetic\\UnifiedGraphicGovernance.tsx",
+        "line": 14,
+        "content": "import { getElementDefinition } from '@/omega-ui-core/governance/ElementCatalog';",
+        "pattern": "ElementCatalog"
+      },
+      {
+        "file": "src\\features\\manifest-editor\\components\\inspector\\shared\\CanonicalStylePreview.tsx",
+        "line": 21,
+        "content": "import { getElementDefinition } from \"@/omega-ui-core/governance/ElementCatalog\";",
+        "pattern": "ElementCatalog"
+      },
+      {
+        "file": "src\\features\\manifest-editor\\components\\inspector\\shared\\IndustrialGovernanceConsole.tsx",
+        "line": 16,
+        "content": "import { getElementDefinition } from '@/omega-ui-core/governance/ElementCatalog';",
+        "pattern": "ElementCatalog"
+      },
+      {
+        "file": "src\\features\\manifest-editor\\components\\inspector\\shared\\StyleEditorModal.tsx",
+        "line": 20,
+        "content": "import { getElementDefinition } from '@/omega-ui-core/governance/ElementCatalog';",
+        "pattern": "ElementCatalog"
+      },
+      {
+        "file": "src\\features\\manifest-editor\\components\\lab\\CellStudioContentArea.tsx",
+        "line": 14,
+        "content": "import { OMEGA_ELEMENT_CATALOG } from '@/omega-ui-core/governance/ElementCatalog';",
+        "pattern": "ElementCatalog"
+      },
+      {
+        "file": "src\\features\\manifest-editor\\components\\lab\\CellStudioToolbar.tsx",
+        "line": 15,
+        "content": "import { OMEGA_ELEMENT_CATALOG } from '@/omega-ui-core/governance/ElementCatalog';",
+        "pattern": "ElementCatalog"
       },
       {
         "file": "src\\features\\manifest-editor\\utils\\governanceUtils.ts",
-        "line": 2,
+        "line": 12,
         "content": "import type { ElementCategory } from '@/omega-ui-core/governance/ElementCatalog';",
         "pattern": "ElementCatalog"
       },
       {
         "file": "src\\features\\manifest-editor\\utils\\governanceUtils.ts",
-        "line": 3,
+        "line": 13,
         "content": "import { OMEGA_ELEMENT_CATALOG } from '@/omega-ui-core/governance/ElementCatalog';",
         "pattern": "ElementCatalog"
       },
       {
-        "file": "docs\\grafos\\src\\features\\manifest-editor\\components\\inspector\\aesthetic\\styles\\library\\GuildNavigator.tsx.md",
-        "line": 7,
-        "content": "- [[docs/grafos/src/omega-ui-core/governance/ElementCatalog|ElementCatalog]] (`src/omega-ui-core/governance/ElementCatalog`)",
-        "pattern": "ElementCatalog"
-      },
-      {
-        "file": "docs\\grafos\\src\\features\\manifest-editor\\components\\inspector\\aesthetic\\styles\\ModuleStyleLibrary.tsx.md",
-        "line": 13,
-        "content": "- [[docs/grafos/src/omega-ui-core/governance/ElementCatalog|ElementCatalog]] (`src/omega-ui-core/governance/ElementCatalog`)",
-        "pattern": "ElementCatalog"
-      },
-      {
-        "file": "docs\\grafos\\src\\features\\manifest-editor\\components\\inspector\\attachments\\AttachmentTypeAnchor.tsx.md",
-        "line": 7,
-        "content": "- [[docs/grafos/src/omega-ui-core/governance/ElementCatalog|ElementCatalog]] (`src/omega-ui-core/governance/ElementCatalog`)",
-        "pattern": "ElementCatalog"
-      },
-      {
-        "file": "docs\\grafos\\src\\features\\manifest-editor\\components\\inspector\\sections\\AestheticSection.tsx.md",
-        "line": 20,
-        "content": "- [[docs/grafos/src/omega-ui-core/governance/ElementCatalog|ElementCatalog]] (`src/omega-ui-core/governance/ElementCatalog`)",
-        "pattern": "ElementCatalog"
-      },
-      {
-        "file": "docs\\grafos\\src\\features\\manifest-editor\\components\\inspector\\sections\\LogicSection.tsx.md",
-        "line": 11,
-        "content": "- [[docs/grafos/src/omega-ui-core/governance/ElementCatalog|ElementCatalog]] (`src/omega-ui-core/governance/ElementCatalog`)",
-        "pattern": "ElementCatalog"
-      },
-      {
-        "file": "docs\\grafos\\src\\features\\manifest-editor\\components\\inspector\\sections\\SpatialSection.tsx.md",
-        "line": 11,
-        "content": "- [[docs/grafos/src/omega-ui-core/governance/ElementCatalog|ElementCatalog]] (`src/omega-ui-core/governance/ElementCatalog`)",
-        "pattern": "ElementCatalog"
-      },
-      {
-        "file": "docs\\grafos\\src\\features\\manifest-editor\\components\\inspector\\shared\\aesthetic\\GovernanceRegistry.ts.md",
-        "line": 7,
-        "content": "- [[docs/grafos/src/omega-ui-core/governance/ElementCatalog|ElementCatalog]] (`src/omega-ui-core/governance/ElementCatalog`)",
-        "pattern": "ElementCatalog"
-      },
-      {
-        "file": "docs\\grafos\\src\\features\\manifest-editor\\components\\inspector\\shared\\aesthetic\\IdentityGovernance.tsx.md",
-        "line": 10,
-        "content": "- [[docs/grafos/src/omega-ui-core/governance/ElementCatalog|ElementCatalog]] (`src/omega-ui-core/governance/ElementCatalog`)",
-        "pattern": "ElementCatalog"
-      },
-      {
-        "file": "docs\\grafos\\src\\features\\manifest-editor\\components\\inspector\\shared\\aesthetic\\UnifiedGraphicGovernance.tsx.md",
-        "line": 11,
-        "content": "- [[docs/grafos/src/omega-ui-core/governance/ElementCatalog|ElementCatalog]] (`src/omega-ui-core/governance/ElementCatalog`)",
-        "pattern": "ElementCatalog"
-      },
-      {
-        "file": "docs\\grafos\\src\\features\\manifest-editor\\components\\inspector\\shared\\CanonicalStylePreview.tsx.md",
-        "line": 9,
-        "content": "- [[docs/grafos/src/omega-ui-core/governance/ElementCatalog|ElementCatalog]] (`src/omega-ui-core/governance/ElementCatalog`)",
-        "pattern": "ElementCatalog"
-      },
-      {
-        "file": "docs\\grafos\\src\\features\\manifest-editor\\components\\inspector\\shared\\IndustrialGovernanceConsole.tsx.md",
-        "line": 15,
-        "content": "- [[docs/grafos/src/omega-ui-core/governance/ElementCatalog|ElementCatalog]] (`src/omega-ui-core/governance/ElementCatalog`)",
-        "pattern": "ElementCatalog"
-      },
-      {
-        "file": "docs\\grafos\\src\\features\\manifest-editor\\components\\inspector\\shared\\StyleEditorModal.tsx.md",
-        "line": 11,
-        "content": "- [[docs/grafos/src/omega-ui-core/governance/ElementCatalog|ElementCatalog]] (`src/omega-ui-core/governance/ElementCatalog`)",
-        "pattern": "ElementCatalog"
-      },
-      {
-        "file": "docs\\grafos\\src\\features\\manifest-editor\\components\\lab\\CellStudioContentArea.tsx.md",
-        "line": 13,
-        "content": "- [[docs/grafos/src/omega-ui-core/governance/ElementCatalog|ElementCatalog]] (`src/omega-ui-core/governance/ElementCatalog`)",
-        "pattern": "ElementCatalog"
-      },
-      {
-        "file": "docs\\grafos\\src\\features\\manifest-editor\\components\\lab\\CellStudioToolbar.tsx.md",
-        "line": 7,
-        "content": "- [[docs/grafos/src/omega-ui-core/governance/ElementCatalog|ElementCatalog]] (`src/omega-ui-core/governance/ElementCatalog`)",
-        "pattern": "ElementCatalog"
-      },
-      {
-        "file": "docs\\grafos\\src\\features\\manifest-editor\\utils\\governanceUtils.ts.md",
-        "line": 7,
-        "content": "- [[docs/grafos/src/omega-ui-core/governance/ElementCatalog|ElementCatalog]] (`src/omega-ui-core/governance/ElementCatalog`)",
-        "pattern": "ElementCatalog"
-      }
-    ],
-    "LOW": [
-      {
-        "file": "src\\data\\map.md",
-        "line": 45,
-        "content": "- **Schema Parity**: Any changes to instrument data structures MUST be reflected in `types.ts` and validated against `omega-schema-v7.json`.",
-        "pattern": "validate"
-      },
-      {
         "file": "src\\omega-ui-core\\governance\\ElementCatalog.ts",
-        "line": 10,
+        "line": 20,
         "content": "* - 'capabilities' and 'allowedFragments' are soft suggestions for UI filtering.",
         "pattern": "allowedFragments"
       },
       {
         "file": "src\\omega-ui-core\\governance\\ElementCatalog.ts",
-        "line": 77,
+        "line": 87,
         "content": "* `allowedFragments` is advisory only. Use it for editor UX suggestions (e.g. \"+ Add\" menus),",
         "pattern": "allowedFragments"
       },
       {
         "file": "src\\omega-ui-core\\governance\\ElementCatalog.ts",
-        "line": 80,
+        "line": 90,
         "content": "allowedFragments?: string[]; // IDs of elements that can be attached to this host",
         "pattern": "allowedFragments"
       },
       {
         "file": "src\\omega-ui-core\\governance\\ElementCatalog.ts",
-        "line": 96,
+        "line": 106,
         "content": "allowedFragments: ['rack-screw', 'label', 'illustration'],",
         "pattern": "allowedFragments"
       },
       {
         "file": "src\\omega-ui-core\\governance\\ElementCatalog.ts",
-        "line": 107,
+        "line": 117,
         "content": "allowedFragments: ['label', 'illustration', 'led']",
         "pattern": "allowedFragments"
       },
       {
         "file": "src\\omega-ui-core\\governance\\ElementCatalog.ts",
-        "line": 117,
+        "line": 127,
         "content": "allowedFragments: ['label', 'illustration', 'container', 'group', 'cell']",
         "pattern": "allowedFragments"
       },
       {
         "file": "src\\omega-ui-core\\governance\\ElementCatalog.ts",
-        "line": 129,
+        "line": 139,
         "content": "allowedFragments: ['label', 'led', 'port', 'switch', 'stepper', 'graphic-fragment'],",
         "pattern": "allowedFragments"
       },
       {
         "file": "src\\omega-ui-core\\governance\\ElementCatalog.ts",
-        "line": 140,
+        "line": 150,
         "content": "allowedFragments: ['label', 'led', 'port', 'graphic-fragment'],",
         "pattern": "allowedFragments"
       },
       {
         "file": "src\\omega-ui-core\\governance\\ElementCatalog.ts",
-        "line": 151,
+        "line": 161,
         "content": "allowedFragments: ['label', 'led', 'port', 'graphic-fragment'],",
         "pattern": "allowedFragments"
       },
       {
         "file": "src\\omega-ui-core\\governance\\ElementCatalog.ts",
-        "line": 162,
+        "line": 172,
         "content": "allowedFragments: ['label', 'led'],",
         "pattern": "allowedFragments"
       },
       {
         "file": "src\\omega-ui-core\\governance\\ElementCatalog.ts",
-        "line": 173,
+        "line": 183,
         "content": "allowedFragments: ['label'],",
-        "pattern": "allowedFragments"
-      },
-      {
-        "file": "src\\omega-ui-core\\governance\\ElementCatalog.ts",
-        "line": 184,
-        "content": "allowedFragments: ['label']",
         "pattern": "allowedFragments"
       },
       {
@@ -439,397 +271,121 @@
       },
       {
         "file": "src\\omega-ui-core\\governance\\ElementCatalog.ts",
-        "line": 216,
+        "line": 214,
+        "content": "allowedFragments: ['label']",
+        "pattern": "allowedFragments"
+      },
+      {
+        "file": "src\\omega-ui-core\\governance\\ElementCatalog.ts",
+        "line": 226,
         "content": "allowedFragments: ['label', 'led']",
         "pattern": "allowedFragments"
       },
       {
         "file": "src\\omega-ui-core\\governance\\ElementCatalog.ts",
-        "line": 237,
+        "line": 247,
         "content": "allowedFragments: ['label', 'stepper']",
         "pattern": "allowedFragments"
       },
       {
         "file": "src\\omega-ui-core\\governance\\ElementCatalog.ts",
-        "line": 247,
+        "line": 257,
         "content": "allowedFragments: ['label']",
         "pattern": "allowedFragments"
       },
       {
         "file": "src\\omega-ui-core\\governance\\ElementCatalog.ts",
-        "line": 257,
+        "line": 267,
         "content": "allowedFragments: ['label', 'illustration', 'led']",
         "pattern": "allowedFragments"
       },
       {
         "file": "src\\omega-ui-core\\governance\\ElementCatalog.ts",
-        "line": 276,
+        "line": 286,
         "content": "allowedFragments: ['label']",
         "pattern": "allowedFragments"
       },
       {
         "file": "src\\omega-ui-core\\governance\\ElementCatalog.ts",
-        "line": 317,
+        "line": 327,
         "content": "allowedFragments: []",
         "pattern": "allowedFragments"
       },
       {
         "file": "src\\omega-ui-core\\governance\\ElementCatalog.ts",
-        "line": 338,
+        "line": 348,
         "content": "allowedFragments: ['label', 'led', 'graphic-fragment'],",
         "pattern": "allowedFragments"
       },
       {
         "file": "src\\omega-ui-core\\governance\\ElementCatalog.ts",
-        "line": 367,
+        "line": 377,
         "content": "allowedFragments: ['label', 'led', 'illustration', 'rack-screw', 'graphic-fragment'],",
         "pattern": "allowedFragments"
       },
       {
         "file": "src\\omega-ui-core\\governance\\ElementCatalog.ts",
-        "line": 382,
+        "line": 392,
         "content": "allowedFragments: ['label', 'illustration']",
         "pattern": "allowedFragments"
       },
       {
         "file": "src\\omega-ui-core\\uca\\blueprintValidator.ts",
-        "line": 27,
+        "line": 37,
         "content": "throw new Error(`[BLUEPRINT VALIDATION FAILED]\\n${errors.join('\\n')}`);",
         "pattern": "throw new Error"
       },
       {
         "file": "src\\omega-ui-core\\uca\\blueprintValidator.ts",
-        "line": 16,
+        "line": 26,
         "content": "public static validate(nodes: OmegaNode | OmegaNode[], manifest: Partial<OMEGA_Manifest>): void {",
         "pattern": "validate"
       },
       {
-        "file": "src\\omega-ui-core\\uca\\circularity.test.ts",
-        "line": 14,
-        "content": "const issues1 = CircularityAuditor.validate(dagManifest as OMEGA_Manifest);",
-        "pattern": "validate"
-      },
-      {
-        "file": "src\\omega-ui-core\\uca\\circularity.test.ts",
-        "line": 27,
-        "content": "const issues2 = CircularityAuditor.validate(simpleCycleManifest as OMEGA_Manifest);",
-        "pattern": "validate"
-      },
-      {
-        "file": "src\\omega-ui-core\\uca\\circularity.test.ts",
-        "line": 46,
-        "content": "const issues3 = CircularityAuditor.validate(complexCycleManifest as OMEGA_Manifest);",
-        "pattern": "validate"
-      },
-      {
-        "file": "src\\omega-ui-core\\uca\\circularity.test.ts",
-        "line": 64,
-        "content": "const issues4 = CircularityAuditor.validate(pathCycleManifest as OMEGA_Manifest);",
-        "pattern": "validate"
-      },
-      {
-        "file": "src\\omega-ui-core\\uca\\circularity.test.ts",
-        "line": 82,
-        "content": "const issues5 = CircularityAuditor.validate(multiLevelCycleManifest as OMEGA_Manifest);",
-        "pattern": "validate"
-      },
-      {
-        "file": "src\\omega-ui-core\\uca\\ucaInjection.ts",
-        "line": 139,
-        "content": "if (!rootNode) throw new Error('Manifest root node not found.');",
-        "pattern": "throw new Error"
-      },
-      {
-        "file": "src\\omega-ui-core\\uca\\utils\\circularityAuditor.ts",
-        "line": 16,
-        "content": "static validate(manifest: OMEGA_Manifest): ValidationIssue[] {",
-        "pattern": "validate"
-      },
-      {
-        "file": "src\\omega-ui-core\\uca\\utils\\ucaPathResolver.ts",
-        "line": 47,
-        "content": "throw new Error(`[HPA] Node ${nodeId} not found in the provided tree context.`);",
-        "pattern": "throw new Error"
-      },
-      {
-        "file": "src\\omega-ui-core\\uca\\utils\\ucaPathResolver.ts",
-        "line": 90,
-        "content": "* validatePathStability",
-        "pattern": "validate"
-      },
-      {
-        "file": "src\\omega-ui-core\\uca\\utils\\ucaPathResolver.ts",
-        "line": 93,
-        "content": "static validatePathStability(path: string): boolean {",
-        "pattern": "validate"
-      },
-      {
-        "file": "src\\omega-ui-core\\utils\\blueprintValidator.ts",
-        "line": 8,
-        "content": "throw new Error(`[BLUEPRINT VALIDATION FAILED]\\n${result.errors.join('\\n')}`);",
-        "pattern": "throw new Error"
-      },
-      {
-        "file": "src\\omega-ui-core\\utils\\blueprintValidator.ts",
-        "line": 5,
-        "content": "public static validate(nodes: OmegaNode | OmegaNode[], _manifest: Partial<OMEGA_Manifest>): void {",
-        "pattern": "validate"
-      },
-      {
-        "file": "src\\omega-ui-core\\utils\\blueprintValidator.ts",
-        "line": 6,
-        "content": "const result = this.validateQuietly(nodes);",
-        "pattern": "validate"
-      },
-      {
-        "file": "src\\omega-ui-core\\utils\\blueprintValidator.ts",
-        "line": 12,
-        "content": "public static validateQuietly(nodes: OmegaNode | OmegaNode[]): {",
-        "pattern": "validate"
-      },
-      {
-        "file": "src\\omega-ui-core\\utils\\circularityAuditor.ts",
-        "line": 13,
-        "content": "static validate(manifest: OMEGA_Manifest): ValidationIssue[] {",
-        "pattern": "validate"
-      },
-      {
         "file": "src\\omega-ui-core\\utils\\manifestValidator.ts",
-        "line": 9,
+        "line": 19,
         "content": "*   const result = validateManifestSchema(parsed);",
         "pattern": "validate"
       },
       {
         "file": "src\\omega-ui-core\\utils\\manifestValidator.ts",
-        "line": 42,
+        "line": 52,
         "content": "export function validateManifestSchema(obj: unknown): ValidationResult | ValidationError {",
         "pattern": "validate"
       },
       {
-        "file": "src\\omega-ui-core\\utils\\ucaPathResolver.ts",
-        "line": 32,
-        "content": "throw new Error(`[HPA] Node ${nodeId} not found in the provided tree context.`);",
-        "pattern": "throw new Error"
-      },
-      {
-        "file": "src\\omega-ui-core\\utils\\ucaPathResolver.ts",
-        "line": 60,
-        "content": "static validatePathStability(path: string): boolean {",
-        "pattern": "validate"
-      },
-      {
         "file": "src\\services\\auditService.ts",
-        "line": 11,
+        "line": 21,
         "content": "const issues = ValidationService.validate(manifest, contract);",
         "pattern": "validate"
       },
       {
-        "file": "src\\services\\historyRestore.ts",
-        "line": 13,
-        "content": "* Loads a revision and validates it before promotion.",
-        "pattern": "validate"
-      },
-      {
-        "file": "src\\services\\historyRestore.ts",
-        "line": 30,
-        "content": "BlueprintValidator.validate(entry.manifest.ui.tree, entry.manifest);",
-        "pattern": "validate"
-      },
-      {
-        "file": "src\\services\\persistenceService.ts",
-        "line": 26,
-        "content": "* Persists the validated canonical graph to disk.",
-        "pattern": "validate"
-      },
-      {
-        "file": "src\\services\\projectPackager.ts",
-        "line": 199,
-        "content": "throw new Error('Invalid .omega: no manifest.json or .acemm found');",
-        "pattern": "throw new Error"
-      },
-      {
-        "file": "src\\services\\rpc\\omegaRPCBridge.ts",
-        "line": 111,
-        "content": "BlueprintValidator.validate(canonicalGraph, manifest);",
-        "pattern": "validate"
-      },
-      {
-        "file": "src\\services\\rpc\\omegaRPCBridge.ts",
-        "line": 28,
-        "content": "private pendingAcks = new Map<number, { resolve: (val: unknown) => void, reject: (err: unknown) => void, timeout: ReturnType<typeof setTimeout> }>();",
-        "pattern": "reject"
-      },
-      {
-        "file": "src\\services\\rpc\\omegaRPCBridge.ts",
-        "line": 216,
-        "content": "return new Promise((resolve, reject) => {",
-        "pattern": "reject"
-      },
-      {
-        "file": "src\\services\\rpc\\omegaRPCBridge.ts",
-        "line": 218,
-        "content": "if (id === -1) return reject(new Error('WebSocket not open'));",
-        "pattern": "reject"
-      },
-      {
-        "file": "src\\services\\rpc\\omegaRPCBridge.ts",
-        "line": 222,
-        "content": "reject(new Error(`Timeout waiting for ACK for ${method} (${id})`));",
-        "pattern": "reject"
-      },
-      {
-        "file": "src\\services\\rpc\\omegaRPCBridge.ts",
-        "line": 225,
-        "content": "this.pendingAcks.set(id, { resolve, reject, timeout });",
-        "pattern": "reject"
-      },
-      {
-        "file": "src\\services\\rpc\\omegaRPCBridge.ts",
-        "line": 248,
-        "content": "if (response.error) ack.reject(response.error);",
-        "pattern": "reject"
-      },
-      {
-        "file": "src\\services\\validation\\industrialRules.ts",
-        "line": 7,
-        "content": "static validate(manifest: OMEGA_Manifest, contract: (OmegaContract | OMEGA_Contract) | null): ValidationIssue[] {",
-        "pattern": "validate"
-      },
-      {
-        "file": "src\\services\\validation\\industrialRules.ts",
-        "line": 72,
-        "content": "const validateEntity = (entity: ManifestEntity | OmegaNode, path: string) => {",
-        "pattern": "validate"
-      },
-      {
-        "file": "src\\services\\validation\\industrialRules.ts",
-        "line": 193,
-        "content": "allTreeNodes.forEach((n) => validateEntity(n, `/ui/tree/node/${n.id}`));",
-        "pattern": "validate"
-      },
-      {
-        "file": "src\\services\\validation\\industrialRules.ts",
-        "line": 195,
-        "content": "(manifest.ui?.controls || []).forEach((e, idx) => validateEntity(e, `/ui/controls/${idx}`));",
-        "pattern": "validate"
-      },
-      {
-        "file": "src\\services\\validation\\industrialRules.ts",
-        "line": 196,
-        "content": "(manifest.ui?.jacks || []).forEach((e, idx) => validateEntity(e, `/ui/jacks/${idx}`));",
-        "pattern": "validate"
-      },
-      {
-        "file": "src\\services\\validation\\industrialRules.ts",
-        "line": 200,
-        "content": "const circularityIssues = CircularityAuditor.validate(manifest);",
-        "pattern": "validate"
-      },
-      {
-        "file": "src\\services\\validation\\schemaValidator.ts",
-        "line": 17,
-        "content": "const validateV6 = ajv.compile(era6Schema);",
-        "pattern": "validate"
-      },
-      {
-        "file": "src\\services\\validation\\schemaValidator.ts",
-        "line": 18,
-        "content": "const validateV7 = ajv.compile(era7Schema);",
-        "pattern": "validate"
-      },
-      {
-        "file": "src\\services\\validation\\schemaValidator.ts",
-        "line": 21,
-        "content": "static validate(manifest: OMEGA_Manifest): ValidationIssue[] {",
-        "pattern": "validate"
-      },
-      {
-        "file": "src\\services\\validation\\schemaValidator.ts",
-        "line": 23,
-        "content": "const validator = isV7 ? validateV7 : validateV6;",
-        "pattern": "validate"
-      },
-      {
-        "file": "src\\services\\validationService.ts",
-        "line": 11,
-        "content": "static validate(manifest: OMEGA_Manifest, contract: (OmegaContract | OMEGA_Contract) | null = null): ValidationIssue[] {",
-        "pattern": "validate"
-      },
-      {
-        "file": "src\\services\\validationService.ts",
-        "line": 13,
-        "content": "const schemaIssues = SchemaValidator.validate(manifest);",
-        "pattern": "validate"
-      },
-      {
-        "file": "src\\services\\validationService.ts",
-        "line": 16,
-        "content": "const industrialIssues = IndustrialRules.validate(manifest, contract);",
-        "pattern": "validate"
-      },
-      {
-        "file": "src\\services\\wasmLoader.ts",
-        "line": 66,
-        "content": "throw new Error(\"WASM module is not OMEGA-compliant (missing 'omega_get_contract' export).\");",
-        "pattern": "throw new Error"
-      },
-      {
-        "file": "src\\services\\wasmLoader.ts",
-        "line": 106,
-        "content": "throw new Error(`LinkError: Binary requires host functions or is corrupted. Details: ${message}`);",
-        "pattern": "throw new Error"
-      },
-      {
-        "file": "src\\services\\wasmRuntime.ts",
-        "line": 126,
-        "content": "throw new Error(result.error || 'Engine rejected snapshot or timed out');",
-        "pattern": "throw new Error"
-      },
-      {
-        "file": "src\\services\\wasmRuntime.ts",
-        "line": 133,
-        "content": "throw new Error(`Materialization failed: ${instance.error}`);",
-        "pattern": "throw new Error"
-      },
-      {
-        "file": "src\\services\\wasmRuntime.ts",
-        "line": 175,
-        "content": "if (!isValid) throw new Error('Incomplete materialization');",
-        "pattern": "throw new Error"
-      },
-      {
-        "file": "src\\services\\wasmRuntime.ts",
-        "line": 126,
-        "content": "throw new Error(result.error || 'Engine rejected snapshot or timed out');",
-        "pattern": "reject"
-      },
-      {
         "file": "src\\types\\cell-conversion.ts",
-        "line": 149,
+        "line": 159,
         "content": "throw new Error(`Cannot convert node with children to PrimitiveNode: ${node.id}`);",
         "pattern": "throw new Error"
       },
       {
         "file": "src\\types\\cell-conversion.ts",
-        "line": 345,
+        "line": 355,
         "content": "throw new Error('Unknown cell node type');",
         "pattern": "throw new Error"
       },
       {
         "file": "src\\types\\cell-conversion.ts",
-        "line": 427,
+        "line": 437,
         "content": "export function validateCompositeSlots(cell: CompositeCell): string[] {",
         "pattern": "validate"
       },
       {
         "file": "src\\types\\cell-conversion.ts",
-        "line": 457,
+        "line": 467,
         "content": "export function validatePrimitive(primitive: PrimitiveNode): string[] {",
         "pattern": "validate"
       },
       {
         "file": "src\\types\\cell-conversion.ts",
-        "line": 472,
+        "line": 482,
         "content": "export function validateStructuralModule(module: StructuralModule): string[] {",
         "pattern": "validate"
       },
@@ -858,57 +414,9 @@
         "pattern": "validate"
       },
       {
-        "file": "docs\\adr\\ADR-043-unified-cell-blueprint-governance.md",
-        "line": 143,
-        "content": "- **Primitives**: Defined and validated by `OMEGA_ELEMENT_CATALOG` only (type, allowed variants, slot definitions)",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\adr\\ADR-044-validate-behavior-recipes-in-blueprints.md",
-        "line": 10,
-        "content": "Currently, `BlueprintValidator` validates structural aspects of blueprints:",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\adr\\ADR-044-validate-behavior-recipes-in-blueprints.md",
-        "line": 16,
-        "content": "However, it does NOT validate:",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\adr\\ADR-044-validate-behavior-recipes-in-blueprints.md",
-        "line": 25,
-        "content": "Extend `BlueprintValidator` to validate behavioral aspects of blueprints by adding a third validation phase:",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\adr\\ADR-044-validate-behavior-recipes-in-blueprints.md",
-        "line": 35,
-        "content": "Phase 2: SEMANTIC (existing, via validateQuietly)",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\adr\\ADR-044-validate-behavior-recipes-in-blueprints.md",
-        "line": 70,
-        "content": "// Extended validateQuietly",
-        "pattern": "validate"
-      },
-      {
         "file": "docs\\adr\\ADR-044-validate-behavior-recipes-in-blueprints.md",
         "line": 71,
         "content": "static validateQuietly(",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\adr\\ADR-044-validate-behavior-recipes-in-blueprints.md",
-        "line": 75,
-        "content": "validateBehavior?: boolean;  // Default: true",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\adr\\ADR-044-validate-behavior-recipes-in-blueprints.md",
-        "line": 76,
-        "content": "validateRecipes?: boolean;   // Default: true",
         "pattern": "validate"
       },
       {
@@ -931,24 +439,6 @@
       },
       {
         "file": "docs\\adr\\ADR-044-validate-behavior-recipes-in-blueprints.md",
-        "line": 194,
-        "content": "- **Catalog Dependency**: Must have asset definitions to validate behavior compatibility",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\adr\\ADR-044-validate-behavior-recipes-in-blueprints.md",
-        "line": 215,
-        "content": "- Standalone `CompositeCell` instances (validated at composition time in CellStudio)",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\adr\\ADR-044-validate-behavior-recipes-in-blueprints.md",
-        "line": 225,
-        "content": "// Default: validate behavior",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\adr\\ADR-044-validate-behavior-recipes-in-blueprints.md",
         "line": 226,
         "content": "const result = BlueprintValidator.validateQuietly(nodes, manifest);",
         "pattern": "validate"
@@ -961,62 +451,14 @@
       },
       {
         "file": "docs\\adr\\ADR-044-validate-behavior-recipes-in-blueprints.md",
-        "line": 230,
-        "content": "validateBehavior: false,",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\adr\\ADR-044-validate-behavior-recipes-in-blueprints.md",
-        "line": 231,
-        "content": "validateRecipes: false",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\adr\\ADR-044-validate-behavior-recipes-in-blueprints.md",
-        "line": 235,
-        "content": "### Phase 3 Integration with validateQuietly",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\adr\\ADR-044-validate-behavior-recipes-in-blueprints.md",
-        "line": 238,
-        "content": "// In validateQuietly, after semantic validation:",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\adr\\ADR-044-validate-behavior-recipes-in-blueprints.md",
-        "line": 239,
-        "content": "if (options?.validateBehavior !== false) {",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\adr\\ADR-044-validate-behavior-recipes-in-blueprints.md",
         "line": 240,
         "content": "const behaviorResult = validateBehavior(nodes, manifest);",
         "pattern": "validate"
       },
       {
         "file": "docs\\adr\\ADR-045-cell-studio-architecture-refactor.md",
-        "line": 61,
-        "content": "│   └── Step 4: REVIEW (preview + validate)",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\adr\\ADR-045-cell-studio-architecture-refactor.md",
         "line": 96,
         "content": "BlueprintValidator.validateQuietly(entityToNode(cellData), { resources: manifest?.resources }),",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\adr\\ADR-045-cell-studio-architecture-refactor.md",
-        "line": 124,
-        "content": "validateStyle: (style: Partial<OmegaStyleNode>) => ValidationResult;",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\adr\\ADR-046-cell-philosophy-redesign.md",
-        "line": 171,
-        "content": "- Internal routing is explicit and validated",
         "pattern": "validate"
       },
       {
@@ -1081,24 +523,6 @@
       },
       {
         "file": "docs\\adr\\ADR-047-BlueprintValidator-Catalog-Integration.md",
-        "line": 12,
-        "content": "Phase 20.4 introduced the BlueprintValidator class for OMEGA UCA structural integrity and invariant compliance. As OMEGA evolved through ADR-043 (ElementCatalog Enrichment) and ADR-046 (Cell Types), the need arose to validate node styles against the catalog's `validationRules` before instantiation.",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\adr\\ADR-047-BlueprintValidator-Catalog-Integration.md",
-        "line": 14,
-        "content": "The BlueprintValidator previously validated:",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\adr\\ADR-047-BlueprintValidator-Catalog-Integration.md",
-        "line": 20,
-        "content": "But it did **not** validate:",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\adr\\ADR-047-BlueprintValidator-Catalog-Integration.md",
         "line": 35,
         "content": "BlueprintValidator.validateQuietly()",
         "pattern": "validate"
@@ -1117,32 +541,8 @@
       },
       {
         "file": "docs\\adr\\ADR-047-BlueprintValidator-Catalog-Integration.md",
-        "line": 40,
-        "content": "├── getElementVariants() → validate variant",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\adr\\ADR-047-BlueprintValidator-Catalog-Integration.md",
-        "line": 41,
-        "content": "├── getAllowedBehaviors() → validate behavior",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\adr\\ADR-047-BlueprintValidator-Catalog-Integration.md",
-        "line": 42,
-        "content": "└── getElementSlots() → validate slot mappings",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\adr\\ADR-047-BlueprintValidator-Catalog-Integration.md",
         "line": 47,
         "content": "1. **Schema-based validation (no functions in catalog)**: The catalog stores `ValidationRule` objects with serializable configs. The `validateValueAgainstRule()` function is implemented in code, not stored in the catalog.",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\adr\\ADR-047-BlueprintValidator-Catalog-Integration.md",
-        "line": 76,
-        "content": "validateValueAgainstRule,",
         "pattern": "validate"
       },
       {
@@ -1177,12 +577,6 @@
       },
       {
         "file": "docs\\adr\\ADR-047-BlueprintValidator-Catalog-Integration.md",
-        "line": 306,
-        "content": "1. **Runtime validation before instantiation**: Blueprints are validated against the catalog before materialization, catching configuration errors early.",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\adr\\ADR-047-BlueprintValidator-Catalog-Integration.md",
         "line": 308,
         "content": "2. **Centralized validation logic**: `validateValueAgainstRule()` is defined once and used by both ElementCatalog (for standalone style validation) and BlueprintValidator (for node validation).",
         "pattern": "validate"
@@ -1194,70 +588,10 @@
         "pattern": "validate"
       },
       {
-        "file": "docs\\ADR-009.md",
-        "line": 33,
-        "content": "3. **Phase 9.3 — Advanced Templating (Blueprint Injection):** Formalize blueprint/template injection with validated schemas, collision-safe ID regeneration, and a reusable library UI for rapid composition of common synth structures.[cite:333][cite:335]",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\ADR-011.md",
-        "line": 92,
-        "content": "- **Phase 9.4A** — system templates only, curated and validated by the product.",
-        "pattern": "validate"
-      },
-      {
         "file": "docs\\ADR-011.md",
         "line": 54,
         "content": "- **Drag and drop insertion** into compatible containers, with visible acceptance or rejection states according to compatibility metadata and structural rules.",
         "pattern": "reject"
-      },
-      {
-        "file": "docs\\ADR-013-asset-behavior-lab.md",
-        "line": 31,
-        "content": "- **Visual Scrubbing**: Real-time simulation of input values in the preview pane to validate behavior before save.",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\ADR-018-canonical-contract-transition.md",
-        "line": 23,
-        "content": "- **Validation**: Each organic migration is validated by the real-time auditor and the user, reducing the blast radius of potential conversion errors.",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\ADR-024_Blueprint_Runtime_Instantiation.md",
-        "line": 52,
-        "content": "- The runtime only receives validated structures.",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\ADR-024_Blueprint_Runtime_Instantiation.md",
-        "line": 56,
-        "content": "> A Blueprint does not exist in runtime until it has been validated, canonicalized, and materialized as a complete instance.",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\ADR-025-runtime-observability-metrics.md",
-        "line": 7,
-        "content": "After Phase 20.4, the runtime pipeline is deterministic, atomic, and blocked by validated Blueprints before materialization. The next operational risk is not correctness of instantiation, but lack of visibility when latency, buffering, heartbeat drift, or instantiation failures occur in production.",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\ADR-026-persistence-recovery.md",
-        "line": 13,
-        "content": "1. **Canonical State Snapshots**: Only the normalized, validated output from the `BlueprintResolver` (the \"Canonical Graph\") is persisted. Editable/intermediate states are excluded to prevent drift.",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\ADR-026-persistence-recovery.md",
-        "line": 45,
-        "content": "- This phase does not persist unvalidated user edits.",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\ADR-027-transactional-editing.md",
-        "line": 15,
-        "content": "3. **Atomic Validation & Sync**: Upon `commitTransaction()`, the final resulting state is validated via `BlueprintValidator`. If valid, the entire block is synchronized to the bridge in a single `syncSnapshot` operation.",
-        "pattern": "validate"
       },
       {
         "file": "docs\\ADR-027-transactional-editing.md",
@@ -1266,136 +600,16 @@
         "pattern": "reject"
       },
       {
-        "file": "docs\\ADR-032-history-capture.md",
-        "line": 13,
-        "content": "1. **Capture on Significant Events**: Record history entries on transaction commit, validated structural snapshot, and recovery point creation.",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\ADR-034-time-travel-restore.md",
-        "line": 11,
-        "content": "The system will implement a Time-Travel Restore layer that restores a selected historical revision through validated orchestration.",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\ADR-034-time-travel-restore.md",
-        "line": 17,
-        "content": "4. **Read-Then-Activate Flow**: The system will load the historical revision, validate it, and only then promote it into active editor state.",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\ADR-036-phase-21-closure.md",
-        "line": 7,
-        "content": "After Phase 21 introduced History Capture, Semantic Diff, Time-Travel Restore, and Historical Observability, the system has a complete historical subsystem that can record evolution, explain change, restore revisions, and audit its own behavior. At this point the remaining task is not new capability, but closure: define how the history stack is finalized, validated, documented, and handed off as a stable product boundary.",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\ADR-037-history-vs-undo-redo.md",
-        "line": 46,
-        "content": "4. **Validation Gate**: Restoring a historical revision MUST always pass through `historyRestore.ts` validation, whereas an `undo` operation may be optimized for speed if the state was recently validated.",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\archive\\implemented-adrs\\ADR-009.md",
-        "line": 33,
-        "content": "3. **Phase 9.3 — Advanced Templating (Blueprint Injection):** Formalize blueprint/template injection with validated schemas, collision-safe ID regeneration, and a reusable library UI for rapid composition of common synth structures.[cite:333][cite:335]",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\archive\\implemented-adrs\\ADR-011.md",
-        "line": 92,
-        "content": "- **Phase 9.4A** — system templates only, curated and validated by the product.",
-        "pattern": "validate"
-      },
-      {
         "file": "docs\\archive\\implemented-adrs\\ADR-011.md",
         "line": 54,
         "content": "- **Drag and drop insertion** into compatible containers, with visible acceptance or rejection states according to compatibility metadata and structural rules.",
         "pattern": "reject"
       },
       {
-        "file": "docs\\archive\\implemented-adrs\\ADR-013-asset-behavior-lab.md",
-        "line": 31,
-        "content": "- **Visual Scrubbing**: Real-time simulation of input values in the preview pane to validate behavior before save.",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\archive\\implemented-adrs\\ADR-018-canonical-contract-transition.md",
-        "line": 23,
-        "content": "- **Validation**: Each organic migration is validated by the real-time auditor and the user, reducing the blast radius of potential conversion errors.",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\archive\\implemented-adrs\\ADR-024_Blueprint_Runtime_Instantiation.md",
-        "line": 52,
-        "content": "- The runtime only receives validated structures.",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\archive\\implemented-adrs\\ADR-024_Blueprint_Runtime_Instantiation.md",
-        "line": 56,
-        "content": "> A Blueprint does not exist in runtime until it has been validated, canonicalized, and materialized as a complete instance.",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\archive\\implemented-adrs\\ADR-025-runtime-observability-metrics.md",
-        "line": 7,
-        "content": "After Phase 20.4, the runtime pipeline is deterministic, atomic, and blocked by validated Blueprints before materialization. The next operational risk is not correctness of instantiation, but lack of visibility when latency, buffering, heartbeat drift, or instantiation failures occur in production.",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\archive\\implemented-adrs\\ADR-026-persistence-recovery.md",
-        "line": 13,
-        "content": "1. **Canonical State Snapshots**: Only the normalized, validated output from the `BlueprintResolver` (the \"Canonical Graph\") is persisted. Editable/intermediate states are excluded to prevent drift.",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\archive\\implemented-adrs\\ADR-026-persistence-recovery.md",
-        "line": 45,
-        "content": "- This phase does not persist unvalidated user edits.",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\archive\\implemented-adrs\\ADR-027-transactional-editing.md",
-        "line": 15,
-        "content": "3. **Atomic Validation & Sync**: Upon `commitTransaction()`, the final resulting state is validated via `BlueprintValidator`. If valid, the entire block is synchronized to the bridge in a single `syncSnapshot` operation.",
-        "pattern": "validate"
-      },
-      {
         "file": "docs\\archive\\implemented-adrs\\ADR-027-transactional-editing.md",
         "line": 16,
         "content": "4. **Automatic Rollback**: If validation fails or the bridge rejects the committed state, the transaction is discarded, and the system reverts to the state prior to `startTransaction()`.",
         "pattern": "reject"
-      },
-      {
-        "file": "docs\\archive\\implemented-adrs\\ADR-032-history-capture.md",
-        "line": 13,
-        "content": "1. **Capture on Significant Events**: Record history entries on transaction commit, validated structural snapshot, and recovery point creation.",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\archive\\implemented-adrs\\ADR-034-time-travel-restore.md",
-        "line": 11,
-        "content": "The system will implement a Time-Travel Restore layer that restores a selected historical revision through validated orchestration.",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\archive\\implemented-adrs\\ADR-034-time-travel-restore.md",
-        "line": 17,
-        "content": "4. **Read-Then-Activate Flow**: The system will load the historical revision, validate it, and only then promote it into active editor state.",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\archive\\implemented-adrs\\ADR-036-phase-21-closure.md",
-        "line": 7,
-        "content": "After Phase 21 introduced History Capture, Semantic Diff, Time-Travel Restore, and Historical Observability, the system has a complete historical subsystem that can record evolution, explain change, restore revisions, and audit its own behavior. At this point the remaining task is not new capability, but closure: define how the history stack is finalized, validated, documented, and handed off as a stable product boundary.",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\archive\\implemented-adrs\\ADR-037-history-vs-undo-redo.md",
-        "line": 46,
-        "content": "4. **Validation Gate**: Restoring a historical revision MUST always pass through `historyRestore.ts` validation, whereas an `undo` operation may be optimized for speed if the state was recently validated.",
-        "pattern": "validate"
       },
       {
         "file": "docs\\archive\\implemented-adrs\\ADR-041-dual-mode-validation.md",
@@ -1513,18 +727,6 @@
       },
       {
         "file": "docs\\archive\\implemented-adrs\\ADR-042-two-phase-validation.md",
-        "line": 10,
-        "content": "When users import custom JSON blueprints in the BlueprintLibraryPanel, we need to validate them thoroughly before accepting them into the system. A single validation pass is insufficient because different validation concerns operate at different levels:",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\archive\\implemented-adrs\\ADR-042-two-phase-validation.md",
-        "line": 24,
-        "content": "import { validateBlueprint } from '../../utils/blueprintUtils';",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\archive\\implemented-adrs\\ADR-042-two-phase-validation.md",
         "line": 26,
         "content": "const { valid, errors } = validateBlueprint(blueprint);",
         "pattern": "validate"
@@ -1587,12 +789,6 @@
         "file": "docs\\archive\\implemented-adrs\\ADR-042-two-phase-validation.md",
         "line": 207,
         "content": "BlueprintValidator.validateQuietly(blueprint.rootNode, manifest);",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\archive\\implemented-adrs\\ADR-042-two-phase-validation.md",
-        "line": 213,
-        "content": "// CORRECT: Always validate structure first",
         "pattern": "validate"
       },
       {
@@ -1675,12 +871,6 @@
       },
       {
         "file": "docs\\archive\\implemented-plans\\ANALYSIS-element-catalog-enrichment.md",
-        "line": 247,
-        "content": "import { validateAgainstRule } from './validationFunctions';",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\archive\\implemented-plans\\ANALYSIS-element-catalog-enrichment.md",
         "line": 250,
         "content": "static validate(nodes: OmegaNode[], manifest: OMEGA_Manifest) {",
         "pattern": "validate"
@@ -1705,23 +895,11 @@
       },
       {
         "file": "docs\\archive\\implemented-plans\\MIGRATION_PLAN_CELLSTUDIO_STEPPER.md",
-        "line": 113,
-        "content": "validateStyle: (style: Partial<OmegaStyleNode>) => ValidationResult;",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\archive\\implemented-plans\\MIGRATION_PLAN_CELLSTUDIO_STEPPER.md",
         "line": 148,
         "content": "BlueprintValidator.validateQuietly(entityToNode(cellData), { resources: manifest?.resources }),",
         "pattern": "validate"
       },
       {
-        "file": "docs\\archive\\implemented-plans\\MIGRATION_PLAN_CELLSTUDIO_STEPPER.md",
-        "line": 311,
-        "content": "validateStyle: (style: Partial<OmegaStyleNode>) => ValidationResult;",
-        "pattern": "validate"
-      },
-      {
         "file": "docs\\archive\\implemented-plans\\OMEGA_Remediation_Map.md",
         "line": 24,
         "content": "*   **Decoupled UX**: `allowedFragments` and `capabilities` are UI hints. If a node in the UCA tree contains non-standard data, it must be rendered and persisted regardless of catalog state.",
@@ -1734,52 +912,10 @@
         "pattern": "ElementCatalog"
       },
       {
-        "file": "docs\\archive\\implemented-plans\\OMEGA_Remediation_Map.md",
-        "line": 10,
-        "content": "| `src/features/manifest-editor/components/inspector/attachments/AttachmentTypeAnchor.tsx` | Medium | Maintain as a UX filter; document that it does not validate structure. | **High** | 🔍 Monitoring |",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\archive\\old-reports-and-audits\\performance-report.md",
-        "line": 4,
-        "content": "This report documents the performance profile of the OMEGA Manifest Editor as of May 11, 2026. The goal was to validate that the industrialization of the state management and diagnostic pipeline did not introduce overhead that would hinder the user experience.",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\grafos\\GRAPH.md",
-        "line": 154,
-        "content": "- [`src/omega-ui-core/governance/ElementCatalog.ts`](file:///D:/desarrollos/ABDSynths/ABDOmegaEditor/src/omega-ui-core/governance/ElementCatalog.ts)",
+        "file": "docs\\drift_report.md",
+        "line": 354,
+        "content": "- `src/omega-ui-core/governance/ElementCatalog.ts` (missing: English)",
         "pattern": "ElementCatalog"
-      },
-      {
-        "file": "docs\\grafos\\src\\omega-ui-core\\governance\\ElementCatalog.ts.md",
-        "line": 1,
-        "content": "# src/omega-ui-core/governance/ElementCatalog.ts",
-        "pattern": "ElementCatalog"
-      },
-      {
-        "file": "docs\\grafos\\src\\omega-ui-core\\governance\\ElementCatalog.ts.md",
-        "line": 4,
-        "content": "> Ruta del archivo: `src/omega-ui-core/governance/ElementCatalog.ts`",
-        "pattern": "ElementCatalog"
-      },
-      {
-        "file": "docs\\INDEX.md",
-        "line": 14,
-        "content": "- [ADR-044-validate-behavior-recipes-in-blueprints.md](file:///d:/desarrollos/ABDSynths/ABDOmegaEditor/docs/adr/ADR-044-validate-behavior-recipes-in-blueprints.md) - Validación estricta de recetas de comportamiento asociadas a plantillas de blueprints.",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\OMEGA_History_Architecture.md",
-        "line": 31,
-        "content": "| **Time Travel** | History Engine | Navigating by version/ID rather than steps. Requires validated restoration. |",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\OMEGA_History_Architecture.md",
-        "line": 32,
-        "content": "| **Recovery** | History Engine | Session recovery points must be durable and validated. |",
-        "pattern": "validate"
       },
       {
         "file": "docs\\OMEGA_Remediation_Map.md",
@@ -1792,42 +928,6 @@
         "line": 17,
         "content": "| `src/omega-ui-core/governance/ElementCatalog.ts` | Low | Keep explicit warnings and maintain it as a consultative inventory. | **Low** | ✅ Documented |",
         "pattern": "ElementCatalog"
-      },
-      {
-        "file": "docs\\OMEGA_Remediation_Map.md",
-        "line": 10,
-        "content": "| `src/features/manifest-editor/components/inspector/attachments/AttachmentTypeAnchor.tsx` | Medium | Maintain as a UX filter; document that it does not validate structure. | **High** | 🔍 Monitoring |",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\performance-report.md",
-        "line": 4,
-        "content": "This report documents the performance profile of the OMEGA Manifest Editor as of May 11, 2026. The goal was to validate that the industrialization of the state management and diagnostic pipeline did not introduce overhead that would hinder the user experience.",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\seguimiento\\CHANGELOG.md",
-        "line": 487,
-        "content": "- **Enriched Behavioral Validation**: Extended `BlueprintValidator` to validate asset behavior configurations, preset bounds, slot constraint limits, and LayerRecipe blend mode integrity.",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\seguimiento\\CHANGELOG.md",
-        "line": 259,
-        "content": "- **`View > Toggle Logs` Duplicate**: Was 100% redundant with `Window > Console` (both called `onToggleWindow('window_logs')`). The Window entry has a `checked` indicator and is the canonical toggle; View was removed. Dev server on port 3035 stayed running through the edit (verified by attempted second-instance start that was rejected with \"Another next dev server is already running\").",
-        "pattern": "reject"
-      },
-      {
-        "file": "docs\\specs-and-architecture\\OMEGA_History_Architecture.md",
-        "line": 31,
-        "content": "| **Time Travel** | History Engine | Navigating by version/ID rather than steps. Requires validated restoration. |",
-        "pattern": "validate"
-      },
-      {
-        "file": "docs\\specs-and-architecture\\OMEGA_History_Architecture.md",
-        "line": 32,
-        "content": "| **Recovery** | History Engine | Session recovery points must be durable and validated. |",
-        "pattern": "validate"
       },
       {
         "file": "docs\\specs-and-architecture\\SIMPLIFIED_MODEL_PROPOSAL.md",
@@ -1864,6 +964,36 @@
         "line": 639,
         "content": "| 5.1 Eliminar UCA tree (excepto ElementCatalog) | `uca/` ~17 files | ~2,150 | 2.3, 3.12 |",
         "pattern": "ElementCatalog"
+      },
+      {
+        "file": "scripts\\document-codebase.mjs",
+        "line": 345,
+        "content": "throw new Error(`Ollama returned status ${response.status}`);",
+        "pattern": "throw new Error"
+      },
+      {
+        "file": "scripts\\document-codebase.mjs",
+        "line": 407,
+        "content": "throw new Error(\"All cloud providers failed.\");",
+        "pattern": "throw new Error"
+      },
+      {
+        "file": "scripts\\document-codebase.mjs",
+        "line": 424,
+        "content": "throw new Error(`Failed to generate description: both local Ollama and cloud providers failed.`);",
+        "pattern": "throw new Error"
+      },
+      {
+        "file": "scripts\\document-codebase.mjs",
+        "line": 427,
+        "content": "throw new Error(`Failed to generate description: local Ollama failed and no cloud providers are configured.`);",
+        "pattern": "throw new Error"
+      },
+      {
+        "file": "scripts\\document-codebase.mjs",
+        "line": 443,
+        "content": "throw new Error(`Failed to generate description: both cloud providers and local Ollama failed.`);",
+        "pattern": "throw new Error"
       }
     ]
   }

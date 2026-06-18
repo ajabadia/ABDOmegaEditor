@@ -6,8 +6,8 @@
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:3,sig:16wp90p
- * @lastUpdated 2026-06-15T11:31:43.514Z
+ * @fingerprint exports:1,imports:3,sig:14xhhi7
+ * @lastUpdated 2026-06-17T22:34:35.399Z
  */
 
 import { Palette } from 'lucide-react';

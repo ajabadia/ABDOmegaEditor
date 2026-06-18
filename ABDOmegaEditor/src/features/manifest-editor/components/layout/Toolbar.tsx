@@ -10,7 +10,7 @@
  * @lastUpdated 2026-06-15T20:48:21.917Z
  */
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, startTransition } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ToolbarIconButton from './ToolbarIconButton';
 import { 
@@ -19,7 +19,7 @@ import {
   Maximize2, Minimize2,
   Group, Ungroup,
   Disc, ToggleLeft, Lightbulb, Tv, Type, Volume2, Activity, CircleDot,
-  GripVertical, Eye, EyeOff, RotateCcw, Settings2
+  GripVertical, Eye, EyeOff, RotateCcw, Settings2, Scale
 } from 'lucide-react';
 import { findParentInTree } from '@/omega-ui-core/uca/treeUtils';
 import type { OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
@@ -35,8 +35,8 @@ interface ToolbarProps {
   onAddEntity: (type: 'control' | 'jack', template?: Partial<import('@/omega-ui-core/types/manifest').ManifestEntity>) => void;
   isZenMode: boolean;
   onToggleZen: () => void;
-  activeTool: 'select' | 'marquee' | 'add' | 'studio' | null;
-  setActiveTool: (tool: 'select' | 'marquee' | 'add' | 'studio' | null) => void;
+  activeTool: 'select' | 'marquee' | 'add' | 'studio' | 'transform' | null;
+  setActiveTool: (tool: 'select' | 'marquee' | 'add' | 'studio' | 'transform' | null) => void;
   selectedNodeId?: string | null;
   /** Multi-selection IDs for enabling group/ungroup buttons */
   multiSelectedIds: string[];
@@ -72,7 +72,7 @@ export default function Toolbar({
   const [showCustomize, setShowCustomize] = useState(false);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
-  const [windowHeight, setWindowHeight] = useState(typeof window !== 'undefined' ? window.innerHeight : 800);
+  const [windowHeight, setWindowHeight] = useState(800);
   const customizeRef = useRef<HTMLDivElement>(null);
   
   const {
@@ -108,7 +108,10 @@ export default function Toolbar({
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const handleResize = () => setWindowHeight(window.innerHeight);
+    startTransition(() => {
+      setWindowHeight(window.innerHeight);
+    });
+    const handleResize = () => startTransition(() => setWindowHeight(window.innerHeight));
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -180,7 +183,7 @@ export default function Toolbar({
     }
   }, []);
 
-  const handleSelectTool = (tool: 'select' | 'marquee' | 'add' | 'studio') => {
+  const handleSelectTool = (tool: 'select' | 'marquee' | 'add' | 'studio' | 'transform') => {
     setActiveTool(tool);
     if (tool === 'add') {
       setShowAddMenu(prev => !prev);
@@ -221,6 +224,18 @@ export default function Toolbar({
       title="Marquee Selection Tool (M)"
       size="md"
       className={activeTool === 'marquee' ? 'tool-active-glow' : ''}
+    />
+  );
+
+  const transformBtn = (
+    <ToolbarIconButton
+      key="transform"
+      icon={<Scale className="w-3.5 h-3.5" />}
+      active={activeTool === 'transform'}
+      onClick={() => handleSelectTool('transform')}
+      title="Transform/Scale Tool (T)"
+      size="md"
+      className={activeTool === 'transform' ? 'tool-active-glow' : ''}
     />
   );
 
@@ -602,6 +617,7 @@ export default function Toolbar({
   const buttonMap: Record<string, React.ReactNode> = {
     select: selectBtn,
     marquee: marqueeBtn,
+    transform: transformBtn,
     add: addBtn,
     studio: selectedNodeId ? studioBtn : null,
     group: isGroupEnabled ? groupBtn : null,
@@ -631,7 +647,7 @@ export default function Toolbar({
 
   // Build dividers for single-column mode based on groups
   const buttonGroupMap: Record<string, string> = {
-    select: 'tools', marquee: 'tools', add: 'tools',
+    select: 'tools', marquee: 'tools', transform: 'tools', add: 'tools',
     studio: 'edit', group: 'edit', ungroup: 'edit',
     blueprints: 'views', config: 'views',
     live: 'system', zen: 'system',

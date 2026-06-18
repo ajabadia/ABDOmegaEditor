@@ -4,7 +4,7 @@
  * Tests for UndoTimelinePopover component — History timeline popover (v9.4.0)
  */
 import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { createRef } from 'react';
 import UndoTimelinePopover from '../UndoTimelinePopover';
 import type { HistoryEntry } from '@/features/manifest-editor/types/history';
@@ -510,6 +510,240 @@ describe('UndoTimelinePopover — proportional dimensions', () => {
     const popoverEl = container.firstChild as HTMLElement;
     expect(popoverEl.className).toContain('w-[280px]');
     expect(popoverEl.className).toContain('max-h-[340px]');
+  });
+});
+
+// ── Keyboard navigation ────────────────────────────────────────────────
+
+describe('UndoTimelinePopover — keyboard navigation', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('should focus the first item when popover opens with entries', async () => {
+    const past = [
+      createEntry({ id: 'e1', label: 'First', timestamp: 1000 }),
+      createEntry({ id: 'e2', label: 'Second', timestamp: 2000 }),
+    ];
+    render(<UndoTimelinePopover {...BASE_PROPS} past={past} />);
+
+    // First item should have tabIndex={0} after setTimeout(0) flushes
+    const firstItem = document.querySelector('[data-history-index="0"]');
+    expect(firstItem).toBeTruthy();
+    await waitFor(() => {
+      expect(firstItem!.getAttribute('tabindex')).toBe('0');
+    });
+  });
+
+  it('should move focus forward on ArrowDown', () => {
+    const past = [
+      createEntry({ id: 'e1', label: 'First', timestamp: 1000 }),
+      createEntry({ id: 'e2', label: 'Second', timestamp: 2000 }),
+      createEntry({ id: 'e3', label: 'Third', timestamp: 3000 }),
+    ];
+    render(<UndoTimelinePopover {...BASE_PROPS} past={past} />);
+    jest.advanceTimersByTime(0);
+
+    const list = document.querySelector('.overflow-y-auto');
+    expect(list).toBeTruthy();
+
+    // ArrowDown from index 0 → index 1
+    fireEvent.keyDown(list!, { key: 'ArrowDown' });
+    const secondItem = document.querySelector('[data-history-index="1"]');
+    expect(secondItem!.getAttribute('tabindex')).toBe('0');
+    const firstItem = document.querySelector('[data-history-index="0"]');
+    expect(firstItem!.getAttribute('tabindex')).toBe('-1');
+  });
+
+  it('should move focus backward on ArrowUp', () => {
+    const past = [
+      createEntry({ id: 'e1', label: 'First', timestamp: 1000 }),
+      createEntry({ id: 'e2', label: 'Second', timestamp: 2000 }),
+      createEntry({ id: 'e3', label: 'Third', timestamp: 3000 }),
+    ];
+    render(<UndoTimelinePopover {...BASE_PROPS} past={past} />);
+    jest.advanceTimersByTime(0);
+
+    const list = document.querySelector('.overflow-y-auto');
+    expect(list).toBeTruthy();
+
+    // ArrowDown twice: 0 → 1 → 2
+    fireEvent.keyDown(list!, { key: 'ArrowDown' });
+    fireEvent.keyDown(list!, { key: 'ArrowDown' });
+    expect(document.querySelector('[data-history-index="2"]')!.getAttribute('tabindex')).toBe('0');
+
+    // ArrowUp: 2 → 1
+    fireEvent.keyDown(list!, { key: 'ArrowUp' });
+    expect(document.querySelector('[data-history-index="1"]')!.getAttribute('tabindex')).toBe('0');
+    expect(document.querySelector('[data-history-index="2"]')!.getAttribute('tabindex')).toBe('-1');
+  });
+
+  it('should stay at first item on ArrowUp when at index 0', () => {
+    const past = [
+      createEntry({ id: 'e1', label: 'First', timestamp: 1000 }),
+      createEntry({ id: 'e2', label: 'Second', timestamp: 2000 }),
+    ];
+    render(<UndoTimelinePopover {...BASE_PROPS} past={past} />);
+    jest.advanceTimersByTime(0);
+
+    const list = document.querySelector('.overflow-y-auto');
+    expect(list).toBeTruthy();
+
+    // ArrowUp from 0 should stay at 0
+    fireEvent.keyDown(list!, { key: 'ArrowUp' });
+    expect(document.querySelector('[data-history-index="0"]')!.getAttribute('tabindex')).toBe('0');
+  });
+
+  it('should stay at last item on ArrowDown when at the end', () => {
+    const past = [
+      createEntry({ id: 'e1', label: 'First', timestamp: 1000 }),
+      createEntry({ id: 'e2', label: 'Second', timestamp: 2000 }),
+    ];
+    render(<UndoTimelinePopover {...BASE_PROPS} past={past} />);
+    jest.advanceTimersByTime(0);
+
+    const list = document.querySelector('.overflow-y-auto');
+    expect(list).toBeTruthy();
+
+    // ArrowDown from 0 → 1 (last)
+    fireEvent.keyDown(list!, { key: 'ArrowDown' });
+    // ArrowDown again should stay at 1
+    fireEvent.keyDown(list!, { key: 'ArrowDown' });
+    expect(document.querySelector('[data-history-index="1"]')!.getAttribute('tabindex')).toBe('0');
+    expect(document.querySelector('[data-history-index="0"]')!.getAttribute('tabindex')).toBe('-1');
+  });
+
+  it('should jump to first item on Home', () => {
+    const past = [
+      createEntry({ id: 'e1', label: 'First', timestamp: 1000 }),
+      createEntry({ id: 'e2', label: 'Second', timestamp: 2000 }),
+      createEntry({ id: 'e3', label: 'Third', timestamp: 3000 }),
+    ];
+    render(<UndoTimelinePopover {...BASE_PROPS} past={past} />);
+    jest.advanceTimersByTime(0);
+
+    const list = document.querySelector('.overflow-y-auto');
+    expect(list).toBeTruthy();
+
+    // ArrowDown twice to go to index 2
+    fireEvent.keyDown(list!, { key: 'ArrowDown' });
+    fireEvent.keyDown(list!, { key: 'ArrowDown' });
+    expect(document.querySelector('[data-history-index="2"]')!.getAttribute('tabindex')).toBe('0');
+
+    // Home jumps to first
+    fireEvent.keyDown(list!, { key: 'Home' });
+    expect(document.querySelector('[data-history-index="0"]')!.getAttribute('tabindex')).toBe('0');
+    expect(document.querySelector('[data-history-index="2"]')!.getAttribute('tabindex')).toBe('-1');
+  });
+
+  it('should jump to last item on End', () => {
+    const past = [
+      createEntry({ id: 'e1', label: 'First', timestamp: 1000 }),
+      createEntry({ id: 'e2', label: 'Second', timestamp: 2000 }),
+      createEntry({ id: 'e3', label: 'Third', timestamp: 3000 }),
+    ];
+    render(<UndoTimelinePopover {...BASE_PROPS} past={past} />);
+    jest.advanceTimersByTime(0);
+
+    const list = document.querySelector('.overflow-y-auto');
+    expect(list).toBeTruthy();
+
+    // End jumps to last (index 2)
+    fireEvent.keyDown(list!, { key: 'End' });
+    expect(document.querySelector('[data-history-index="2"]')!.getAttribute('tabindex')).toBe('0');
+    expect(document.querySelector('[data-history-index="0"]')!.getAttribute('tabindex')).toBe('-1');
+  });
+
+  it('should navigate across past, future, and batch entries', () => {
+    const past = [
+      createEntry({ id: 'e1', label: 'Past', timestamp: 1000 }),
+    ];
+    const future = [
+      createEntry({ id: 'e2', label: 'Future', timestamp: 2000 }),
+    ];
+    const batchEntries = [
+      createBatchEntry({ message: 'Batch op', variant: 'hide', action: 'visibility', value: true, ids: ['n1'], time: 3000 }),
+    ];
+    render(
+      <UndoTimelinePopover
+        {...BASE_PROPS}
+        past={past}
+        future={future}
+        batchEntries={batchEntries}
+      />
+    );
+    jest.advanceTimersByTime(0);
+
+    const list = document.querySelector('.overflow-y-auto');
+    expect(list).toBeTruthy();
+
+    // Total 3 items: past[0], future[0], batch[0]
+    // ArrowDown from 0 → 1
+    fireEvent.keyDown(list!, { key: 'ArrowDown' });
+    expect(document.querySelector('[data-history-index="1"]')!.getAttribute('tabindex')).toBe('0');
+
+    // ArrowDown from 1 → 2
+    fireEvent.keyDown(list!, { key: 'ArrowDown' });
+    expect(document.querySelector('[data-history-index="2"]')!.getAttribute('tabindex')).toBe('0');
+
+    // Home jumps back to 0
+    fireEvent.keyDown(list!, { key: 'Home' });
+    expect(document.querySelector('[data-history-index="0"]')!.getAttribute('tabindex')).toBe('0');
+  });
+
+  it('should not crash when there are no items (empty list)', () => {
+    render(<UndoTimelinePopover {...BASE_PROPS} />);
+    jest.advanceTimersByTime(0);
+    const list = document.querySelector('.overflow-y-auto');
+    expect(list).toBeTruthy();
+
+    // Should not throw when navigating on empty list
+    expect(() => {
+      fireEvent.keyDown(list!, { key: 'ArrowDown' });
+      fireEvent.keyDown(list!, { key: 'ArrowUp' });
+      fireEvent.keyDown(list!, { key: 'Home' });
+      fireEvent.keyDown(list!, { key: 'End' });
+    }).not.toThrow();
+  });
+
+  it('should set tabIndex=-1 for non-focused items', async () => {
+    const past = [
+      createEntry({ id: 'e1', label: 'First', timestamp: 1000 }),
+      createEntry({ id: 'e2', label: 'Second', timestamp: 2000 }),
+      createEntry({ id: 'e3', label: 'Third', timestamp: 3000 }),
+    ];
+    render(<UndoTimelinePopover {...BASE_PROPS} past={past} />);
+
+    // Initially only index 0 has tabIndex=0, others have -1
+    const items = document.querySelectorAll('[data-history-index]');
+    expect(items.length).toBe(3);
+    await waitFor(() => {
+      expect(items[0].getAttribute('tabindex')).toBe('0');
+    });
+    expect(items[1].getAttribute('tabindex')).toBe('-1');
+    expect(items[2].getAttribute('tabindex')).toBe('-1');
+  });
+
+  it('should process keydown events on the list container and navigate items', () => {
+    const past = [
+      createEntry({ id: 'e1', label: 'First', timestamp: 1000 }),
+      createEntry({ id: 'e2', label: 'Second', timestamp: 2000 }),
+    ];
+    render(<UndoTimelinePopover {...BASE_PROPS} past={past} />);
+    jest.advanceTimersByTime(0);
+
+    const list = document.querySelector('.overflow-y-auto') as HTMLElement;
+    expect(list).toBeTruthy();
+
+    // ArrowDown moves focus to second item (already tested above, but here we
+    // verify the handler is attached by checking the result of firing events)
+    fireEvent.keyDown(list!, { key: 'ArrowDown' });
+    const secondItem = document.querySelector('[data-history-index="1"]');
+    expect(secondItem!.getAttribute('tabindex')).toBe('0');
   });
 });
 

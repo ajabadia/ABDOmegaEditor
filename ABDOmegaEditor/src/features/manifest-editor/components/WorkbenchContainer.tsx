@@ -85,7 +85,7 @@ export default function WorkbenchContainer({
   // Phase 39 — recovered from backup MenuBar (View > Inspector Level)
   const [inspectorLevel, setInspectorLevel] = useState<'simple' | 'medium' | 'advanced'>('medium');  const [inspectorActiveSection, setInspectorActiveSection] = useState<string | undefined>(undefined);
 
-  const [activeTool, setActiveTool] = useState<'select' | 'marquee' | 'add' | 'studio' | null>('select');
+  const [activeTool, setActiveTool] = useState<'select' | 'marquee' | 'add' | 'studio' | 'transform' | null>('select');
   const [showMiniMap, setShowMiniMap] = useState(true);
   const handleToggleMiniMap = useCallback(() => {
     setShowMiniMap(prev => !prev);
@@ -470,6 +470,9 @@ export default function WorkbenchContainer({
       onRemoveItem: handleRemoveItem,
       onDuplicateItem: handleDuplicateItem,
       onSetTool: setActiveTool,
+      activeTool: activeTool,
+      onUpdateItems: editor.updateItems,
+      manifest: manifest as OMEGA_Manifest,
       onOpenGallery: () => actions.toggleWindow('window_blueprints'),
       onToggleMiniMap: handleToggleMiniMap,
     }
@@ -674,6 +677,8 @@ export default function WorkbenchContainer({
   onAddModulation={editor.addModulation}
   onRemoveModulation={editor.removeModulation}
   onMoveTab={actions.moveTabToPane}
+  startTransaction={editor.startTransaction}
+  commitTransaction={editor.commitTransaction}
         isSplitH={paneId === 'primary' || paneId === 'primary_bottom' ? state.isPrimarySplitH : state.isSecondarySplitH}
         onToggleSplitH={paneId === 'primary' || paneId === 'secondary' ? () => actions.toggleHorizontalSplit(paneId) : undefined}
         isSplitV={paneId === 'primary' ? derived.isSplit : undefined}

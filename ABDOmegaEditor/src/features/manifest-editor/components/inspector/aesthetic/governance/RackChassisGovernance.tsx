@@ -1,13 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona y renderiza configuraciones de gobierno para el hardware del bastidor en el editor de manifesto OMEGA, incluyendo conteo de tornillos, desplazamiento, selección de estilo y resolución de activos.
+ * @purpose Gestiona y renderiza configuraciones de gobierno para el hardware del bastidor de rack en el editor de manifesto OMEGA, incluyendo conteo de tornillos, desplazamiento, selección de estilo y resolución de activos.
  * @purpose_en Manages and renders governance settings for rack chassis hardware in the OMEGA manifest editor, including screw count, offset, style selection, and asset resolution.
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:5,sig:1t13hda
- * @lastUpdated 2026-06-15T11:04:08.585Z
+ * @fingerprint exports:1,imports:5,sig:h9hj8i
+ * @lastUpdated 2026-06-17T22:31:16.978Z
  */
 
 import React from 'react';

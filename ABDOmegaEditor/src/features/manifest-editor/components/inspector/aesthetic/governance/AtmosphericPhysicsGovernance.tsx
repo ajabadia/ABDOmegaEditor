@@ -2,18 +2,18 @@
 
 /**
  * @purpose Gestiona una sección colapsable para configurar física atmosférica y ajustes ambientales en el editor de manifesto OMEGA.
- * @purpose_en ** Manages a collapsible section for configuring atmospheric physics and environmental settings in the OMEGA manifest editor.
- * @refactorable ** true (contains too many state variables and UI parts)
- * @classification ** UI Component
- * @complexity ** Medium
- * @fingerprint exports:1,imports:4,sig:1tgx8xg
- * @lastUpdated 2026-06-15T11:03:54.969Z
+ * @purpose_en Manages a collapsible section for configuring atmospheric physics and environmental settings in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:4,sig:6p8j7s
+ * @lastUpdated 2026-06-17T22:31:00.869Z
  */
 
 import { Sun, CornerRightDown } from 'lucide-react';
 import type { OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
 import InspectorCollapsible from '../../shared/InspectorCollapsible';
-import { useDesignTokens } from '@/features/manifest-editor/hooks/useDesignTokens';
+import { useDesignTokens } from '@/omega-ui-core/hooks/useDesignTokens';
 
 interface AtmosphericPhysicsGovernanceProps {
   manifest: OMEGA_Manifest;

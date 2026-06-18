@@ -11,6 +11,9 @@
  */
 
 import { useEffect } from 'react';
+import type { OMEGA_Manifest, OmegaNode } from '@/omega-ui-core/types/manifest';
+import { findNodeInTree } from '@/omega-ui-core/uca/treeUtils';
+import { computeScaleUpdates, getOriginalNodeSize } from '@/omega-ui-core/renderers/utils/scaleUtils';
 
 interface WorkbenchEditor {
   addLog: (msg: string) => void;
@@ -36,9 +39,12 @@ export interface ShortcutCallbacks {
   onReset?: () => void;
   onRemoveItem?: (id: string) => void;
   onDuplicateItem?: (id: string) => void;
-  onSetTool?: (tool: 'select' | 'marquee' | 'add' | 'studio' | null) => void;
+  onSetTool?: (tool: 'select' | 'marquee' | 'add' | 'studio' | 'transform' | null) => void;
   onOpenGallery?: () => void;
   onToggleMiniMap?: () => void;
+  activeTool?: 'select' | 'marquee' | 'add' | 'studio' | 'transform' | null;
+  onUpdateItems?: (updatesMap: Record<string, Partial<OmegaNode>>) => void;
+  manifest?: OMEGA_Manifest;
 }
 
 export function useWorkbenchShortcuts(
@@ -251,6 +257,73 @@ export function useWorkbenchShortcuts(
       if (e.key === 'v' && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
         e.preventDefault();
         callbacks?.onSetTool?.('select');
+        return;
+      }
+
+      // ── T: Transform tool ──────────────────────────────────────────────
+      if (e.key === 't' && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
+        e.preventDefault();
+        callbacks?.onSetTool?.('transform');
+        return;
+      }
+
+      // ── Keyboard Arrow Resizing (a11y) ───────────────────────────────
+      if (
+        callbacks?.activeTool === 'transform' &&
+        selectedItemId &&
+        callbacks.manifest &&
+        (e.ctrlKey || e.metaKey) &&
+        ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)
+      ) {
+        e.preventDefault();
+        
+        const root = callbacks.manifest.ui?.tree;
+        if (!root) return;
+        const targetNode = findNodeInTree(root, selectedItemId);
+        if (!targetNode) return;
+
+        const size = getOriginalNodeSize(targetNode);
+        const grid = callbacks.manifest.ui?.layout?.grid;
+        const spacingX = grid?.spacingX ?? 24;
+        const spacingY = grid?.spacingY ?? 24;
+        const stepX = grid?.enabled ? spacingX : 10;
+        const stepY = grid?.enabled ? spacingY : 10;
+
+        let newW = size.width;
+        let newH = size.height;
+
+        if (e.key === 'ArrowRight') {
+          newW += stepX;
+        } else if (e.key === 'ArrowLeft') {
+          newW = Math.max(16, newW - stepX);
+        } else if (e.key === 'ArrowDown') {
+          newH += stepY;
+        } else if (e.key === 'ArrowUp') {
+          newH = Math.max(16, newH - stepY);
+        }
+
+        // If shift key is also held, scale proportionally
+        if (e.shiftKey) {
+          const ratio = size.width > 0 ? size.width / size.height : 1;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+            newH = newW / ratio;
+          } else {
+            newW = newH * ratio;
+          }
+        }
+
+        const updates = computeScaleUpdates(
+          selectedItemId,
+          Math.round(newW),
+          Math.round(newH),
+          targetNode.layout?.pos?.x ?? 0,
+          targetNode.layout?.pos?.y ?? 0,
+          callbacks.manifest
+        );
+
+        if (callbacks.onUpdateItems) {
+          callbacks.onUpdateItems(updates);
+        }
         return;
       }
 

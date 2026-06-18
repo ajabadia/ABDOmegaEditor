@@ -23,7 +23,7 @@ interface WorkbenchFooterProps {
   onTabFocus?: (type: 'orbital' | 'rack' | 'source' | 'history') => void;
   isSplit?: boolean;
   onToggleSplit?: () => void;
-  activeTool?: 'select' | 'marquee' | 'add' | 'studio' | null;
+  activeTool?: 'select' | 'marquee' | 'add' | 'studio' | 'transform' | null;
   /** Whether the active document has unsaved changes */
   isDirty?: boolean;
   /** Total error count from diagnostics */

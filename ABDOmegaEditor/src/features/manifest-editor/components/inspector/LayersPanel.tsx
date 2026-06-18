@@ -262,6 +262,110 @@ export default function LayersPanel({
   const filterProgress = totalCount > 0 ? Math.round((filterVisibleCount / totalCount) * 100) : 100;
   const isFiltered = filterVisibleCount !== totalCount;
 
+  // ── Keyboard navigation state ───────────────────────────────────────
+  const [focusedLayerIndex, setFocusedLayerIndex] = useState<number>(-1);
+  const focusedLayerIndexRef = useRef(-1);
+
+  // Sync focusedLayerIndex when selectedItemId changes from external clicks
+  useEffect(() => {
+    if (!selectedItemId || flatItems.length === 0) return;
+    const idx = flatItems.findIndex((fi) => fi.id === selectedItemId);
+    if (idx >= 0 && idx !== focusedLayerIndexRef.current) {
+      setFocusedLayerIndex(idx);
+      focusedLayerIndexRef.current = idx;
+    }
+  }, [selectedItemId, flatItems]);
+
+  // Scroll the virtual list to the focused item by setting the element scrollTop
+  useEffect(() => {
+    if (focusedLayerIndex < 0 || !listRef.current?.element) return;
+    const scrollEl = listRef.current.element;
+    const targetScrollTop = focusedLayerIndex * ROW_HEIGHT - (treeDimensions.height / 2 - ROW_HEIGHT / 2);
+    scrollEl.scrollTo({ top: Math.max(0, targetScrollTop), behavior: 'smooth' });
+  }, [focusedLayerIndex, treeDimensions.height, listRef]);
+
+  // Keyboard navigation handler for the tree container
+  const handleTreeKeyDown = useCallback((e: React.KeyboardEvent) => {
+    const items = flatItems;
+    if (items.length === 0) return;
+
+    // Read current index from ref to avoid closure issues
+    let currentIdx = focusedLayerIndexRef.current;
+    if (currentIdx < 0 || currentIdx >= items.length) {
+      currentIdx = 0;
+    }
+
+    switch (e.key) {
+      case 'ArrowDown': {
+        e.preventDefault();
+        e.stopPropagation();
+        const nextIdx = Math.min(currentIdx + 1, items.length - 1);
+        const nextItem = items[nextIdx];
+        if (nextItem) {
+          focusedLayerIndexRef.current = nextIdx;
+          setFocusedLayerIndex(nextIdx);
+          onSelectItem(nextItem.id);
+          onSelectMultiple?.([nextItem.id]);
+        }
+        break;
+      }
+      case 'ArrowUp': {
+        e.preventDefault();
+        e.stopPropagation();
+        const prevIdx = Math.max(currentIdx - 1, 0);
+        const prevItem = items[prevIdx];
+        if (prevItem) {
+          focusedLayerIndexRef.current = prevIdx;
+          setFocusedLayerIndex(prevIdx);
+          onSelectItem(prevItem.id);
+          onSelectMultiple?.([prevItem.id]);
+        }
+        break;
+      }
+      case 'ArrowRight': {
+        e.preventDefault();
+        e.stopPropagation();
+        const item = items[currentIdx];
+        if (item && item.hasChildren && !item.isExpanded) {
+          toggleExpand(item.id);
+        }
+        break;
+      }
+      case 'ArrowLeft': {
+        e.preventDefault();
+        e.stopPropagation();
+        const item = items[currentIdx];
+        if (item && item.hasChildren && item.isExpanded) {
+          toggleExpand(item.id);
+        }
+        break;
+      }
+      case 'Home': {
+        e.preventDefault();
+        const firstItem = items[0];
+        if (firstItem) {
+          focusedLayerIndexRef.current = 0;
+          setFocusedLayerIndex(0);
+          onSelectItem(firstItem.id);
+          onSelectMultiple?.([firstItem.id]);
+        }
+        break;
+      }
+      case 'End': {
+        e.preventDefault();
+        const lastIdx = items.length - 1;
+        const lastItem = items[lastIdx];
+        if (lastItem) {
+          focusedLayerIndexRef.current = lastIdx;
+          setFocusedLayerIndex(lastIdx);
+          onSelectItem(lastItem.id);
+          onSelectMultiple?.([lastItem.id]);
+        }
+        break;
+      }
+    }
+  }, [flatItems, onSelectItem, onSelectMultiple, toggleExpand]);
+
   // ── Undo last batch action ───────────────────────────────────────────
   const handleUndoLastBatch = useCallback(() => {
     const last = batchHistory[0];
@@ -707,6 +811,10 @@ export default function LayersPanel({
           <div
             ref={treeContainerRef}
             className="flex-1 overflow-hidden select-none p-1.5"
+            role="tree"
+            aria-label="Layers tree navigation — use Arrow keys to move, Right/Left to expand/collapse"
+            tabIndex={0}
+            onKeyDown={handleTreeKeyDown}
             onDragOver={handleTreeDragOver}
             onDrop={handleTreeDrop}
           >

@@ -1,13 +1,13 @@
 'use client';
 
 /**
- * @purpose Renderiza una previsualización de un item OmegaNode con contenido colapsable y efecto de línea de escaneo.
+ * @purpose Renderiza una previsualización de un item OmegaNode con contenido desplazable y efecto de línea de escaneo.
  * @purpose_en Renders a preview of an OmegaNode item with collapsible content and scanline effect.
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:5,sig:us9n5n
- * @lastUpdated 2026-06-15T11:05:54.035Z
+ * @fingerprint exports:1,imports:5,sig:uv61as
+ * @lastUpdated 2026-06-17T22:32:48.252Z
  */
 
 import React from 'react';

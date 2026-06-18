@@ -17,19 +17,10 @@
 @import './layout/tabs.css';
 @import './layout/splash.css';
 
-/* PRIMITIVES */
-@import './primitives/knob.css';
-@import './primitives/slider.css';
-@import './primitives/led.css';
-@import './primitives/port.css';
-@import './primitives/display.css';
-@import './primitives/select.css';
-@import './primitives/switch.css';
-@import './primitives/stepper.css';
-@import './primitives/label.css';
-@import './primitives/scope.css';
-@import './primitives/terminal.css';
-@import './primitives/illustration.css';
+/* PRIMITIVES (Consolidated) */
+@import './primitives/controls.css';    /* knob, slider, stepper, switch, select */
+@import './primitives/indicators.css';   /* led, display, scope, terminal */
+@import './primitives/visuals.css';      /* port, label, illustration */
 
 body {
     margin: 0;

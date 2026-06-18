@@ -6,8 +6,8 @@
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:2,sig:8lmcn0
- * @lastUpdated 2026-06-15T11:31:32.148Z
+ * @fingerprint exports:1,imports:2,sig:1b7eqwg
+ * @lastUpdated 2026-06-17T22:34:11.983Z
  */
 
 import { Trash2, ArrowRight, Info } from 'lucide-react';

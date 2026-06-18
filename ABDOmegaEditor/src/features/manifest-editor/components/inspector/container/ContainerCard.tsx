@@ -6,8 +6,8 @@
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:4,sig:1xgvo4d
- * @lastUpdated 2026-06-15T11:06:06.069Z
+ * @fingerprint exports:1,imports:4,sig:1igejnj
+ * @lastUpdated 2026-06-17T22:33:07.548Z
  */
 
 import { ChevronDown, ChevronRight, Maximize, Minimize2, Trash2 } from 'lucide-react';

@@ -8,6 +8,19 @@ import type { Page } from '@playwright/test';
  * v9.2.0-dev: Fixed Monaco async loading timing, updated to footer-based view switching.
  */
 
+const ONBOARDING_KEY = 'omega_onboarding_completed';
+
+/** Mark onboarding tour as completed in localStorage BEFORE the page loads. */
+async function suppressOnboarding(page: Page) {
+  await page.addInitScript(`
+    (function() {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('${ONBOARDING_KEY}', 'true');
+      }
+    })();
+  `);
+}
+
 test.describe('Phase 6 Critical Flows', () => {
 
   /** Helper: switch to rack view via the footer tab. */
@@ -68,6 +81,7 @@ test.describe('Phase 6 Critical Flows', () => {
   }
 
   test.beforeEach(async ({ page }) => {
+    await suppressOnboarding(page);
     await page.goto('/en');
     // Wait for the initial settle period (app bootstrap, i18n, etc.)
     await page.waitForTimeout(4000);

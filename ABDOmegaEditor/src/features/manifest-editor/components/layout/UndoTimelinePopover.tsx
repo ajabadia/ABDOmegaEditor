@@ -10,7 +10,7 @@
  * @lastUpdated 2026-06-15T16:07:56.309Z
  */
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState, startTransition } from 'react';
 import {
   Undo2,
   Redo2,
@@ -108,7 +108,9 @@ export default function UndoTimelinePopover({
   triggerRef,
 }: UndoTimelinePopoverProps) {
   const popoverRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<{ bottom: number; right: number }>({ bottom: 0, right: 0 });
+  const [focusedIndex, setFocusedIndex] = useState<number>(-1);
 
   // ── Position relative to trigger ────────────────────────────────────
   useEffect(() => {
@@ -148,6 +150,55 @@ export default function UndoTimelinePopover({
     };
   }, [isOpen, onClose, triggerRef]);
 
+  // ── Keyboard navigation: focus management ───────────────────────────
+  const totalFocusableItems = past.length + future.length + batchEntries.length;
+
+  // Use setTimeout with cleanup to defer state update and avoid cascading renders
+  useEffect(() => {
+    if (isOpen && totalFocusableItems > 0) {
+      const id = setTimeout(() => setFocusedIndex(0), 0);
+      return () => clearTimeout(id);
+    }
+    if (!isOpen) {
+      startTransition(() => {
+        setFocusedIndex(-1);
+      });
+    }
+  }, [isOpen, totalFocusableItems]);
+
+  useEffect(() => {
+    if (focusedIndex < 0 || !scrollRef.current) return;
+    const el = scrollRef.current.querySelector(`[data-history-index="${focusedIndex}"]`);
+    if (el instanceof HTMLElement) {
+      el.focus();
+      if (typeof el.scrollIntoView === 'function') {
+        el.scrollIntoView({ block: 'nearest' });
+      }
+    }
+  }, [focusedIndex]);
+
+  const handleListKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (totalFocusableItems === 0) return;
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setFocusedIndex(prev => Math.min(prev + 1, totalFocusableItems - 1));
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setFocusedIndex(prev => Math.max(prev - 1, 0));
+        break;
+      case 'Home':
+        e.preventDefault();
+        setFocusedIndex(0);
+        break;
+      case 'End':
+        e.preventDefault();
+        setFocusedIndex(totalFocusableItems - 1);
+        break;
+    }
+  }, [totalFocusableItems]);
+
   if (!isOpen) return null;
 
   const totalSteps = past.length + future.length + batchEntries.length;
@@ -175,7 +226,11 @@ export default function UndoTimelinePopover({
       </div>
 
       {/* LIST */}
-      <div className="flex-1 overflow-y-auto overscroll-contain py-0.5 min-h-0">
+      <div
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto overscroll-contain py-0.5 min-h-0"
+        onKeyDown={handleListKeyDown}
+      >
         {/* ── Past entries ── */}
         {pastReversed.length === 0 && future.length === 0 && (
           <div className="flex items-center justify-center py-8 text-[8px] text-white/20 italic select-none">
@@ -198,6 +253,9 @@ export default function UndoTimelinePopover({
                 }
               }}
               disabled={isCurrent}
+              tabIndex={focusedIndex === revIdx ? 0 : -1}
+              data-history-index={revIdx}
+              onMouseEnter={() => setFocusedIndex(revIdx)}
               className={`w-full flex items-center gap-2 px-3 py-1.5 text-left transition-all ${
                 isCurrent
                   ? 'bg-primary/10 border-l-2 border-primary cursor-default'
@@ -241,13 +299,18 @@ export default function UndoTimelinePopover({
 
         {future.length > 0 && (
           <div className="opacity-50">
-            {future.map((entry) => (
+            {future.map((entry, futureIdx) => {
+              const idx = pastReversed.length + futureIdx;
+              return (
               <button
                 key={entry.id}
                 onClick={() => {
                   onRedo();
                   onClose();
                 }}
+                tabIndex={focusedIndex === idx ? 0 : -1}
+                data-history-index={idx}
+                onMouseEnter={() => setFocusedIndex(idx)}
                 className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-white/5 transition-colors border-l-2 border-transparent cursor-pointer active:bg-white/10"
                 aria-label={`Redo: ${entry.label || entry.type.replace(/_/g, ' ')}`}
               >
@@ -262,7 +325,7 @@ export default function UndoTimelinePopover({
                   {relativeTime(entry.timestamp)}
                 </span>
               </button>
-            ))}
+            )})}
           </div>
         )}
 
@@ -274,20 +337,24 @@ export default function UndoTimelinePopover({
               <span className="text-[6px] font-mono uppercase tracking-widest text-amber-400/50">Batch</span>
               <div className="flex-1 h-px bg-amber-400/20" />
             </div>
-            {batchEntries.map((entry, idx) => {
+            {batchEntries.map((entry, batchIdx) => {
+              const idx = pastReversed.length + future.length + batchIdx;
               const timeStr = new Date(entry.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
               const variantClass = BATCH_VARIANT_TIMELINE[entry.variant] || 'border-white/20 bg-white/5 text-white/60';
               const isUndoable = entry.action === 'visibility' || entry.action === 'lock' || (entry.action === 'group' && entry.value === true);
               return (
                 <button
-                  key={`batch-${entry.time}-${idx}`}
+                  key={`batch-${entry.time}-${batchIdx}`}
                   onClick={() => {
                     if (isUndoable && onUndoBatchEntry) {
-                      onUndoBatchEntry(idx);
+                      onUndoBatchEntry(batchIdx);
                       onClose();
                     }
                   }}
                   disabled={!isUndoable}
+                  tabIndex={focusedIndex === idx ? 0 : -1}
+                  data-history-index={idx}
+                  onMouseEnter={() => setFocusedIndex(idx)}
                   className={`w-full flex items-center gap-2 px-3 py-1.5 text-left transition-all border-l-2 ${
                     isUndoable
                       ? 'hover:bg-white/5 border-transparent cursor-pointer active:bg-white/10'

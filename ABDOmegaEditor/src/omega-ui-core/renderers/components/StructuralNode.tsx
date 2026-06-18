@@ -21,6 +21,7 @@ import { UniversalRenderer } from '../UniversalRenderer';
 import type { UCADebugContext } from '../ucaTypes';
 import { useDesignTokens } from '../../hooks/useDesignTokens';
 import { ReorderIndicator } from './ReorderIndicator';
+import { ResizeHandles } from './ResizeHandles';
 
 interface StructuralNodeProps {
   node: OmegaNode;
@@ -93,7 +94,11 @@ export function StructuralNode({
 
   // Prevents framer-motion pan from propagating to parent containers (double-drag fix)
   // pan-based drag (no momentum → element lands exactly where pointer releases)
-  const panHandlers = isDraggable ? {
+  // 🔴 BUG FIX: When in 'transform' mode with the node selected, disable drag pan handlers
+  // to prevent useUCADrag.handlePanEnd from firing AFTER useUCAResize.handleResizeEnd
+  // and overwriting the resize update with a position-only update (losing the size change).
+  const isResizeMode = isSelected && debugContext?.activeTool === 'transform';
+  const panHandlers = (isDraggable && !isResizeMode) ? {
     onPanStart: handlePanStart,
     onPan: handlePan,
     onPanEnd: handlePanEnd,
@@ -107,6 +112,16 @@ export function StructuralNode({
     ? debugContext!.activeDragOffset!
     : (dragOffset || { x: 0, y: 0 });
 
+  // Check if we are currently being resized
+  const activeResizeOffset = debugContext?.activeResizeOffset;
+  const isBeingResized = activeResizeOffset && activeResizeOffset.resizedNodeId === node.id;
+  
+  // Calculate dynamic dimensions and positions
+  const currentW = isBeingResized ? activeResizeOffset.width : (node.layout?.size?.width ?? 100);
+  const currentH = isBeingResized ? activeResizeOffset.height : (node.layout?.size?.height ?? 100);
+  const currentX = isBeingResized ? ((node.layout?.pos?.x || 0) + activeResizeOffset.x) : ((node.layout?.pos?.x || 0) + offsetToApply.x);
+  const currentY = isBeingResized ? ((node.layout?.pos?.y || 0) + activeResizeOffset.y) : ((node.layout?.pos?.y || 0) + offsetToApply.y);
+
   return (
     <motion.div
       id={`uca-${node.id}`}
@@ -116,17 +131,19 @@ export function StructuralNode({
       onPointerDown={(e) => {
         // Select on pointerdown BEFORE framer-motion pan gesture can suppress click
         handleClick(e as unknown as React.MouseEvent);
-        if (isDraggable) {
+        // Block propagation in resize mode so the event doesn't bubble to the rack's
+        // onClick handler (which calls onSelectItem(null) and deselects the node).
+        if (isDraggable || isResizeMode) {
           e.stopPropagation();
         }
       }}
       {...panHandlers}
       style={{
         position: 'absolute',
-        left: `${(node.layout?.pos?.x || 0) + offsetToApply.x}px`,
-        top: `${(node.layout?.pos?.y || 0) + offsetToApply.y}px`,
-        width: node.layout?.size?.width ? `${node.layout.size.width}px` : 'auto',
-        height: node.layout?.size?.height ? `${node.layout.size.height}px` : 'auto',
+        left: `${currentX}px`,
+        top: `${currentY}px`,
+        width: node.layout?.size?.width || isBeingResized ? `${currentW}px` : 'auto',
+        height: node.layout?.size?.height || isBeingResized ? `${currentH}px` : 'auto',
         zIndex: isSelected ? 101 : (node.layout?.zIndex || 0),
         ...cssVars,
         // Semantic overrides for structural types
@@ -142,7 +159,9 @@ export function StructuralNode({
         padding: '2px',
         boxSizing: 'border-box',
         pointerEvents: (node.kind !== 'rack' && !debugContext?.isLiveMode) ? 'auto' : 'none',
-        outline: (!debugContext?.isLiveMode && isSelected) ? '2px solid #00f2ff' : (!debugContext?.isLiveMode && isMultiSelected) ? '1.5px dashed #a855f7' : 'none',
+        outline: (!debugContext?.isLiveMode && isSelected) 
+          ? (debugContext?.activeTool === 'transform' ? '2px dashed #00f2ff' : '2px solid #00f2ff') 
+          : (!debugContext?.isLiveMode && isMultiSelected) ? '1.5px dashed #a855f7' : 'none',
         outlineOffset: '4px',
         boxShadow: (!debugContext?.isLiveMode && isSelected) ? '0 0 20px rgba(0, 242, 255, 0.5)' : (!debugContext?.isLiveMode && isMultiSelected) ? '0 0 12px rgba(168, 85, 247, 0.3)' : 'none'
       }}
@@ -158,6 +177,14 @@ export function StructuralNode({
       )}
       
       {!debugContext?.isLiveMode && <GovernedOverlay enabled={!!isLayoutGoverned} />}
+
+      {!debugContext?.isLiveMode && isSelected && debugContext?.activeTool === 'transform' && !debugContext?.lockedNodeIds?.includes(node.id) && (
+        <ResizeHandles
+          node={node}
+          manifest={manifest}
+          debugContext={debugContext}
+        />
+      )}
 
       {/* Visual reorder indicator — shows insertion point during drag in governed layouts */}
       {isLayoutGoverned && targetIndex !== null && parentNode?.layout?.mode && (

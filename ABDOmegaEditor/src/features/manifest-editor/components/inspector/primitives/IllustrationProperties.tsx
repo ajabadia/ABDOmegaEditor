@@ -6,8 +6,8 @@
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:3,sig:1miytum
- * @lastUpdated 2026-06-15T11:31:40.275Z
+ * @fingerprint exports:1,imports:3,sig:1r8jqwq
+ * @lastUpdated 2026-06-17T22:34:28.245Z
  */
 
 import { Maximize2, Layers } from 'lucide-react';

@@ -6,8 +6,8 @@
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:7,sig:19hvpp0
- * @lastUpdated 2026-06-15T20:48:15.637Z
+ * @fingerprint exports:1,imports:7,sig:1snr7f6
+ * @lastUpdated 2026-06-17T22:30:00.017Z
  */
 
 

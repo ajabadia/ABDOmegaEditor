@@ -6,8 +6,8 @@
  * @refactorable false
  * @classification UI Component
  * @complexity Low
- * @fingerprint exports:1,imports:1,sig:1l31ky6
- * @lastUpdated 2026-06-15T11:31:13.203Z
+ * @fingerprint exports:1,imports:1,sig:k1oybm
+ * @lastUpdated 2026-06-17T22:33:59.520Z
  */
 
 import { X, Package, Settings, Pin } from 'lucide-react';

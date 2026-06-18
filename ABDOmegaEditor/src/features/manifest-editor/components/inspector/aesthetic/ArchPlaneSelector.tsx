@@ -1,13 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona un componente colapsable para seleccionar y actualizar la pestaña en la presentación de una entidad ArchPlane.
+ * @purpose Renderiza un componente colapsable para seleccionar y actualizar la pestaña en la presentación de una entidad ArchPlane.
  * @purpose_en Renders a collapsible component for selecting and updating the tab in an ArchPlane entity's presentation.
  * @refactorable false
  * @classification UI Component
  * @complexity Low
- * @fingerprint exports:1,imports:3,sig:pn2kvs
- * @lastUpdated 2026-06-15T11:03:49.848Z
+ * @fingerprint exports:1,imports:3,sig:15l4gy6
+ * @lastUpdated 2026-06-17T22:30:52.693Z
  */
 
 import { Layers } from 'lucide-react';

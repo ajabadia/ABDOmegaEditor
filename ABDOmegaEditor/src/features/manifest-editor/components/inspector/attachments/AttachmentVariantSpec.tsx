@@ -6,8 +6,8 @@
  * @refactorable false
  * @classification UI Component
  * @complexity Low
- * @fingerprint exports:1,imports:2,sig:a2bnrc
- * @lastUpdated 2026-06-15T11:05:39.472Z
+ * @fingerprint exports:1,imports:2,sig:0krnj0
+ * @lastUpdated 2026-06-17T22:32:33.553Z
  */
 
 import { Box } from 'lucide-react';

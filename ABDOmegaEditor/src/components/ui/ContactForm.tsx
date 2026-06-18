@@ -1,13 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona un formulario de contacto con características de validación y notificaciones para el editor de manifesto OMEGA (ABDOmegaEditor).
- * @purpose_en Manages a contact form with validation and notification features for the OMEGA manifest editor (ABDOmegaEditor).
+ * @purpose Gestiona un formulario de contacto con características de validación y notificaciones para el editor de manifesto OMEGA.
+ * @purpose_en Manages a contact form with validation and notification features for the OMEGA manifest editor.
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:8,sig:mu961c
- * @lastUpdated 2026-06-15T10:51:33.829Z
+ * @fingerprint exports:1,imports:8,sig:srojfw
+ * @lastUpdated 2026-06-17T22:29:34.245Z
  */
 
 

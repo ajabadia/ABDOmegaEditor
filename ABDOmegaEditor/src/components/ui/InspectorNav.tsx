@@ -6,8 +6,8 @@
  * @refactorable false
  * @classification UI Component
  * @complexity Low
- * @fingerprint exports:2,imports:1,sig:ntcphg
- * @lastUpdated 2026-06-15T10:52:02.233Z
+ * @fingerprint exports:2,imports:1,sig:17cimbq
+ * @lastUpdated 2026-06-17T22:29:47.481Z
  */
 
 

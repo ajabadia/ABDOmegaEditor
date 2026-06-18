@@ -3,11 +3,11 @@
 /**
  * @purpose Renderiza campos para editar propiedades de adjuntos en el editor de manifesto OMEGA, incluyendo opciones de vinculación dinámica y superposiciones de texto/literal según tipo de adjunto.
  * @purpose_en Renders fields for editing attachment properties in the OMEGA manifest editor, including dynamic binding options and text/literal overrides based on attachment type.
- * @refactorable false
+ * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Low
- * @fingerprint exports:1,imports:2,sig:xtdh7g
- * @lastUpdated 2026-06-15T11:05:20.911Z
+ * @fingerprint exports:1,imports:2,sig:1rhwu5d
+ * @lastUpdated 2026-06-17T22:32:13.839Z
  */
 
 import { Link2, Type } from 'lucide-react';

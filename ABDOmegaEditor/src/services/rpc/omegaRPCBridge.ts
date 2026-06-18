@@ -127,7 +127,7 @@ export class OmegaRPCBridge {
     try {
       // Phase 20.4: Blueprint Runtime Instantiation
       // 1. Resolution
-      const canonicalGraph = BlueprintResolver.resolve(params.graph);
+      const canonicalGraph = BlueprintResolver.resolve(params.graph, manifest);
       
       // 2. Validation (Blocking)
       BlueprintValidator.validate(canonicalGraph, manifest);

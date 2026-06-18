@@ -89,6 +89,9 @@ interface VirtualRackProps {
   // P11 — Visual Connection Editor
   onAddModulation?: ((mod: OMEGA_Modulation) => void) | undefined;
   onRemoveModulation?: ((id: string) => void) | undefined;
+  activeTool?: 'select' | 'marquee' | 'add' | 'studio' | 'transform' | null | undefined;
+  startTransaction?: ((label: string) => void) | undefined;
+  commitTransaction?: (() => void) | undefined;
 }
 
 
@@ -115,7 +118,7 @@ function handleSnapToGrid(
  * VirtualRack (v7.2.3) - Aseptic Orchestrator
  * High-fidelity modular instrument viewport.
  */
-import { useDesignTokens } from '@/features/manifest-editor/hooks/useDesignTokens';
+import { useDesignTokens } from '@/omega-ui-core/hooks/useDesignTokens';
 
 export default function VirtualRack({
   manifest,
@@ -158,6 +161,9 @@ export default function VirtualRack({
   isBindingMode = false,
   onAddModulation,
   onRemoveModulation,
+  startTransaction,
+  commitTransaction,
+  activeTool,
 }: VirtualRackProps) {
   const rackRef = useRef<HTMLDivElement>(null);
   const skin = manifest.ui?.skin || 'industrial';
@@ -165,6 +171,7 @@ export default function VirtualRack({
   const [activePlane, setActivePlane] = React.useState('MAIN');
   const [contextMenu, setContextMenu] = React.useState<{ x: number; y: number; targetId: string | null; multiSelectedIds: string[] } | null>(null);
   const [activeDragOffset, setActiveDragOffset] = React.useState<{ x: number; y: number; draggedNodeId: string } | null>(null);
+  const [activeResizeOffset, setActiveResizeOffset] = React.useState<{ x: number; y: number; width: number; height: number; resizedNodeId: string } | null>(null);
   const [isStartupDismissed, setIsStartupDismissed] = React.useState(false);
 
 
@@ -360,8 +367,7 @@ export default function VirtualRack({
 
             if (!filteredTree) return null;
 
-            return (
-              <UniversalRenderer 
+            return (            <UniversalRenderer 
                 node={filteredTree} 
                 manifest={manifest}
                 catalog={manifest.moduleTemplates || {}}
@@ -384,7 +390,12 @@ export default function VirtualRack({
                   zoom: zoom,
                   pan: pan,
                   activeDragOffset: activeDragOffset,
-                  onUpdateDragOffset: setActiveDragOffset
+                  onUpdateDragOffset: setActiveDragOffset,
+                  activeResizeOffset: activeResizeOffset,
+                  onUpdateResizeOffset: setActiveResizeOffset,
+                  startTransaction: startTransaction,
+                  commitTransaction: commitTransaction,
+                  activeTool: activeTool
               }}
               />
             );
@@ -488,10 +499,15 @@ export default function VirtualRack({
         if (!rootTree) return null;
 
         const getParentGroupId = (id: string): string | undefined => {
-          const parent = findParentInTree(rootTree, id);
           const rootId = manifest.ui?.tree?.id || 'root';
-          // Include 'container' so injected blueprints (kind: 'container') can be ungrouped
-          // but exclude the rack root node to prevent 'Ungroup' from showing for ungrouped elements
+          // 1. If the clicked node itself is a group/container, ungroup it directly
+          //    (enables ungrouping root-level children)
+          const targetNode = findNodeInTree(rootTree, id);
+          if (targetNode && targetNode.id !== rootId && (targetNode.kind === 'group' || targetNode.kind === 'container')) {
+            return targetNode.id;
+          }
+          // 2. Fall back: check if the parent is a group/container (cell inside a group)
+          const parent = findParentInTree(rootTree, id);
           if (parent && parent.id !== rootId && (parent.kind === 'group' || parent.kind === 'container')) {
             return parent.id;
           }

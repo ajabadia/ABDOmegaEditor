@@ -6,8 +6,8 @@
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:4,sig:185yj3a
- * @lastUpdated 2026-06-15T11:31:59.765Z
+ * @fingerprint exports:1,imports:4,sig:1n7t9zw
+ * @lastUpdated 2026-06-17T22:34:51.861Z
  */
 
 import { List, Plus, Trash2, Hash, Type, Zap } from 'lucide-react';

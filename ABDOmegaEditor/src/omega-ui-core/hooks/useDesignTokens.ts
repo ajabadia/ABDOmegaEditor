@@ -11,7 +11,7 @@
  */
 
 import { useMemo, useCallback } from 'react';
-import type { OMEGA_Manifest, ManifestEntity, OmegaStyleNode } from '../types/manifest';
+import type { OMEGA_Manifest, ManifestEntity, OmegaStyleNode, StyleVariant } from '../types/manifest';
 import { DESIGN_TOKENS } from '../constants/design-tokens';
 
 export type DesignTokenOverrides = {
@@ -90,6 +90,13 @@ export function useDesignTokens(manifest: OMEGA_Manifest, entityOrOverrides?: Ma
     return color;
   }, [ui.palette, ui.colors]);
 
+  // Size resolver — resolves letter codes (A, B, C, D) to pixel values from ui.sizes
+  const resolveSize = useCallback((sizeCode: string | undefined, fallback = 24): number => {
+    if (!sizeCode) return fallback;
+    const sizes = (ui.sizes || {}) as Record<string, number | undefined>;
+    return sizes[sizeCode] ?? fallback;
+  }, [ui.sizes]);
+
   // Font resolver
   const resolveFont = useCallback((fontIdOrCategory: string) => {
     const typography = ui.typography || {};
@@ -104,7 +111,7 @@ export function useDesignTokens(manifest: OMEGA_Manifest, entityOrOverrides?: Ma
     const lookupKey = entity.presentation?.component || entity.type || 'container';
     const variant = entity.presentation?.variant || 'default';
     const libStyles = ui.styles?.[lookupKey] || [];
-    const found = libStyles.find(s => s.id === variant);
+    const found = libStyles.find((s: StyleVariant) => s.id === variant);
     if (!found) return null;
     return { ...found.aesthetics, aesthetics: found.aesthetics };
   }, [entity, ui.styles]);
@@ -131,6 +138,7 @@ export function useDesignTokens(manifest: OMEGA_Manifest, entityOrOverrides?: Ma
     colors,
     style,
     resolveColor,
+    resolveSize,
     resolveFont,
     cssVars,
     allVars: cssVars,

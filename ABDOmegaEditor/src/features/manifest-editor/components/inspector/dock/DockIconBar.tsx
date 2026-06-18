@@ -1,13 +1,13 @@
 'use client';
 
 /**
- * @purpose Renderiza una barra vertical de botones de iconos para pestañas de panel de dock con agrupación y etiquetas opcionales.
+ * @purpose Renderiza una barra vertical de botones de icono para paneles de dock con agrupación y etiquetas opcionales.
  * @purpose_en Renders a vertical bar of icon buttons for dock panels with optional grouping and labels.
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Low
- * @fingerprint exports:4,imports:2,sig:1gipl7a
- * @lastUpdated 2026-06-15T11:06:27.265Z
+ * @fingerprint exports:4,imports:2,sig:rd8f0j
+ * @lastUpdated 2026-06-17T22:33:27.697Z
  */
 
 /**

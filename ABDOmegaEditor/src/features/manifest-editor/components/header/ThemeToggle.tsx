@@ -3,11 +3,11 @@
 /**
  * @purpose Renderiza un selector de tema visual para el editor de manifesto OMEGA.
  * @purpose_en Renders a visual theme selector for the OMEGA manifest editor.
- * @refactorable false
+ * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Low
- * @fingerprint exports:2,imports:2,sig:57tky9
- * @lastUpdated 2026-06-15T11:37:43.573Z
+ * @fingerprint exports:2,imports:2,sig:vxxiyl
+ * @lastUpdated 2026-06-17T22:30:12.493Z
  */
 
 import { Palette, Check } from 'lucide-react';

@@ -6,8 +6,8 @@
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:1,sig:iysnmb
- * @lastUpdated 2026-06-15T11:04:32.408Z
+ * @fingerprint exports:1,imports:1,sig:1qrp77j
+ * @lastUpdated 2026-06-17T22:31:36.649Z
  */
 
 import { Copy, Trash2, CheckCircle2, Layout, Download } from 'lucide-react';

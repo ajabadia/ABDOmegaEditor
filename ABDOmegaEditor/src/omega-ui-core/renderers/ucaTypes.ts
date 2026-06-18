@@ -30,6 +30,12 @@ export interface UCADebugContext {
   pan?: { x: number; y: number } | undefined;
   activeDragOffset?: { x: number; y: number; draggedNodeId: string } | null | undefined;
   onUpdateDragOffset?: ((offset: { x: number; y: number; draggedNodeId: string } | null) => void) | undefined;
+  activeResizeOffset?: { x: number; y: number; width: number; height: number; resizedNodeId: string } | null | undefined;
+  onUpdateResizeOffset?: ((offset: { x: number; y: number; width: number; height: number; resizedNodeId: string } | null) => void) | undefined;
+  /** Wraps resize operations in an undo/redo transaction */
+  startTransaction?: ((label: string) => void) | undefined;
+  commitTransaction?: (() => void) | undefined;
+  activeTool?: 'select' | 'marquee' | 'add' | 'studio' | 'transform' | null | undefined;
 }
 
 export interface UniversalRendererProps {

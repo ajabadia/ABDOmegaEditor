@@ -26,6 +26,23 @@ function preloadBlueprints(): BpCache {
 
 const BP_CACHE = preloadBlueprints();
 
+const STORAGE_KEY = 'omega_onboarding_completed';
+
+/**
+ * Mark onboarding tour as completed in localStorage BEFORE the page loads.
+ * This prevents the Onboarding Walkthrough dialog from rendering and
+ * blocking clicks on the underlying UI during E2E tests.
+ */
+async function suppressOnboarding(page: Page) {
+  await page.addInitScript(`
+    (function() {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('${STORAGE_KEY}', 'true');
+      }
+    })();
+  `);
+}
+
 async function interceptBlueprints(page: Page) {
   await page.route('**/blueprints/v2/**', (route) => {
     const url = new URL(route.request().url());
@@ -38,6 +55,7 @@ async function interceptBlueprints(page: Page) {
 }
 
 async function navigateToRack(page: Page, { waitMs = 2000 }: { waitMs?: number } = {}) {
+  await suppressOnboarding(page);
   await page.goto('/en');
   await page.waitForTimeout(waitMs);
   const rackTab = page.getByTitle('Virtual Rack');
@@ -182,7 +200,7 @@ type OmegaFixtures = {
 export const test = base.extend<OmegaFixtures>({
   rackPage: async ({ page }, use) => {
     await interceptBlueprints(page);
-    await navigateToRack(page, { waitMs: 2000 });
+    await navigateToRack(page, { waitMs: 2000 });  // suppressOnboarding called inside navigateToRack
     await use(page);
   },
   pageWithBlueprint: async ({ rackPage }, use) => {

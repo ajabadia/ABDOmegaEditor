@@ -9,6 +9,7 @@
  */
 
 import { Space_Grotesk, Inter } from "next/font/google";
+import { getLocale } from "next-intl/server";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -21,13 +22,14 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const locale = await getLocale();
   return (
-    <html suppressHydrationWarning className={`${spaceGrotesk.variable} ${inter.variable} h-full antialiased`}>
+    <html lang={locale} suppressHydrationWarning className={`${spaceGrotesk.variable} ${inter.variable} h-full antialiased`}>
       <body suppressHydrationWarning className="min-h-full bg-background text-foreground font-body">
         <a href="#main-content" className="skip-to-content">
           Skip to main content

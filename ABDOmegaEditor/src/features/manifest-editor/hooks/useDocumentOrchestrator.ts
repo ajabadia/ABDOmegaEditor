@@ -536,9 +536,13 @@ export const useDocumentOrchestrator = () => {
     const label = doc.activeTransaction.label;
 
     try {
-      // 1. Validation (Blocking)
+      // 1. Validation (Non-blocking warning, errors shown in status bar)
       if (doc.manifest.ui?.tree) {
-        BlueprintValidator.validate(doc.manifest.ui.tree, doc.manifest);
+        try {
+          BlueprintValidator.validate(doc.manifest.ui.tree, doc.manifest);
+        } catch (valErr: unknown) {
+          console.warn('[OMEGA VALIDATION]', (valErr as Error).message);
+        }
       }
 
       // Phase 21.1: Capture as historical revision

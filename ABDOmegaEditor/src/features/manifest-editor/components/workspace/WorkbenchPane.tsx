@@ -80,7 +80,7 @@ interface WorkbenchPaneProps {
   onToggleVisibility?: (id: string) => void;
   onGroupSelected?: (ids: string[]) => void;
   onUngroupNode?: (groupId: string) => void;
-  activeTool?: 'select' | 'marquee' | 'add' | 'studio' | null | undefined;
+  activeTool?: 'select' | 'marquee' | 'add' | 'studio' | 'transform' | null | undefined;
   uiTheme?: 'dark' | 'light' | 'amber' | 'cyberpunk' | 'high-contrast' | undefined;
 
   // v9.1.7-dev — RackStartupAssistant wiring (REGRESSION_RECOVERY_PLAN.md item 23)
@@ -103,6 +103,8 @@ interface WorkbenchPaneProps {
   // P11 — Visual Connection Editor
   onAddModulation?: ((mod: OMEGA_Modulation) => void) | undefined;
   onRemoveModulation?: ((id: string) => void) | undefined;
+  startTransaction?: ((label: string) => void) | undefined;
+  commitTransaction?: (() => void) | undefined;
 }
  
 const WorkbenchPane = React.memo((props: WorkbenchPaneProps) => {
@@ -231,6 +233,8 @@ const WorkbenchPane = React.memo((props: WorkbenchPaneProps) => {
             {...(props.onGhostCancel != null ? { onGhostCancel: props.onGhostCancel } : {})}
             {...(props.onAddModulation != null ? { onAddModulation: props.onAddModulation } : {})}
             {...(props.onRemoveModulation != null ? { onRemoveModulation: props.onRemoveModulation } : {})}
+            startTransaction={props.startTransaction}
+            commitTransaction={props.commitTransaction}
           />
         )}
 

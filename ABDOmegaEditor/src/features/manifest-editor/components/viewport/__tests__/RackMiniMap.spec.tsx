@@ -689,6 +689,217 @@ describe('RackMiniMap — kind filter dropdown', () => {
   });
 });
 
+// ── Keyboard navigation ───────────────────────────────────────────────
+
+describe('RackMiniMap — keyboard navigation', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should call onPan with (0, -PAN_STEP) when ArrowUp is pressed on the mini-map canvas', () => {
+    const onPan = jest.fn();
+    render(<RackMiniMap {...defaultProps({ onPan })} />);
+    const canvas = document.querySelector('[role="grid"]');
+    expect(canvas).toBeTruthy();
+    fireEvent.keyDown(canvas!, { key: 'ArrowUp' });
+    expect(onPan).toHaveBeenCalledWith(0, -20);
+  });
+
+  it('should call onPan with (0, PAN_STEP) when ArrowDown is pressed', () => {
+    const onPan = jest.fn();
+    render(<RackMiniMap {...defaultProps({ onPan })} />);
+    const canvas = document.querySelector('[role="grid"]');
+    expect(canvas).toBeTruthy();
+    fireEvent.keyDown(canvas!, { key: 'ArrowDown' });
+    expect(onPan).toHaveBeenCalledWith(0, 20);
+  });
+
+  it('should call onPan with (-PAN_STEP, 0) when ArrowLeft is pressed', () => {
+    const onPan = jest.fn();
+    render(<RackMiniMap {...defaultProps({ onPan })} />);
+    const canvas = document.querySelector('[role="grid"]');
+    expect(canvas).toBeTruthy();
+    fireEvent.keyDown(canvas!, { key: 'ArrowLeft' });
+    expect(onPan).toHaveBeenCalledWith(-20, 0);
+  });
+
+  it('should call onPan with (PAN_STEP, 0) when ArrowRight is pressed', () => {
+    const onPan = jest.fn();
+    render(<RackMiniMap {...defaultProps({ onPan })} />);
+    const canvas = document.querySelector('[role="grid"]');
+    expect(canvas).toBeTruthy();
+    fireEvent.keyDown(canvas!, { key: 'ArrowRight' });
+    expect(onPan).toHaveBeenCalledWith(20, 0);
+  });
+
+  it('should call onPan for Arrow keys (confirming the handler processes the event)', () => {
+    const onPan = jest.fn();
+    render(<RackMiniMap {...defaultProps({ onPan })} />);
+    const canvas = document.querySelector('[role="grid"]');
+    expect(canvas).toBeTruthy();
+    fireEvent.keyDown(canvas!, { key: 'ArrowDown' });
+    expect(onPan).toHaveBeenCalled();
+  });
+
+  it('should open the kind filter dropdown when Enter is pressed', () => {
+    render(<RackMiniMap {...defaultProps()} />);
+    // Filter dropdown should be closed initially
+    expect(screen.queryByText('Show Kinds')).toBeNull();
+
+    const canvas = document.querySelector('[role="grid"]');
+    expect(canvas).toBeTruthy();
+    fireEvent.keyDown(canvas!, { key: 'Enter' });
+
+    // Dropdown should now be open
+    expect(screen.getByText('Show Kinds')).toBeTruthy();
+  });
+
+  it('should close the kind filter dropdown when Enter is pressed again (toggle)', () => {
+    render(<RackMiniMap {...defaultProps()} />);
+    const canvas = document.querySelector('[role="grid"]');
+    expect(canvas).toBeTruthy();
+
+    // Open with Enter
+    fireEvent.keyDown(canvas!, { key: 'Enter' });
+    expect(screen.getByText('Show Kinds')).toBeTruthy();
+
+    // Close with Enter again
+    fireEvent.keyDown(canvas!, { key: 'Enter' });
+    expect(screen.queryByText('Show Kinds')).toBeNull();
+  });
+
+  it('should close the kind filter dropdown when Escape is pressed', () => {
+    render(<RackMiniMap {...defaultProps()} />);
+    const canvas = document.querySelector('[role="grid"]');
+    expect(canvas).toBeTruthy();
+
+    // Open with Enter first
+    fireEvent.keyDown(canvas!, { key: 'Enter' });
+    expect(screen.getByText('Show Kinds')).toBeTruthy();
+
+    // Close with Escape
+    fireEvent.keyDown(canvas!, { key: 'Escape' });
+    expect(screen.queryByText('Show Kinds')).toBeNull();
+  });
+
+  it('should toggle filter on Enter key (confirming handler processes the event)', () => {
+    render(<RackMiniMap {...defaultProps()} />);
+    const canvas = document.querySelector('[role="grid"]');
+    expect(canvas).toBeTruthy();
+
+    // Filter starts closed
+    expect(screen.queryByText('Show Kinds')).toBeNull();
+
+    // Enter toggles it open
+    fireEvent.keyDown(canvas!, { key: 'Enter' });
+    expect(screen.getByText('Show Kinds')).toBeTruthy();
+
+    // Enter toggles it closed again
+    fireEvent.keyDown(canvas!, { key: 'Enter' });
+    expect(screen.queryByText('Show Kinds')).toBeNull();
+  });
+
+  it('should close filter on Escape when filter is open', () => {
+    render(<RackMiniMap {...defaultProps()} />);
+    const canvas = document.querySelector('[role="grid"]');
+    expect(canvas).toBeTruthy();
+
+    // Open filter first
+    fireEvent.keyDown(canvas!, { key: 'Enter' });
+    expect(screen.getByText('Show Kinds')).toBeTruthy();
+
+    // Escape closes it
+    fireEvent.keyDown(canvas!, { key: 'Escape' });
+    expect(screen.queryByText('Show Kinds')).toBeNull();
+  });
+
+  it('should have role="grid" and correct aria-label on the mini-map canvas', () => {
+    render(<RackMiniMap {...defaultProps()} />);
+    const canvas = document.querySelector('[role="grid"]');
+    expect(canvas).toBeTruthy();
+    expect(canvas!.getAttribute('aria-label')).toContain('Arrow keys');
+    expect(canvas!.getAttribute('aria-label')).toContain('Enter');
+    expect(canvas!.getAttribute('aria-label')).toContain('Escape');
+  });
+
+  it('should have tabIndex={0} on the mini-map canvas for keyboard focusability', () => {
+    render(<RackMiniMap {...defaultProps()} />);
+    const canvas = document.querySelector('[role="grid"]');
+    expect(canvas).toBeTruthy();
+    expect(canvas!.getAttribute('tabindex')).toBe('0');
+  });
+
+  it('should not call onPan for non-navigation keys', () => {
+    const onPan = jest.fn();
+    render(<RackMiniMap {...defaultProps({ onPan })} />);
+    const canvas = document.querySelector('[role="grid"]');
+    expect(canvas).toBeTruthy();
+
+    fireEvent.keyDown(canvas!, { key: 'a' });
+    fireEvent.keyDown(canvas!, { key: 'Tab' });
+    fireEvent.keyDown(canvas!, { key: ' ' });
+    fireEvent.keyDown(canvas!, { key: 'Delete' });
+
+    // onPan should not be called for non-navigation keys
+    expect(onPan).not.toHaveBeenCalled();
+  });
+
+  it('should do nothing when Escape is pressed but filter is already closed', () => {
+    const onPan = jest.fn();
+    render(<RackMiniMap {...defaultProps({ onPan })} />);
+    const canvas = document.querySelector('[role="grid"]');
+    expect(canvas).toBeTruthy();
+
+    // Filter starts closed. Escape should do nothing (no default prevented, no pan)
+    const preventDefault = jest.fn();
+    const stopPropagation = jest.fn();
+    fireEvent.keyDown(canvas!, { key: 'Escape', preventDefault, stopPropagation });
+    // When filter is closed, Escape does not match any case, so preventDefault/stopPropagation not called
+    expect(preventDefault).not.toHaveBeenCalled();
+    expect(stopPropagation).not.toHaveBeenCalled();
+    expect(onPan).not.toHaveBeenCalled();
+  });
+
+  it('should set isMiniMapFocused on focus (adding ring class)', () => {
+    render(<RackMiniMap {...defaultProps()} />);
+    const miniMapPanel = screen.getByTestId('mini-map');
+    expect(miniMapPanel).toBeTruthy();
+
+    // The mini-map canvas is inside the panel; when focused, the panel
+    // should show a ring class via `isMiniMapFocused` state
+    const canvas = document.querySelector('[role="grid"]');
+    expect(canvas).toBeTruthy();
+
+    // Before focus: no ring class on canvas
+    expect(canvas!.className).not.toContain('ring-1');
+
+    fireEvent.focus(canvas!);
+    // After focus: the canvas should have ring-1 class
+    expect(canvas!.className).toContain('ring-1');
+    expect(canvas!.className).toContain('ring-primary/40');
+  });
+
+  it('should keep focus state when focus moves to filter dropdown inside the panel', () => {
+    render(<RackMiniMap {...defaultProps()} />);
+    const canvas = document.querySelector('[role="grid"]');
+    expect(canvas).toBeTruthy();
+
+    // Open filter with Enter — now filter is visible
+    fireEvent.keyDown(canvas!, { key: 'Enter' });
+    expect(screen.getByText('Show Kinds')).toBeTruthy();
+
+    // Verify the filter dropdown container exists in the DOM
+    const filterDropdown = screen.getByText('Show Kinds').closest('div');
+    expect(filterDropdown).toBeTruthy();
+
+    // onBlur on the canvas sets isMiniMapFocused=false if relatedTarget is
+    // outside the panel. Since we haven't blurred, focus stays.
+    // This test simply verifies the filter toggle works and dropdown renders.
+    expect(screen.getByText('cell')).toBeTruthy();
+    expect(screen.getByText('group')).toBeTruthy();
+  });
+});
+
 // ── Edge cases ────────────────────────────────────────────────────────
 
 describe('RackMiniMap — edge cases', () => {

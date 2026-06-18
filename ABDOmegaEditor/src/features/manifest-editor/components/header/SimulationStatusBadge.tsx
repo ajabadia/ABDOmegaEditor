@@ -1,11 +1,11 @@
 /**
- * @purpose Renderiza una notificacion emergente que muestra el estado actual de sincronizacion de simulacion con un icono, etiqueta y botón de resincronizar forzado para estados de error.
+ * @purpose Renderiza una notificacion emergente con el estado actual de sincronizacion de simulacion, incluyendo un icono, etiqueta y botón de resincronizar forzado para estados de error.
  * @purpose_en Renders a badge displaying the current simulation synchronization status with an icon, label, and optional force resync button for error states.
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Low
- * @fingerprint exports:1,imports:4,sig:1rx926b
- * @lastUpdated 2026-06-15T11:03:07.614Z
+ * @fingerprint exports:1,imports:4,sig:1u7ura9
+ * @lastUpdated 2026-06-17T22:30:08.710Z
  */
 
 import React from 'react';

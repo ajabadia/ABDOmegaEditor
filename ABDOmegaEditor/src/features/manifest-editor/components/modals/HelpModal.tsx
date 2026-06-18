@@ -10,7 +10,7 @@
  * @lastUpdated 2026-06-15T20:48:55.673Z
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ModalCloseButton from './ModalCloseButton';
 import ModalActionButton from './ModalActionButton';
@@ -31,6 +31,29 @@ export default function HelpModal({ isOpen, onClose, initialSectionId }: HelpMod
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const hasInitialized = useRef(false);
+
+  // ── Escape key closes the modal ─────────────────────────────────
+  const handleEscape = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') onClose();
+  }, [onClose]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isOpen, handleEscape]);
+
+  // ── Focus restoration on close ──────────────────────────────────
+  useEffect(() => {
+    if (!isOpen) return;
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    return () => {
+      // Restore focus when modal closes (cleanup runs when isOpen becomes false)
+      if (previouslyFocused && typeof previouslyFocused.focus === 'function') {
+        previouslyFocused.focus();
+      }
+    };
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) {

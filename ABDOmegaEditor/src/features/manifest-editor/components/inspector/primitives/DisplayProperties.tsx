@@ -1,11 +1,11 @@
 /**
- * @purpose Gestiona y renderiza propiedades de visualización como tecnología de panel y precisión UI en el editor manifest OMEGA.
+ * @purpose Gestiona y renderiza propiedades de visualización como tecnología de panel y precisión UI en el editor de manifesto OMEGA.
  * @purpose_en Manages and renders display properties such as panel technology and UI precision in the OMEGA manifest editor.
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:3,sig:1f0vuns
- * @lastUpdated 2026-06-15T11:31:35.681Z
+ * @fingerprint exports:1,imports:3,sig:dtg9os
+ * @lastUpdated 2026-06-17T22:34:19.936Z
  */
 
 import { Monitor, Hash } from 'lucide-react';

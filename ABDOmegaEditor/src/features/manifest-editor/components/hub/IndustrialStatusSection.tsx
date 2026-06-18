@@ -6,8 +6,8 @@
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Low
- * @fingerprint exports:1,imports:3,sig:uvvw3f
- * @lastUpdated 2026-06-15T11:03:29.005Z
+ * @fingerprint exports:1,imports:3,sig:18vl7q1
+ * @lastUpdated 2026-06-17T22:30:23.768Z
  */
 
 import { motion } from 'framer-motion';

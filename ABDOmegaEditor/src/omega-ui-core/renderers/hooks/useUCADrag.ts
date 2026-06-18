@@ -63,6 +63,9 @@ export function useUCADrag({
 
   const handlePanStart = () => {
     if (debugContext?.isLiveMode) return;
+    if (debugContext?.startTransaction) {
+      debugContext.startTransaction('Move Element');
+    }
     const zoomFactor = debugContext?.zoom ?? 1;
     zoomFactorRef.current = zoomFactor;
     startPosRef.current = {
@@ -213,6 +216,10 @@ export function useUCADrag({
 
     // Clean up drag offset AFTER position update (Bug 1 fix — avoid premature visual jump)
     debugContext?.onUpdateDragOffset?.(null);
+
+    if (debugContext?.commitTransaction) {
+      debugContext.commitTransaction();
+    }
   };
 
   return {

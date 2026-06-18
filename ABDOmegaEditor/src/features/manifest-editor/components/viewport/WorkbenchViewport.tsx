@@ -63,7 +63,7 @@ interface WorkbenchViewportProps {
   onToggleVisibility?: (id: string) => void;
   onGroupSelected?: (ids: string[]) => void;
   onUngroupNode?: (groupId: string) => void;
-  activeTool?: 'select' | 'marquee' | 'add' | 'studio' | null | undefined;
+  activeTool?: 'select' | 'marquee' | 'add' | 'studio' | 'transform' | null | undefined;
   uiTheme?: 'dark' | 'light' | 'amber' | 'cyberpunk' | 'high-contrast' | undefined;
 
   // v9.1.7-dev — RackStartupAssistant wiring (REGRESSION_RECOVERY_PLAN.md item 23)
@@ -86,6 +86,8 @@ interface WorkbenchViewportProps {
   // P11 — Visual Connection Editor
   onAddModulation?: ((mod: OMEGA_Modulation) => void) | undefined;
   onRemoveModulation?: ((id: string) => void) | undefined;
+  startTransaction?: ((label: string) => void) | undefined;
+  commitTransaction?: (() => void) | undefined;
 }
 
 
@@ -164,6 +166,8 @@ export function WorkbenchViewport({
   onToggleMiniMap,
   onAddModulation,
   onRemoveModulation,
+  startTransaction,
+  commitTransaction,
 }: WorkbenchViewportProps) {
   const { width: rackWidth, height: rackHeight } = useRackLayout(manifest);
   
@@ -437,6 +441,9 @@ export function WorkbenchViewport({
               manifest={manifest} 
               contract={contract}
               isBindingMode={isBindingMode}
+              activeTool={activeTool}
+              startTransaction={startTransaction}
+              commitTransaction={commitTransaction}
               onSelectItem={onSelectItem} 
               selectedItemId={selectedItemId} 
               multiSelectedIds={multiSelectedIds}

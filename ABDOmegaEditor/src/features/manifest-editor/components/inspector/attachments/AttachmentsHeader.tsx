@@ -1,13 +1,13 @@
 'use client';
 
 /**
- * @purpose Renderiza un encabezado para archivos de adjuntos con botones para agregar fragmentos y acceder a información de ayuda.
+ * @purpose Renderiza una cabecera para anexos con botones para agregar fragmentos y acceder a información de ayuda.
  * @purpose_en Renders a header for attachments with buttons to add fragments and access help information.
  * @refactorable false
  * @classification UI Component
  * @complexity Low
- * @fingerprint exports:1,imports:1,sig:1aryp2e
- * @lastUpdated 2026-06-15T11:05:30.508Z
+ * @fingerprint exports:1,imports:1,sig:19tdgng
+ * @lastUpdated 2026-06-17T22:32:28.102Z
  */
 
 import { Paperclip, Info, Plus } from 'lucide-react';

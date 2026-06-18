@@ -214,7 +214,7 @@ if (process.argv.includes('--status')) {
           status = 'ok';
         }
         modules[modKey][status]++;
-      } catch (err) {
+      } catch {
         counts.missing++;
         modules[modKey]['missing']++;
       }
@@ -420,7 +420,7 @@ async function callLLM(role, prompt, temperature = 0.1, maxTokens = 150) {
       if (cloudProviders.length > 0) {
         try {
           return await callCloudProviders(role, prompt, temperature, maxTokens);
-        } catch (cloudErr) {
+        } catch {
           throw new Error(`Failed to generate description: both local Ollama and cloud providers failed.`);
         }
       } else {
@@ -433,13 +433,13 @@ async function callLLM(role, prompt, temperature = 0.1, maxTokens = 150) {
       try {
         console.log(`   [Attempting Cloud Chain]...`);
         return await callCloudProviders(role, prompt, temperature, maxTokens);
-      } catch (cloudErr) {
-        console.warn(`   [Cloud Chain Failed]: ${cloudErr.message}. Falling back to local Ollama...`);
+      } catch (_cloudErr) {
+        console.warn(`   [Cloud Chain Failed]: ${_cloudErr.message}. Falling back to local Ollama...`);
       }
     }
     try {
       return await callLocalOllama(role, prompt, temperature, maxTokens);
-    } catch (localErr) {
+    } catch {
       throw new Error(`Failed to generate description: both cloud providers and local Ollama failed.`);
     }
   }
@@ -863,8 +863,7 @@ if (USE_PIPELINE) {
 
   for (const file of batch) {
     const fullPath = path.join(PROJECT_ROOT, file);
-    let size = 0;
-    try { size = fs.readFileSync(fullPath, 'utf8').length; } catch (e) {}
+    let size = 0;        try { size = fs.readFileSync(fullPath, 'utf8').length; } catch {}
 
     pipelineStats[file] = {
       file,

@@ -1,13 +1,13 @@
 'use client';
 
 /**
- * @purpose Renderiza un elemento de ayuda collapsible para el editor de manifesto OMEGA, mostrando contenido y subsecciones con animaciones.
+ * @purpose Renderiza un elemento de ayuda collapsible para el editor de manifesto OMEGA, mostrando contenido y subtendencias con animaciones.
  * @purpose_en Renders a collapsible help section item for the OMEGA manifest editor, displaying content and subsections with animations.
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:4,sig:15db1nn
- * @lastUpdated 2026-06-15T11:03:24.421Z
+ * @fingerprint exports:1,imports:4,sig:1k40fuh
+ * @lastUpdated 2026-06-17T22:30:17.846Z
  */
 
 import { motion, AnimatePresence } from 'framer-motion';

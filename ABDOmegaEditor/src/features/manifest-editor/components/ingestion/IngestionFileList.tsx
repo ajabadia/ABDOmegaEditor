@@ -6,8 +6,8 @@
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:2,sig:14umscg
- * @lastUpdated 2026-06-15T11:03:40.202Z
+ * @fingerprint exports:1,imports:2,sig:1w6gnu4
+ * @lastUpdated 2026-06-17T22:30:43.003Z
  */
 
 import { FileCode, Binary, ScrollText, Image as ImageIcon, Check } from 'lucide-react';
