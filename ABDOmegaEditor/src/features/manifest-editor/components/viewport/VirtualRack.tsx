@@ -11,6 +11,7 @@
  */
 
 import React, { useMemo } from 'react';
+import { findNodeInTree } from '@/omega-ui-core/uca/treeUtils';
 import type { OMEGA_Manifest, OMEGA_Contract, OMEGA_Modulation, HybridEntityUpdate, OmegaNode, ManifestEntity } from '@/omega-ui-core/types/manifest';
 import type { OmegaContract } from '@/omega-ui-core/types/contract';
 import type { AuditResult } from '@/omega-ui-core/types/audit';
@@ -123,6 +124,11 @@ interface TransformProps {
   onToggleGuides?: (() => void) | undefined;
   onAddEntity?: ((type: 'control' | 'jack', template?: Partial<ManifestEntity>) => void) | undefined;
   onReset?: (() => void) | undefined;
+  onRenameItem?: ((id: string) => void) | undefined;
+  onBringToFront?: ((id: string) => void) | undefined;
+  onSendToBack?: ((id: string) => void) | undefined;
+  onSaveAsBlueprint?: ((id: string) => void) | undefined;
+  onSelectAll?: (() => void) | undefined;
 }
 
 type VirtualRackProps =
@@ -199,6 +205,11 @@ export default function VirtualRack({
   onToggleGuides,
   onAddEntity,
   onReset,
+  onRenameItem,
+  onBringToFront,
+  onSendToBack,
+  onSaveAsBlueprint,
+  onSelectAll,
 }: VirtualRackProps) {
   const inputSignalService = getService(SERVICE_TOKENS.INPUT_SIGNAL_SERVICE);
   const skin = manifest.ui?.skin || 'industrial';
@@ -500,6 +511,12 @@ export default function VirtualRack({
           onToggleGuides={onToggleGuides}
           onAddEntity={onAddEntity}
           onReset={onReset}
+          onRename={onRenameItem}
+          onBringToFront={onBringToFront}
+          onSendToBack={onSendToBack}
+          onSaveAsBlueprint={onSaveAsBlueprint}
+          onSelectAll={onSelectAll}
+          isGroup={contextMenu.targetId ? findNodeInTree(manifest.ui?.tree || { id: 'root', kind: 'cell', layout: { pos: { x: 0, y: 0 }, size: { width: 0, height: 0 } } }, contextMenu.targetId)?.kind === 'group' : false}
         />
       )}
     </div>

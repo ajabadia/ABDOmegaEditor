@@ -14,6 +14,56 @@ import type { OMEGA_Manifest, OmegaNode } from '@/omega-ui-core/types/manifest';
 import { findNodeInTree } from '@/omega-ui-core/uca/treeUtils';
 import { computeScaleUpdates, getOriginalNodeSize } from '@/omega-ui-core/renderers/utils/scaleUtils';
 
+// ── Dynamic action mapping (Phase 5.2) ───────────────────────────────
+
+export type EditorAction =
+  | 'select_all' | 'copy' | 'cut' | 'paste' | 'duplicate' | 'delete'
+  | 'undo' | 'redo' | 'deselect' | 'toggle_grid' | 'toggle_guides'
+  | 'rename' | 'command_palette';
+
+export const DEFAULT_BINDINGS: Record<string, string> = {
+  select_all: 'ctrl+a',
+  copy: 'ctrl+c',
+  cut: 'ctrl+x',
+  paste: 'ctrl+v',
+  duplicate: 'ctrl+d',
+  delete: 'delete',
+  undo: 'ctrl+z',
+  redo: 'ctrl+y',
+  deselect: 'escape',
+  toggle_grid: 'ctrl+shift+g',
+  toggle_guides: 'ctrl+shift+u',
+  rename: 'f2',
+  command_palette: 'ctrl+k',
+};
+
+/**
+ * Translates a KeyboardEvent into an EditorAction by matching against
+ * the user's binding map (falling back to DEFAULT_BINDINGS for unbound keys).
+ */
+export function getActionFromEvent(
+  e: KeyboardEvent,
+  bindings?: Record<string, string>,
+): EditorAction | null {
+  const merged = { ...DEFAULT_BINDINGS, ...bindings };
+  const pressed: string[] = [];
+  if (e.ctrlKey || e.metaKey) pressed.push('ctrl');
+  if (e.shiftKey) pressed.push('shift');
+  if (e.altKey) pressed.push('alt');
+  const key = e.key.toLowerCase();
+  if (!['control', 'shift', 'alt', 'meta'].includes(key)) {
+    pressed.push(key);
+  }
+  const combo = pressed.join('+');
+
+  for (const [action, binding] of Object.entries(merged)) {
+    if (binding === combo) return action as EditorAction;
+  }
+  return null;
+}
+
+// ── Editor interface ─────────────────────────────────────────────────
+
 export interface WorkbenchEditor {
   addLog: (msg: string) => void;
   exportManifest: (mode?: 'work' | 'distilled') => void;
@@ -50,6 +100,11 @@ export interface ShortcutCallbacks {
   onOpenNumericRotate?: () => void;
   onCopyTransform?: () => void;
   onPasteTransform?: () => void;
+  // Extended shortcuts
+  onSelectAll?: () => void;
+  onSelectItem?: (id: string | null) => void;
+  onToggleCommandPalette?: () => void;
+  onRenameItem?: (id: string) => void;
 }
 
 /**
@@ -80,9 +135,57 @@ export function createHandleKeyDown(
   multiSelectedIds: string[] | undefined,
   onOpenCellStudio: (() => void) | undefined,
   callbacks: ShortcutCallbacks | undefined,
+  bindings?: Record<string, string>,
 ): (e: KeyboardEvent) => void {
   return (e: KeyboardEvent) => {
     const skipDueToInput = isInputFocused();
+
+    // ── Dynamic action dispatch (Phase 5.2) ──────────────────────────
+    const action = getActionFromEvent(e, bindings);
+    if (action) {
+      const ids = multiSelectedIds && multiSelectedIds.length > 0 ? multiSelectedIds : (selectedItemId ? [selectedItemId] : []);
+      switch (action) {
+        case 'select_all':
+          if (!skipDueToInput) { e.preventDefault(); callbacks?.onSelectAll?.(); }
+          return;
+        case 'copy':
+          if (!skipDueToInput && ids.length > 0) { editor.copyToClipboard(ids); }
+          return;
+        case 'cut':
+          if (!skipDueToInput && ids.length > 0) { editor.cutToClipboard(ids); }
+          return;
+        case 'paste':
+          if (!skipDueToInput) { e.preventDefault(); editor.pasteFromClipboard(); }
+          return;
+        case 'duplicate':
+          if (!skipDueToInput && selectedItemId) { e.preventDefault(); callbacks?.onDuplicateItem?.(selectedItemId); }
+          return;
+        case 'delete':
+          if (!skipDueToInput && selectedItemId) { e.preventDefault(); callbacks?.onRemoveItem?.(selectedItemId); }
+          return;
+        case 'undo':
+          if (!skipDueToInput) { e.preventDefault(); editor.undo(); }
+          return;
+        case 'redo':
+          if (!skipDueToInput) { e.preventDefault(); editor.redo(); }
+          return;
+        case 'deselect':
+          if (!skipDueToInput) { callbacks?.onSelectItem?.(null); }
+          return;
+        case 'toggle_grid':
+          if (!skipDueToInput) { e.preventDefault(); callbacks?.onToggleGrid?.(); }
+          return;
+        case 'toggle_guides':
+          if (!skipDueToInput && !callbacks?.isLiveMode) { e.preventDefault(); callbacks?.onToggleGuides?.(); }
+          return;
+        case 'rename':
+          if (!skipDueToInput && selectedItemId) { e.preventDefault(); callbacks?.onRenameItem?.(selectedItemId); }
+          return;
+        case 'command_palette':
+          if (!skipDueToInput) { e.preventDefault(); callbacks?.onToggleCommandPalette?.(); }
+          return;
+      }
+    }
 
     // ── View tab switching (Ctrl+1/2/3/4) ────────────────────────────
     if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !skipDueToInput) {
@@ -123,53 +226,6 @@ export function createHandleKeyDown(
       e.preventDefault();
       editor.addLog("[INPUT] Ctrl+Shift+S detected. Exporting distilled manifest...");
       editor.exportManifest('distilled');
-      return;
-    }
-
-    // 2. Clipboard (Ctrl+C / Ctrl+X / Ctrl+V) — exclude Alt & Shift to avoid collision
-    if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && e.key === 'c') {
-      const ids = multiSelectedIds && multiSelectedIds.length > 0 ? multiSelectedIds : (selectedItemId ? [selectedItemId] : []);
-      if (ids.length > 0) {
-        editor.copyToClipboard(ids);
-      }
-      return;
-    }
-
-    if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && e.key === 'x') {
-      const ids = multiSelectedIds && multiSelectedIds.length > 0 ? multiSelectedIds : (selectedItemId ? [selectedItemId] : []);
-      if (ids.length > 0) {
-        editor.cutToClipboard(ids);
-      }
-      return;
-    }
-
-    if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && e.key === 'v') {
-      e.preventDefault();
-      editor.pasteFromClipboard();
-      return;
-    }
-
-    // ── Ctrl+D: Duplicate selected node ────────────────────────────────
-    if ((e.ctrlKey || e.metaKey) && e.key === 'd' && selectedItemId) {
-      e.preventDefault();
-      callbacks?.onDuplicateItem?.(selectedItemId);
-      return;
-    }
-
-    // 3. History Engine (Ctrl+Z / Ctrl+Y / Ctrl+Shift+Z)
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
-      e.preventDefault();
-      if (e.shiftKey) {
-        editor.redo();
-      } else {
-        editor.undo();
-      }
-      return;
-    }
-
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
-      e.preventDefault();
-      editor.redo();
       return;
     }
 
@@ -220,22 +276,6 @@ export function createHandleKeyDown(
       }
     }
 
-    // ── Ctrl+Shift+G: Toggle Grid ────────────────────────────────────
-    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'g') {
-      e.preventDefault();
-      callbacks?.onToggleGrid?.();
-      return;
-    }
-
-    // ── Ctrl+Shift+U: Toggle Guides (disabled in live mode) ──────
-    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'u') {
-      if (!callbacks?.isLiveMode) {
-        e.preventDefault();
-        callbacks?.onToggleGuides?.();
-      }
-      return;
-    }
-
     // ── Ctrl+Shift+M: Toggle Mini Map ───────────────────────────────
     if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'm') {
       e.preventDefault();
@@ -258,13 +298,6 @@ export function createHandleKeyDown(
     if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.altKey && e.key.toLowerCase() === 'r') {
       e.preventDefault();
       callbacks?.onToggleWindow?.('window_rack_properties');
-      return;
-    }
-
-    // ── Delete / Backspace: Remove selected node ────────────────────
-    if ((e.key === 'Delete' || e.key === 'Backspace') && selectedItemId) {
-      e.preventDefault();
-      callbacks?.onRemoveItem?.(selectedItemId);
       return;
     }
 

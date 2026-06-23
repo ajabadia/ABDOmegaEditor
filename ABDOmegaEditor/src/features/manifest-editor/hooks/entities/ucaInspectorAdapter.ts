@@ -331,3 +331,27 @@ export function removeNodeFromTree(root: OmegaNode, idToRemove: string): OmegaNo
   return removeNodesFromTree(root, [idToRemove]);
 }
 
+/**
+ * reorderChildInTree
+ * Moves a child node to the end (toFront=true) or beginning (toFront=false)
+ * of its parent's children array. Returns a new tree.
+ */
+export function reorderChildInTree(root: OmegaNode, childId: string, toFront: boolean): OmegaNode {
+  if (!root.children) return root;
+
+  const idx = root.children.findIndex(c => c.id === childId);
+  if (idx !== -1) {
+    const child = root.children[idx];
+    const others = root.children.filter(c => c.id !== childId);
+    return {
+      ...root,
+      children: toFront ? [...others, child] : [child, ...others],
+    };
+  }
+
+  return {
+    ...root,
+    children: root.children.map(c => reorderChildInTree(c, childId, toFront)),
+  };
+}
+

@@ -130,6 +130,12 @@ interface TransformProps {
   onToggleGuides?: (() => void) | undefined;
   onAddEntity?: ((type: 'control' | 'jack', template?: Partial<import('@/omega-ui-core/types/manifest').ManifestEntity>) => void) | undefined;
   onReset?: (() => void) | undefined;
+  // Extended context menu / shortcuts
+  onRenameItem?: ((id: string) => void) | undefined;
+  onBringToFront?: ((id: string) => void) | undefined;
+  onSendToBack?: ((id: string) => void) | undefined;
+  onSaveAsBlueprint?: ((id: string) => void) | undefined;
+  onSelectAll?: (() => void) | undefined;
 }
 
 type WorkbenchViewportProps = ViewportProps & DataProps & SelectionProps & ManipulationProps & HistoryProps & StartupProps & GhostProps & ModulationProps & TransformProps;
@@ -205,6 +211,11 @@ export function WorkbenchViewport({
   onToggleGuides,
   onAddEntity,
   onReset,
+  onRenameItem,
+  onBringToFront,
+  onSendToBack,
+  onSaveAsBlueprint,
+  onSelectAll,
   // Expose internal refs for hook wiring
 }: WorkbenchViewportProps) {
   const { width: rackWidth, height: rackHeight } = useRackLayout(manifest);
@@ -416,6 +427,11 @@ export function WorkbenchViewport({
               onToggleGuides={onToggleGuides}
               onAddEntity={onAddEntity}
               onReset={onReset}
+              onRenameItem={onRenameItem}
+              onBringToFront={onBringToFront}
+              onSendToBack={onSendToBack}
+              onSaveAsBlueprint={onSaveAsBlueprint}
+              onSelectAll={onSelectAll}
             />
           </ViewWrapper>
         )}

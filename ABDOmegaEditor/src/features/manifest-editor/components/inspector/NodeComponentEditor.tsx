@@ -15,11 +15,22 @@ import type { OmegaNode, HybridEntityUpdate, OMEGA_Manifest } from '@/omega-ui-c
 import type { ComponentNode, ComponentType, GroupNode, ComponentStyle } from '@/omega-ui-core/types/rack';
 import { ComponentEditor } from '@/features/manifest-editor/components/inspector/editors';
 
-const KIND_TO_COMPONENT_TYPE: Record<string, ComponentType> = {
-  'knob': 'knob', 'slider-v': 'slider', 'slider-h': 'slider',
-  'slider': 'slider', 'switch': 'switch', 'button': 'button',
-  'port': 'port', 'led': 'led', 'display': 'display', 'label': 'label',
-};
+import { CONTROL_DEFINITIONS } from '../../constants/entityDefinitions';
+
+const KIND_TO_COMPONENT_TYPE: Record<string, ComponentType> = (() => {
+  const map: Record<string, ComponentType> = {
+    'port': 'port',
+  };
+  CONTROL_DEFINITIONS.forEach((def) => {
+    let baseType = def.type;
+    if (baseType.startsWith('slider')) {
+      map[baseType] = 'slider';
+    } else {
+      map[baseType] = baseType as ComponentType;
+    }
+  });
+  return map;
+})();
 
 export interface NodeComponentEditorProps {
   node: OmegaNode;

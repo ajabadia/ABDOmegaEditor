@@ -38,6 +38,7 @@ import { isUcaNode } from '@/features/manifest-editor/hooks/entities/ucaInspecto
 import NodeComponentEditor from '@/features/manifest-editor/components/inspector/NodeComponentEditor';
 import { useInspectorSections } from '@/features/manifest-editor/hooks/inspector/useInspectorSections';
 import { useLiveInspectorItem } from '@/features/manifest-editor/hooks/inspector/useLiveInspectorItem';
+import { useBulkIntersection } from '@/features/manifest-editor/hooks/inspector/useBulkIntersection';
 
 // ── Categorized sub-interfaces ────────────────────────────────────
 
@@ -142,6 +143,8 @@ export default function PropertyPanel(props: PropertyPanelProps) {
   const itemId = (item && 'id' in item ? item.id : 'MANIFEST') || 'MANIFEST';
   const { isPlaying, toggleSimulation } = useDryRunSimulation(isModule || isBulk ? null : itemId);
 
+  const bulkIntersection = useBulkIntersection(props.multiSelectedIds, props.manifest);
+
   if (!item || !liveItem) return null;
 
   return (
@@ -174,11 +177,33 @@ export default function PropertyPanel(props: PropertyPanelProps) {
       <div className="flex-1 overflow-y-auto custom-scrollbar p-1.5 space-y-1.5">
         {/* BULK UPDATE HANDLER */}
         {isBulk && (
-           <div className="p-4 bg-blue-500/5 border border-blue-500/20 rounded-sm mb-4">
+           <div className="p-4 bg-blue-500/5 border border-blue-500/20 rounded-sm mb-4 space-y-3">
               <div className="text-[8px] font-bold text-blue-400 uppercase mb-2">Bulk Synchronization Active</div>
               <div className="text-[7px] text-blue-300/60 leading-relaxed uppercase">
                 Any changes made to &quot;Design &amp; Aesthetics&quot; or &quot;System Diagnostics&quot; below will be applied to all selected nodes simultaneously.
               </div>
+              {bulkIntersection && (
+                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-blue-500/10">
+                  <div className="text-[7px] font-black uppercase tracking-wider text-blue-400/80">Property</div>
+                  <div className="text-[7px] font-black uppercase tracking-wider text-blue-400/80">Value</div>
+                  <div className="text-[7px] uppercase text-blue-300/60">Width</div>
+                  <div className={`text-[7px] font-bold ${bulkIntersection.layout.width.common ? 'text-blue-300' : 'text-amber-400'}`}>
+                    {bulkIntersection.layout.width.common ? String(bulkIntersection.layout.width.value) : 'Mixed'}
+                  </div>
+                  <div className="text-[7px] uppercase text-blue-300/60">Height</div>
+                  <div className={`text-[7px] font-bold ${bulkIntersection.layout.height.common ? 'text-blue-300' : 'text-amber-400'}`}>
+                    {bulkIntersection.layout.height.common ? String(bulkIntersection.layout.height.value) : 'Mixed'}
+                  </div>
+                  <div className="text-[7px] uppercase text-blue-300/60">Role</div>
+                  <div className={`text-[7px] font-bold ${bulkIntersection.role.common ? 'text-blue-300' : 'text-amber-400'}`}>
+                    {bulkIntersection.role.common ? String(bulkIntersection.role.value) : 'Mixed'}
+                  </div>
+                  <div className="text-[7px] uppercase text-blue-300/60">Label</div>
+                  <div className={`text-[7px] font-bold ${bulkIntersection.label.common ? 'text-blue-300' : 'text-amber-400'}`}>
+                    {bulkIntersection.label.common ? String(bulkIntersection.label.value) : 'Mixed'}
+                  </div>
+                </div>
+              )}
            </div>
         )}
 

@@ -11,6 +11,8 @@
  */
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { getAllIdsInTree, findNodeInTree, updateNodeInTree } from '@/features/manifest-editor/hooks/entities/ucaInspectorAdapter';
+import { buildManifestFromTree } from '@/features/manifest-editor/hooks/entities/entityCRUDUtils';
 import type { ManifestEntity, ModuleTemplate, OMEGA_Manifest, OMEGA_Contract, OmegaNode } from '@/omega-ui-core/types/manifest';
 import type { V2BlueprintData, BlueprintDefinition } from '@/omega-ui-core/types';
 import type { GhostItem } from '@/features/manifest-editor/utils/alignmentConstants';
@@ -37,6 +39,7 @@ import { useBatchUngroup } from './useBatchUngroup';
 import { useCellBlueprint } from './useCellBlueprint';
 import { useGroupBlueprint } from './useGroupBlueprint';
 import { useBatchHistory } from './useBatchHistory';
+import { useWorkspaceExportImport } from './useWorkspaceExportImport';
 import { useWorkbenchShortcuts } from './useWorkbenchShortcuts';
 import { useWorkbenchFileOperations } from './useWorkbenchFileOperations';
 import { useWorkbenchUIState } from './useWorkbenchUIState';
@@ -50,6 +53,7 @@ import { useWorkbenchGhostCoordination } from './useWorkbenchGhostCoordination';
 import { useWorkbenchSelectionPanel } from './useWorkbenchSelectionPanel';
 import { useWorkbenchCommandPalette } from './useWorkbenchCommandPalette';
 import { useWorkbenchAvailableBinds } from './useWorkbenchAvailableBinds';
+import { usePreferences } from '../providers/PreferencesProvider';
 import { useWorkbenchCompareDeploy } from './useWorkbenchCompareDeploy';
 import type { AlignType, DistType } from '../utils/alignmentConstants';
 
@@ -157,6 +161,13 @@ export interface WorkbenchContainerLogic {
   canCut: boolean;
   canPaste: boolean;
 
+  // Extended actions
+  handleSelectAll: () => void;
+  handleRenameItem: (id: string) => void;
+  handleBringToFront: (id: string) => void;
+  handleSendToBack: (id: string) => void;
+  handleSaveAsBlueprintById: (id: string) => void;
+
   setIsCellLibraryOpen: (open: boolean) => void;
 
   // Alignment ghost preview
@@ -185,13 +196,17 @@ export interface WorkbenchContainerLogic {
   handleDiagnosticsUpdate: ReturnType<typeof useTabDiagnostics>['handleDiagnosticsUpdate'];
   handleBatchUngroup: ReturnType<typeof useBatchUngroup>['handleBatchUngroup'];
   handleBatchUndoGroup: ReturnType<typeof useBatchUngroup>['handleBatchUndoGroup'];
+
+  // Workspace export/import (Phase 5.5)
+  exportWorkspaceState: () => void;
+  importWorkspaceState: (file: File) => Promise<void>;
 }
 
 export function useWorkbenchContainer(
   onOpenCellEditor?: () => void,
 ): WorkbenchContainerLogic {
   // ── State ────────────────────────────────────────────────────────────
-  const { state, actions, derived } = useWorkbenchState();
+  const { state, actions, derived, dispatch } = useWorkbenchState();
   const { rackSections, handleToggleRackSection } = useRackSections();
   const ui = useWorkbenchUIState();
 
@@ -199,11 +214,10 @@ export function useWorkbenchContainer(
   useWorkbenchOnboarding(state.isOnboardingOpen, actions.toggleUIState as (key: string) => void);
 
   // ── Core Data ─────────────────────────────────────────────────────────
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const editor: any = useManifestEditor(state, actions);
   const manifest = editor.manifest as OMEGA_Manifest;
   const contract = editor.contract as OMEGA_Contract | null;
-  const updateManifest = editor.updateManifest as (updates: Partial<OMEGA_Manifest> | ((prev: OMEGA_Manifest) => Partial<OMEGA_Manifest>)) => void;
+  const updateManifest = editor.updateManifest as (updates: Partial<OMEGA_Manifest> | ((prev: OMEGA_Manifest) => Partial<OMEGA_Manifest>), label?: string, forceHistory?: boolean) => void;
 
   // ── Dirty Tracker ─────────────────────────────────────────────────────
   const { isDirty, lastSavedTime } = useWorkbenchDirtyTracker(
@@ -356,6 +370,106 @@ export function useWorkbenchContainer(
     }
   };
 
+  const handleRenameItem = useCallback((id: string) => {
+    const item = editor.findItem(id);
+    if (!item) return;
+    const currentLabel = (item.meta?.label as string) || id;
+    const newLabel = window.prompt(`Rename entity "${id}":`, currentLabel);
+    if (newLabel !== null && newLabel.trim() !== '') {
+      editor.updateItem(id, { meta: { ...item.meta, label: newLabel.trim() } });
+    }
+  }, [editor]);
+
+  const handleBringToFront = useCallback((id: string) => {
+    updateManifest((latestManifest) => {
+      const tree = latestManifest.ui?.tree;
+      if (!tree) return {};
+
+      const existing = findNodeInTree(tree, id);
+      if (!existing) return {};
+
+      let maxZ = 0;
+      const findMaxZ = (node: OmegaNode) => {
+        if (node.layout?.zIndex && typeof node.layout.zIndex === 'number') {
+          maxZ = Math.max(maxZ, node.layout.zIndex);
+        }
+        if (node.children) {
+          node.children.forEach(findMaxZ);
+        }
+      };
+      findMaxZ(tree);
+
+      const zUpdate: Partial<OmegaNode> = {
+        layout: { ...existing.layout, zIndex: maxZ + 1 }
+      };
+      const nextTree = updateNodeInTree(tree, id, zUpdate);
+
+      return buildManifestFromTree(latestManifest, nextTree);
+    }, `Bring to Front: ${id}`, true);
+  }, [updateManifest]);
+
+  const handleSendToBack = useCallback((id: string) => {
+    updateManifest((latestManifest) => {
+      const tree = latestManifest.ui?.tree;
+      if (!tree) return {};
+
+      const existing = findNodeInTree(tree, id);
+      if (!existing) return {};
+
+      let minZ = 0;
+      const findMinZ = (node: OmegaNode) => {
+        if (node.layout?.zIndex && typeof node.layout.zIndex === 'number') {
+          minZ = Math.min(minZ, node.layout.zIndex);
+        }
+        if (node.children) {
+          node.children.forEach(findMinZ);
+        }
+      };
+      findMinZ(tree);
+
+      const zUpdate: Partial<OmegaNode> = {
+        layout: { ...existing.layout, zIndex: minZ - 1 }
+      };
+      const nextTree = updateNodeInTree(tree, id, zUpdate);
+
+      return buildManifestFromTree(latestManifest, nextTree);
+    }, `Send to Back: ${id}`, true);
+  }, [updateManifest]);
+
+  const handleSaveAsBlueprintById = useCallback((id: string) => {
+    const item = editor.findItem(id);
+    if (!item) return;
+
+    if ('kind' in item && item.kind === 'group') {
+      blueprintActions.handleSaveGroupFromId(id);
+    } else {
+      selection.handleSelectItem(id);
+      handleSaveCellAsBlueprint(id);
+    }
+  }, [editor, blueprintActions, selection, handleSaveCellAsBlueprint]);
+
+  const handleSelectAll = useCallback(() => {
+    const tree = manifest.ui?.tree;
+    if (!tree) return;
+    const allIds = getAllIdsInTree(tree).filter(id => id !== tree.id && id !== 'MAIN_FACE');
+    if (allIds.length > 0) {
+      actions.setMultiSelectedNodes(allIds);
+      if (allIds.length === 1) {
+        selection.handleSelectItem(allIds[0]);
+      } else {
+        selection.handleSelectItem(null);
+      }
+    }
+  }, [manifest, actions, selection]);
+
+  // ── User Preferences (Phase 5.1) ─────────────────────────────────────
+  const { preferences } = usePreferences();
+
+  // ── Workspace Export/Import (Phase 5.5) ───────────────────────────────
+  const { exportWorkspaceState, importWorkspaceState } = useWorkspaceExportImport(
+    state, dispatch, preferences,
+  );
+
   // ── Keyboard Shortcuts (composed) ─────────────────────────────────────
   useWorkbenchShortcuts(
     editor, selection.selectedItemId, state.multiSelectedNodeIds, selection.handleOpenCellEditor,
@@ -382,7 +496,12 @@ export function useWorkbenchContainer(
       onOpenNumericRotate: handleOpenNumericRotate,
       onCopyTransform: handleCopyTransform,
       onPasteTransform: handlePasteTransform,
+      onSelectAll: handleSelectAll,
+      onSelectItem: selection.handleSelectItem,
+      onToggleCommandPalette: () => ui.setIsCommandPaletteOpen(prev => !prev),
+      onRenameItem: handleRenameItem,
     },
+    preferences.shortcutBindings,
   );
 
   // ── Trigger Upload ────────────────────────────────────────────────────
@@ -470,5 +589,7 @@ export function useWorkbenchContainer(
     handleDragRatioEnd: dragHandlers.handleDragRatioEnd,
     tabDiagnostics, structuralDiagnostics, handleDiagnosticsUpdate,
     handleBatchUngroup, handleBatchUndoGroup,
+    handleRenameItem, handleBringToFront, handleSendToBack, handleSaveAsBlueprintById, handleSelectAll,
+    exportWorkspaceState, importWorkspaceState,
   };
 }

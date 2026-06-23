@@ -46,6 +46,19 @@ export function useUCADrag({
   const [targetIndex, setTargetIndex] = React.useState<number | null>(null);
 
   const startPosRef = React.useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  // ── Shared draggability computation (DRY) ─────────────────────────────
+  const isRootNode = node.id === 'root' || node.id === manifest.ui?.tree?.id;
+  const parentIsDraggableContainer = !!(
+    parentNode &&
+    parentNode.id !== 'root' &&
+    parentNode.id !== manifest.ui?.tree?.id &&
+    parentNode.kind !== 'rack' &&
+    (parentNode.kind === 'container' || parentNode.kind === 'face' || parentNode.kind === 'group') &&
+    !(debugContext?.lockedNodeIds?.includes(parentNode.id)) &&
+    (parentNode.layout?.mode === 'absolute' || !parentNode.layout?.mode)
+  );
+  const isDraggable = !debugContext?.isLiveMode && node.kind !== 'rack' && !isRootNode && !debugContext?.lockedNodeIds?.includes(node.id) && !parentIsDraggableContainer;
   const zoomFactorRef = React.useRef(1);
 
   const updateHUD = (offset: { x: number, y: number }) => {
@@ -222,9 +235,19 @@ export function useUCADrag({
     }
   };
 
+  const isSelected = debugContext?.selectedId === node.id;
+  const isResizeMode = isSelected && debugContext?.activeTool === 'transform';
+  const panHandlers = (isDraggable && !isResizeMode) ? {
+    onPanStart: handlePanStart,
+    onPan: handlePan,
+    onPanEnd: handlePanEnd,
+  } : {};
+
   return {
     dragOffset,
     targetIndex,
+    isDraggable,
+    panHandlers,
     handlePanStart,
     handlePan,
     handlePanEnd,

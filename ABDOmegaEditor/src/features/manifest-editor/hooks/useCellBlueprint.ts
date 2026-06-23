@@ -24,7 +24,7 @@ export interface CellBlueprintEditor {
 }
 
 export interface UseCellBlueprintResult {
-  handleSaveCellAsBlueprint: () => void;
+  handleSaveCellAsBlueprint: (explicitId?: string) => void;
 }
 
 // ── Hook ───────────────────────────────────────────────────────────────
@@ -44,8 +44,9 @@ export function useCellBlueprint(
   selectedNodeId: string | null,
   editor: CellBlueprintEditor,
 ): UseCellBlueprintResult {
-  const handleSaveCellAsBlueprint = useCallback(() => {
-    if (!selectedNodeId) {
+  const handleSaveCellAsBlueprint = useCallback((explicitId?: string) => {
+    const targetId = explicitId || selectedNodeId;
+    if (!targetId) {
       editor.addLog('[ERROR] No cell selected to save as blueprint.');
       return;
     }
@@ -56,9 +57,9 @@ export function useCellBlueprint(
       return;
     }
 
-    const selectedNode = findNodeInTree(tree, selectedNodeId);
+    const selectedNode = findNodeInTree(tree, targetId);
     if (!selectedNode) {
-      editor.addLog(`[ERROR] Cell ${selectedNodeId} not found in UCA tree.`);
+      editor.addLog(`[ERROR] Cell ${targetId} not found in UCA tree.`);
       return;
     }
 
@@ -82,7 +83,7 @@ export function useCellBlueprint(
     };
 
     editor.registerTemplate(template);
-    editor.exportCellAsBlueprint?.(selectedNodeId);
+    editor.exportCellAsBlueprint?.(targetId);
     toast.success(`Cell saved as blueprint: ${labelFromMeta || selectedNode.id}`);
   }, [manifest, selectedNodeId, editor]);
 

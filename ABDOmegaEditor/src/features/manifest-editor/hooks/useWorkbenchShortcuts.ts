@@ -21,7 +21,8 @@ export function useWorkbenchShortcuts(
   selectedItemId: string | null,
   multiSelectedIds?: string[],
   onOpenCellStudio?: () => void,
-  callbacks?: ShortcutCallbacks
+  callbacks?: ShortcutCallbacks,
+  bindings?: Record<string, string>,
 ) {
   useEffect(() => {
     const handleKeyDown = createHandleKeyDown(
@@ -30,9 +31,10 @@ export function useWorkbenchShortcuts(
       multiSelectedIds,
       onOpenCellStudio,
       callbacks,
+      bindings,
     );
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [editor, selectedItemId, multiSelectedIds, onOpenCellStudio, callbacks]);
+  }, [editor, selectedItemId, multiSelectedIds, onOpenCellStudio, callbacks, bindings]);
 }

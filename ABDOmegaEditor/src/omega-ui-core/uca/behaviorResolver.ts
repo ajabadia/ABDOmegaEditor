@@ -56,13 +56,29 @@ export const BehaviorResolver = {
 
 /**
  * Normalizes a 0-1 value based on polarity and zero anchor.
+ *
+ * For bipolar mappings with a zeroAnchor, the output is remapped so that
+ * the anchor point maps to 0.5 (center of the frame range), allowing
+ * symmetrical fill/rotation in both directions from the midpoint.
+ *
+ * Example: zeroAnchor=0.5, value=0.75 → output 0.75 (0.25 above center)
+ *          zeroAnchor=0.5, value=0.25 → output 0.25 (0.25 below center)
  */
 function normalizeValue(value: number, mapping?: BehaviorMapping): number {
   let v = value;
   if (mapping?.polarity === 'inverted') {
     v = 1 - v;
   }
-  // TODO: Add zero anchor logic if needed (e.g. for bipolar sliders)
+  if (mapping?.zeroAnchor !== undefined && mapping?.mode === 'bipolar') {
+    const anchor = Math.max(0, Math.min(1, mapping.zeroAnchor));
+    if (v < anchor) {
+      v = 0.5 * (v / anchor);
+    } else if (v > anchor) {
+      v = 0.5 + 0.5 * ((v - anchor) / (1 - anchor));
+    } else {
+      v = 0.5;
+    }
+  }
   return v;
 }
 

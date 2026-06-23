@@ -211,5 +211,6 @@ export function useWorkbenchState() {
     actions,
     derived,
     getTabViewState,
+    dispatch,
   };
 }

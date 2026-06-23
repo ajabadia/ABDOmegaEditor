@@ -54,6 +54,12 @@ interface RackContextMenuProps {
   onToggleGuides?: (() => void) | undefined;
   onAddEntity?: ((type: 'control' | 'jack', template?: Partial<import('@/omega-ui-core/types/manifest').ManifestEntity>) => void) | undefined;
   onReset?: (() => void) | undefined;
+  onRename?: ((id: string) => void) | undefined;
+  onBringToFront?: ((id: string) => void) | undefined;
+  onSendToBack?: ((id: string) => void) | undefined;
+  onSaveAsBlueprint?: ((id: string) => void) | undefined;
+  onSelectAll?: (() => void) | undefined;
+  isGroup?: boolean | undefined;
 }
 
 export default function RackContextMenu({
@@ -89,6 +95,12 @@ export default function RackContextMenu({
   onToggleGuides,
   onAddEntity,
   onReset,
+  onRename,
+  onBringToFront,
+  onSendToBack,
+  onSaveAsBlueprint,
+  onSelectAll,
+  isGroup = false,
 }: RackContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const [adjustedPos, setAdjustedPos] = useState({ x, y });
@@ -137,24 +149,34 @@ export default function RackContextMenu({
           onClick={(e) => { e.stopPropagation(); onSelect(targetId); onClose(); }}
         />
         <MenuItem
+          icon={<Layers className="w-3 h-3" />}
+          label="Rename..."
+          shortcut="F2"
+          onClick={(e) => { e.stopPropagation(); onRename?.(targetId); onClose(); }}
+        />
+        <MenuItem
           icon={<Copy className="w-3 h-3" />}
           label="Duplicate"
+          shortcut="Ctrl+D"
           onClick={(e) => { e.stopPropagation(); onDuplicate(targetId); onClose(); }}
         />
         <Divider />
         <MenuItem
           icon={<Copy className="w-3 h-3" />}
           label="Copy"
+          shortcut="Ctrl+C"
           onClick={(e) => { e.stopPropagation(); onCopy?.(); onClose(); }}
         />
         <MenuItem
           icon={<Scissors className="w-3 h-3" />}
           label="Cut"
+          shortcut="Ctrl+X"
           onClick={(e) => { e.stopPropagation(); onCut?.(); onClose(); }}
         />
         <MenuItem
           icon={<ClipboardPaste className="w-3 h-3" />}
           label="Paste"
+          shortcut="Ctrl+V"
           disabled={!canPaste}
           onClick={(e) => { e.stopPropagation(); onPaste?.(); onClose(); }}
         />
@@ -163,6 +185,24 @@ export default function RackContextMenu({
             icon={<Maximize className="w-3 h-3" />}
             label="Snap to Grid"
             onClick={(e) => { e.stopPropagation(); onSnapToGrid(targetId); onClose(); }}
+          />
+        )}
+        <Divider />
+        <MenuItem
+          icon={<Layers className="w-3 h-3" />}
+          label="Bring to Front"
+          onClick={(e) => { e.stopPropagation(); onBringToFront?.(targetId); onClose(); }}
+        />
+        <MenuItem
+          icon={<Layers className="w-3 h-3" />}
+          label="Send to Back"
+          onClick={(e) => { e.stopPropagation(); onSendToBack?.(targetId); onClose(); }}
+        />
+        {isGroup && (
+          <MenuItem
+            icon={<Group className="w-3 h-3" />}
+            label="Save as Blueprint..."
+            onClick={(e) => { e.stopPropagation(); onSaveAsBlueprint?.(targetId); onClose(); }}
           />
         )}
         {/* ── Transform Submenu ── */}
@@ -223,6 +263,7 @@ export default function RackContextMenu({
           <MenuItem
             icon={<Group className="w-3 h-3" />}
             label="Group"
+            shortcut="Ctrl+G"
             disabled={!isGroupEnabled}
             onClick={(e) => { e.stopPropagation(); onGroup([targetId]); onClose(); }}
           />
@@ -231,6 +272,7 @@ export default function RackContextMenu({
           <MenuItem
             icon={<Ungroup className="w-3 h-3" />}
             label="Ungroup"
+            shortcut="Ctrl+Shift+Alt+G"
             disabled={!isUngroupEnabled}
             onClick={(e) => { e.stopPropagation(); onUngroup(targetId); onClose(); }}
           />
@@ -250,6 +292,7 @@ export default function RackContextMenu({
         <MenuItem
           icon={<Trash2 className="w-3 h-3 text-red-500" />}
           label="Delete"
+          shortcut="Del"
           danger
           onClick={(e) => { e.stopPropagation(); onDelete(targetId); onClose(); }}
         />
@@ -330,6 +373,13 @@ export default function RackContextMenu({
           onClick={(e) => { e.stopPropagation(); onToggleGuides?.(); onClose(); }}
         />
       </SubmenuTrigger>
+      <Divider />
+      <MenuItem
+        icon={<Grid3x3 className="w-3 h-3" />}
+        label="Select All"
+        shortcut="Ctrl+A"
+        onClick={(e) => { e.stopPropagation(); onSelectAll?.(); onClose(); }}
+      />
       <Divider />
       <MenuItem
         icon={<RotateCcw className="w-3 h-3" />}

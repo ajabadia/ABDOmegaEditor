@@ -165,14 +165,7 @@ export const USER_SECTIONS: HelpSection[] = [
           'Ctrl+O — Abrir proyecto .omega',
           'Ctrl+S — Guardar OmegaPack',
           'Ctrl+Shift+S — Exportar Modo Definitivo (Distilled)',
-        ]
-      },
-      {
-        id: 'ks_command_palette',
-        title: 'Búsqueda Universal',
-        content: 'Accede a cualquier comando o nodo del editor:',
-        technical_params: [
-          'Ctrl+K — Command Palette (buscar cualquier comando o nodo)',
+          'Ctrl+K — Command Palette (búsqueda universal)',
         ]
       },
       {
@@ -189,6 +182,9 @@ export const USER_SECTIONS: HelpSection[] = [
           'Ctrl+D — Duplicar elemento seleccionado',
           'Ctrl+G — Agrupar selección (Group)',
           'Ctrl+Shift+Alt+G — Desagrupar (Ungroup)',
+          'F2 — Renombrar elemento seleccionado',
+          'Ctrl+A — Seleccionar todos los elementos',
+          'Escape — Deseleccionar elemento o cerrar menús/paneles',
         ]
       },
       {
@@ -249,7 +245,6 @@ export const USER_SECTIONS: HelpSection[] = [
           '↑/↓/←/→ — Nudge selected node 1px (Rack viewport)',
           'Shift+↑/↓/←/→ — Nudge selected node by grid spacing (Rack viewport)',
           'Enter — Confirm ghost preview (blueprint placement)',
-          'Escape — Cancel ghost preview / close context menu',
         ]
       },
       {

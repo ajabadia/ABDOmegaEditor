@@ -53,7 +53,7 @@ export function StructuralNode({
   const labelRef = React.useRef<HTMLSpanElement>(null);
   const localLabelRef = React.useRef<HTMLSpanElement>(null);
 
-  const { dragOffset, targetIndex, handlePanStart, handlePan, handlePanEnd } = useUCADrag({
+  const { dragOffset, targetIndex, isDraggable, panHandlers } = useUCADrag({
     node,
     manifest,
     debugContext,
@@ -66,22 +66,8 @@ export function StructuralNode({
 
   const isSelected = debugContext?.selectedId === node.id;
   const isMultiSelected = !isSelected && (debugContext?.multiSelectedIds?.includes(node.id) ?? false);
+  const isResizeMode = isSelected && debugContext?.activeTool === 'transform';
   const { cssVars } = useDesignTokens(manifest);
-
-  // Only block child drag for 'absolute' containers (where the parent itself is draggable as a unit).
-  // Governed containers (stack-v, stack-h) allow child reorder via drag.
-  const parentIsDraggableContainer = !!(
-    parentNode &&
-    parentNode.id !== 'root' &&
-    parentNode.id !== manifest.ui?.tree?.id &&
-    parentNode.kind !== 'rack' &&
-    (parentNode.kind === 'container' || parentNode.kind === 'face' || parentNode.kind === 'group') &&
-    !(debugContext?.lockedNodeIds?.includes(parentNode.id)) &&
-    (parentNode.layout?.mode === 'absolute' || !parentNode.layout?.mode)
-  );
-
-  const isRootNode = node.id === 'root' || node.id === manifest.ui?.tree?.id;
-  const isDraggable = !debugContext?.isLiveMode && node.kind !== 'rack' && !isRootNode && !debugContext?.lockedNodeIds?.includes(node.id) && !parentIsDraggableContainer;
 
   const handleClick = (e: React.MouseEvent) => {
     // Skip selection when tap originates from a child interactive node
@@ -91,18 +77,6 @@ export function StructuralNode({
     }
     handleDebugClick(e);
   };
-
-  // Prevents framer-motion pan from propagating to parent containers (double-drag fix)
-  // pan-based drag (no momentum → element lands exactly where pointer releases)
-  // 🔴 BUG FIX: When in 'transform' mode with the node selected, disable drag pan handlers
-  // to prevent useUCADrag.handlePanEnd from firing AFTER useUCAResize.handleResizeEnd
-  // and overwriting the resize update with a position-only update (losing the size change).
-  const isResizeMode = isSelected && debugContext?.activeTool === 'transform';
-  const panHandlers = (isDraggable && !isResizeMode) ? {
-    onPanStart: handlePanStart,
-    onPan: handlePan,
-    onPanEnd: handlePanEnd,
-  } : {};
 
   const isSelectedElsewhere = debugContext?.activeDragOffset && 
     debugContext.activeDragOffset.draggedNodeId !== node.id && 

@@ -10,10 +10,11 @@
  * @lastUpdated 2026-06-20T12:52:41.630Z
  */
 
-import { useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 
 // UI Components
 import Header from './layout/Header';
+import { PreferencesModal } from '@/features/manifest-editor/components/settings/PreferencesModal';
 import WorkbenchFooter from './layout/WorkbenchFooter';
 import CommandPalette from './layout/CommandPalette';
 import EditorModals from './modals/EditorModals';
@@ -66,7 +67,7 @@ export default function WorkbenchContainer({
     ghostPreview, handleGhostClick, handleGhostMouseMove, handleGhostCancel,
     handleSelectItem, handleAddEntity, handleDuplicateItem, handleRemoveItem,
     handleExportOmegaRack, handleExportContract,
-    handleOpenConfig, handleOpenAudit, handleOpenCellEditor,
+    handleOpenConfig: _ignoredOpenConfig, handleOpenAudit, handleOpenCellEditor,
     onDeploy, onReset, handleToggleMiniMap, handleToggleGrid, handleToggleGuides,
     handleOpenNumericResize, handleOpenNumericRotate,
     triggerUpload, handleImportDistilledJson,
@@ -86,7 +87,18 @@ export default function WorkbenchContainer({
     handleDragRatioEnd,
     tabDiagnostics, structuralDiagnostics, handleDiagnosticsUpdate,
     handleBatchUngroup, handleBatchUndoGroup,
+    handleRenameItem, handleBringToFront, handleSendToBack, handleSaveAsBlueprintById: handleSaveAsBlueprint, handleSelectAll,
   } = useWorkbenchContainer(onOpenCellEditor);
+
+  // ── Preferences modal ───────────────────────────────────────────────
+  const [showPreferences, setShowPreferences] = useState(false);
+  const handlePreferencesOpen = useCallback(() => setShowPreferences(true), []);
+  const handlePreferencesClose = useCallback(() => setShowPreferences(false), []);
+
+  // Override handleOpenConfig to open PreferencesModal
+  const _handleOpenConfig = useCallback(() => {
+    handlePreferencesOpen();
+  }, [handlePreferencesOpen]);
 
   // ── Log terminal (local state, depends on editor from container) ─────
   const { showLogs, toggleLogs, LogTerminalPanel } = useWorkbenchLogs({
@@ -154,6 +166,11 @@ export default function WorkbenchContainer({
     onToggleGuides: handleToggleGuides,
     onAddEntity: handleAddEntity,
     onReset,
+    onRenameItem: handleRenameItem,
+    onBringToFront: handleBringToFront,
+    onSendToBack: handleSendToBack,
+    onSaveAsBlueprint: handleSaveAsBlueprint,
+    onSelectAll: handleSelectAll,
   };
 
   // ── Render ──────────────────────────────────────────────────────────
@@ -196,7 +213,7 @@ export default function WorkbenchContainer({
           onOpenAudit={handleOpenAudit}
           onTriggerUpload={triggerUpload}
           onOpenAbout={() => actions.toggleUIState('isAboutModalOpen')}
-          onOpenConfig={handleOpenConfig}
+          onOpenConfig={_handleOpenConfig}
           onOpenCellEditor={handleOpenCellEditor}
           onToggleTour={() => actions.toggleUIState('isOnboardingOpen')}
           onOpenGallery={() => actions.toggleWindow('window_blueprints')}
@@ -278,7 +295,7 @@ export default function WorkbenchContainer({
                 isLiveMode={state.isLiveMode}
                 onToggleLive={() => actions.toggleUIState('isLiveMode')}
                 onOpenGallery={() => actions.toggleWindow('window_blueprints')}
-                onOpenConfig={handleOpenConfig}
+                onOpenConfig={_handleOpenConfig}
                 onOpenCellStudio={() => {
                   if (selectedItemId) {
                     actions.setStudioMode(true, selectedItemId);
@@ -396,7 +413,7 @@ export default function WorkbenchContainer({
               onRemoveResource={editor.handleRemoveResource}
               resolveAsset={editor.resolveAsset}
               onTriggerUpload={triggerUpload}
-              onOpenConfig={handleOpenConfig}
+              onOpenConfig={_handleOpenConfig}
               onOpenLibrary={() => setIsCellLibraryOpen(true)}
               onSelectBlueprint={handleSelectBlueprintFromPanel}
               onAltClickBlueprint={handleAltClickBlueprintFromPanel}
@@ -513,6 +530,12 @@ export default function WorkbenchContainer({
 
       {/* ── Floating Log Terminal ── */}
       {LogTerminalPanel}
+
+      {/* ── Preferences Modal ── */}
+      <PreferencesModal
+        open={showPreferences}
+        onClose={handlePreferencesClose}
+      />
 
       {/* ── Onboarding Walkthrough ── */}
       <OnboardingWalkthrough

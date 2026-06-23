@@ -19,6 +19,7 @@ import { DisplayEditor } from './DisplayEditor';
 import { LabelEditor } from './LabelEditor';
 import { GroupEditor } from './GroupEditor';
 import { RackPropertiesEditor } from './RackPropertiesEditor';
+import { PluginRegistry } from '@/lib/plugins/PluginRegistry';
 
 type Selection = { type: 'component'; node: ComponentNode }
   | { type: 'group'; node: GroupNode }
@@ -52,7 +53,13 @@ export function ComponentEditor({ selection, onChange, inspectorLevel, onSaveGro
         case 'button': return <ButtonEditor node={node} onChange={handler} inspectorLevel={inspectorLevel} />;
         case 'display': return <DisplayEditor node={node} onChange={handler} inspectorLevel={inspectorLevel} />;
         case 'label': return <LabelEditor node={node} onChange={handler} inspectorLevel={inspectorLevel} />;
-        default: return <div className="p-3 text-xs text-gray-500">Unknown component type</div>;
+        default: {
+          const PluginEditor = PluginRegistry.getEditor(node.type);
+          if (PluginEditor) {
+            return <PluginEditor node={node as unknown as import('@/omega-ui-core/types/manifest').OmegaNode} onChange={onChange} />;
+          }
+          return <div className="p-3 text-xs text-gray-500">Unknown component type</div>;
+        }
       }
     }
     case 'group':

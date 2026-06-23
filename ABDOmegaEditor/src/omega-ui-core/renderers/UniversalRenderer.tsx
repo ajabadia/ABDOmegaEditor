@@ -14,6 +14,7 @@ import { resolveLayout } from '../uca/layoutResolver';
 import { StructuralNode } from './components/StructuralNode';
 import { CellNode } from './components/CellNode';
 import { UCADebugHUD } from './components/UCADebugHUD';
+import { PluginRegistry } from '@/lib/plugins/PluginRegistry';
 import type { UniversalRendererProps } from './ucaTypes';
 
 /**
@@ -98,7 +99,23 @@ export function UniversalRenderer({
     );
   }
 
-  // C. Layers & Assets (Simple rendering)
+  // C. Plugin renderer (Phase 6.2)
+  const PluginRenderer = PluginRegistry.getRenderer(node.kind);
+  if (PluginRenderer) {
+    return (
+      <PluginRenderer
+        node={node}
+        manifest={manifest}
+        depth={depth}
+        value={debugContext?.runtimeValues?.[node.id] ?? 0}
+        style={{ position: 'absolute', left: `${node.layout?.pos?.x || 0}px`, top: `${node.layout?.pos?.y || 0}px` } as Record<string, unknown>}
+        onSelect={(id) => debugContext?.onSelect?.(id)}
+        isSelected={debugContext?.selectedId === node.id}
+      />
+    );
+  }
+
+  // D. Layers & Assets (Simple rendering)
   if (node.kind === 'layer' || node.kind === 'asset-layer') {
     const isSelected = debugContext?.selectedId === node.id;
     return (

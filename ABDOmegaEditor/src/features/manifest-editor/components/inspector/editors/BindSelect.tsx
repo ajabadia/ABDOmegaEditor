@@ -23,7 +23,9 @@ const COMMON_BINDS = [
   { id: 'cv_in', label: 'CV In' },
   { id: 'cv_out', label: 'CV Out' },
   { id: 'gate_in', label: 'Gate In' },
+  { id: 'gate_out', label: 'Gate Out' },
   { id: 'midi_in', label: 'MIDI In' },
+  { id: 'midi_out', label: 'MIDI Out' },
 ];
 
 export function BindSelect({ value, onChange }: BindSelectProps) {

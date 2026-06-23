@@ -22,6 +22,7 @@ import { GovernedOverlay } from './GovernedOverlay';
 import { UniversalRenderer } from '../UniversalRenderer';
 import type { UCADebugContext } from '../ucaTypes';
 import { useDesignTokens } from '../../hooks/useDesignTokens';
+import { useA11y } from '../hooks/useA11y';
 import { IntegrityOverlay } from '@/features/manifest-editor/components/viewport/IntegrityOverlay';
 import { ReorderIndicator } from './ReorderIndicator';
 import { ResizeHandles } from './ResizeHandles';
@@ -78,7 +79,7 @@ export function CellNode({
   const labelRef = React.useRef<HTMLSpanElement>(null);
   const localLabelRef = React.useRef<HTMLSpanElement>(null);
 
-  const { dragOffset, targetIndex, handlePanStart, handlePan, handlePanEnd } = useUCADrag({
+  const { dragOffset, targetIndex, isDraggable, panHandlers } = useUCADrag({
     node,
     manifest,
     debugContext,
@@ -126,33 +127,15 @@ export function CellNode({
 
   const isSelected = debugContext?.selectedId === node.id;
   const isMultiSelected = !isSelected && (debugContext?.multiSelectedIds?.includes(node.id) ?? false);
-
-  // Only block child drag for 'absolute' containers (where the parent itself is draggable as a unit).
-  // Governed containers (stack-v, stack-h) allow child reorder via drag — the pan handler's
-  // isLayoutGoverned path handles this internally via calculateTargetIndex.
-  const parentIsDraggableContainer = !!(
-    parentNode &&
-    parentNode.id !== 'root' &&
-    parentNode.id !== manifest.ui?.tree?.id &&
-    parentNode.kind !== 'rack' &&
-    (parentNode.kind === 'container' || parentNode.kind === 'face' || parentNode.kind === 'group') &&
-    !(debugContext?.lockedNodeIds?.includes(parentNode.id)) &&
-    (parentNode.layout?.mode === 'absolute' || !parentNode.layout?.mode)
-  );
-
-  // Prevents framer-motion pan from propagating to parent containers (double-drag fix)
-  // pan-based drag (no momentum → element lands exactly where pointer releases)
-  const isRootNode = node.id === 'root' || node.id === manifest.ui?.tree?.id;
-  const isDraggable = !debugContext?.isLiveMode && node.kind !== 'rack' && !isRootNode && !debugContext?.lockedNodeIds?.includes(node.id) && !parentIsDraggableContainer;
-  // 🔴 BUG FIX: When in 'transform' mode with the node selected, disable drag pan handlers
-  // to prevent useUCADrag.handlePanEnd from firing AFTER useUCAResize.handleResizeEnd
-  // and overwriting the resize update with a position-only update (losing the size change).
   const isResizeMode = isSelected && debugContext?.activeTool === 'transform';
-  const panHandlers = (isDraggable && !isResizeMode) ? {
-    onPanStart: handlePanStart,
-    onPan: handlePan,
-    onPanEnd: handlePanEnd,
-  } : {};
+
+  const a11y = useA11y(
+    node,
+    runtimeValue,
+    debugContext?.onUpdateRuntimeValue
+      ? (id: string, val: number) => debugContext.onUpdateRuntimeValue!(id, val)
+      : undefined,
+  );
 
   const isSelectedElsewhere = debugContext?.activeDragOffset && 
     debugContext.activeDragOffset.draggedNodeId !== node.id && 
@@ -214,6 +197,7 @@ export function CellNode({
         }
       }}
       {...panHandlers}
+      {...a11y}
       style={{
         position: 'absolute',
         left: `${currentX}px`,
@@ -228,7 +212,7 @@ export function CellNode({
           ? (debugContext?.activeTool === 'transform' ? '2px dashed #00f2ff' : '2px solid #00f2ff') 
           : (!debugContext?.isLiveMode && isMultiSelected) ? '1.5px dashed #a855f7' : 'none',
         outlineOffset: '2px',
-        boxShadow: (!debugContext?.isLiveMode && isSelected) ? '0 0 15px rgba(0, 242, 255, 0.4)' : (!debugContext?.isLiveMode && isMultiSelected) ? '0 0 10px rgba(168, 85, 247, 0.3)' : 'none'
+        boxShadow: (!debugContext?.isLiveMode && isSelected) ? '0 0 15px rgba(0, 242, 255, 0.4)' : (!debugContext?.isLiveMode && isMultiSelected) ? '0 0 10px rgba(168, 85, 247, 0.3)' : 'none',
       }}
     >
       {!debugContext?.isLiveMode && (

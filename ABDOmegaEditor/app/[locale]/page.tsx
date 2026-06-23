@@ -13,6 +13,7 @@
 import '@/app/omega-init';
 import { Suspense, useState } from 'react';
 import dynamic from 'next/dynamic';
+import { PreferencesProvider } from '@/features/manifest-editor/providers/PreferencesProvider';
 
 // Disable SSR for the highly-interactive workbench container to prevent initialization errors on the server.
 const WorkbenchContainer = dynamic(
@@ -27,11 +28,13 @@ export default function Home() {
   return (
     <main id="main-content" className="h-screen w-screen overflow-hidden bg-black">
       <Suspense fallback={<div className="h-full w-full bg-black flex items-center justify-center text-primary font-mono text-[10px] animate-pulse">INITIALIZING OMEGA CORE...</div>}>
-        <WorkbenchContainer 
-          onOpenCellEditor={() => setIsCellEditorOpen(true)}
-          isCellEditorOpen={isCellEditorOpen}
-          setIsCellEditorOpen={setIsCellEditorOpen}
-        />
+        <PreferencesProvider>
+          <WorkbenchContainer 
+            onOpenCellEditor={() => setIsCellEditorOpen(true)}
+            isCellEditorOpen={isCellEditorOpen}
+            setIsCellEditorOpen={setIsCellEditorOpen}
+          />
+        </PreferencesProvider>
       </Suspense>
     </main>
   );

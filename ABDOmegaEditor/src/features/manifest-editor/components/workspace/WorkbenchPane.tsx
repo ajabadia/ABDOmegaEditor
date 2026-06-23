@@ -127,6 +127,12 @@ interface WorkbenchPaneProps {
   onToggleGuides?: (() => void) | undefined;
   onAddEntity?: ((type: 'control' | 'jack', template?: Partial<import('@/omega-ui-core/types/manifest').ManifestEntity>) => void) | undefined;
   onReset?: (() => void) | undefined;
+  // Extended context menu / shortcuts
+  onRenameItem?: ((id: string) => void) | undefined;
+  onBringToFront?: ((id: string) => void) | undefined;
+  onSendToBack?: ((id: string) => void) | undefined;
+  onSaveAsBlueprint?: ((id: string) => void) | undefined;
+  onSelectAll?: (() => void) | undefined;
 }
  
 const WorkbenchPane = React.memo((props: WorkbenchPaneProps) => {
@@ -277,6 +283,11 @@ const WorkbenchPane = React.memo((props: WorkbenchPaneProps) => {
             onToggleGuides={props.onToggleGuides}
             onAddEntity={props.onAddEntity}
             onReset={props.onReset}
+            onRenameItem={props.onRenameItem}
+            onBringToFront={props.onBringToFront}
+            onSendToBack={props.onSendToBack}
+            onSaveAsBlueprint={props.onSaveAsBlueprint}
+            onSelectAll={props.onSelectAll}
           />
         )}
 
