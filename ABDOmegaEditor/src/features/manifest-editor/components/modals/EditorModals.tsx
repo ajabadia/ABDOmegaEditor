@@ -24,7 +24,7 @@ import type {
   BlueprintDefinition, 
   BlueprintPlaceholderValues 
 } from '@/omega-ui-core/types/manifest';
-import type { AuditResult } from '@/services/auditService';
+import type { AuditResult } from '@/omega-ui-core/types/audit';
 import { useModuleMetrics } from '@/features/manifest-editor/hooks/useModuleMetrics';
 import type { ManifestDiffResult, DiffEntry } from '@/features/manifest-editor/types/diff';
 

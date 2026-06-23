@@ -1,13 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona el proceso de ingestión de archivos en el editor de manifesto OMEGA al renderizar una modal para la selección y confirmación de archivos.
+ * @purpose Gestiona el proceso de ingestión de archivos en el editor de manifesto OMEGA al renderizar un modal para la selección y confirmación de archivos.
  * @purpose_en Manages the ingestion process for files in the OMEGA manifest editor by rendering a modal for file selection and confirmation.
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:8,sig:iza29m
- * @lastUpdated 2026-06-15T20:49:00.717Z
+ * @fingerprint exports:1,imports:8,sig:1p7mgqg
+ * @lastUpdated 2026-06-20T09:43:15.077Z
  */
 
 import { motion } from 'framer-motion';

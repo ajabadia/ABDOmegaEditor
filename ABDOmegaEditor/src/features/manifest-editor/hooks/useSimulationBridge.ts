@@ -10,10 +10,10 @@
 
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import type { OMEGA_Manifest, OMEGA_Contract } from '@/omega-ui-core/types/manifest';
-import type { OmegaContract } from '@/services/wasmLoader';
-import { wasmRuntime } from '@/services/wasmRuntime';
+import type { OmegaContract } from '@/omega-ui-core/types/contract';
 import { ucaPathResolver } from '@/omega-ui-core/utils/ucaPathResolver';
-import { reconciliationService } from '@/services/reconciliationService';
+import { getService } from '@/services/globalEventBus';
+import { SERVICE_TOKENS } from '@/omega-ui-core/di';
 
 /**
  * OMEGA Simulation Bridge (Phase 9.1 - Live Loop)
@@ -42,6 +42,8 @@ export const useSimulationBridge = (
   flushPendingHash: (id: string) => Promise<void>,
   captureStableSnapshot: (id: string) => Promise<void>
 ): SimulationBridgeState => {
+  const wasmRuntime = getService(SERVICE_TOKENS.WASM_RUNTIME);
+  const reconciliationService = getService(SERVICE_TOKENS.RECONCILIATION_SERVICE);
   const [status, setStatus] = useState<SimulationSyncStatus>('idle');
   const [lastSuccessfulSyncAt, setLastSuccessfulSyncAt] = useState<number | null>(null);
   const [lastError, setLastError] = useState<string | null>(null);
@@ -74,7 +76,7 @@ export const useSimulationBridge = (
       console.warn(`[BRIDGE] Failed to resolve HPA for node ${id}. Falling back to ID.`, err);
       wasmRuntime.setParameter(id, value);
     }
-  }, [isReady]);
+  }, [isReady, wasmRuntime]);
 
   /**
    * Core Sync Logic (Workstream 3, 4 & 6)
@@ -111,7 +113,7 @@ export const useSimulationBridge = (
       syncInProgressRef.current = false;
       debounceTimerRef.current = null;
     }
-  }, [isReady, activeId, flushPendingHash, captureStableSnapshot]);
+  }, [isReady, activeId, flushPendingHash, captureStableSnapshot, wasmRuntime]);
 
   /**
    * Workstream 3: Structural Sync Queue
@@ -166,7 +168,7 @@ export const useSimulationBridge = (
     } catch (err) {
       console.error('[BRIDGE] Reconciliation failed:', err);
     }
-  }, [isReady]);
+  }, [isReady, reconciliationService, wasmRuntime]);
 
   // Initial connection and status synchronization
   useEffect(() => {
@@ -182,7 +184,7 @@ export const useSimulationBridge = (
     return () => {
       if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     };
-  }, []);
+  }, [wasmRuntime]);
 
   return useMemo(() => ({
     status,

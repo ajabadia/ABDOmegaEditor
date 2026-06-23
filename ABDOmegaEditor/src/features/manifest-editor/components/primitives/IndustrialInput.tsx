@@ -6,8 +6,8 @@
  * @refactorable false
  * @classification UI Component
  * @complexity Low
- * @fingerprint exports:3,imports:1,sig:21szo4
- * @lastUpdated 2026-06-15T12:59:33.853Z
+ * @fingerprint exports:3,imports:1,sig:0nepmn
+ * @lastUpdated 2026-06-20T09:43:36.514Z
  */
 
 import * as React from "react";

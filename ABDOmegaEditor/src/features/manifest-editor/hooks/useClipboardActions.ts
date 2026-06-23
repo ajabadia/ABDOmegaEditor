@@ -7,7 +7,7 @@
  * @classification Custom Hook
  * @complexity Low
  * @fingerprint exports:1,imports:4,sig:1j55r3e
- * @lastUpdated 2026-06-15T13:12:29.331Z
+ * @lastUpdated 2026-06-23
  */
 
 import { useCallback } from 'react';
@@ -17,7 +17,8 @@ import type { OmegaNode, ManifestEntity } from '@/omega-ui-core/types/manifest';
 
 interface ClipboardDependencies {
   findItem: (id: string) => OmegaNode | ManifestEntity | undefined;
-  pasteEntity: (entity: OmegaNode | ManifestEntity) => string;
+  pasteEntities: (entities: (OmegaNode | ManifestEntity)[], targetPos?: { x: number; y: number }) => string[];
+  removeItems: (ids: string[]) => void;
   addLog: (msg: string) => void;
 }
 
@@ -27,32 +28,59 @@ interface ClipboardDependencies {
  */
 export const useClipboardActions = ({
   findItem,
-  pasteEntity,
+  pasteEntities,
+  removeItems,
   addLog
 }: ClipboardDependencies) => {
-  const copyToClipboard = useCallback((id: string) => {
-    const item = findItem(id);
-    if (item) {
-      ClipboardService.copy(item);
-      addLog(`[SYSTEM] Copied item ${id} to clipboard.`);
-      toast.success('Copied to clipboard');
+  const copyToClipboard = useCallback((ids: string[]) => {
+    const items: (OmegaNode | ManifestEntity)[] = [];
+    for (const id of ids) {
+      const item = findItem(id);
+      if (item) items.push(item);
+    }
+    if (items.length > 0) {
+      ClipboardService.copy(items);
+      addLog(`[SYSTEM] Copied ${items.length} item(s) to clipboard.`);
+      toast.success(`Copied ${items.length} item(s) to clipboard`);
     }
   }, [findItem, addLog]);
 
-  const pasteFromClipboard = useCallback(() => {
-    const item = ClipboardService.paste();
-    if (item) {
-      const newId = pasteEntity(item);
-      addLog(`[SYSTEM] Industrial Paste Complete: ${newId} (Source: ${item.id})`);
-      toast.success('Pasted from clipboard');
+  const cutToClipboard = useCallback((ids: string[]) => {
+    const items: (OmegaNode | ManifestEntity)[] = [];
+    for (const id of ids) {
+      const item = findItem(id);
+      if (item) items.push(item);
+    }
+    if (items.length > 0) {
+      ClipboardService.copy(items);
+      removeItems(ids);
+      addLog(`[SYSTEM] Cut ${items.length} item(s) to clipboard.`);
+      toast.success(`Cut ${items.length} item(s) to clipboard`);
+    }
+  }, [findItem, removeItems, addLog]);
+
+  const pasteFromClipboard = useCallback((targetPos?: { x: number; y: number }) => {
+    const items = ClipboardService.paste();
+    if (items.length > 0) {
+      const newIds = pasteEntities(items, targetPos);
+      addLog(`[SYSTEM] Paste Complete: ${newIds.length} item(s) pasted.`);
+      toast.success(`Pasted ${newIds.length} item(s) from clipboard`);
+      return newIds;
     } else {
       addLog(`[WARNING] Clipboard empty or incompatible data.`);
       toast.warning('Clipboard empty or incompatible data');
+      return [];
     }
-  }, [pasteEntity, addLog]);
+  }, [pasteEntities, addLog]);
+
+  const hasClipboardContent = useCallback((): boolean => {
+    return ClipboardService.hasContent();
+  }, []);
 
   return {
     copyToClipboard,
-    pasteFromClipboard
+    cutToClipboard,
+    pasteFromClipboard,
+    hasClipboardContent
   };
 };

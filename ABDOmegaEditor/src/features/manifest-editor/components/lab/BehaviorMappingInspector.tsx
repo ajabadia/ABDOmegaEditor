@@ -1,11 +1,11 @@
 /**
- * @purpose Gestiona un componente para inspeccionar y editar las mapas de comportamiento en el editor de manifesto OMEGA, incluyendo fuente de entrada, modo de mapeo, rango de cuadros y validación.
+ * @purpose Renderiza un componente para inspeccionar y editar las mapas de comportamiento en el editor de manifesto OMEGA, incluyendo fuente de entrada, modo de mapeo, rango de cuadros y validación.
  * @purpose_en Renders a component for inspecting and editing behavior mappings in the OMEGA manifest editor, including input source, mapping mode, frame range, and validation.
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:2,sig:1aec8ei
- * @lastUpdated 2026-06-15T16:50:36.898Z
+ * @fingerprint exports:1,imports:2,sig:17dtf6u
+ * @lastUpdated 2026-06-20T09:18:41.312Z
  */
 
 import type { BehaviorMapping, BehaviorMappingMode } from '@/omega-ui-core/types/assetBehavior';

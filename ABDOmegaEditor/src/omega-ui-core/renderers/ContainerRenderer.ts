@@ -1,115 +1,68 @@
 /**
- * @purpose Renderiza plantillas HTML para secciones del módulo arquitectónico según las propiedades y datos de manifestación proporcionados.
- * @purpose_en Renders HTML for architectural module sections based on provided properties and manifest data.
+ * @purpose Renderiza plantillas para contenedores, grupos y platos según el nodo y las opciones proporcionadas.
+ * @purpose_en Renders HTML for containers, groups, and plates based on the provided node and options.
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
- * @complexity Medium
- * @fingerprint exports:1,imports:2,sig:16629op
- * @lastUpdated 2026-06-15T15:31:19.927Z
+ * @complexity Low
+ * @fingerprint exports:1,imports:3,sig:zhn77g
+ * @lastUpdated 2026-06-19T18:57:16.049Z
  */
 
-/**
- * OMEGA UI CORE — CONTAINER RENDERER (Era 7.2.3)
- * ---------------------------------------------------------------------------
- * Static HTML generator for architectural module sections.
- * Ensures 100% parity across all rendering contexts.
- */
-
-import type { Presentation, OMEGA_Manifest, OmegaStyleNode } from '../types/manifest';
+import type { OmegaNode, OmegaStyleNode } from '../types/manifest';
+import type { CellOptions } from './cellRendererTypes';
 import { ColorResolver } from '../utils/ColorResolver';
 
-interface ContainerRenderProps {
-  id: string;
-  label: string;
-  variant: string;
-  manifest?: OMEGA_Manifest | undefined;
-  style?: OmegaStyleNode | undefined;
-  isSelected?: boolean | undefined;
-  isError?: boolean | undefined;
-  resolveAsset?: ((ref: string | undefined) => string | undefined) | undefined;
-}
+/**
+ * ARCHITECTURAL RENDERER
+ * Handles Containers, Groups and Plates.
+ */
+export function renderContainerHTML(node: OmegaNode, options: CellOptions): string {
+  const { manifest, resolveAsset, isSelected, isError } = options;
+  const style = node.style || {};
+  const aesthetics = style as OmegaStyleNode;
+  const variant = aesthetics.variant || 'default';
 
-export function renderContainerHTML(props: ContainerRenderProps): string {
-  const { label, variant, manifest, style: aesthetics = {}, isSelected, isError, resolveAsset } = props;
-
-  // 1. Resolve Genes (Aesthetic lookup)
   const libStyles = manifest?.ui?.styles?.container || [];
-  const libStyle = libStyles.find((s) => s.id === variant) || { aesthetics: {} as Partial<Presentation> };
+  const libStyle = libStyles.find((s) => s.id === variant) || { aesthetics: {} as Partial<OmegaStyleNode> };
   const genetics = libStyle.aesthetics || {};
 
-  // 2. Compute Surface Styles
+  const label = (node.meta?.label as string) || node.id || 'LABEL';
+
+  // Resolved Chromatics
+  const bgColor = ColorResolver.resolve(aesthetics.color || genetics.color, manifest);
+  const borderColor = ColorResolver.resolve(aesthetics.indicatorColor || genetics.indicatorColor, manifest);
+  const labelBg = ColorResolver.resolve(aesthetics.labelBg || genetics.labelBg, manifest);
+  const fontColor = ColorResolver.resolve(aesthetics.fontColor || genetics.fontColor || '#ffffff', manifest);
+
+  // Mechanical Properties
   const bgAsset = aesthetics.asset || genetics.asset;
   const bgUrl = resolveAsset ? resolveAsset(bgAsset) : undefined;
-  
-  const rounding = (aesthetics as Record<string, unknown>).rounding as number ?? (genetics as Record<string, unknown>).rounding as number ?? 0;
-  const borderWidth = (aesthetics as Record<string, unknown>).borderWidth as number ?? (genetics as Record<string, unknown>).borderWidth as number ?? 0;
-  const opacity = (aesthetics as Record<string, unknown>).opacity as number ?? (genetics as Record<string, unknown>).opacity as number ?? 1.0;
-  const bgColor = ColorResolver.resolve((aesthetics as Record<string, unknown>).color as string || (genetics as Record<string, unknown>).color as string, manifest);
-  const borderColor = ColorResolver.resolve((aesthetics as Record<string, unknown>).indicatorColor as string || (genetics as Record<string, unknown>).indicatorColor as string, manifest);
+  const rounding = aesthetics.rounding ?? genetics.rounding ?? 0;
+  const borderWidth = aesthetics.borderWidth ?? genetics.borderWidth ?? 0;
+  const opacity = aesthetics.opacity ?? genetics.opacity ?? 1.0;
 
-  // 3. Compute Label Spatiality & Surface
-  const labelX = (aesthetics as Record<string, unknown>).labelX as number ?? (genetics as Record<string, unknown>).labelX as number ?? 0;
-  const labelY = (aesthetics as Record<string, unknown>).labelY as number ?? (genetics as Record<string, unknown>).labelY as number ?? 0;
-  const labelW = (aesthetics as Record<string, unknown>).labelW as number ?? (genetics as Record<string, unknown>).labelW as number ?? 0;
-  const labelH = (aesthetics as Record<string, unknown>).labelH as number ?? (genetics as Record<string, unknown>).labelH as number ?? 0;
-  const labelBg = ColorResolver.resolve((aesthetics as Record<string, unknown>).labelBg as string || (genetics as Record<string, unknown>).labelBg as string, manifest);
-  const labelRounding = (aesthetics as Record<string, unknown>).labelRounding as number ?? (genetics as Record<string, unknown>).labelRounding as number ?? 0;
-  const labelPadding = (aesthetics as Record<string, unknown>).labelPadding as number ?? (genetics as Record<string, unknown>).labelPadding as number ?? 4;
-
-  // 4. Compute Typography
-  const font = (aesthetics as Record<string, unknown>).font as string || (genetics as Record<string, unknown>).font as string || 'Inter';
-  const fontSize = (aesthetics as Record<string, unknown>).fontSize as number || (genetics as Record<string, unknown>).fontSize as number || 10;
-  const fontColor = ColorResolver.resolve((aesthetics as Record<string, unknown>).fontColor as string || (genetics as Record<string, unknown>).fontColor as string || '#ffffff', manifest);
-  const alignment = (aesthetics as Record<string, unknown>).alignment as string || (genetics as Record<string, unknown>).alignment as string || 'left';
+  // Spatial & Typographic Fragments
+  const labelX = aesthetics.labelX ?? genetics.labelX ?? 0;
+  const labelY = aesthetics.labelY ?? genetics.labelY ?? 0;
+  const labelW = aesthetics.labelW ?? genetics.labelW ?? 0;
+  const labelH = aesthetics.labelH ?? genetics.labelH ?? 0;
+  const labelRounding = aesthetics.labelRounding ?? genetics.labelRounding ?? 0;
+  const labelPadding = aesthetics.labelPadding ?? genetics.labelPadding ?? 4;
+  const font = aesthetics.font || genetics.font || 'Inter';
+  const fontSize = aesthetics.fontSize || genetics.fontSize || 10;
+  const alignment = aesthetics.alignment || genetics.alignment || 'left';
   const flexAlign = alignment === 'left' ? 'flex-start' : (alignment === 'right' ? 'flex-end' : 'center');
-  const spacing = (aesthetics as Record<string, unknown>).spacing as number || (genetics as Record<string, unknown>).spacing as number || 0;
+  const spacing = aesthetics.spacing || genetics.spacing || 0;
 
   return `
-    <div 
-      class="industrial-container-surface ${isSelected ? 'selected' : ''} ${isError ? 'error' : ''}"
-      style="
-        position: absolute;
-        inset: 0;
-        background-color: ${bgColor};
-        background-image: ${bgUrl ? `url(${bgUrl})` : 'none'};
-        background-size: cover;
-        background-position: center;
-        border: ${borderWidth}px solid ${borderColor};
-        border-radius: ${rounding}px;
-        opacity: ${opacity};
-        overflow: hidden;
-      "
-    >
-      <div 
-        class="container-label-fragment"
-        style="
-          position: absolute;
-          left: ${labelX}px;
-          top: ${labelY}px;
-          width: ${labelW ? `${labelW}px` : 'auto'};
-          height: ${labelH ? `${labelH}px` : 'auto'};
-          background-color: ${labelBg};
-          border-radius: ${labelRounding}px;
-          padding: ${labelPadding}px;
-          display: flex;
-          align-items: center;
-          justify-content: ${flexAlign};
-          white-space: nowrap;
-          z-index: 10;
-        "
-      >
-        <span style="
-          font-family: ${font};
-          font-size: ${fontSize}px;
-          color: ${fontColor};
-          text-align: ${alignment};
-          letter-spacing: ${spacing}px;
-          line-height: 1;
-          width: 100%;
-        ">
-          ${isError ? '⚠️ INTEGRITY_LEAK' : label}
-        </span>
+      <div class="industrial-container-surface ${isSelected ? 'selected' : ''} ${isError ? 'error' : ''}"
+        style="position: absolute; inset: 0; background-color: ${bgColor}; background-image: ${bgUrl ? `url(${bgUrl})` : 'none'}; background-size: cover; background-position: center; border: ${borderWidth}px solid ${borderColor}; border-radius: ${rounding}px; opacity: ${opacity}; overflow: hidden;">
+        <div class="container-label-fragment"
+          style="position: absolute; left: ${labelX}px; top: ${labelY}px; width: ${labelW ? `${labelW}px` : 'auto'}; height: ${labelH ? `${labelH}px` : 'auto'}; background-color: ${labelBg}; border-radius: ${labelRounding}px; display: flex; align-items: center; justify-content: ${flexAlign}; padding: ${labelPadding}px; white-space: nowrap; z-index: 10;">
+          <span style="font-family: ${font}; font-size: ${fontSize}px; color: ${fontColor}; text-align: ${alignment}; letter-spacing: ${spacing}px; width: 100%;">
+            ${isError ? '\u26A0\uFE0F INTEGRITY_LEAK' : label}
+          </span>
+        </div>
       </div>
-    </div>
-  `.trim();
+    `.trim();
 }

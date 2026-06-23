@@ -1,13 +1,13 @@
 "use client";
 
 /**
- * @purpose Renderiza un componente de campo personalizable con indicadores de estado y mensajes de validación para uso en el editor del manifesto OMEGA.
- * @purpose_en ** Renders a customizable field component with status indicators and validation messages for use in the OMEGA manifest editor.
- * @refactorable ** true (contains too many state variables and UI parts)
- * @classification ** UI Component
- * @complexity ** Medium
- * @fingerprint exports:3,imports:2,sig:1r8rbwt
- * @lastUpdated 2026-06-15T12:59:29.083Z
+ * @purpose Renderiza un componente de campo personalizable con indicadores de estado y mensajes de validación para uso en el editor de manifesto OMEGA.
+ * @purpose_en Renders a customizable field component with status indicators and validation messages for use in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:3,imports:2,sig:pb4ssj
+ * @lastUpdated 2026-06-20T09:43:31.574Z
  */
 
 import * as React from "react";

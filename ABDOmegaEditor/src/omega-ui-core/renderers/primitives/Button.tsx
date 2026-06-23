@@ -4,8 +4,8 @@
  * @refactorable false
  * @classification UI Component
  * @complexity Low
- * @fingerprint exports:2,imports:1,sig:5rdsnu
- * @lastUpdated 2026-06-15T16:08:17.411Z
+ * @fingerprint exports:2,imports:1,sig:1lvgwhv
+ * @lastUpdated 2026-06-20T11:09:33.416Z
  */
 
 import type { ComponentStyle, BindConfig } from '../../types/rack';

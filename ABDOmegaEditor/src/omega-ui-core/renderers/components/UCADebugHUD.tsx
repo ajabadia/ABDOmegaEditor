@@ -20,7 +20,7 @@ interface UCADebugHUDProps {
   worldPos: Position | undefined;
   labelRef?: React.RefObject<HTMLSpanElement | null> | undefined;
   localLabelRef?: React.RefObject<HTMLSpanElement | null> | undefined;
-  audit?: import('@/services/auditService').AuditResult | undefined;
+  audit?: import('@/omega-ui-core/types/audit').AuditResult | undefined;
 }
 
 export function UCADebugHUD({

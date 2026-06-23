@@ -6,14 +6,14 @@
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:5,sig:15ivvhr
- * @lastUpdated 2026-06-15T13:00:11.374Z
+ * @fingerprint exports:1,imports:5,sig:qtt99h
+ * @lastUpdated 2026-06-20T09:44:06.808Z
  */
 
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Shield, ShieldAlert, Award } from 'lucide-react';
-import type { AuditResult } from '@/services/auditService';
+import type { AuditResult } from '@/omega-ui-core/types/audit';
 
 interface ComplianceBadgeProps {
   audit: AuditResult;
@@ -47,9 +47,11 @@ const STATUS_CONFIG = {
   }
 };
  
-import { observabilityService } from '@/services/observabilityService';
+import { getService } from '@/services/globalEventBus';
+import { SERVICE_TOKENS } from '@/omega-ui-core/di';
 
 export function ComplianceBadge({ audit, onClick }: ComplianceBadgeProps) {
+  const observabilityService = getService(SERVICE_TOKENS.OBSERVABILITY_SERVICE);
   const { score, status } = audit;
   const config = STATUS_CONFIG[status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.DRAFT;
   const [health, setHealth] = React.useState(observabilityService.getHealthReport());
@@ -59,7 +61,7 @@ export function ComplianceBadge({ audit, onClick }: ComplianceBadgeProps) {
       setHealth(observabilityService.getHealthReport());
     }, 2000);
     return () => clearInterval(timer);
-  }, []);
+  }, [observabilityService]);
 
   return (
     <motion.button

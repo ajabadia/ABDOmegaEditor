@@ -9,7 +9,7 @@
  */
 
 import type { OMEGA_Manifest, OMEGA_Contract, OmegaNode } from '@/omega-ui-core/types/manifest';
-import type { OmegaContract } from '@/services/wasmLoader';
+import type { OmegaContract } from '@/omega-ui-core/types/contract';
 import type { HistoryState, HistoryEntry } from './history';
 
 export type { OMEGA_Manifest, OMEGA_Contract, OmegaNode, HistoryEntry };

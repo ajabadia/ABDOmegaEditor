@@ -1,13 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona subidas de archivos para recursos en el editor de manifesto OMEGA, proporcionando una interfaz limpia para que los usuarios seleccionen y suban archivos sin contaminar la consola de trabajo principal.
+ * @purpose Gestiona subidas de archivos para recursos en el editor de manifesto OMEGA, proporcionando una interfaz limpia para que los usuarios seleccional y suban archivos sin contaminar la consola de trabajo principal.
  * @purpose_en Manages file uploads for resources in the OMEGA manifest editor, providing a clean interface for users to select and upload files without cluttering the main workbench.
  * @refactorable false
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:1,sig:v1jmjg
- * @lastUpdated 2026-06-15T13:00:18.086Z
+ * @fingerprint exports:1,imports:1,sig:1nhoad2
+ * @lastUpdated 2026-06-20T09:44:14.051Z
  */
 
 import React from 'react';

@@ -4,8 +4,8 @@
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:0,imports:7,sig:1ycix7n
- * @lastUpdated 2026-06-15T20:48:34.476Z
+ * @fingerprint exports:0,imports:7,sig:1u8m78u
+ * @lastUpdated 2026-06-20T09:42:51.000Z
  */
 
 import { useRef, useState } from 'react';
@@ -13,7 +13,7 @@ import { Layers, Cpu, FileCode, History, Columns, Save, AlertTriangle, Circle, U
 import ShortcutBadge from './ShortcutBadge';
 import ToolbarIconButton from './ToolbarIconButton';
 import UndoTimelinePopover from './UndoTimelinePopover';
-import type { HistoryEntry } from '@/features/manifest-editor/types/history';
+import type { HistoryEntry } from '@/omega-ui-core/types/history';
 import type { HistoryEntry as BatchHistoryEntry } from '@/features/manifest-editor/hooks/useBatchHistory';
 
 interface WorkbenchFooterProps {

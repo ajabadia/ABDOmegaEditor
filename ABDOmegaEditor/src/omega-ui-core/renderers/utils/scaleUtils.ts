@@ -1,11 +1,11 @@
 /**
  * @purpose Gestiona y calcula actualizaciones de escala para nodos en un manifesto OMEGA, incluyendo sus hijos.
  * @purpose_en Manages and computes scale updates for nodes in an OMEGA manifest, including their children.
- * @refactorable false
+ * @refactorable true (contains too many state variables and UI parts)
  * @classification Helper Utility
  * @complexity Medium
- * @fingerprint exports:2,imports:2,sig:kvn5za
- * @lastUpdated 2026-06-18T07:56:28.726Z
+ * @fingerprint exports:4,imports:2,sig:13qh3xh
+ * @lastUpdated 2026-06-20T12:53:04.481Z
  */
 
 import type { OmegaNode, OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
@@ -85,3 +85,46 @@ export function computeScaleUpdates(
   scaleSubtree(targetNode, scaleX, scaleY);
   return updates;
 }
+
+/**
+ * Extract rotation from a node's layout.transform string.
+ * Supports `rotate(Xdeg)` and `rotateX(Xdeg)` CSS-like transforms.
+ */
+export function getNodeRotation(node: OmegaNode): number {
+  const transform = node.layout?.transform;
+  if (!transform) return 0;
+  const match = transform.match(/rotate\(?([-\d.]+)deg\)/);
+  return match ? parseFloat(match[1]) : 0;
+}
+
+/**
+ * Compute updates to apply rotation to a node.
+ * Stores rotation as a CSS transform string in layout.transform.
+ * Preserves any existing position and size.
+ */
+export function computeRotationUpdates(
+  nodeId: string,
+  angle: number,
+  manifest: OMEGA_Manifest,
+): Record<string, Partial<OmegaNode>> {
+  const root = manifest.ui?.tree;
+  if (!root) return {};
+
+  const targetNode = findNodeInTree(root, nodeId);
+  if (!targetNode) return {};
+
+  const clampedAngle = ((angle % 360) + 360) % 360;
+  const transformStr = clampedAngle === 0 ? undefined : `rotate(${clampedAngle}deg)`;
+
+  return {
+    [nodeId]: {
+      layout: {
+        ...targetNode.layout,
+        pos: targetNode.layout?.pos ?? { x: 0, y: 0 },
+        size: targetNode.layout?.size ?? { width: 48, height: 48 },
+        transform: transformStr,
+      },
+    },
+  };
+}
+

@@ -12,7 +12,7 @@
 
 import { motion } from 'framer-motion';
 import type { OMEGA_Manifest, OMEGA_Contract } from '@/omega-ui-core/types/manifest';
-import type { OmegaContract } from '@/services/wasmLoader';
+import type { OmegaContract } from '@/omega-ui-core/types/contract';
 
 interface CenterModuleNodeProps {
   manifest: OMEGA_Manifest;

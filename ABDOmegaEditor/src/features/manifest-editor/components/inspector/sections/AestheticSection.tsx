@@ -1,13 +1,13 @@
 'use client';
 
 /**
- * @purpose Renderiza una sección para editar propiedades estéticas de componentes UI en el editor de manifesto OMEGA.
+ * @purpose Renderiza una seccion para editar propiedades esteticas de componentes UI en el editor manifesto OMEGA.
  * @purpose_en Renders a section for editing aesthetic properties of UI components in the OMEGA manifest editor.
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:17,sig:14gmqig
- * @lastUpdated 2026-06-15T11:38:08.547Z
+ * @fingerprint exports:1,imports:17,sig:1etivao
+ * @lastUpdated 2026-06-20T09:16:29.945Z
  */
 
 import React from 'react';

@@ -1,13 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona una sección colapsable para ajustes espaciales y estructurales en componentes del editor de manifesto, incluyendo control de tamaño, posición y índice z basado en capacidades disponibles.
+ * @purpose Gestiona una sección colapsable para ajustes espaciales y estructurales en componentes de editor de manifesto, incluyendo control de tamaño, posición y índice z basado en capacidades disponibles.
  * @purpose_en Manages a collapsible section for spatial and structural adjustments in manifest editor components, including size, position, and z-index controls based on available capabilities.
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Low
- * @fingerprint exports:1,imports:3,sig:82yb1f
- * @lastUpdated 2026-06-15T11:41:23.008Z
+ * @fingerprint exports:1,imports:3,sig:009kux
+ * @lastUpdated 2026-06-20T09:17:57.174Z
  */
 
 import { Maximize, Move, Layers } from 'lucide-react';

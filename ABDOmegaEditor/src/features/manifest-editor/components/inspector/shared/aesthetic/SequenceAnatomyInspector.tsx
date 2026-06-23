@@ -1,13 +1,13 @@
 'use client';
 
 /**
- * @purpose Renderiza un componente para inspeccionar y editar las propiedades estéticas de la anatomía de secuencia en un editor de manifesto OMEGA.
+ * @purpose Renderiza un componente para inspeccionar y editar propiedades estéticas de la anatomía de secuencia en un editor de manifesto OMEGA.
  * @purpose_en Renders a component for inspecting and editing aesthetic properties of sequence anatomy in an OMEGA manifest editor.
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:3,sig:103dwd1
- * @lastUpdated 2026-06-15T11:41:05.913Z
+ * @fingerprint exports:1,imports:3,sig:8v8osv
+ * @lastUpdated 2026-06-20T09:17:43.417Z
  */
 
 import React from 'react';

@@ -1,21 +1,22 @@
 'use client';
 
 /**
- * @purpose Renderiza un panel para inspeccionar y editar propiedades de entidades seleccionadas en el editor de manifesto OMEGA.
- * @purpose_en ** Renders a panel for inspecting and editing properties of selected entities in the OMEGA manifest editor.
- * @refactorable ** true (contains too many state variables and UI parts)
- * @classification ** UI Component
- * @complexity ** Medium
- * @fingerprint exports:1,imports:6,sig:25tm5r
- * @lastUpdated 2026-06-15T11:50:40.352Z
+ * @purpose Renderiza una pestaña para inspeccionar y editar propiedades de entidades seleccionadas en el editor de manifesto OMEGA.
+ * @purpose_en Renders a panel for inspecting and editing properties of selected entities in the OMEGA manifest editor.
+ * @refactorable true (contains too many state variables and UI parts)
+ * @classification UI Component
+ * @complexity Medium
+ * @fingerprint exports:1,imports:7,sig:8t5jps
+ * @lastUpdated 2026-06-20T12:52:14.480Z
  */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 
 import PropertyPanel from './PropertyPanel';
-import type { OMEGA_Manifest, LayoutContainer, ManifestEntity, OMEGA_Modulation, ExtraResource, OmegaNode, BlueprintDefinition } from '@/omega-ui-core/types/manifest';
-import type { AuditResult } from '@/features/manifest-editor/types/diagnostics';
+import type { OMEGA_Manifest, LayoutContainer, ManifestEntity, OMEGA_Modulation, ExtraResource, OmegaNode } from '@/omega-ui-core/types/manifest';
+import type { V2BlueprintData } from '@/omega-ui-core/types';
+import type { AuditResult } from '@/omega-ui-core/types/audit';
 import { findNodeInTree } from '@/features/manifest-editor/hooks/entities/ucaInspectorAdapter';
 
 interface WorkbenchInspectorProps {
@@ -48,7 +49,7 @@ interface WorkbenchInspectorProps {
   onTriggerUpload: (id: string) => void;
   onOpenConfig?: (() => void) | undefined;
   onOpenLibrary?: (() => void) | undefined;
-  onSelectBlueprint?: ((blueprint: BlueprintDefinition) => void) | undefined;
+  onSelectBlueprint?: ((blueprint: V2BlueprintData) => void) | undefined;
   exportSelectedAsBlueprint?: ((id: string) => void) | undefined;
   /** Called when user clicks "Save as Blueprint..." on a group */
   onSaveGroupAsBlueprint?: ((groupNode: import('@/omega-ui-core/types/rack').GroupNode) => void) | undefined;

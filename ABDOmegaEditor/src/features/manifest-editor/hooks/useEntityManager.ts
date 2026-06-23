@@ -43,6 +43,8 @@ export const useEntityManager = (
   return {
     ...entityOps,
     pasteEntity: entityOps.pasteEntity,
+    pasteEntities: entityOps.pasteEntities,
+    removeItems: entityOps.removeItems,
     ...modulationOps,
     ...layoutOps,
     ...templateOps

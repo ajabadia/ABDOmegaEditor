@@ -12,8 +12,9 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import type { ManifestEntity } from '@/omega-ui-core/types/manifest';
-import { wasmRuntime } from '@/services/wasmRuntime';
 import { dryRunLfoRegistry, dryRunActiveSimulations } from '@/features/manifest-editor/hooks/useDryRunSimulation';
+import { getService } from '@/services/globalEventBus';
+import { SERVICE_TOKENS } from '@/omega-ui-core/di';
 
 /**
  * useRackSimulation (v7.2.3)
@@ -24,6 +25,7 @@ export const useRackSimulation = (
   isLiveMode: boolean,
   pushParameterUpdate?: (id: string, value: number) => void
 ) => {
+  const wasmRuntime = getService(SERVICE_TOKENS.WASM_RUNTIME);
   const [runtimeValues, setRuntimeValues] = useState<Record<string, number>>({});
   const [activeContainers, setActiveContainers] = useState<Record<string, number>>({});
   const [activeInjectorPort, setActiveInjectorPort] = useState<string | null>(null);
@@ -97,7 +99,7 @@ export const useRackSimulation = (
     };
     rafId = requestAnimationFrame(updateLoop);
     return () => cancelAnimationFrame(rafId);
-  }, [isLiveMode, allElements]);
+  }, [isLiveMode, allElements, wasmRuntime]);
 
   // 3. PARAMETER UPDATES
   const updateValue = useCallback((id: string, val: number) => {
@@ -115,7 +117,7 @@ export const useRackSimulation = (
     if (containerId) {
       setActiveContainers(prev => ({ ...prev, [containerId]: 1.0 }));
     }
-  }, [allElements, pushParameterUpdate]);
+  }, [allElements, pushParameterUpdate, wasmRuntime]);
 
   return {
     runtimeValues,

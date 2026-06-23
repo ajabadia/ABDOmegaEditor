@@ -1,11 +1,11 @@
 /**
- * @purpose Gestiona la personalización de un toolbar flotante en el editor de manifesto OMEGA, incluyendo la reordenación de botones, su mostrado o ocultamiento y la persistencia de la configuración mediante localStorage.
+ * @purpose Gestiona la personalización del panel flotante en el editor de manifesto OMEGA, incluyendo la reordenación de botones, su mostrado o ocultamiento y la persistencia de la configuración mediante localStorage.
  * @purpose_en Manages the customization of a floating toolbar in the OMEGA manifest editor, including reordering buttons, showing/hiding them, and persisting the configuration using localStorage.
  * @refactorable false
  * @classification Custom Hook
  * @complexity Medium
- * @fingerprint exports:1,imports:2,sig:bflj2j
- * @lastUpdated 2026-06-15T15:15:13.388Z
+ * @fingerprint exports:1,imports:2,sig:b97qvz
+ * @lastUpdated 2026-06-20T11:07:39.109Z
  */
 
 'use client';

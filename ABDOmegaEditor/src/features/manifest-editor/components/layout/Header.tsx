@@ -4,13 +4,13 @@
  * @refactorable true (contains too many props and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:8,sig:42y7wp
- * @lastUpdated 2026-06-15T12:47:42.839Z
+ * @fingerprint exports:1,imports:8,sig:1vxiccn
+ * @lastUpdated 2026-06-20T09:40:06.698Z
  */
 
 import { Shield } from 'lucide-react';
 
-import type { AuditResult } from '@/services/auditService';
+import type { AuditResult } from '@/omega-ui-core/types/audit';
 import { ComplianceBadge } from '../shared/ComplianceBadge';
  
 import ThemeSelector from '../header/ThemeToggle';
@@ -81,6 +81,23 @@ interface HeaderProps {
   onSetInspectorLevel?: ((level: 'simple' | 'medium' | 'advanced') => void) | undefined;
   manifest?: OMEGA_Manifest | undefined;
   onUpdateManifest?: ((updates: Partial<OMEGA_Manifest>) => void) | undefined;
+  isLiveMode?: boolean;
+  // Transform menu callbacks
+  onSetTool?: ((tool: 'select' | 'marquee' | 'add' | 'studio' | 'transform' | null) => void) | undefined;
+  onOpenNumericResize?: (() => void) | undefined;
+  onOpenNumericRotate?: (() => void) | undefined;
+  onCopyTransform?: (() => void) | undefined;
+  onPasteTransform?: (() => void) | undefined;
+  onAlign?: ((dir: string) => void) | undefined;
+  onDistribute?: ((dir: string) => void) | undefined;
+
+  // Clipboard actions
+  onCopy?: (() => void) | undefined;
+  onCut?: (() => void) | undefined;
+  onPaste?: (() => void) | undefined;
+  canCopy?: boolean | undefined;
+  canCut?: boolean | undefined;
+  canPaste?: boolean | undefined;
 }
  
 export default function Header(props: HeaderProps) {
@@ -100,6 +117,7 @@ export default function Header(props: HeaderProps) {
           onUndo={props.onUndo}
           onRedo={props.onRedo}
           onToggleLogs={props.onToggleLogs}
+          showLogs={props.showLogs}
           onHelp={props.onHelp}
           onGenerateMockup={props.onGenerateMockup}
           onTabFocus={props.onTabFocus}
@@ -129,6 +147,21 @@ export default function Header(props: HeaderProps) {
           onSetInspectorLevel={props.onSetInspectorLevel}
           manifest={props.manifest}
           onUpdateManifest={props.onUpdateManifest}
+          isLiveMode={props.isLiveMode}
+          // Transform menu callbacks
+          onSetTool={props.onSetTool}
+          onOpenNumericResize={props.onOpenNumericResize}
+          onOpenNumericRotate={props.onOpenNumericRotate}
+          onCopyTransform={props.onCopyTransform}
+          onPasteTransform={props.onPasteTransform}
+          onAlign={props.onAlign}
+          onDistribute={props.onDistribute}
+          onCopy={props.onCopy}
+          onCut={props.onCut}
+          onPaste={props.onPaste}
+          canCopy={props.canCopy}
+          canCut={props.canCut}
+          canPaste={props.canPaste}
         />
       </div>
 

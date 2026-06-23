@@ -22,6 +22,25 @@ jest.mock('framer-motion', () => ({
   AnimatePresence: ({ children }: React.PropsWithChildren<Record<string, unknown>>) => <>{children}</>,
 }));
 
+// ── DI container init for components that use getService() ────────────────
+import { ServiceContainer } from '@/omega-ui-core/di/ServiceContainer';
+import { EventBus } from '@/omega-ui-core/di/EventBus';
+import { SERVICE_TOKENS } from '@/omega-ui-core/di';
+import { setGlobalContainer, setGlobalEventBus } from '@/services/globalEventBus';
+
+const container = new ServiceContainer();
+const eventBus = new EventBus();
+setGlobalEventBus(eventBus);
+setGlobalContainer(container);
+container.register(SERVICE_TOKENS.EVENT_BUS, eventBus);
+container.register(SERVICE_TOKENS.OBSERVABILITY_SERVICE, {
+  generateCorrelationId: () => 'test-corr-id',
+  trackEvent: () => {},
+  getHealthReport: () => ({ overall: 'CERTIFIED', score: 87, era: 7 }),
+  trackHistoryEvent: () => {},
+  updateHeartbeat: () => {},
+} as unknown as typeof import('@/services/observabilityService').observabilityService);
+
 // ── Static imports ────────────────────────────────────────────────────────
 import ToolbarIconButton from '@/features/manifest-editor/components/layout/ToolbarIconButton';
 import ViewportToolbar from '@/features/manifest-editor/components/viewport/ViewportToolbar';
@@ -38,7 +57,7 @@ import MockupModal from '@/features/manifest-editor/components/modals/MockupModa
 import UniversalCellEditorModal from '@/features/manifest-editor/components/modals/UniversalCellEditorModal';
 import Header from '@/features/manifest-editor/components/layout/Header';
 import WorkbenchFooter from '@/features/manifest-editor/components/layout/WorkbenchFooter';
-import type { HistoryEntry } from '@/features/manifest-editor/types/history';
+import type { HistoryEntry } from '@/omega-ui-core/types/history';
 import { DockIconBar } from '@/features/manifest-editor/components/inspector/dock/DockIconBar';
 
 

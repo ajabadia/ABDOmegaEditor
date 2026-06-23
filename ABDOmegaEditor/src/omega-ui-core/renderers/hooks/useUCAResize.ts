@@ -6,8 +6,8 @@
  * @refactorable true (contains too many state variables and UI parts)
  * @classification Custom Hook
  * @complexity Medium
- * @fingerprint exports:1,imports:5,sig:1tdb70b
- * @lastUpdated 2026-06-18T17:16:00Z
+ * @fingerprint exports:1,imports:6,sig:qxwnqd
+ * @lastUpdated 2026-06-20T11:09:29.096Z
  */
 
 import React from 'react';
@@ -15,6 +15,7 @@ import type { PanInfo } from 'framer-motion';
 import type { OmegaNode, OMEGA_Manifest, GridConfig } from '../../types/manifest';
 import type { UCADebugContext } from '../ucaTypes';
 import { getOriginalNodeSize, computeScaleUpdates } from '../utils/scaleUtils';
+import { checkSubtreeMinSize } from '../utils/gridSnapUtils';
 
 interface UseUCAResizeProps {
   node: OmegaNode;
@@ -41,11 +42,11 @@ export function useUCAResize({ node, manifest, debugContext }: UseUCAResizeProps
   const debugContextRef = React.useRef(debugContext);
 
   // Sync refs on every render — gesture callbacks use these to avoid stale closures.
-  // Direct assignment is preferred over useEffect for refs read by event handlers,
-  // because useEffect fires AFTER paint, leaving a window where the ref is stale.
-  manifestRef.current = manifest;
-  nodeRef.current = node;
-  debugContextRef.current = debugContext;
+  React.useEffect(() => {
+    manifestRef.current = manifest;
+    nodeRef.current = node;
+    debugContextRef.current = debugContext;
+  });
 
   const startSizeRef = React.useRef({ width: 0, height: 0 });
   const startPosRef = React.useRef({ x: 0, y: 0 });
@@ -68,24 +69,8 @@ export function useUCAResize({ node, manifest, debugContext }: UseUCAResizeProps
     };
   }, []);
 
-  // Checks if any child inside the node's subtree would shrink below 16px
-  const checkSubtreeMinSize = (n: OmegaNode, scaleX: number, scaleY: number): boolean => {
-    if (!n.children || n.children.length === 0) return true;
-    for (const child of n.children) {
-      const childOrigW = child.layout?.size?.width ?? (child.kind === 'cell' || child.kind === 'port' ? 48 : 100);
-      const childOrigH = child.layout?.size?.height ?? (child.kind === 'cell' || child.kind === 'port' ? 48 : 100);
-      if (childOrigW * scaleX < 16 || childOrigH * scaleY < 16) {
-        return false;
-      }
-      if (!checkSubtreeMinSize(child, scaleX, scaleY)) {
-        return false;
-      }
-    }
-    return true;
-  };
-
   const handleResizeStart = (e: unknown) => {
-    e && (e as Event).stopPropagation();
+    if (e) (e as Event).stopPropagation();
     const ctx = debugContextRef.current;
     if (ctx?.isLiveMode) return;
 

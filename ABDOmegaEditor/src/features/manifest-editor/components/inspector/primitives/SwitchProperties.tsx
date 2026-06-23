@@ -6,8 +6,8 @@
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:3,sig:igna2x
- * @lastUpdated 2026-06-15T11:32:08.389Z
+ * @fingerprint exports:1,imports:3,sig:asa5w5
+ * @lastUpdated 2026-06-20T09:16:19.290Z
  */
 
 import { ToggleLeft, Palette } from 'lucide-react';

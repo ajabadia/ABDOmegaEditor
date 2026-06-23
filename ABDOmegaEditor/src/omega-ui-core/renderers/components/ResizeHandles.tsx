@@ -1,13 +1,13 @@
 'use client';
 
 /**
- * @purpose Rendiza tamaños de manijas para nodos en el editor de manifesto OMEGA, permitiendo a los usuarios ajustar interactivamente los tamaños de los nodos.
- * @purpose_en Renders resize handles for nodes in the OMEGA manifest editor, allowing users to interactively adjust node sizes.
+ * @purpose Renderiza y proporciona manejadores de tamaño y rotación para nodos en el editor de manifesto OMEGA, con una flecha curva de SVG, un cruz de pivote centrado y una tooltip real-time transparente.
+ * @purpose_en Renders resize and rotation handles for nodes in the OMEGA manifest editor, with SVG curved arrow, center pivot crosshair, and glassmorphic real-time tooltip.
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:5,sig:gterys
- * @lastUpdated 2026-06-18T07:56:19.708Z
+ * @fingerprint exports:1,imports:6,sig:1atobo6
+ * @lastUpdated 2026-06-20T11:09:02.215Z
  */
 
 import React from 'react';
@@ -15,6 +15,7 @@ import { motion } from 'framer-motion';
 import type { OmegaNode, OMEGA_Manifest } from '../../types/manifest';
 import type { UCADebugContext } from '../ucaTypes';
 import { useUCAResize } from '../hooks/useUCAResize';
+import { RotationHandle } from './RotationHandle';
 
 interface ResizeHandlesProps {
   node: OmegaNode;
@@ -112,28 +113,42 @@ export function ResizeHandles({ node, manifest, debugContext }: ResizeHandlesPro
 
   return (
     <>
-      {/* Real-time HUD showing dimensions */}
+      {/* Real-time glassmorphic HUD showing dimensions */}
       {isResizing && (
         <div 
-          className="absolute left-1/2 -translate-x-1/2 -top-7 px-1.5 py-0.5 rounded-[2px] bg-[#0e0e0f]/95 border border-[#00f0ff] shadow-[0_0_10px_rgba(0,240,255,0.25)] flex items-center gap-1.5 z-[210] pointer-events-none"
-          style={{ WebkitFontSmoothing: 'none' }}
+          className="absolute left-1/2 -translate-x-1/2 -top-8 px-2 py-1 rounded-[3px] z-[210] pointer-events-none whitespace-nowrap backdrop-blur-md"
+          style={{
+            background: 'rgba(14, 14, 15, 0.65)',
+            border: '1px solid rgba(0, 240, 255, 0.35)',
+            boxShadow: '0 0 12px rgba(0, 240, 255, 0.2), inset 0 1px 0 rgba(255,255,255,0.08)',
+            WebkitFontSmoothing: 'none',
+          }}
         >
           <span className="text-[7px] text-[#00f0ff] font-mono font-bold tracking-wider">
             {currentW} × {currentH} px
           </span>
-          <span className="text-[6px] text-white/50 font-mono">
+          <span className="text-[6px] text-white/40 font-mono ml-1.5">
             {hpValue} HP
           </span>
           {isShiftActive && (
             <span 
-              className="text-[7px] text-[#00f0ff] font-bold animate-pulse"
+              className="text-[7px] text-[#00f0ff] font-bold animate-pulse ml-1.5"
               title="Proportional scaling locked"
             >
-              [🔒]
+              🔒
             </span>
           )}
         </div>
       )}
+
+      <RotationHandle
+        node={node}
+        manifest={manifest}
+        debugContext={debugContext}
+        currentW={currentW}
+        currentH={currentH}
+        hpValue={hpValue}
+      />
 
       {/* NW Corner Handle */}
       <motion.div

@@ -6,8 +6,8 @@
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:4,sig:12ggo9k
- * @lastUpdated 2026-06-15T12:59:03.406Z
+ * @fingerprint exports:1,imports:5,sig:xjegge
+ * @lastUpdated 2026-06-20T09:43:26.987Z
  */
 
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
@@ -24,18 +24,6 @@ interface VisualModulationMatrixProps {
   onClose: () => void;
 }
 
-interface ModulationLink {
-  id: string;
-  sourceId: string;
-  targetId: string;
-  amount: number;
-  type: string;
-  sx: number;
-  sy: number;
-  tx: number;
-  ty: number;
-}
-
 const MOD_TYPE_COLORS: Record<string, string> = {
   unipolar: '#00f0ff',
   bipolar: '#ff8c00',
@@ -50,6 +38,182 @@ const MOD_TYPE_LABELS: Record<string, string> = {
   multiplicative: 'MULT',
 };
 
+// ── Matrix Header sub-component ───────────────────────────────────────
+
+interface MatrixHeaderProps {
+  modulationCount: number;
+  onClose: () => void;
+}
+
+function MatrixHeader({ modulationCount, onClose }: MatrixHeaderProps) {
+  return (
+    <div className="flex items-center justify-between p-4 border-b border-white/5 bg-white/[0.02] shrink-0">
+      <div className="flex items-center gap-3">
+        <div className="w-6 h-6 bg-primary/20 border border-primary/40 rounded flex items-center justify-center">
+          <Zap className="w-3 h-3 text-primary" />
+        </div>
+        <div className="flex flex-col">
+          <h2 className="text-[10px] font-black uppercase tracking-[0.25em] text-primary">
+            Visual Modulation Matrix
+          </h2>
+          <span className="text-[7px] font-bold text-white/20 uppercase tracking-widest">
+            Drag from Source → Target to create connections
+          </span>
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="text-[7px] font-mono text-white/20">
+          {modulationCount} active
+        </span>
+        <button
+          onClick={onClose}
+          aria-label="Close modulation matrix"
+          className="p-1.5 hover:bg-white/5 rounded text-white/40 hover:text-white transition-all"
+        >
+          <X className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Matrix Footer sub-component ───────────────────────────────────────
+
+function MatrixFooter() {
+  return (
+    <div className="p-3 border-t border-white/5 bg-white/[0.02] flex items-center justify-between shrink-0">
+      <div className="flex items-center gap-4">
+        {Object.entries(MOD_TYPE_COLORS).map(([type, color]) => (
+          <div key={type} className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded" style={{ backgroundColor: color, opacity: 0.6 }} />
+            <span className="text-[6px] font-black uppercase tracking-widest text-white/30">{type}</span>
+          </div>
+        ))}
+      </div>
+      <div className="flex items-center gap-3 text-[6px] font-mono text-white/20">
+        <span>Click cell to toggle</span>
+        <span>Scroll wheel for amount</span>
+        <span>Drag source → target to create</span>
+      </div>
+    </div>
+  );
+}
+
+// ── Drag Ghost sub-component ──────────────────────────────────────────
+
+interface DragGhostProps {
+  sourceLabel: string;
+  mouseX: number;
+  mouseY: number;
+}
+
+function DragGhost({ sourceLabel, mouseX, mouseY }: DragGhostProps) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      className="fixed pointer-events-none z-[9999] flex items-center gap-2 px-2 py-1 rounded border shadow-2xl text-[8px] font-black uppercase tracking-widest"
+      style={{
+        left: mouseX,
+        top: mouseY,
+        backgroundColor: 'rgba(0,240,255,0.15)',
+        borderColor: 'rgba(0,240,255,0.5)',
+        color: '#00f0ff',
+        backdropFilter: 'blur(8px)',
+      }}
+    >
+      <Zap className="w-2.5 h-2.5" />
+      <span>{sourceLabel}</span>
+      <ArrowRightIcon />
+      <span className="opacity-50">Drop on target</span>
+    </motion.div>
+  );
+}
+
+// ── SVG Connection Overlay sub-component ──────────────────────────────
+
+interface ModulationLink {
+  id: string;
+  sourceId: string;
+  targetId: string;
+  amount: number;
+  type: string;
+  sx: number;
+  sy: number;
+  tx: number;
+  ty: number;
+}
+
+interface SvgConnectionOverlayProps {
+  links: ModulationLink[];
+  hoveredMod: string | null;
+  dragState: {
+    sourceId: string;
+    sourceLabel: string;
+    mouseX: number;
+    mouseY: number;
+    containerOffset: { left: number; top: number };
+  } | null;
+  sidebarWidth: number;
+  headerHeight: number;
+}
+
+function SvgConnectionOverlay({ links, hoveredMod, dragState, sidebarWidth, headerHeight }: SvgConnectionOverlayProps) {
+  const svgRef = useRef<SVGSVGElement>(null);
+
+  return (
+    <svg
+      ref={svgRef}
+      className="absolute inset-0 z-10 pointer-events-none"
+      style={{ top: headerHeight, left: sidebarWidth }}
+    >
+      <defs>
+        <filter id="mod-line-glow">
+          <feGaussianBlur stdDeviation="2" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+      {links.map(link => {
+        const dx = link.tx - link.sx;
+        const cp1x = link.sx + dx * 0.4;
+        const cp1y = link.sy;
+        const cp2x = link.tx - dx * 0.4;
+        const cp2y = link.ty;
+        const pathD = `M ${link.sx} ${link.sy} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${link.tx} ${link.ty}`;
+        const color = MOD_TYPE_COLORS[link.type] || '#00f0ff';
+
+        return (
+          <g key={link.id}>
+            <path d={pathD} fill="none" stroke={color} strokeWidth={1 + (link.amount || 0) * 2} opacity={0.2 + (link.amount || 0) * 0.4} strokeDasharray="6 3" filter="url(#mod-line-glow)" />
+            <path d={pathD} fill="none" stroke={color} strokeWidth={0.5 + (link.amount || 0) * 1} opacity={0.5 + (link.amount || 0) * 0.3} strokeDasharray="6 3" />
+            {hoveredMod === link.id && (
+              <circle r="3" fill={color} opacity="0.9" filter="url(#mod-line-glow)">
+                <animateMotion dur="2s" repeatCount="indefinite" path={pathD} />
+              </circle>
+            )}
+            <text x={(link.sx + link.tx) / 2} y={(link.sy + link.ty) / 2 - 8} fill={color} opacity="0.6" fontSize="6" fontFamily="monospace" textAnchor="middle">
+              {(link.amount || 0).toFixed(2)}
+            </text>
+          </g>
+        );
+      })}
+      {dragState && (
+        <line
+          x1={dragState.mouseX - dragState.containerOffset.left - sidebarWidth}
+          y1={dragState.mouseY - dragState.containerOffset.top - headerHeight}
+          x2={dragState.mouseX - dragState.containerOffset.left - sidebarWidth + 50}
+          y2={dragState.mouseY - dragState.containerOffset.top - headerHeight}
+          stroke="#00f0ff" strokeWidth="2" strokeDasharray="4 4" opacity="0.6"
+        />
+      )}
+    </svg>
+  );
+}
+
 /**
  * VisualModulationMatrix
  * A drag-and-drop SVG-based modulation matrix replacing the table-based ModulationGrid.
@@ -63,7 +227,6 @@ export default function VisualModulationMatrix({
   onUpdate,
   onClose,
 }: VisualModulationMatrixProps) {
-  const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const focusTrapRef = useFocusTrap(true);
   const [links, setLinks] = useState<ModulationLink[]>([]);
@@ -203,34 +366,7 @@ export default function VisualModulationMatrix({
         animate={{ scale: 1, y: 0 }}
         className="w-full max-w-6xl max-h-full bg-[#050505] border border-white/10 rounded-sm shadow-[0_0_100px_rgba(0,0,0,1)] flex flex-col overflow-hidden"
       >
-        {/* ── HEADER ─────────────────────────────────────────────────── */}
-        <div className="flex items-center justify-between p-4 border-b border-white/5 bg-white/[0.02] shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-6 h-6 bg-primary/20 border border-primary/40 rounded flex items-center justify-center">
-              <Zap className="w-3 h-3 text-primary" />
-            </div>
-            <div className="flex flex-col">
-              <h2 className="text-[10px] font-black uppercase tracking-[0.25em] text-primary">
-                Visual Modulation Matrix
-              </h2>
-              <span className="text-[7px] font-bold text-white/20 uppercase tracking-widest">
-                Drag from Source → Target to create connections
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-[7px] font-mono text-white/20">
-              {(manifest.modulations || []).length} active
-            </span>
-            <button
-              onClick={onClose}
-              aria-label="Close modulation matrix"
-              className="p-1.5 hover:bg-white/5 rounded text-white/40 hover:text-white transition-all"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
+        <MatrixHeader modulationCount={(manifest.modulations || []).length} onClose={onClose} />
 
         {/* ── MATRIX BODY ───────────────────────────────────────────── */}
         <div
@@ -364,141 +500,16 @@ export default function VisualModulationMatrix({
             ))}
           </div>
 
-          {/* ── SVG CONNECTION OVERLAY ───────────────────────────────── */}
-          <svg
-            ref={svgRef}
-            className="absolute inset-0 z-10 pointer-events-none"
-            style={{ top: headerHeight, left: sidebarWidth }}
-          >
-            <defs>
-              <filter id="mod-line-glow">
-                <feGaussianBlur stdDeviation="2" result="blur" />
-                <feMerge>
-                  <feMergeNode in="blur" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-            </defs>
-            {links.map(link => {
-              const dx = link.tx - link.sx;
-              const cp1x = link.sx + dx * 0.4;
-              const cp1y = link.sy;
-              const cp2x = link.tx - dx * 0.4;
-              const cp2y = link.ty;
-              const pathD = `M ${link.sx} ${link.sy} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${link.tx} ${link.ty}`;
-              const color = MOD_TYPE_COLORS[link.type] || '#00f0ff';
+          <SvgConnectionOverlay links={links} hoveredMod={hoveredMod} dragState={dragState} sidebarWidth={sidebarWidth} headerHeight={headerHeight} />
 
-              return (
-                <g key={link.id}>
-                  <path
-                    d={pathD}
-                    fill="none"
-                    stroke={color}
-                    strokeWidth={1 + (link.amount || 0) * 2}
-                    opacity={0.2 + (link.amount || 0) * 0.4}
-                    strokeDasharray="6 3"
-                    filter="url(#mod-line-glow)"
-                  />
-                  <path
-                    d={pathD}
-                    fill="none"
-                    stroke={color}
-                    strokeWidth={0.5 + (link.amount || 0) * 1}
-                    opacity={0.5 + (link.amount || 0) * 0.3}
-                    strokeDasharray="6 3"
-                  />
-                  {hoveredMod === link.id && (
-                    <circle
-                      r="3"
-                      fill={color}
-                      opacity="0.9"
-                      filter="url(#mod-line-glow)"
-                    >
-                      <animateMotion
-                        dur="2s"
-                        repeatCount="indefinite"
-                        path={pathD}
-                      />
-                    </circle>
-                  )}
-                  {/* Amount label at midpoint */}
-                  <text
-                    x={(link.sx + link.tx) / 2}
-                    y={(link.sy + link.ty) / 2 - 8}
-                    fill={color}
-                    opacity="0.6"
-                    fontSize="6"
-                    fontFamily="monospace"
-                    textAnchor="middle"
-                  >
-                    {(link.amount || 0).toFixed(2)}
-                  </text>
-                </g>
-              );
-            })}
-
-            {/* Drag preview line */}
-            {dragState && (
-              <line
-                x1={dragState.mouseX - dragState.containerOffset.left - sidebarWidth}
-                y1={dragState.mouseY - dragState.containerOffset.top - headerHeight}
-                x2={dragState.mouseX - dragState.containerOffset.left - sidebarWidth + 50}
-                y2={dragState.mouseY - dragState.containerOffset.top - headerHeight}
-                stroke="#00f0ff"
-                strokeWidth="2"
-                strokeDasharray="4 4"
-                opacity="0.6"
-              />
-            )}
-          </svg>
-
-          {/* ── DRAG GHOST ───────────────────────────────────────────── */}
           <AnimatePresence>
             {dragState && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                className="fixed pointer-events-none z-[9999] flex items-center gap-2 px-2 py-1 rounded border shadow-2xl text-[8px] font-black uppercase tracking-widest"
-                style={{
-                  left: dragState.mouseX,
-                  top: dragState.mouseY,
-                  backgroundColor: 'rgba(0,240,255,0.15)',
-                  borderColor: 'rgba(0,240,255,0.5)',
-                  color: '#00f0ff',
-                  backdropFilter: 'blur(8px)',
-                }}
-              >
-                <Zap className="w-2.5 h-2.5" />
-                <span>{dragState.sourceLabel}</span>
-                <ArrowRightIcon />
-                <span className="opacity-50">Drop on target</span>
-              </motion.div>
+              <DragGhost sourceLabel={dragState.sourceLabel} mouseX={dragState.mouseX} mouseY={dragState.mouseY} />
             )}
           </AnimatePresence>
         </div>
 
-        {/* ── FOOTER LEGEND ──────────────────────────────────────────── */}
-        <div className="p-3 border-t border-white/5 bg-white/[0.02] flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-4">
-            {Object.entries(MOD_TYPE_COLORS).map(([type, color]) => (
-              <div key={type} className="flex items-center gap-1.5">
-                <div
-                  className="w-2 h-2 rounded"
-                  style={{ backgroundColor: color, opacity: 0.6 }}
-                />
-                <span className="text-[6px] font-black uppercase tracking-widest text-white/30">
-                  {type}
-                </span>
-              </div>
-            ))}
-          </div>
-          <div className="flex items-center gap-3 text-[6px] font-mono text-white/20">
-            <span>Click cell to toggle</span>
-            <span>Scroll wheel for amount</span>
-            <span>Drag source → target to create</span>
-          </div>
-        </div>
+        <MatrixFooter />
       </motion.div>
     </motion.div>
   );

@@ -1,13 +1,13 @@
 'use client';
 
 /**
- * @purpose Renderiza una pestaña de trabajo para el editor de manifesto OMEGA, mostrando pestañas con diferentes vistas y maneja interacciones del usuario como selección de pestañas, cierre y diagnósticos.
- * @purpose_en Renders a workbench pane for the OMEGA manifest editor, displaying tabs with different views and handling user interactions such as tab selection, closing, and diagnostics.
+ * @purpose Gestiona la renderización e interacción de una pestaña de trabajo en el editor de manifest OMEGA, mostrando pestañas con diferentes vistas y manejando las interacciones del usuario como la selección, cierre y diagnósticos de pestañas.
+ * @purpose_en Manages the rendering and interaction of a workbench pane in the OMEGA manifest editor, displaying tabs with different views and handling user interactions such as tab selection, closing, and diagnostics.
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:0,imports:11,sig:1a2d5e3
- * @lastUpdated 2026-06-15T22:05:37.637Z
+ * @fingerprint exports:0,imports:11,sig:1fivw2d
+ * @lastUpdated 2026-06-20T10:45:07.503Z
  */
 
 import React, { useEffect } from 'react';
@@ -17,9 +17,9 @@ import { WorkbenchViewport } from '../viewport/WorkbenchViewport';
 import { SourceView } from '../views/SourceView';
 import type { OMEGA_Manifest, OMEGA_Contract, OMEGA_Modulation, HybridEntityUpdate, OmegaNode } from '@/omega-ui-core/types/manifest';
 import type { SimulationBridgeState } from '../../hooks/useSimulationBridge';
-import type { AuditResult } from '@/services/auditService';
+import type { AuditResult } from '@/omega-ui-core/types/audit';
 import type { DocumentOrchestrator } from '../../types/document';
-import type { UpdateManifestFn } from '@/features/manifest-editor/utils/alignmentConstants';
+import type { UpdateManifestFn, GhostItem } from '@/features/manifest-editor/utils/alignmentConstants';
 import { useViewport } from '../../hooks/useViewport';
  
 interface WorkbenchPaneProps {
@@ -105,6 +105,28 @@ interface WorkbenchPaneProps {
   onRemoveModulation?: ((id: string) => void) | undefined;
   startTransaction?: ((label: string) => void) | undefined;
   commitTransaction?: (() => void) | undefined;
+  // Transform context menu
+  onNumericResize?: (() => void) | undefined;
+  onNumericRotate?: (() => void) | undefined;
+  onCopyTransform?: (() => void) | undefined;
+  onPasteTransform?: (() => void) | undefined;
+  onAlign?: ((dir: string) => void) | undefined;
+  onDistribute?: ((dir: string) => void) | undefined;
+  // Alignment ghost preview (shared between ViewportToolbar & MenuBar)
+  alignGhostItems?: GhostItem[] | undefined;
+  alignGhostType?: string | undefined;
+  onGhostPreviewChange?: ((items: GhostItem[] | null, type?: string) => void) | undefined;
+
+  // Clipboard actions
+  onCopyItems?: ((ids: string[]) => void) | undefined;
+  onCutItems?: ((ids: string[]) => void) | undefined;
+  onPaste?: ((targetPos?: { x: number; y: number }) => void) | undefined;
+  canPaste?: boolean | undefined;
+  // Empty space context menu
+  onToggleGrid?: (() => void) | undefined;
+  onToggleGuides?: (() => void) | undefined;
+  onAddEntity?: ((type: 'control' | 'jack', template?: Partial<import('@/omega-ui-core/types/manifest').ManifestEntity>) => void) | undefined;
+  onReset?: (() => void) | undefined;
 }
  
 const WorkbenchPane = React.memo((props: WorkbenchPaneProps) => {
@@ -150,6 +172,9 @@ const WorkbenchPane = React.memo((props: WorkbenchPaneProps) => {
       }, 500);
       return () => clearTimeout(t);
     }
+  // `tabs` se omite intencionalmente — cambios en la lista de tabs (agregar/eliminar)
+  // no deben recapturar el viewport state. `activeTabId` ya cubre el cambio de tab activo,
+  // y `activeTab` se recalcula desde `tabs` antes de cada ejecución del effect.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeViewport.zoom, activeViewport.pan.x, activeViewport.pan.y, activeTabId, activeTab?.type, viewportKey, props.onCaptureViewState]);
 
@@ -235,6 +260,23 @@ const WorkbenchPane = React.memo((props: WorkbenchPaneProps) => {
             {...(props.onRemoveModulation != null ? { onRemoveModulation: props.onRemoveModulation } : {})}
             startTransaction={props.startTransaction}
             commitTransaction={props.commitTransaction}
+            alignGhostItems={props.alignGhostItems}
+            alignGhostType={props.alignGhostType}
+            onGhostPreviewChange={props.onGhostPreviewChange}
+            onNumericResize={props.onNumericResize}
+            onNumericRotate={props.onNumericRotate}
+            onCopyTransform={props.onCopyTransform}
+            onPasteTransform={props.onPasteTransform}
+            onAlign={props.onAlign}
+            onDistribute={props.onDistribute}
+            onCopyItems={props.onCopyItems}
+            onCutItems={props.onCutItems}
+            onPaste={props.onPaste}
+            canPaste={props.canPaste}
+            onToggleGrid={props.onToggleGrid}
+            onToggleGuides={props.onToggleGuides}
+            onAddEntity={props.onAddEntity}
+            onReset={props.onReset}
           />
         )}
 

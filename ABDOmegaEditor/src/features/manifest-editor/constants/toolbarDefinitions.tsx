@@ -4,8 +4,8 @@
  * @refactorable false
  * @classification Data/Constants
  * @complexity Low
- * @fingerprint exports:6,imports:2,sig:1rm6i27
- * @lastUpdated 2026-06-15T20:49:37.711Z
+ * @fingerprint exports:6,imports:2,sig:1jgtpcc
+ * @lastUpdated 2026-06-20T10:45:33.531Z
  */
 
 import {

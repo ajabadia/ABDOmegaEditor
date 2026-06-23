@@ -15,14 +15,17 @@ import type { DocumentState } from '../types/document';
 import { isDistilledManifest, upgradeDistilledToWork, UPGRADE_WARNING } from '@/omega-ui-core/utils/upgradeDistilled';
 import { validateManifestSchema } from '@/omega-ui-core/utils/manifestValidator';
 import { unpackageProject } from '@/services/projectPackager';
-import { historyService } from '@/services/historyService';
-import { inputSignalService, type VirtualSignal } from '@/services/inputSignalService';
+import type { VirtualSignal } from '@/services/inputSignalService';
 import { toast } from '@/features/manifest-editor/utils/toast';
+import { getService } from '@/services/globalEventBus';
+import { SERVICE_TOKENS } from '@/omega-ui-core/di';
 
 export const useWorkbenchFileOperations = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   editor: any
 ) => {
+  const historyService = getService(SERVICE_TOKENS.HISTORY_SERVICE);
+  const inputSignalService = getService(SERVICE_TOKENS.INPUT_SIGNAL_SERVICE);
 
   const restoreOmegaPackage = useCallback(async (file: File) => {
     try {
@@ -131,7 +134,7 @@ export const useWorkbenchFileOperations = (
       editor.addLog(`[ERROR] Failed to load project: ${message}`);
       toast.error(`Failed to load project: ${message}`);
     }
-  }, [editor]);
+  }, [editor, historyService, inputSignalService]);
 
   // ── Import Distilled .json via file picker ──
   const handleImportDistilledJson = useCallback(async () => {

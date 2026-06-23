@@ -1,13 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona la precisión numérica y el estado lógico del editor de manifesto OMEGA.
+ * @purpose Gestiona la precisión numérica y el estado lógico en el editor de manifesto OMEGA.
  * @purpose_en Manages numerical precision and logical state in the OMEGA manifest editor.
  * @refactorable false
  * @classification UI Component
  * @complexity Low
- * @fingerprint exports:1,imports:1,sig:68xmou
- * @lastUpdated 2026-06-15T11:40:52.629Z
+ * @fingerprint exports:1,imports:1,sig:wicnq4
+ * @lastUpdated 2026-06-20T09:17:39.464Z
  */
 
 import type { OmegaStyleNode } from '@/types/manifest';

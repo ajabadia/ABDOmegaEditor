@@ -1,13 +1,13 @@
 'use client';
 
 /**
- * @purpose Renderiza un componente para filas de capas en el editor de manifesto OMEGA, proporcionando controles para la visibilidad, la bloqueada y la eliminación.
+ * @purpose Gestiona un componente para filas de capas en el editor de manifesto OMEGA, proporcionando controladores para la visibilidad, la bloqueada y la eliminación.
  * @purpose_en Renders a component for layer rows in the OMEGA manifest editor, providing controls for visibility, locking, and deletion.
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:4,imports:6,sig:1n004bd
- * @lastUpdated 2026-06-17T22:33:50.937Z
+ * @fingerprint exports:4,imports:6,sig:1yhqbpf
+ * @lastUpdated 2026-06-20T09:16:04.282Z
  */
 
 import { useState, createElement } from 'react';

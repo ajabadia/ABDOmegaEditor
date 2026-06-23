@@ -4,8 +4,8 @@
  * @refactorable false
  * @classification UI Component
  * @complexity Low
- * @fingerprint exports:1,imports:1,sig:6aq9aq
- * @lastUpdated 2026-06-15T12:48:44.006Z
+ * @fingerprint exports:1,imports:1,sig:1qt5us4
+ * @lastUpdated 2026-06-20T09:42:56.264Z
  */
 
 import { Download, ShieldCheck, Loader2, AlertTriangle } from 'lucide-react';

@@ -12,7 +12,7 @@ import type { OMEGA_Manifest, OMEGA_Contract } from '@/omega-ui-core/types/manif
 import { ValidationService } from './validationService';
 import type { OmegaContract } from './wasmLoader';
 
-import type { AuditResult, Diagnostic } from '@/features/manifest-editor/types/diagnostics';
+import type { AuditResult, Diagnostic } from '@/omega-ui-core/types/audit';
 
 export type { AuditResult };
 

@@ -24,7 +24,6 @@ export class BlueprintResolver {
   /**
    * Resolves an OmegaNode (Blueprint) into its canonical form.
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public static resolve(node: OmegaNode, _manifest: OMEGA_Manifest): OmegaNode {
     // 1. Deep Clone
     const canonical = JSON.parse(JSON.stringify(node)) as OmegaNode;

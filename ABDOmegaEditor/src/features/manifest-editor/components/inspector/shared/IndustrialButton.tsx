@@ -6,8 +6,8 @@
  * @refactorable false
  * @classification UI Component
  * @complexity Low
- * @fingerprint exports:1,imports:1,sig:1rhk8vs
- * @lastUpdated 2026-06-15T11:49:39.789Z
+ * @fingerprint exports:1,imports:1,sig:1gvpklt
+ * @lastUpdated 2026-06-20T09:18:19.548Z
  */
 
 import type { LucideIcon } from 'lucide-react';

@@ -1,45 +1,39 @@
 /**
- * @purpose Renderiza una vista para editar manifestos OMEGA, incluyendo un canvas, controles y panel de historia según el modo de visualización.
- * @purpose_en Renders a viewport for editing OMEGA manifests, including a canvas, controls, and history panel based on the view mode.
+ * @purpose Gestiona vistas para editar manifestos OMEGA, incluyendo una superficie de trabajo, controles y panel de historia según el modo de vista, mientras maneja selecciones de marquee y guías de ventana.
+ * @purpose_en Renders a viewport for editing OMEGA manifests, including a canvas, controls, and history panel based on the view mode, while managing marquee selection and viewport guides.
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:16,sig:rprat3
- * @lastUpdated 2026-06-15T22:05:31.894Z
+ * @fingerprint exports:1,imports:20,sig:12b6k8b
+ * @lastUpdated 2026-06-20T20:07:30.666Z
  */
 
-import { useState, useCallback, useEffect, useRef, startTransition } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import NodeCanvas from './NodeCanvas';
 import VirtualRack from './VirtualRack';
 import ViewportControls from './ViewportControls';
 import RulerOverlay from './RulerOverlay';
 import ViewportToolbar from './ViewportToolbar';
-import type { OMEGA_Manifest, LayoutContainer, OMEGA_Contract, OMEGA_Modulation, HybridEntityUpdate, GridGuide, OmegaNode } from '@/omega-ui-core/types/manifest';
-import { toggleGridField, updateGuides } from '../../utils/gridHelpers';
-import type { OmegaContract } from '@/services/wasmLoader';
-import type { AuditResult } from '@/services/auditService';
+import type { OMEGA_Manifest, LayoutContainer, OMEGA_Contract, OMEGA_Modulation, HybridEntityUpdate, OmegaNode } from '@/omega-ui-core/types/manifest';
+import type { OmegaContract } from '@/omega-ui-core/types/contract';
+import type { AuditResult } from '@/omega-ui-core/types/audit';
 import type { UpdateManifestFn, GhostItem } from '@/features/manifest-editor/utils/alignmentConstants';
 
 import { HistoryPanel } from '../inspector/HistoryPanel';
 import type { HistoryEntry } from '../../types/document';
+import ViewWrapper from './ViewWrapper';
 import RackMiniMap from './RackMiniMap';
 import { useRackLayout } from '@/features/manifest-editor/hooks/rack/useRackLayout';
+import { useViewportMarquee, type MarqueeState } from '@/features/manifest-editor/hooks/viewport/useViewportMarquee';
+import { useViewportGuides } from '@/features/manifest-editor/hooks/viewport/useViewportGuides';
+import { useViewportContainerSize } from '@/features/manifest-editor/hooks/viewport/useViewportContainerSize';
+import { computeMarqueeSelection, mergeMarqueeSelection } from '../../utils/viewportUtils';
 
-interface WorkbenchViewportProps {
+// ── Categorized sub-interfaces ──────────────────────────────────
+
+interface ViewportProps {
   viewMode: 'orbital' | 'rack' | 'source' | 'history';
-  manifest: OMEGA_Manifest;
-  contract: (OmegaContract | OMEGA_Contract) | null;
-  selectedItemId: string | null;
-  multiSelectedIds: string[];
-  onSelectItem: (id: string | null) => void;
-  onSelectMultiple: (ids: string[]) => void;
-  updateItem: (id: string, updates: HybridEntityUpdate) => void;
-  /** Batch update multiple nodes atomically (Bug 1 fix) */
-  updateItems?: ((updatesMap: Record<string, Partial<OmegaNode>>) => void) | undefined;
-  updateContainer?: ((id: string, updates: Partial<LayoutContainer>) => void) | undefined;
-  onUpdateManifest?: UpdateManifestFn | undefined;
-  auditResult: AuditResult;
   zoom: number;
   pan: { x: number; y: number };
   handleZoom: (delta: number) => void;
@@ -48,31 +42,55 @@ interface WorkbenchViewportProps {
   handleFitViewport: (mode: string) => void;
   isLiveMode: boolean;
   setIsLiveMode: (val: boolean) => void;
+  activeTool?: 'select' | 'marquee' | 'add' | 'studio' | 'transform' | null | undefined;
+  uiTheme?: 'dark' | 'light' | 'amber' | 'cyberpunk' | 'high-contrast' | undefined;
+}
+
+interface DataProps {
+  manifest: OMEGA_Manifest;
+  contract: (OmegaContract | OMEGA_Contract) | null;
+  auditResult: AuditResult;
   resolveAsset?: ((ref: string | undefined) => string | undefined) | undefined;
   pushParameterUpdate?: ((id: string, value: number) => void) | undefined;
-  
-  // History Integration (Phase 9.2)
-  past?: HistoryEntry[] | undefined;
-  onUndoTo?: ((index: number) => void) | undefined;
-  onCompareWithHistory?: ((index: number) => void) | undefined;
+}
+
+interface SelectionProps {
+  selectedItemId: string | null;
+  multiSelectedIds: string[];
+  onSelectItem: (id: string | null) => void;
+  onSelectMultiple: (ids: string[]) => void;
   hiddenNodeIds?: string[] | undefined;
   lockedNodeIds?: string[] | undefined;
+}
+
+interface ManipulationProps {
+  updateItem: (id: string, updates: HybridEntityUpdate) => void;
+  /** Batch update multiple nodes atomically (Bug 1 fix) */
+  updateItems?: ((updatesMap: Record<string, Partial<OmegaNode>>) => void) | undefined;
+  updateContainer?: ((id: string, updates: Partial<LayoutContainer>) => void) | undefined;
+  onUpdateManifest?: UpdateManifestFn | undefined;
   onDuplicateItem?: (id: string) => void;
   onRemoveItem?: (id: string) => void;
   onToggleLock?: (id: string) => void;
   onToggleVisibility?: (id: string) => void;
   onGroupSelected?: (ids: string[]) => void;
   onUngroupNode?: (groupId: string) => void;
-  activeTool?: 'select' | 'marquee' | 'add' | 'studio' | 'transform' | null | undefined;
-  uiTheme?: 'dark' | 'light' | 'amber' | 'cyberpunk' | 'high-contrast' | undefined;
+}
 
-  // v9.1.7-dev — RackStartupAssistant wiring (REGRESSION_RECOVERY_PLAN.md item 23)
+interface HistoryProps {
+  past?: HistoryEntry[] | undefined;
+  onUndoTo?: ((index: number) => void) | undefined;
+  onCompareWithHistory?: ((index: number) => void) | undefined;
+}
+
+interface StartupProps {
   onOpenGallery?: (() => void) | undefined;
   onLinkWorkspace?: (() => void) | undefined;
   onCreateFromScratch?: (() => void) | undefined;
   isDirectoryLinked?: boolean | undefined;
+}
 
-  // v9.2.1 — Interactive Ghost Preview Layer
+interface GhostProps {
   ghostPosition?: { x: number; y: number } | null | undefined;
   ghostSize?: { width: number; height: number } | undefined;
   isGhostCollision?: boolean | undefined;
@@ -82,39 +100,41 @@ interface WorkbenchViewportProps {
   onGhostCancel?: (() => void) | undefined;
   showMiniMap?: boolean | undefined;
   onToggleMiniMap?: (() => void) | undefined;
+}
 
-  // P11 — Visual Connection Editor
+interface ModulationProps {
   onAddModulation?: ((mod: OMEGA_Modulation) => void) | undefined;
   onRemoveModulation?: ((id: string) => void) | undefined;
   startTransaction?: ((label: string) => void) | undefined;
   commitTransaction?: (() => void) | undefined;
 }
 
+interface TransformProps {
+  onNumericResize?: (() => void) | undefined;
+  onNumericRotate?: (() => void) | undefined;
+  onCopyTransform?: (() => void) | undefined;
+  onPasteTransform?: (() => void) | undefined;
+  onAlign?: ((dir: string) => void) | undefined;
+  onDistribute?: ((dir: string) => void) | undefined;
+  alignGhostItems?: GhostItem[] | undefined;
+  alignGhostType?: string | undefined;
+  onGhostPreviewChange?: ((items: GhostItem[] | null, type?: string) => void) | undefined;
 
-interface ViewWrapperProps {
-  children: React.ReactNode;
-  id: string;
-  applyTransform?: boolean;
-  zoom: number;
-  pan: { x: number; y: number };
+  // Clipboard actions
+  onCopyItems?: ((ids: string[]) => void) | undefined;
+  onCutItems?: ((ids: string[]) => void) | undefined;
+  onPaste?: ((targetPos?: { x: number; y: number }) => void) | undefined;
+  canPaste?: boolean | undefined;
+  // Empty space context menu
+  onToggleGrid?: (() => void) | undefined;
+  onToggleGuides?: (() => void) | undefined;
+  onAddEntity?: ((type: 'control' | 'jack', template?: Partial<import('@/omega-ui-core/types/manifest').ManifestEntity>) => void) | undefined;
+  onReset?: (() => void) | undefined;
 }
- 
-const ViewWrapper = ({ children, id, applyTransform = true, zoom, pan }: ViewWrapperProps) => (
-  <motion.div 
-    key={id} 
-    initial={{ opacity: 0 }} 
-    animate={{ 
-      opacity: 1, 
-      scale: applyTransform ? zoom : 1, 
-      x: applyTransform ? pan.x : 0, 
-      y: applyTransform ? pan.y : 0 
-    }} 
-    exit={{ opacity: 0 }} 
-    className={`h-full ${applyTransform ? 'origin-center' : ''}`}
-  >
-    {children}
-  </motion.div>
-);
+
+type WorkbenchViewportProps = ViewportProps & DataProps & SelectionProps & ManipulationProps & HistoryProps & StartupProps & GhostProps & ModulationProps & TransformProps;
+
+
  
 export function WorkbenchViewport({
   viewMode,
@@ -168,162 +188,84 @@ export function WorkbenchViewport({
   onRemoveModulation,
   startTransaction,
   commitTransaction,
+  onNumericResize,
+  onNumericRotate,
+  onCopyTransform,
+  onPasteTransform,
+  onAlign,
+  onDistribute,
+  alignGhostItems: alignGhostItemsProp,
+  alignGhostType: alignGhostTypeProp,
+  onGhostPreviewChange,
+  onCopyItems,
+  onCutItems,
+  onPaste,
+  canPaste: canPasteProp,
+  onToggleGrid,
+  onToggleGuides,
+  onAddEntity,
+  onReset,
+  // Expose internal refs for hook wiring
 }: WorkbenchViewportProps) {
   const { width: rackWidth, height: rackHeight } = useRackLayout(manifest);
   
-  const grid = manifest.ui?.layout?.grid;
-  const manifestShowGuides = grid?.showGuides ?? false;
   const [isBindingMode, setIsBindingMode] = useState(false);
   const toggleBindingMode = useCallback(() => setIsBindingMode(prev => !prev), []);
 
-  const [showGuides, setShowGuides] = useState(manifestShowGuides);
-  const [guides, setGuides] = useState<GridGuide[]>(() => grid?.guides ?? []);
-
-  // Sync local state with manifest props — using useRef to track previous values
-  // avoids setState-in-render anti-pattern which can cause "Maximum update depth exceeded"
-  const prevShowGuidesRef = useRef(manifestShowGuides);
-  useEffect(() => {
-    if (manifestShowGuides !== prevShowGuidesRef.current) {
-      prevShowGuidesRef.current = manifestShowGuides;
-      setShowGuides(manifestShowGuides);
-    }
-  }, [manifestShowGuides]);
-
-  const prevGuidesRef = useRef(grid?.guides);
-  useEffect(() => {
-    const newGuides = grid?.guides;
-    if (newGuides !== prevGuidesRef.current) {
-      prevGuidesRef.current = newGuides;
-      if (newGuides) startTransition(() => setGuides(newGuides));
-    }
-  }, [grid?.guides]);
+  // ── Guides state sync + handlers (now include manifest sync via hook) ──
+  const {
+    showGuides,
+    guides,
+    handleToggleRulers,
+    handleGuidesChange,
+  } = useViewportGuides(manifest, onUpdateManifest);
 
   const sectionRef = useRef<HTMLElement>(null);
-  
-  // Drag-to-pan state
-  const [isDraggingPan, setIsDraggingPan] = useState(false);
-  const dragStartRef = useRef<{ x: number; y: number } | null>(null);
-  const hasDraggedRef = useRef(false);
 
-  // Marquee selection state
-  const [marquee, setMarquee] = useState<{ startX: number; startY: number; currentX: number; currentY: number; sectionLeft: number; sectionTop: number } | null>(null);
-  const didMarqueeRef = useRef(false);
+  // ── Marquee selection + drag-to-pan ───────────────────────────────
+  const {
+    isDraggingPan,
+    marquee,
+    handleSectionMouseDown,
+    didMarqueeRef,
+    setOnMarqueeComplete,
+    setPanHandler,
+  } = useViewportMarquee();
+
+  // Wire up pan handler
+  useEffect(() => {
+    setPanHandler(() => handlePan);
+  }, [handlePan, setPanHandler]);
+
+  // Wire up marquee completion (with Shift/Ctrl merge support)
+  useEffect(() => {
+    setOnMarqueeComplete(() => (m: MarqueeState, isShiftKey: boolean) => {
+      const section = sectionRef.current;
+      if (!section) return;
+      const selected = computeMarqueeSelection(section, m);
+      mergeMarqueeSelection(selected, multiSelectedIds, isShiftKey, onSelectMultiple);
+    });
+  }, [sectionRef, onSelectMultiple, multiSelectedIds, setOnMarqueeComplete]);
+
+  // ── Container size tracking for Mini-Map ──────────────────────────
+  const { containerSize } = useViewportContainerSize(sectionRef);
 
   // Wheel zoom handler
   const handleWheel = useCallback((e: React.WheelEvent) => {
     if (viewMode !== 'rack' && viewMode !== 'orbital') return;
-    // Prevent default browser zoom/scroll
     e.preventDefault();
-    // Smooth zoom step
     const zoomStep = e.deltaY * -0.001;
     handleZoom(zoomStep);
   }, [viewMode, handleZoom]);
 
-  // Window-level mouse handlers for marquee and drag-to-pan
-  useEffect(() => {
-    if (!marquee && !isDraggingPan) return;
-
-    const handleMove = (e: MouseEvent) => {
-      if (marquee) {
-        setMarquee(prev => prev ? { ...prev, currentX: e.clientX, currentY: e.clientY } : null);
-      } else if (isDraggingPan && dragStartRef.current) {
-        const dx = e.clientX - dragStartRef.current.x;
-        const dy = e.clientY - dragStartRef.current.y;
-        if (Math.abs(dx) > 4 || Math.abs(dy) > 4) {
-          hasDraggedRef.current = true;
-        }
-        handlePan(dx, dy);
-        dragStartRef.current = { x: e.clientX, y: e.clientY };
-      }
-    };
-
-    const handleUp = (e: MouseEvent) => {
-      if (marquee) {
-        const dx = Math.abs(e.clientX - marquee.startX);
-        const dy = Math.abs(e.clientY - marquee.startY);
-        if (dx > 4 || dy > 4) {
-          didMarqueeRef.current = true;
-          const section = sectionRef.current;
-          if (section) {
-            const rect = section.getBoundingClientRect();
-            const mLeft = Math.min(marquee.startX, marquee.currentX) - rect.left;
-            const mTop = Math.min(marquee.startY, marquee.currentY) - rect.top;
-            const mWidth = Math.abs(marquee.currentX - marquee.startX);
-            const mHeight = Math.abs(marquee.currentY - marquee.startY);
-            // Find all uca nodes and check intersection
-            const ucaEls = section.querySelectorAll('[id^="uca-"]');
-            const selected: string[] = [];
-            ucaEls.forEach(el => {
-              const nodeRect = el.getBoundingClientRect();
-              const nodeRelX = nodeRect.left - rect.left;
-              const nodeRelY = nodeRect.top - rect.top;
-              if (
-                nodeRelX < mLeft + mWidth && nodeRelX + nodeRect.width > mLeft &&
-                nodeRelY < mTop + mHeight && nodeRelY + nodeRect.height > mTop
-              ) {
-                const id = (el.id as string).replace('uca-', '');
-                if (id !== 'RACK_MASTER') selected.push(id);
-              }
-            });
-            if (e.shiftKey || e.ctrlKey) {
-              onSelectMultiple([...new Set([...multiSelectedIds, ...selected])]);
-            } else {
-              onSelectMultiple(selected);
-            }
-          }
-        }
-        setMarquee(null);
-      } else if (isDraggingPan) {
-        setIsDraggingPan(false);
-        dragStartRef.current = null;
-        if (!hasDraggedRef.current) {
-          // It was a simple click without dragging: deselect
-          onSelectItem(null);
-        }
-      }
-    };
-
-    window.addEventListener('mousemove', handleMove);
-    window.addEventListener('mouseup', handleUp);
-    return () => {
-      window.removeEventListener('mousemove', handleMove);
-      window.removeEventListener('mouseup', handleUp);
-    };
-  }, [marquee, isDraggingPan, multiSelectedIds, onSelectMultiple, handlePan, onSelectItem]);
-
-  const handleToggleRulers = useCallback(() => {
-    setShowGuides(prev => !prev);
-    onUpdateManifest?.(toggleGridField(manifest, 'showGuides'));
-  }, [manifest, onUpdateManifest]);
-
-  const handleGuidesChange = useCallback((newGuides: GridGuide[]) => {
-    setGuides(newGuides);
-    onUpdateManifest?.(updateGuides(manifest, newGuides));
-  }, [manifest, onUpdateManifest]);
-
-  // ── Alignment Ghost Preview state ─────────────────────────────────
-  const [alignGhostItems, setAlignGhostItems] = useState<GhostItem[]>([]);
-  const [alignGhostType, setAlignGhostType] = useState<string>('');
-
-  const handleGhostPreviewChange = useCallback((items: GhostItem[] | null, alignType?: string) => {
-    setAlignGhostItems(items ?? []);
-    setAlignGhostType(alignType ?? '');
-  }, []);
-
-  // ── Container size tracking for Mini-Map ──────────────────────────
-  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
-
-  useEffect(() => {
-    const el = sectionRef.current;
-    if (!el) return;
-    const updateSize = () => {
-      setContainerSize({ width: el.clientWidth, height: el.clientHeight });
-    };
-    updateSize();
-    const ro = new ResizeObserver(updateSize);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
+  // Click-to-deselect on empty area
+  const handleSectionClick = useCallback(() => {
+    if (didMarqueeRef.current) {
+      didMarqueeRef.current = false;
+      return;
+    }
+    onSelectItem(null);
+  }, [didMarqueeRef, onSelectItem]);
 
   const TOOLBAR_H = 28;
   
@@ -332,31 +274,9 @@ export function WorkbenchViewport({
       ref={sectionRef}
       className={`flex-1 relative wb-bg overflow-hidden transition-colors duration-500 ${isDraggingPan ? 'cursor-grabbing' : ''}`}
       onWheel={handleWheel}
-      onMouseDown={(e) => {
-        if (isLiveMode) return;
-        if (e.button !== 0) return;
-        if ((e.target as HTMLElement).closest('[id^="uca-"]')) return;
-        if ((e.target as HTMLElement).closest('.viewport-controls, .ruler-overlay, [data-toolbar], [data-ghost-overlay]')) return;
-
-        const rect = sectionRef.current?.getBoundingClientRect();
-        if (!rect) return;
-
-        // 1. Marquee selection (only in rack view with 'marquee' tool active)
-        if (viewMode === 'rack' && activeTool === 'marquee') {
-          setMarquee({ startX: e.clientX, startY: e.clientY, currentX: e.clientX, currentY: e.clientY, sectionLeft: rect.left, sectionTop: rect.top });
-          return;
-        }
-
-        // 2. Drag-to-pan (always in orbital view; in rack view only with 'select' tool active)
-        if (viewMode === 'orbital' || (viewMode === 'rack' && activeTool === 'select')) {
-          setIsDraggingPan(true);
-          dragStartRef.current = { x: e.clientX, y: e.clientY };
-          hasDraggedRef.current = false;
-          e.preventDefault();
-        }
-      }}
+      onMouseDown={(e) => handleSectionMouseDown(e, viewMode, activeTool, isLiveMode)}
       onClickCapture={(e) => { if (didMarqueeRef.current) { didMarqueeRef.current = false; e.stopPropagation(); } }}
-      onClick={() => { if (didMarqueeRef.current) { didMarqueeRef.current = false; return; } }}
+      onClick={handleSectionClick}
     >
       {viewMode !== 'source' && viewMode !== 'history' && (
         <ViewportControls 
@@ -368,10 +288,11 @@ export function WorkbenchViewport({
           viewMode={viewMode}
           onToggleRulers={viewMode === 'rack' ? handleToggleRulers : undefined}
           rulersVisible={showGuides}
+          isLiveMode={isLiveMode}
         />
       )}
 
-      {/* RULER OVERLAY — rack view only */}
+      {/* RULER OVERLAY — rack view only (hidden in live mode) */}
       {viewMode === 'rack' && (
         <RulerOverlay
           showGuides={showGuides}
@@ -383,6 +304,7 @@ export function WorkbenchViewport({
           rackWidth={rackWidth}
           rackHeight={rackHeight}
           uiTheme={uiTheme}
+          isLiveMode={isLiveMode}
         />
       )}
 
@@ -430,7 +352,7 @@ export function WorkbenchViewport({
                 selectedIds={multiSelectedIds}
                 onUpdateItem={updateItem}
                 onUpdateManifest={onUpdateManifest ?? undefined}
-                onGhostPreviewChange={handleGhostPreviewChange}
+                onGhostPreviewChange={onGhostPreviewChange}
                 showMiniMap={showMiniMap ?? true}
                 onToggleMiniMap={() => onToggleMiniMap?.()}
                 isBindingMode={isBindingMode}
@@ -459,27 +381,41 @@ export function WorkbenchViewport({
               pushParameterUpdate={pushParameterUpdate}
               hiddenNodeIds={hiddenNodeIds}
               lockedNodeIds={lockedNodeIds}
-              {...(onAddModulation != null ? { onAddModulation } : {})}
-              {...(onRemoveModulation != null ? { onRemoveModulation } : {})}
-              {...(onDuplicateItem != null ? { onDuplicateItem } : {})}
-              {...(onRemoveItem != null ? { onRemoveItem } : {})}
-              {...(onToggleLock != null ? { onToggleLock } : {})}
-              {...(onToggleVisibility != null ? { onToggleVisibility } : {})}
-              {...(onGroupSelected != null ? { onGroupSelected } : {})}
-              {...(onUngroupNode != null ? { onUngroupNode } : {})}
-              {...(onOpenGallery != null ? { onOpenGallery } : {})}
-              {...(onLinkWorkspace != null ? { onLinkWorkspace } : {})}
-              {...(onCreateFromScratch != null ? { onCreateFromScratch } : {})}
-              {...(isDirectoryLinked != null ? { isDirectoryLinked } : {})}
+              {...(onAddModulation != null && { onAddModulation })}
+              {...(onRemoveModulation != null && { onRemoveModulation })}
+              {...(onDuplicateItem != null && { onDuplicateItem })}
+              {...(onRemoveItem != null && { onRemoveItem })}
+              {...(onToggleLock != null && { onToggleLock })}
+              {...(onToggleVisibility != null && { onToggleVisibility })}
+              {...(onGroupSelected != null && { onGroupSelected })}
+              {...(onUngroupNode != null && { onUngroupNode })}
+              {...(onOpenGallery != null && { onOpenGallery })}
+              {...(onLinkWorkspace != null && { onLinkWorkspace })}
+              {...(onCreateFromScratch != null && { onCreateFromScratch })}
+              {...(isDirectoryLinked != null && { isDirectoryLinked })}
               ghostPosition={ghostPosition}
               ghostSize={ghostSize}
               isGhostCollision={isGhostCollision}
               isGhostVisible={isGhostVisible}
-              {...(onGhostMouseMove != null ? { onGhostMouseMove } : {})}
-              {...(onGhostClick != null ? { onGhostClick } : {})}
-              {...(onGhostCancel != null ? { onGhostCancel } : {})}
-              alignGhostItems={alignGhostItems}
-              alignGhostType={alignGhostType}
+              {...(onGhostMouseMove != null && { onGhostMouseMove })}
+              {...(onGhostClick != null && { onGhostClick })}
+              {...(onGhostCancel != null && { onGhostCancel })}
+              alignGhostItems={alignGhostItemsProp}
+              alignGhostType={alignGhostTypeProp}
+              onNumericResize={onNumericResize}
+              onNumericRotate={onNumericRotate}
+              onCopyTransform={onCopyTransform}
+              onPasteTransform={onPasteTransform}
+              onAlign={onAlign}
+              onDistribute={onDistribute}
+              onCopyItems={onCopyItems}
+              onCutItems={onCutItems}
+              onPaste={onPaste}
+              canPaste={canPasteProp}
+              onToggleGrid={onToggleGrid}
+              onToggleGuides={onToggleGuides}
+              onAddEntity={onAddEntity}
+              onReset={onReset}
             />
           </ViewWrapper>
         )}

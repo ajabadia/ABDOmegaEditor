@@ -6,8 +6,8 @@
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:2,sig:mzfcky
- * @lastUpdated 2026-06-15T11:41:28.753Z
+ * @fingerprint exports:1,imports:2,sig:ank284
+ * @lastUpdated 2026-06-20T09:18:01.735Z
  */
 
 import { AlignLeft, AlignCenter, AlignRight } from 'lucide-react';

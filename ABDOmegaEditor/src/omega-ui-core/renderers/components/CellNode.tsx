@@ -172,6 +172,14 @@ export function CellNode({
   const currentX = isBeingResized ? ((node.layout?.pos?.x || 0) + activeResizeOffset.x) : ((node.layout?.pos?.x || 0) + offsetToApply.x);
   const currentY = isBeingResized ? ((node.layout?.pos?.y || 0) + activeResizeOffset.y) : ((node.layout?.pos?.y || 0) + offsetToApply.y);
 
+  // Check if we are currently being rotated
+  const activeRotationOffset = debugContext?.activeRotationOffset;
+  const isBeingRotated = activeRotationOffset && activeRotationOffset.rotatedNodeId === node.id;
+  const currentAngle = isBeingRotated 
+    ? activeRotationOffset.angle 
+    : (node.layout?.transform ? parseFloat((node.layout.transform.match(/rotate\(?([-\d.]+)deg\)/) || [])[1] || '0') : 0);
+  const currentTransform = currentAngle === 0 ? undefined : `rotate(${currentAngle}deg)`;
+
 
 
   // Compute visual scale for primitive elements to stretch them in real-time
@@ -212,6 +220,7 @@ export function CellNode({
         top: `${currentY}px`,
         width: `${currentW}px`, 
         height: `${currentH}px`,
+        transform: currentTransform,
         zIndex: isSelected ? 100 : (node.layout?.zIndex || 0),
         ...cssVars,
         pointerEvents: debugContext?.isLiveMode ? 'none' : 'auto',

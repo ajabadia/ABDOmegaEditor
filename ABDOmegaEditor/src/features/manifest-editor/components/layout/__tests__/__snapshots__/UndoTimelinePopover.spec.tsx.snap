@@ -928,100 +928,96 @@ exports[`UndoTimelinePopover — snapshots should match snapshot with past and f
         class="flex-1 h-px bg-white/10"
       />
     </div>
-    <div
-      class="opacity-50"
+    <button
+      aria-label="Redo: Future change"
+      class="w-full flex items-center gap-2 px-3 py-1.5 text-left transition-all hover:bg-white/5 border-l-2 border-transparent cursor-pointer active:bg-white/10 opacity-50"
+      data-history-index="1"
+      tabindex="-1"
     >
-      <button
-        aria-label="Redo: Future change"
-        class="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-white/5 transition-colors border-l-2 border-transparent cursor-pointer active:bg-white/10"
-        data-history-index="1"
-        tabindex="-1"
+      <span
+        class="w-1.5 h-1.5 rounded-full shrink-0 bg-white/20"
+      />
+      <span
+        class="shrink-0 text-cyan-400"
       >
-        <span
-          class="w-1.5 h-1.5 rounded-full shrink-0 bg-white/10"
-        />
-        <span
-          class="shrink-0 text-cyan-400"
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-pencil w-2.5 h-2.5"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
         >
-          <svg
-            aria-hidden="true"
-            class="lucide lucide-pencil w-2.5 h-2.5"
-            fill="none"
-            height="24"
-            stroke="currentColor"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            viewBox="0 0 24 24"
-            width="24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"
-            />
-            <path
-              d="m15 5 4 4"
-            />
-          </svg>
-        </span>
-        <span
-          class="flex-1 truncate text-[8px] font-medium text-white/50 leading-tight"
-        >
-          Future change
-        </span>
-        <span
-          class="shrink-0 text-[7px] font-mono text-white/20"
-        >
-          just now
-        </span>
-      </button>
-      <button
-        aria-label="Redo: Mode switch"
-        class="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-white/5 transition-colors border-l-2 border-transparent cursor-pointer active:bg-white/10"
-        data-history-index="2"
-        tabindex="-1"
+          <path
+            d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"
+          />
+          <path
+            d="m15 5 4 4"
+          />
+        </svg>
+      </span>
+      <span
+        class="flex-1 truncate text-[8px] font-medium leading-tight text-white/70"
       >
-        <span
-          class="w-1.5 h-1.5 rounded-full shrink-0 bg-white/10"
-        />
-        <span
-          class="shrink-0 text-emerald-400"
+        Future change
+      </span>
+      <span
+        class="shrink-0 text-[7px] font-mono text-white/25"
+      >
+        just now
+      </span>
+    </button>
+    <button
+      aria-label="Redo: Mode switch"
+      class="w-full flex items-center gap-2 px-3 py-1.5 text-left transition-all hover:bg-white/5 border-l-2 border-transparent cursor-pointer active:bg-white/10 opacity-50"
+      data-history-index="2"
+      tabindex="-1"
+    >
+      <span
+        class="w-1.5 h-1.5 rounded-full shrink-0 bg-white/20"
+      />
+      <span
+        class="shrink-0 text-emerald-400"
+      >
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-eye w-2.5 h-2.5"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
         >
-          <svg
-            aria-hidden="true"
-            class="lucide lucide-eye w-2.5 h-2.5"
-            fill="none"
-            height="24"
-            stroke="currentColor"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            viewBox="0 0 24 24"
-            width="24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"
-            />
-            <circle
-              cx="12"
-              cy="12"
-              r="3"
-            />
-          </svg>
-        </span>
-        <span
-          class="flex-1 truncate text-[8px] font-medium text-white/50 leading-tight"
-        >
-          Mode switch
-        </span>
-        <span
-          class="shrink-0 text-[7px] font-mono text-white/20"
-        >
-          just now
-        </span>
-      </button>
-    </div>
+          <path
+            d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"
+          />
+          <circle
+            cx="12"
+            cy="12"
+            r="3"
+          />
+        </svg>
+      </span>
+      <span
+        class="flex-1 truncate text-[8px] font-medium leading-tight text-white/70"
+      >
+        Mode switch
+      </span>
+      <span
+        class="shrink-0 text-[7px] font-mono text-white/25"
+      >
+        just now
+      </span>
+    </button>
   </div>
   <div
     class="flex border-t wb-outline"

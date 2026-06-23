@@ -10,8 +10,15 @@
  * @lastUpdated 2026-06-15T20:50:08.955Z
  */
 
+import '@/app/omega-init';
 import { Suspense, useState } from 'react';
-import WorkbenchContainer from '@/features/manifest-editor/components/WorkbenchContainer';
+import dynamic from 'next/dynamic';
+
+// Disable SSR for the highly-interactive workbench container to prevent initialization errors on the server.
+const WorkbenchContainer = dynamic(
+  () => import('@/features/manifest-editor/components/WorkbenchContainer'),
+  { ssr: false }
+);
 
 export default function Home() {
   // Page level modal orchestration (Cell Editor)

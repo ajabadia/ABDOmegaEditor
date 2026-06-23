@@ -4,8 +4,8 @@
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:3,sig:byna5p
- * @lastUpdated 2026-06-15T11:32:05.060Z
+ * @fingerprint exports:1,imports:3,sig:msugnt
+ * @lastUpdated 2026-06-20T09:16:15.834Z
  */
 
 import { Box, Palette } from 'lucide-react';

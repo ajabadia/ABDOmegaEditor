@@ -6,8 +6,8 @@
  * @refactorable true (contains too many state variables and UI parts)
  * @classification Custom Hook
  * @complexity Medium
- * @fingerprint exports:1,imports:6,sig:nucy0v
- * @lastUpdated 2026-06-15T15:31:30.159Z
+ * @fingerprint exports:1,imports:6,sig:1ybcl7u
+ * @lastUpdated 2026-06-20T11:09:21.192Z
  */
 
 import React from 'react';

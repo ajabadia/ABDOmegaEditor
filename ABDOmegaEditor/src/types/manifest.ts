@@ -1,11 +1,11 @@
 /**
- * @purpose Gestiona la exportación del contrato manifest canonical OMEGA para compatibilidad con importaciones legadas.
- * @purpose_en Exports the canonical OMEGA manifest contract for compatibility with legacy imports.
+ * @purpose Re-export canonical manifest types from omega-ui-core.
  * @refactorable false
  * @classification Type Definition
  * @complexity Low
- * @fingerprint exports:0,imports:0,sig:9975av
- * @lastUpdated 2026-06-15T17:03:53.542Z
+ * @fingerprint exports:0,imports:0,sig:deprecated
+ * @lastUpdated 2026-06-22
+ * @deprecated Import directly from '@/omega-ui-core/types/manifest'
  */
 
 export * from '@/omega-ui-core/types/manifest';

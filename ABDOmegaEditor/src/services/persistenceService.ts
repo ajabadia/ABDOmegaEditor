@@ -5,11 +5,12 @@
  * @classification Business Service
  * @complexity Low
  * @fingerprint exports:2,imports:2,sig:3sci5j
- * @lastUpdated 2026-06-15T17:02:48.358Z
+ * @lastUpdated 2026-06-22
  */
 
-import { observabilityService } from './observabilityService';
+import type { IEventBus } from '@/omega-ui-core/di/EventBus';
 import type { OmegaNode } from '@/omega-ui-core/types/manifest';
+import { emitEvent } from './globalEventBus';
 
 export interface PersistedState {
   id: string;
@@ -25,6 +26,8 @@ export interface PersistedState {
 const STORAGE_KEY = 'omega_canonical_session';
 
 class PersistenceService {
+  constructor(private eventBus?: IEventBus) {}
+
   /**
    * saveCanonicalState
    * Persists the validated canonical graph to disk.
@@ -45,21 +48,16 @@ class PersistenceService {
       const payload = JSON.stringify(state);
       localStorage.setItem(STORAGE_KEY, payload);
 
-      observabilityService.trackEvent({
+      emitEvent(this.eventBus, 'persistence:save', {
+        documentId: id,
         correlationId,
-        phase: 'PHASE_20_PERSISTENCE',
-        component: 'PERSISTENCE_SERVICE',
-        state: 'SUCCESS',
-        message: `Canonical state persisted for document ${id}`
+        success: true,
       });
     } catch {
-      observabilityService.trackEvent({
+      emitEvent(this.eventBus, 'persistence:save', {
+        documentId: id,
         correlationId,
-        phase: 'PHASE_20_PERSISTENCE',
-        component: 'PERSISTENCE_SERVICE',
-        state: 'FAILURE',
-        code: 'PERSIST_FAILED',
-        message: 'Failed to save state to localStorage'
+        success: false,
       });
     }
   }
@@ -85,12 +83,11 @@ class PersistenceService {
    */
   clearPersistedState() {
     localStorage.removeItem(STORAGE_KEY);
-    observabilityService.trackEvent({
+    emitEvent(this.eventBus, 'persistence:save', {
+      documentId: 'system',
       correlationId: 'system',
-      phase: 'PHASE_20_PERSISTENCE',
-      component: 'PERSISTENCE_SERVICE',
-      state: 'ROLLBACK',
-      message: 'Persisted state cleared manually'
+      success: true,
+      cleared: true,
     });
   }
 }

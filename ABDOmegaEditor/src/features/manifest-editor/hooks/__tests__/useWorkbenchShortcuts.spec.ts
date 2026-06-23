@@ -5,7 +5,8 @@
  */
 import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
 import { renderHook } from '@testing-library/react';
-import { useWorkbenchShortcuts } from '../useWorkbenchShortcuts';
+import { useWorkbenchShortcuts, type ShortcutCallbacks } from '../useWorkbenchShortcuts';
+import type { OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
 
 // ── Helpers ─────────────────────────────────────────────────────────────
 function createMockEditor() {
@@ -14,6 +15,7 @@ function createMockEditor() {
     exportManifest: jest.fn(),
     exportOmegaPack: jest.fn(),
     copyToClipboard: jest.fn(),
+    cutToClipboard: jest.fn(),
     pasteFromClipboard: jest.fn(),
     undo: jest.fn(),
     redo: jest.fn(),
@@ -333,5 +335,364 @@ describe('useWorkbenchShortcuts — coexistence', () => {
 
     expect(editor.groupSelected).toHaveBeenCalledTimes(1);
     expect(onOpenCellStudio).not.toHaveBeenCalled();
+  });
+});
+
+// ── Ctrl+Alt+R — Numeric Resize Popover ────────────────────────────────
+
+describe('useWorkbenchShortcuts — Ctrl+Alt+R (Numeric Resize)', () => {
+  it('should call onOpenNumericResize when Ctrl+Alt+R is pressed', () => {
+    const editor = createMockEditor();
+    const callbacks: ShortcutCallbacks = { onOpenNumericResize: jest.fn() };
+
+    renderHook(() => useWorkbenchShortcuts(editor, 'node-1', [], undefined, callbacks));
+
+    dispatchKeydown('r', { ctrlKey: true, altKey: true });
+
+    expect(callbacks.onOpenNumericResize).toHaveBeenCalledTimes(1);
+  });
+
+  it('should not call onOpenNumericResize for Ctrl+Alt+Shift+R', () => {
+    const editor = createMockEditor();
+    const callbacks: ShortcutCallbacks = { onOpenNumericResize: jest.fn() };
+
+    renderHook(() => useWorkbenchShortcuts(editor, 'node-1', [], undefined, callbacks));
+
+    dispatchKeydown('r', { ctrlKey: true, altKey: true, shiftKey: true });
+
+    expect(callbacks.onOpenNumericResize).not.toHaveBeenCalled();
+  });
+
+  it('should not call onOpenNumericResize for Alt+R without Ctrl', () => {
+    const editor = createMockEditor();
+    const callbacks: ShortcutCallbacks = { onOpenNumericResize: jest.fn() };
+
+    renderHook(() => useWorkbenchShortcuts(editor, 'node-1', [], undefined, callbacks));
+
+    dispatchKeydown('r', { altKey: true });
+
+    expect(callbacks.onOpenNumericResize).not.toHaveBeenCalled();
+  });
+});
+
+// ── Ctrl+Alt+T — Numeric Rotate Popover ────────────────────────────────
+
+describe('useWorkbenchShortcuts — Ctrl+Alt+T (Numeric Rotate)', () => {
+  it('should call onOpenNumericRotate when Ctrl+Alt+T is pressed', () => {
+    const editor = createMockEditor();
+    const callbacks: ShortcutCallbacks = { onOpenNumericRotate: jest.fn() };
+
+    renderHook(() => useWorkbenchShortcuts(editor, 'node-1', [], undefined, callbacks));
+
+    dispatchKeydown('t', { ctrlKey: true, altKey: true });
+
+    expect(callbacks.onOpenNumericRotate).toHaveBeenCalledTimes(1);
+  });
+
+  it('should not call onOpenNumericRotate for Ctrl+T without Alt', () => {
+    const editor = createMockEditor();
+    const callbacks: ShortcutCallbacks = { onOpenNumericRotate: jest.fn() };
+
+    renderHook(() => useWorkbenchShortcuts(editor, 'node-1', [], undefined, callbacks));
+
+    dispatchKeydown('t', { ctrlKey: true });
+
+    expect(callbacks.onOpenNumericRotate).not.toHaveBeenCalled();
+  });
+});
+
+// ── Ctrl+Alt+C — Copy Transform ────────────────────────────────────────
+
+describe('useWorkbenchShortcuts — Ctrl+Alt+C (Copy Transform)', () => {
+  it('should call onCopyTransform when Ctrl+Alt+C is pressed', () => {
+    const editor = createMockEditor();
+    const callbacks: ShortcutCallbacks = { onCopyTransform: jest.fn() };
+
+    renderHook(() => useWorkbenchShortcuts(editor, 'node-1', [], undefined, callbacks));
+
+    dispatchKeydown('c', { ctrlKey: true, altKey: true });
+
+    expect(callbacks.onCopyTransform).toHaveBeenCalledTimes(1);
+  });
+
+  it('should not call onCopyTransform for Ctrl+Shift+C (console toggle)', () => {
+    const editor = createMockEditor();
+    const onCopyTransform = jest.fn();
+    const onToggleWindow = jest.fn();
+
+    renderHook(() => useWorkbenchShortcuts(editor, 'node-1', [], undefined, {
+      onCopyTransform,
+      onToggleWindow,
+    }));
+
+    dispatchKeydown('c', { ctrlKey: true, shiftKey: true });
+
+    expect(onCopyTransform).not.toHaveBeenCalled();
+    expect(onToggleWindow).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ── Ctrl+Alt+V — Paste Transform ───────────────────────────────────────
+
+describe('useWorkbenchShortcuts — Ctrl+Alt+V (Paste Transform)', () => {
+  it('should call onPasteTransform when Ctrl+Alt+V is pressed', () => {
+    const editor = createMockEditor();
+    const callbacks: ShortcutCallbacks = { onPasteTransform: jest.fn() };
+
+    renderHook(() => useWorkbenchShortcuts(editor, 'node-1', [], undefined, callbacks));
+
+    dispatchKeydown('v', { ctrlKey: true, altKey: true });
+
+    expect(callbacks.onPasteTransform).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ── Arrow Key Nudge (Move) ─────────────────────────────────────────────
+
+describe('useWorkbenchShortcuts — Arrow key nudge (move)', () => {
+  function createMockManifest(): OMEGA_Manifest {
+    return {
+      schemaVersion: '7.2.3',
+      id: 'test',
+      metadata: { name: 'Test', family: 'test' },
+      ui: {
+        tree: {
+          id: 'test-knob',
+          kind: 'cell',
+          cellRef: 'knob',
+          layout: { pos: { x: 50, y: 50 }, size: { width: 36, height: 36 } },
+        },
+        layout: { width: 200, height: 200, containers: [], grid: { enabled: true, spacingX: 15, spacingY: 15, visible: true } },
+      },
+      controls: [],
+      jacks: [],
+    } as unknown as OMEGA_Manifest;
+  }
+
+  it('should move node right on ArrowRight', () => {
+    const editor = createMockEditor();
+    const onUpdateItems = jest.fn();
+    const manifest = createMockManifest();
+
+    renderHook(() => useWorkbenchShortcuts(editor, 'test-knob', [], undefined, {
+      manifest,
+      onUpdateItems,
+    }));
+
+    dispatchKeydown('ArrowRight');
+
+    expect(onUpdateItems).toHaveBeenCalledWith({
+      'test-knob': {
+        layout: expect.objectContaining({
+          pos: { x: 51, y: 50 },
+        }),
+      },
+    });
+  });
+
+  it('should move node left on ArrowLeft', () => {
+    const editor = createMockEditor();
+    const onUpdateItems = jest.fn();
+    const manifest = createMockManifest();
+
+    renderHook(() => useWorkbenchShortcuts(editor, 'test-knob', [], undefined, {
+      manifest,
+      onUpdateItems,
+    }));
+
+    dispatchKeydown('ArrowLeft');
+
+    expect(onUpdateItems).toHaveBeenCalledWith({
+      'test-knob': {
+        layout: expect.objectContaining({
+          pos: { x: 49, y: 50 },
+        }),
+      },
+    });
+  });
+
+  it('should move node with grid step on Shift+Arrow', () => {
+    const editor = createMockEditor();
+    const onUpdateItems = jest.fn();
+    const manifest = createMockManifest();
+
+    renderHook(() => useWorkbenchShortcuts(editor, 'test-knob', [], undefined, {
+      manifest,
+      onUpdateItems,
+    }));
+
+    dispatchKeydown('ArrowRight', { shiftKey: true });
+
+    expect(onUpdateItems).toHaveBeenCalledWith({
+      'test-knob': {
+        layout: expect.objectContaining({
+          pos: { x: 65, y: 50 }, // 50 + 15 (grid spacingX)
+        }),
+      },
+    });
+  });
+
+  it('should not nudge when Ctrl is held', () => {
+    const editor = createMockEditor();
+    const onUpdateItems = jest.fn();
+
+    renderHook(() => useWorkbenchShortcuts(editor, 'test-knob', [], undefined, {
+      manifest: createMockManifest(),
+      onUpdateItems,
+    }));
+
+    dispatchKeydown('ArrowRight', { ctrlKey: true });
+
+    // Ctrl+Arrow is handled by legacy resize path, not nudge
+    expect(onUpdateItems).not.toHaveBeenCalled();
+  });
+
+  it('should not move when no node is selected', () => {
+    const editor = createMockEditor();
+    const onUpdateItems = jest.fn();
+
+    renderHook(() => useWorkbenchShortcuts(editor, null, [], undefined, {
+      manifest: createMockManifest(),
+      onUpdateItems,
+    }));
+
+    dispatchKeydown('ArrowRight');
+
+    expect(onUpdateItems).not.toHaveBeenCalled();
+  });
+});
+
+// ── Alt+Arrow Key Nudge (Resize) ────────────────────────────────────────
+
+describe('useWorkbenchShortcuts — Alt+Arrow nudge (resize)', () => {
+  function createMockManifest(): OMEGA_Manifest {
+    return {
+      schemaVersion: '7.2.3',
+      id: 'test',
+      metadata: { name: 'Test', family: 'test' },
+      ui: {
+        tree: {
+          id: 'test-knob',
+          kind: 'cell',
+          cellRef: 'knob',
+          layout: { pos: { x: 50, y: 50 }, size: { width: 36, height: 36 } },
+        },
+        layout: { width: 200, height: 200, containers: [], grid: { enabled: true, spacingX: 15, spacingY: 15, visible: true } },
+      },
+      controls: [],
+      jacks: [],
+    } as unknown as OMEGA_Manifest;
+  }
+
+  it('should resize larger on Alt+ArrowRight', () => {
+    const editor = createMockEditor();
+    const onUpdateItems = jest.fn();
+
+    renderHook(() => useWorkbenchShortcuts(editor, 'test-knob', [], undefined, {
+      manifest: createMockManifest(),
+      onUpdateItems,
+    }));
+
+    dispatchKeydown('ArrowRight', { altKey: true });
+
+    expect(onUpdateItems).toHaveBeenCalledTimes(1);
+  });
+
+  it('should resize smaller on Alt+ArrowUp', () => {
+    const editor = createMockEditor();
+    const onUpdateItems = jest.fn();
+
+    renderHook(() => useWorkbenchShortcuts(editor, 'test-knob', [], undefined, {
+      manifest: createMockManifest(),
+      onUpdateItems,
+    }));
+
+    dispatchKeydown('ArrowUp', { altKey: true });
+
+    expect(onUpdateItems).toHaveBeenCalledTimes(1);
+  });
+
+  it('should not resize with Alt when no node selected', () => {
+    const editor = createMockEditor();
+    const onUpdateItems = jest.fn();
+
+    renderHook(() => useWorkbenchShortcuts(editor, null, [], undefined, {
+      manifest: createMockManifest(),
+      onUpdateItems,
+    }));
+
+    dispatchKeydown('ArrowRight', { altKey: true });
+
+    expect(onUpdateItems).not.toHaveBeenCalled();
+  });
+});
+
+// ── Legacy Ctrl+Arrow Resize (still works in transform mode) ────────────
+
+describe('useWorkbenchShortcuts — legacy Ctrl+Arrow resize (transform mode)', () => {
+  function createMockManifest(): OMEGA_Manifest {
+    return {
+      schemaVersion: '7.2.3',
+      id: 'test',
+      metadata: { name: 'Test', family: 'test' },
+      ui: {
+        tree: {
+          id: 'test-knob',
+          kind: 'cell',
+          cellRef: 'knob',
+          layout: { pos: { x: 50, y: 50 }, size: { width: 36, height: 36 } },
+        },
+        layout: { width: 200, height: 200, containers: [], grid: { enabled: false } },
+      },
+      controls: [],
+      jacks: [],
+    } as unknown as OMEGA_Manifest;
+  }
+
+  it('should resize when Ctrl+Arrow is pressed in transform mode', () => {
+    const editor = createMockEditor();
+    const onUpdateItems = jest.fn();
+
+    renderHook(() => useWorkbenchShortcuts(editor, 'test-knob', [], undefined, {
+      manifest: createMockManifest(),
+      onUpdateItems,
+      activeTool: 'transform',
+    }));
+
+    dispatchKeydown('ArrowRight', { ctrlKey: true });
+
+    expect(onUpdateItems).toHaveBeenCalledTimes(1);
+  });
+
+  it('should not resize with Ctrl+Arrow when not in transform mode', () => {
+    const editor = createMockEditor();
+    const onUpdateItems = jest.fn();
+
+    renderHook(() => useWorkbenchShortcuts(editor, 'test-knob', [], undefined, {
+      manifest: createMockManifest(),
+      onUpdateItems,
+      activeTool: 'select',
+    }));
+
+    dispatchKeydown('ArrowRight', { ctrlKey: true });
+
+    expect(onUpdateItems).not.toHaveBeenCalled();
+  });
+});
+
+// ── T: Transform tool ───────────────────────────────────────────────────
+
+describe('useWorkbenchShortcuts — T (Transform tool)', () => {
+  it('should call onSetTool with transform when T is pressed', () => {
+    const editor = createMockEditor();
+    const onSetTool = jest.fn();
+
+    renderHook(() => useWorkbenchShortcuts(editor, 'node-1', [], undefined, {
+      onSetTool,
+    }));
+
+    dispatchKeydown('t');
+
+    expect(onSetTool).toHaveBeenCalledWith('transform');
   });
 });

@@ -1,7 +1,7 @@
 import type { OmegaNode, ManifestEntity } from '@/omega-ui-core/types/manifest';
-import { STORAGE_KEYS } from '@/features/manifest-editor/constants/storage';
+import { STORAGE_KEYS } from '@/omega-ui-core/constants/storage';
 
-import { cloneAndRegenerateNodeIds } from '@/features/manifest-editor/utils/idManagement';
+import { cloneAndRegenerateNodeIds } from '@/omega-ui-core/utils/idManagement';
 
 /**
  * @purpose Gestiona operaciones del portapapeles para copiar y pegar nodos/entidades con regeneración automática de ID en el editor de manifesto OMEGA.
@@ -10,32 +10,45 @@ import { cloneAndRegenerateNodeIds } from '@/features/manifest-editor/utils/idMa
  * @classification Business Service
  * @complexity Low
  * @fingerprint exports:1,imports:3,sig:6or5kr
- * @lastUpdated 2026-06-15T16:56:47.856Z
+ * @lastUpdated 2026-06-23
  */
 export const ClipboardService = {
-  copy: (item: OmegaNode | ManifestEntity) => {
-    const data = JSON.stringify(item);
+  copy: (items: (OmegaNode | ManifestEntity)[]) => {
+    const data = JSON.stringify(items);
     localStorage.setItem(STORAGE_KEYS.CLIPBOARD, data);
-    console.log(`[CLIPBOARD] Copied item: ${item.id}`);
+    window.dispatchEvent(new CustomEvent('clipboard-storage-changed'));
+    console.log(`[CLIPBOARD] Copied ${items.length} item(s) to clipboard.`);
   },
 
-  paste: (): (OmegaNode | ManifestEntity) | null => {
+  paste: (): (OmegaNode | ManifestEntity)[] => {
     const data = localStorage.getItem(STORAGE_KEYS.CLIPBOARD);
-    if (!data) return null;
-    
+    if (!data) return [];
+
     try {
-      const item = JSON.parse(data) as OmegaNode | ManifestEntity;
-      
-      // Industrial ID Regeneration (Phase 20.6)
-      if ('kind' in item) {
-        const result = cloneAndRegenerateNodeIds(item as OmegaNode);
-        return result.node;
-      }
-      
-      return item;
+      const parsed = JSON.parse(data);
+      const items = Array.isArray(parsed) ? parsed : [parsed];
+
+      return items.map((item: OmegaNode | ManifestEntity) => {
+        if ('kind' in item) {
+          const result = cloneAndRegenerateNodeIds(item as OmegaNode);
+          return result.node;
+        }
+        return item;
+      });
     } catch (e) {
       console.error('[CLIPBOARD] Paste failed:', e);
-      return null;
+      return [];
+    }
+  },
+
+  hasContent: (): boolean => {
+    const data = localStorage.getItem(STORAGE_KEYS.CLIPBOARD);
+    if (!data) return false;
+    try {
+      const parsed = JSON.parse(data);
+      return Array.isArray(parsed) ? parsed.length > 0 : true;
+    } catch {
+      return false;
     }
   }
 };

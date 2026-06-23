@@ -13,9 +13,11 @@
 import { useCallback } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import type { OMEGA_Manifest, OMEGA_Contract } from '@/omega-ui-core/types/manifest';
-import { WasmLoaderService, type OmegaContract } from '@/services/wasmLoader';
-import { wasmRuntime } from '@/services/wasmRuntime';
+import { WasmLoaderService } from '@/services/wasmLoader';
+import type { OmegaContract } from '@/omega-ui-core/types/contract';
 import { ContractService } from '@/services/contractService';
+import { getService } from '@/services/globalEventBus';
+import { SERVICE_TOKENS } from '@/omega-ui-core/di';
 
 export const useWasmTransfer = (
   manifest: OMEGA_Manifest,
@@ -24,6 +26,7 @@ export const useWasmTransfer = (
   setWasmBuffer: Dispatch<SetStateAction<ArrayBuffer | null>>,
   addLog: (msg: string) => void
 ) => {
+  const wasmRuntime = getService(SERVICE_TOKENS.WASM_RUNTIME);
 
   const exportContract = useCallback((format: 'ts' | 'cpp') => {
     addLog(`[SYSTEM] Exporting Technical Contract (${format.toUpperCase()})...`);
@@ -92,7 +95,7 @@ export const useWasmTransfer = (
       const message = err instanceof Error ? err.message : String(err);
       addLog(`[CRITICAL] WASM Load Failed: ${message}`);
     }
-  }, [addLog, setContract, setWasmBuffer, syncManifestWithContract]);
+  }, [addLog, setContract, setWasmBuffer, syncManifestWithContract, wasmRuntime]);
 
   const handleContractUpload = useCallback(async (file: File) => {
     addLog(`Ingesting Technical Contract: ${file.name}...`);

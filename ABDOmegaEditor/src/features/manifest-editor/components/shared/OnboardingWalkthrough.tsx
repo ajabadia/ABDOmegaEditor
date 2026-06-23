@@ -1,13 +1,13 @@
 'use client';
 
 /**
- * @purpose Renderiza una guía interactiva de onboarding para los usuarios del editor Manifest OMEGA, guiándolos a través de las principales características y funcionalidades.
+ * @purpose Renderiza una guía interactiva de onboarding para los usuarios del editor Manifest OMEGA, guiándolos a través de las características y funcionalidades clave.
  * @purpose_en Renders an interactive onboarding walkthrough for users of the OMEGA Manifest Editor, guiding them through key features and functionalities.
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:5,imports:3,sig:1k9b175
- * @lastUpdated 2026-06-15T13:00:28.244Z
+ * @fingerprint exports:5,imports:4,sig:13727o
+ * @lastUpdated 2026-06-20T14:41:24.366Z
  */
 
 import { useState, useEffect, useCallback, startTransition } from 'react';
@@ -231,124 +231,183 @@ export default function OnboardingWalkthrough({
             <HighlightRing key="highlight" selector={step.targetSelector} />
           )}
 
-          {/* Tooltip Card — wrapping div handles CSS positioning without
-              interfering with framer-motion transforms on the inner div */}
-          <div
-            key="tooltip-wrapper"
-            className={`fixed z-[1] ${
-              isCentered
-                ? 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2'
-                : '-translate-x-1/2'
-            }`}
-            style={
-              isCentered ? {} : { top: tooltipPos.top, left: tooltipPos.left }
-            }
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 8 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 8 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-              className="w-[380px] wb-surface border wb-outline shadow-2xl rounded-sm overflow-hidden pointer-events-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Progress bar */}
-              <div className="h-0.5 w-full bg-white/5">
-                <div
-                  className="h-full bg-primary transition-all duration-500 ease-out"
-                  style={{
-                    width: `${((currentStep + 1) / TOUR_STEPS.length) * 100}%`,
-                  }}
-                />
-              </div>
-
-              {/* Content */}
-              <div className="p-5">
-                {/* Step indicator & icon */}
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-xs bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
-                      {step.icon}
-                    </div>
-                    <div>
-                      <h3 className="text-[9px] font-black uppercase tracking-widest text-white/90">
-                        {step.title}
-                      </h3>
-                      <span className="text-[6px] font-mono text-white/20 uppercase tracking-wider">
-                        Step {currentStep + 1} of {TOUR_STEPS.length}
-                      </span>
-                    </div>
-                  </div>
-                  <button
-                    onClick={handleSkip}
-                    aria-label="Skip tour"
-                    className="p-1 rounded-xs text-white/20 hover:text-white/60 hover:bg-white/5 transition-colors"
-                    title="Skip tour"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-
-                {/* Description */}
-                <p className="text-[8px] font-mono leading-relaxed text-white/60 mb-5">
-                  {step.description}
-                </p>
-
-                {/* Navigation */}
-                <div className="flex items-center justify-between">
-                  <button
-                    onClick={handlePrev}
-                    disabled={isFirst}
-                    aria-label="Go to previous step"
-                    className={`flex items-center gap-1 px-3 py-1.5 rounded-xs text-[8px] font-bold uppercase tracking-wider transition-all ${
-                      isFirst
-                        ? 'text-white/10 cursor-not-allowed'
-                        : 'text-white/40 hover:text-white/80 hover:bg-white/5'
-                    }`}
-                  >
-                    <ChevronLeft className="w-3 h-3" />
-                    Back
-                  </button>
-                  <button
-                    onClick={handleNext}
-                    aria-label={isLast ? 'Complete tour' : 'Go to next step'}
-                    className="flex items-center gap-1.5 px-4 py-1.5 rounded-xs bg-primary/20 border border-primary/30 text-primary text-[8px] font-black uppercase tracking-wider hover:bg-primary/30 transition-all"
-                  >
-                    {isLast ? (
-                      <>
-                        <Check className="w-3 h-3" />
-                        Complete
-                      </>
-                    ) : (
-                      <>
-                        Next
-                        <ChevronRight className="w-3 h-3" />
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {/* Footer dot indicators */}
-              <div className="flex items-center justify-center gap-1 pb-3">
-                {TOUR_STEPS.map((_, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setCurrentStep(idx)}
-                    className={`w-1.5 h-1.5 rounded-full transition-all ${
-                      idx === currentStep
-                        ? 'bg-primary w-3'
-                        : 'bg-white/15 hover:bg-white/30'
-                    }`}
-                    title={`Go to step ${idx + 1}`}
-                  />
-                ))}
-              </div>
-            </motion.div>
-          </div>
+          {/* Tooltip Card */}
+          <TourTooltipCard
+            step={step}
+            currentStep={currentStep}
+            isCentered={isCentered}
+            tooltipPos={tooltipPos}
+            isFirst={isFirst}
+            isLast={isLast}
+            totalSteps={TOUR_STEPS.length}
+            onPrev={handlePrev}
+            onNext={handleNext}
+            onSkip={handleSkip}
+            onDotClick={setCurrentStep}
+          />
         </motion.div>
       )}
     </AnimatePresence>
+  );
+}
+
+// ── Tour Tooltip Card ───────────────────────────────────────────────────
+
+/** Tooltip card with progress, content, navigation, and dot indicators */
+function TourTooltipCard({ step, currentStep, isCentered, tooltipPos, isFirst, isLast, totalSteps, onPrev, onNext, onSkip, onDotClick }: {
+  step: TourStep;
+  currentStep: number;
+  isCentered: boolean;
+  tooltipPos: { top: number; left: number };
+  isFirst: boolean;
+  isLast: boolean;
+  totalSteps: number;
+  onPrev: () => void;
+  onNext: () => void;
+  onSkip: () => void;
+  onDotClick: (idx: number) => void;
+}) {
+  return (
+    <div
+      key="tooltip-wrapper"
+      className={`fixed z-[1] ${
+        isCentered
+          ? 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2'
+          : '-translate-x-1/2'
+      }`}
+      style={
+        isCentered ? {} : { top: tooltipPos.top, left: tooltipPos.left }
+      }
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 8 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 8 }}
+        transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+        className="w-[380px] wb-surface border wb-outline shadow-2xl rounded-sm overflow-hidden pointer-events-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Progress bar */}
+        <div className="h-0.5 w-full bg-white/5">
+          <div
+            className="h-full bg-primary transition-all duration-500 ease-out"
+            style={{
+              width: `${((currentStep + 1) / totalSteps) * 100}%`,
+            }}
+          />
+        </div>
+
+        <div className="p-5">
+          <TourProgressHeader step={step} currentStep={currentStep} totalSteps={totalSteps} onSkip={onSkip} />
+          <TourDescription description={step.description} />
+          <TourNavButtons isFirst={isFirst} isLast={isLast} onPrev={onPrev} onNext={onNext} />
+        </div>
+
+        <TourDotIndicators currentStep={currentStep} totalSteps={totalSteps} onDotClick={onDotClick} />
+      </motion.div>
+    </div>
+  );
+}
+
+/** Step indicator with icon, title, step count, and close button */
+function TourProgressHeader({ step, currentStep, totalSteps, onSkip }: {
+  step: TourStep; currentStep: number; totalSteps: number; onSkip: () => void;
+}) {
+  return (
+    <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-xs bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
+          {step.icon}
+        </div>
+        <div>
+          <h3 className="text-[9px] font-black uppercase tracking-widest text-white/90">
+            {step.title}
+          </h3>
+          <span className="text-[6px] font-mono text-white/20 uppercase tracking-wider">
+            Step {currentStep + 1} of {totalSteps}
+          </span>
+        </div>
+      </div>
+      <button
+        onClick={onSkip}
+        aria-label="Skip tour"
+        className="p-1 rounded-xs text-white/20 hover:text-white/60 hover:bg-white/5 transition-colors"
+        title="Skip tour"
+      >
+        <X className="w-3.5 h-3.5" />
+      </button>
+    </div>
+  );
+}
+
+/** Step description text */
+function TourDescription({ description }: { description: string }) {
+  return (
+    <p className="text-[8px] font-mono leading-relaxed text-white/60 mb-5">
+      {description}
+    </p>
+  );
+}
+
+/** Back / Next / Complete navigation buttons */
+function TourNavButtons({ isFirst, isLast, onPrev, onNext }: {
+  isFirst: boolean; isLast: boolean; onPrev: () => void; onNext: () => void;
+}) {
+  return (
+    <div className="flex items-center justify-between">
+      <button
+        onClick={onPrev}
+        disabled={isFirst}
+        aria-label="Go to previous step"
+        className={`flex items-center gap-1 px-3 py-1.5 rounded-xs text-[8px] font-bold uppercase tracking-wider transition-all ${
+          isFirst
+            ? 'text-white/10 cursor-not-allowed'
+            : 'text-white/40 hover:text-white/80 hover:bg-white/5'
+        }`}
+      >
+        <ChevronLeft className="w-3 h-3" />
+        Back
+      </button>
+      <button
+        onClick={onNext}
+        aria-label={isLast ? 'Complete tour' : 'Go to next step'}
+        className="flex items-center gap-1.5 px-4 py-1.5 rounded-xs bg-primary/20 border border-primary/30 text-primary text-[8px] font-black uppercase tracking-wider hover:bg-primary/30 transition-all"
+      >
+        {isLast ? (
+          <>
+            <Check className="w-3 h-3" />
+            Complete
+          </>
+        ) : (
+          <>
+            Next
+            <ChevronRight className="w-3 h-3" />
+          </>
+        )}
+      </button>
+    </div>
+  );
+}
+
+/** Dot indicators for quick step navigation */
+function TourDotIndicators({ currentStep, totalSteps, onDotClick }: {
+  currentStep: number; totalSteps: number; onDotClick: (idx: number) => void;
+}) {
+  return (
+    <div className="flex items-center justify-center gap-1 pb-3">
+      {Array.from({ length: totalSteps }, (_, idx) => (
+        <button
+          key={idx}
+          onClick={() => onDotClick(idx)}
+          className={`w-1.5 h-1.5 rounded-full transition-all ${
+            idx === currentStep
+              ? 'bg-primary w-3'
+              : 'bg-white/15 hover:bg-white/30'
+          }`}
+          title={`Go to step ${idx + 1}`}
+        />
+      ))}
+    </div>
   );
 }
 

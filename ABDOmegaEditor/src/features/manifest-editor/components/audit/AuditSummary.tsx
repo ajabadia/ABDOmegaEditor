@@ -17,7 +17,7 @@ import {
   ShieldCheck, Activity, Layers, Terminal, 
   CheckCircle2, AlertCircle 
 } from 'lucide-react';
-import type { AuditResult } from '@/features/manifest-editor/types/diagnostics';
+import type { AuditResult } from '@/omega-ui-core/types/audit';
 import type { OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
 
 interface AuditStatusConfig {

@@ -14,8 +14,8 @@ import { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
  
 import type { OMEGA_Manifest, OMEGA_Contract, OmegaNode } from '@/omega-ui-core/types/manifest';
-import type { OmegaContract } from '@/services/wasmLoader';
-import type { AuditResult } from '@/services/auditService';
+import type { OmegaContract } from '@/omega-ui-core/types/contract';
+import type { AuditResult } from '@/omega-ui-core/types/audit';
  
 import { CenterModuleNode } from '../orbital/CenterModuleNode';
 import { OrbitalNode } from '../orbital/OrbitalNode';

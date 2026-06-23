@@ -13,7 +13,7 @@
 import { useCallback } from 'react';
 import type { OMEGA_Manifest, OMEGA_Contract } from '@/omega-ui-core/types/manifest';
 import { toast } from '@/features/manifest-editor/utils/toast';
-import type { OmegaContract } from '@/services/wasmLoader';
+import type { OmegaContract } from '@/omega-ui-core/types/contract';
 import type { ValidationIssue } from '@/types/validation';
 
 interface DeploymentDependencies {

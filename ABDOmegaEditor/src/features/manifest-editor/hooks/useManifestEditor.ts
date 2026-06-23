@@ -14,7 +14,7 @@ import { useAuditEngine } from './useAuditEngine';
 import { useEntityManager } from './useEntityManager';
 import { useFileOps } from './useFileOps';
 import type { OMEGA_Manifest, OMEGA_Contract, OmegaNode, ManifestEntity } from '@/omega-ui-core/types/manifest';
-import type { OmegaContract } from '@/services/wasmLoader';
+import type { OmegaContract } from '@/omega-ui-core/types/contract';
 import { useAssetManager } from './useAssetManager';
 import { useSimulationBridge } from './useSimulationBridge';
 import { useBlueprintInjection } from './useBlueprintInjection';
@@ -94,7 +94,8 @@ export const useManifestEditor = (
   // 3.3. Clipboard Actions
   const clipboard = useClipboardActions({
     findItem: entities.findItem as (id: string) => (OmegaNode | ManifestEntity | undefined),
-    pasteEntity: entities.pasteEntity,
+    pasteEntities: entities.pasteEntities,
+    removeItems: entities.removeItems,
     addLog
   });
 
@@ -198,7 +199,9 @@ export const useManifestEditor = (
     
     // Clipboard Actions
     copyToClipboard: clipboard.copyToClipboard,
+    cutToClipboard: clipboard.cutToClipboard,
     pasteFromClipboard: clipboard.pasteFromClipboard,
+    hasClipboardContent: clipboard.hasClipboardContent,
     
     // File Actions
     ...fileOps,

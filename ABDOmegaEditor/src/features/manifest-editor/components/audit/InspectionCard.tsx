@@ -16,7 +16,7 @@ import {
   ShieldCheck, ShieldAlert, ShieldX, 
   Info, ArrowRight, Zap, Target, Layout
 } from 'lucide-react';
-import type { Diagnostic } from '@/features/manifest-editor/types/diagnostics';
+import type { Diagnostic } from '@/omega-ui-core/types/audit';
 
 interface InspectionCardProps {
   issue: Diagnostic;

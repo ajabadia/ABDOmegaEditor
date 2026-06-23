@@ -12,7 +12,7 @@ import React, { useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toPng } from 'html-to-image';
 import type { OMEGA_Manifest } from '@/types/manifest';
-import type { AuditResult } from '@/services/auditService';
+import type { AuditResult } from '@/omega-ui-core/types/audit';
 import { useFocusTrap } from '@/features/manifest-editor/hooks/useFocusTrap';
 
 // Atomic Mockup Components

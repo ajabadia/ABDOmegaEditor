@@ -6,8 +6,8 @@
  * @refactorable true (contains too many state variables and UI parts)
  * @classification Custom Hook
  * @complexity Medium
- * @fingerprint exports:2,imports:3,sig:u4qlkh
- * @lastUpdated 2026-06-15T15:18:04.939Z
+ * @fingerprint exports:2,imports:3,sig:1szbiq7
+ * @lastUpdated 2026-06-20T11:08:46.888Z
  */
 
 import { useMemo, useCallback } from 'react';

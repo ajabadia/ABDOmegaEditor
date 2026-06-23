@@ -76,7 +76,7 @@ exports[`MenuBar — snapshots should match snapshot for Help menu open with onT
       >
         <button
           aria-label="Engineering Manual"
-          class="w-full flex items-center justify-between px-3 py-1.5 text-[8px] font-black uppercase tracking-widest transition-all hover:bg-primary hover:text-black hover:text-black group wb-text"
+          class="w-full flex items-center justify-between px-3 py-1.5 text-[8px] font-black uppercase tracking-widest transition-all hover:bg-primary hover:text-black group wb-text"
           role="menuitem"
         >
           <div
@@ -121,7 +121,7 @@ exports[`MenuBar — snapshots should match snapshot for Help menu open with onT
       >
         <button
           aria-label="Guided Tour"
-          class="w-full flex items-center justify-between px-3 py-1.5 text-[8px] font-black uppercase tracking-widest transition-all hover:bg-primary hover:text-black hover:text-black group wb-text"
+          class="w-full flex items-center justify-between px-3 py-1.5 text-[8px] font-black uppercase tracking-widest transition-all hover:bg-primary hover:text-black group wb-text"
           role="menuitem"
         >
           <div
@@ -170,7 +170,7 @@ exports[`MenuBar — snapshots should match snapshot for Help menu open with onT
       >
         <button
           aria-label="About OMEGA"
-          class="w-full flex items-center justify-between px-3 py-1.5 text-[8px] font-black uppercase tracking-widest transition-all hover:bg-primary hover:text-black hover:text-black group wb-text"
+          class="w-full flex items-center justify-between px-3 py-1.5 text-[8px] font-black uppercase tracking-widest transition-all hover:bg-primary hover:text-black group wb-text"
           role="menuitem"
         >
           <div
@@ -283,7 +283,7 @@ exports[`MenuBar — snapshots should match snapshot for Help menu open without 
       >
         <button
           aria-label="Engineering Manual"
-          class="w-full flex items-center justify-between px-3 py-1.5 text-[8px] font-black uppercase tracking-widest transition-all hover:bg-primary hover:text-black hover:text-black group wb-text"
+          class="w-full flex items-center justify-between px-3 py-1.5 text-[8px] font-black uppercase tracking-widest transition-all hover:bg-primary hover:text-black group wb-text"
           role="menuitem"
         >
           <div
@@ -328,7 +328,7 @@ exports[`MenuBar — snapshots should match snapshot for Help menu open without 
       >
         <button
           aria-label="Guided Tour"
-          class="w-full flex items-center justify-between px-3 py-1.5 text-[8px] font-black uppercase tracking-widest transition-all hover:bg-primary hover:text-black hover:text-black group wb-text"
+          class="w-full flex items-center justify-between px-3 py-1.5 text-[8px] font-black uppercase tracking-widest transition-all hover:bg-primary hover:text-black group wb-text"
           role="menuitem"
         >
           <div
@@ -377,7 +377,7 @@ exports[`MenuBar — snapshots should match snapshot for Help menu open without 
       >
         <button
           aria-label="About OMEGA"
-          class="w-full flex items-center justify-between px-3 py-1.5 text-[8px] font-black uppercase tracking-widest transition-all hover:bg-primary hover:text-black hover:text-black group wb-text"
+          class="w-full flex items-center justify-between px-3 py-1.5 text-[8px] font-black uppercase tracking-widest transition-all hover:bg-primary hover:text-black group wb-text"
           role="menuitem"
         >
           <div

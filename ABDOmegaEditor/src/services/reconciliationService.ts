@@ -4,18 +4,21 @@
  * @refactorable false
  * @classification Business Service
  * @complexity Low
- * @fingerprint exports:1,imports:2,sig:1f406k0
- * @lastUpdated 2026-06-15T17:03:00.510Z
+ * @fingerprint exports:1,imports:2,sig:new
+ * @lastUpdated 2026-06-22
  */
 
-import type { ConflictDescriptor, ResolutionPolicy } from './reconciliationTypes';
-import { observabilityService } from './observabilityService';
+import type { ConflictDescriptor, ResolutionPolicy } from '@/omega-ui-core/types/reconciliation';
+import type { IEventBus } from '@/omega-ui-core/di/EventBus';
+import { emitEvent } from './globalEventBus';
 
 /**
  * OMEGA ERA 7.2.3 - RECONCILIATION SERVICE
  * Logic for detecting and resolving state divergence.
  */
 class ReconciliationService {
+  constructor(private eventBus?: IEventBus) {}
+
   /**
    * detectDivergence
    * Compares two control states and returns paths that differ.
@@ -63,12 +66,10 @@ class ReconciliationService {
   }
 
   private emitReconciliationEvent(conflict: ConflictDescriptor) {
-    observabilityService.trackEvent({
-      correlationId: conflict.revisionToken,
-      phase: 'PHASE_20_RECONCILIATION',
-      component: 'RECONCILIATION_SERVICE',
-      state: 'SUCCESS',
-      message: `Reconciled path ${conflict.path} via ${conflict.resolutionPolicy}. Resolved: ${conflict.resolvedValue}`
+    emitEvent(this.eventBus, 'reconciliation:conflict', {
+      path: conflict.path,
+      policy: conflict.resolutionPolicy,
+      resolved: conflict.resolvedValue,
     });
   }
 }

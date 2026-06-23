@@ -6,12 +6,13 @@
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:2,sig:1md0nb1
- * @lastUpdated 2026-06-15T13:00:05.750Z
+ * @fingerprint exports:1,imports:2,sig:mhdcu5
+ * @lastUpdated 2026-06-20T09:44:01.767Z
  */
 
 import { useEffect, useRef, useState } from 'react';
-import { inputSignalService } from '@/services/inputSignalService';
+import { getService } from '@/services/globalEventBus';
+import { SERVICE_TOKENS } from '@/omega-ui-core/di';
 
 interface SimulationScopeProps {
   portId: string;
@@ -36,6 +37,7 @@ export const SimulationScope = ({
   color = '#00f0ff',
   bgColor = '#000000',
 }: SimulationScopeProps) => {
+  const inputSignalService = getService(SERVICE_TOKENS.INPUT_SIGNAL_SERVICE);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const bufferRef = useRef<number[]>([]);
   const rafRef = useRef<number>(0);
@@ -200,7 +202,7 @@ export const SimulationScope = ({
     return () => {
       cancelAnimationFrame(animationId);
     };
-  }, [portId, width, height, color, metrics.amp, metrics.freq]);
+  }, [portId, width, height, color, metrics.amp, metrics.freq, inputSignalService]);
 
   return (
     <div ref={containerRef} className="w-full h-full relative">

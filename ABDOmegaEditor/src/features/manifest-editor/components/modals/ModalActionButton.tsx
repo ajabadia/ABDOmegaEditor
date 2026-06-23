@@ -1,11 +1,11 @@
 /**
- * @purpose Renderiza un botón de acción secundaria reutilizable para los pies de footer de OMEGA modal.
+ * @purpose Renderiza un botón de acción secundaria reutilizable para los pies de footer OMEGA modales.
  * @purpose_en Renders a reusable secondary action button for OMEGA modal footers.
  * @refactorable false
  * @classification UI Component
  * @complexity Low
- * @fingerprint exports:1,imports:1,sig:4n1zma
- * @lastUpdated 2026-06-15T12:50:11.303Z
+ * @fingerprint exports:1,imports:1,sig:19ur0aq
+ * @lastUpdated 2026-06-20T09:43:18.603Z
  */
 
 /**

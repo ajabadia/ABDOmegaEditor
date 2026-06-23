@@ -6,8 +6,8 @@
  * @refactorable false (contains only static declarations/types/constants)
  * @classification UI Component
  * @complexity Low
- * @fingerprint exports:1,imports:1,sig:16whgdi
- * @lastUpdated 2026-06-15T13:01:30.886Z
+ * @fingerprint exports:1,imports:1,sig:1trlxlc
+ * @lastUpdated 2026-06-20T09:44:42.880Z
  */
 
 import { Zap, Layout, FolderOpen, Settings } from 'lucide-react';

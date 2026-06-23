@@ -6,8 +6,8 @@
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:11,sig:zzpesu
- * @lastUpdated 2026-06-15T15:30:18.795Z
+ * @fingerprint exports:1,imports:12,sig:10bzuhu
+ * @lastUpdated 2026-06-20T11:09:14.333Z
  */
 
 import React from 'react';
@@ -34,7 +34,7 @@ interface StructuralNodeProps {
   isLayoutGoverned: boolean;
   parentNode?: OmegaNode | null | undefined;
   handleDebugClick: (e: React.MouseEvent) => void;
-  audit?: import('@/services/auditService').AuditResult | undefined;
+  audit?: import('@/omega-ui-core/types/audit').AuditResult | undefined;
 }
 
 export function StructuralNode({

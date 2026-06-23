@@ -1,11 +1,11 @@
 /**
- * @purpose Renderiza una etiqueta de corto circuito reutilizable para el pie de footer del OMEGA Workbench.
+ * @purpose Renderiza una etiqueta de atajo reutilizable para el pie de footer del OMEGA Workbench.
  * @purpose_en Renders a reusable keyboard shortcut badge for the OMEGA Workbench footer.
  * @refactorable false
  * @classification UI Component
  * @complexity Low
- * @fingerprint exports:0,imports:1,sig:ahjxpw
- * @lastUpdated 2026-06-15T12:48:01.487Z
+ * @fingerprint exports:0,imports:1,sig:1xprppi
+ * @lastUpdated 2026-06-20T09:40:28.809Z
  */
 
 /**

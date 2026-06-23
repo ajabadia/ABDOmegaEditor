@@ -1,13 +1,13 @@
 'use client';
 
 /**
- * @purpose Renderiza un enlace estilizado para editar una estilo en la biblioteca, manejando la navegación y mostrando detalles de estilo.
+ * @purpose Gestiona un enlace estilizado para editar un estilo en la biblioteca, maneja la navegación y muestra detalles del estilo.
  * @purpose_en Renders a styled link for editing a style in the library, handling navigation and displaying style details.
  * @refactorable false
  * @classification UI Component
  * @complexity Low
- * @fingerprint exports:1,imports:1,sig:dvzu91
- * @lastUpdated 2026-06-15T11:50:17.463Z
+ * @fingerprint exports:1,imports:1,sig:1hp8e8z
+ * @lastUpdated 2026-06-20T09:18:31.895Z
  */
 
 import { ExternalLink, Palette } from 'lucide-react';

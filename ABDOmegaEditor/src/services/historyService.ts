@@ -1,20 +1,23 @@
-import type { HistoryEntry } from '@/features/manifest-editor/types/history';
+import type { HistoryEntry } from '@/omega-ui-core/types/history';
 import type { OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
-import { observabilityService } from './observabilityService';
+import type { IEventBus } from '@/omega-ui-core/di/EventBus';
+import { emitEvent } from './globalEventBus';
 
 /**
  * @purpose Gestiona la funcionalidad de deshacer y rehacer para las entradas de historia del editor de manifest OMEGA con soporte de ramificación.
  * @purpose_en Manages undo/redo functionality for OMEGA manifest editor history entries with branching support.
- * @refactorable true (contains too many state variables and UI parts)
+ * @refactorable false
  * @classification Business Service
  * @complexity Medium
- * @fingerprint exports:1,imports:3,sig:1dpdp05
- * @lastUpdated 2026-06-15T16:59:59.204Z
+ * @fingerprint exports:1,imports:3,sig:new
+ * @lastUpdated 2026-06-22
  */
 class HistoryService {
   private history: HistoryEntry[] = [];
   private future: HistoryEntry[] = [];
   private maxEntries = 50;
+
+  constructor(private eventBus?: IEventBus) {}
 
   /**
    * push
@@ -41,14 +44,12 @@ class HistoryService {
       this.history.shift();
     }
 
-    observabilityService.trackHistoryEvent(
-      entry.correlationId,
-      'HISTORY_CAPTURED',
-      'SUCCESS',
-      `Captured: ${entry.label} (${entry.type})`,
-      0,
-      { id: entry.id }
-    );
+    emitEvent(this.eventBus, 'history:captured', {
+      entryId: entry.id,
+      type: entry.type,
+      label: entry.label,
+      timestamp: entry.timestamp,
+    });
   }
 
   /**

@@ -6,8 +6,8 @@
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:2,sig:vly1by
- * @lastUpdated 2026-06-15T12:59:53.608Z
+ * @fingerprint exports:1,imports:2,sig:1pyp7xs
+ * @lastUpdated 2026-06-20T09:43:50.169Z
  */
 
 import { Settings2, PlayCircle } from 'lucide-react';

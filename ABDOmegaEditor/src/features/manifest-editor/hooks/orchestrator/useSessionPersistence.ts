@@ -14,14 +14,16 @@ import { useEffect } from 'react';
 import type { OrchestratorState, OrchestratorAction } from '../../types/document';
 import { DEFAULT_MANIFEST, normalizeManifest } from '../../constants/defaults';
 import { BlueprintValidator } from '@/omega-ui-core/utils/blueprintValidator';
-import { persistenceService } from '@/services/persistenceService';
-import { observabilityService } from '@/services/observabilityService';
 import { STORAGE_KEYS } from '../../constants/storage';
+import { getService } from '@/services/globalEventBus';
+import { SERVICE_TOKENS } from '@/omega-ui-core/di';
 
 export function useSessionPersistence(
   state: OrchestratorState,
   dispatch: React.Dispatch<OrchestratorAction>
 ) {
+  const persistenceService = getService(SERVICE_TOKENS.PERSISTENCE_SERVICE);
+  const observabilityService = getService(SERVICE_TOKENS.OBSERVABILITY_SERVICE);
   useEffect(() => {
     try {
       const persisted = persistenceService.loadCanonicalState();
@@ -105,7 +107,7 @@ export function useSessionPersistence(
     } catch (err: unknown) {
       console.error('[OMEGA ORCHESTRATOR] Session restore failed:', err);
     }
-  }, [dispatch]);
+  }, [dispatch, observabilityService, persistenceService]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {

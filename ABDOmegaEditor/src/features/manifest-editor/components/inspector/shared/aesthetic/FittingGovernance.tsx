@@ -6,8 +6,8 @@
  * @refactorable false
  * @classification UI Component
  * @complexity Low
- * @fingerprint exports:1,imports:2,sig:1gsb94w
- * @lastUpdated 2026-06-15T11:40:21.947Z
+ * @fingerprint exports:1,imports:2,sig:1qckwc6
+ * @lastUpdated 2026-06-20T09:17:19.521Z
  */
 
 import { Maximize2, Minimize2, Move, LayoutGrid, Square } from 'lucide-react';

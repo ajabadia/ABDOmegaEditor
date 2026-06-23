@@ -6,8 +6,8 @@
  * @refactorable false
  * @classification UI Component
  * @complexity Low
- * @fingerprint exports:1,imports:6,sig:aj739x
- * @lastUpdated 2026-06-15T11:39:14.875Z
+ * @fingerprint exports:1,imports:6,sig:1kajr4o
+ * @lastUpdated 2026-06-20T09:16:52.342Z
  */
 
 import type { OMEGA_Manifest, OmegaNode } from '@/omega-ui-core/types/manifest';

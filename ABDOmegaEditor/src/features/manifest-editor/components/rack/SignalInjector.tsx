@@ -1,17 +1,19 @@
 /**
- * @purpose Gestiona la inyección de señal virtual con opciones para seleccionar tipos de ondas, ajustar parámetros, visualizar señales y manejar la cruz-modulación.
+ * @purpose Gestiona la inyección de señal virtual con opciones para seleccionar tipos de ondas, ajustar parámetros, visualizar señales y manejar cruz-modulación.
  * @purpose_en Manages virtual signal injection with options for selecting types of waveforms, adjusting parameters, visualizing signals, and handling cross-modulation.
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:5,sig:1d86v53
- * @lastUpdated 2026-06-15T12:59:59.553Z
+ * @fingerprint exports:1,imports:5,sig:169kxc4
+ * @lastUpdated 2026-06-20T09:43:56.215Z
  */
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Zap, X, Activity } from 'lucide-react';
-import { inputSignalService, type SignalType, type VirtualSignal } from '@/services/inputSignalService';
+import type { SignalType, VirtualSignal } from '@/services/inputSignalService';
+import { getService } from '@/services/globalEventBus';
+import { SERVICE_TOKENS } from '@/omega-ui-core/di';
 import { SimulationScope } from './SimulationScope';
 
 interface SignalInjectorProps {
@@ -41,6 +43,7 @@ const WAVE_BUTTONS: { type: SignalType; label: string }[] = [
  * Supports 13 wave types with per-type parameter controls + scope visualization.
  */
 export const SignalInjector = ({ portId, onClose }: SignalInjectorProps) => {
+  const inputSignalService = getService(SERVICE_TOKENS.INPUT_SIGNAL_SERVICE);
   const current = inputSignalService.getActiveSignal(portId);
   const [sig, setSig] = useState<VirtualSignal>(current || { type: 'sine', frequency: 440, amplitude: 0.5, offset: 0 });
 

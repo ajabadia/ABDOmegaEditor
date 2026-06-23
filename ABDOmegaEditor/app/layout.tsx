@@ -4,8 +4,8 @@
  * @refactorable false
  * @classification UI Component
  * @complexity Low
- * @fingerprint exports:1,imports:2,sig:189ppy1
- * @lastUpdated 2026-06-15T22:05:40.535Z
+ * @fingerprint exports:1,imports:3,sig:0yadgt
+ * @lastUpdated 2026-06-20T12:53:17.785Z
  */
 
 import { Space_Grotesk, Inter } from "next/font/google";

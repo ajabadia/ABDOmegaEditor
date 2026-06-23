@@ -1,87 +1,21 @@
 /**
- * @purpose Gestiona tipos y interfaces para diagnósticos en el editor de manifesto OMEGA, incluyendo niveles de gravedad diagnóstica, estructuras, resultados de auditoría y fuentes para extraer diagnósticos de manifests.
- * @purpose_en Manages types and interfaces for diagnostics in the OMEGA manifest editor, including diagnostic severity levels, structures, audit results, and sources for extracting diagnostics from manifests.
+ * @purpose Re-export canonical audit/diagnostic types from omega-ui-core.
  * @refactorable false
  * @classification Type Definition
  * @complexity Low
- * @fingerprint exports:8,imports:2,sig:my9hpb
- * @lastUpdated 2026-06-15T15:16:23.435Z
+ * @fingerprint exports:8,imports:0,sig:deprecated
+ * @lastUpdated 2026-06-22
+ * @deprecated Import directly from '@/omega-ui-core/types/audit'
  */
 
-/**
- * OMEGA ERA 7.2.3 - Diagnostic System Types
- * Formal contracts for multi-source validation aggregation.
- */
+export type {
+  DiagnosticSeverity,
+  Diagnostic,
+  AuditIssue,
+  TabDiagnostics,
+  AuditResult,
+  DiagnosticContext,
+  DiagnosticSource,
+} from '@/omega-ui-core/types/audit';
 
-import type { OMEGA_Manifest, OMEGA_Contract } from '@/omega-ui-core/types/manifest';
-import type { OmegaContract } from '@/services/wasmLoader';
-
-export type DiagnosticSeverity = 'error' | 'warning' | 'info' | 'audit';
-
-export interface Diagnostic {
-  id: string;          // Unique ID for the diagnostic (e.g., 'broken-bind-osc1')
-  source: string;      // Name of the source (e.g., 'Monaco', 'Structural', 'Layout')
-  message: string;     // Human-readable message
-  severity: DiagnosticSeverity;
-  path?: string;       // Legacy compatibility for ValidationIssue
-  keyword?: string;    // Legacy compatibility for ValidationIssue
-  line?: number;       // Optional line number (primarily for Monaco)
-  column?: number;     // Optional column number
-  entityId?: string;   // Optional ID of the affected manifest entity
-  code?: string;       // Machine-readable error code
-}
- 
-export type AuditIssue = Diagnostic;
-
-export interface TabDiagnostics {
-  errors: Diagnostic[];
-  warnings: Diagnostic[];
-  infos: Diagnostic[];
-  errorCount: number;
-  warningCount: number;
-  infoCount: number;
-}
- 
-export interface AuditResult extends TabDiagnostics {
-  score: number;
-  status?: 'DRAFT' | 'CERTIFIED' | 'CRITICAL_FAIL';
-  details?: string[];
-  checks: {
-    governance: boolean;
-    integrity: boolean;
-    technical: boolean;
-    aesthetic: boolean;
-  };
-  isCompliant: boolean;
-  isHashMatched?: boolean;
-  fingerprint?: string;
-  issues: Diagnostic[]; // Alias for backward compatibility in components
-}
-
-export interface DiagnosticContext {
-  contract: (OmegaContract | OMEGA_Contract) | null;
-  [key: string]: unknown;
-}
-
-export interface DiagnosticSource {
-  id: string;
-  name: string;
-  /**
-   * Evaluates the manifest and returns diagnostic issues.
-   * For Monaco, this might involve reading external markers.
-   * For others, it involves semantic analysis of the manifest object.
-   */
-  extractDiagnostics: (manifest: OMEGA_Manifest, context?: DiagnosticContext) => TabDiagnostics;
-}
-
-/**
- * Empty diagnostics factory
- */
-export const createEmptyDiagnostics = (): TabDiagnostics => ({
-  errors: [],
-  warnings: [],
-  infos: [],
-  errorCount: 0,
-  warningCount: 0,
-  infoCount: 0
-});
+export { createEmptyDiagnostics } from '@/omega-ui-core/types/audit';

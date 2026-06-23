@@ -1,13 +1,13 @@
 'use client';
 
 /**
- * @purpose Renderiza la sección de arquitectura del módulo del editor de manifesto OMEGA, incluyendo subtablas para infraestructura, controles, puertos, rutas, activos y vista de árbol.
+ * @purpose Renderiza la sección del módulo de arquitectura del editor de manifesto OMEGA, incluyendo subtablas para infraestructura, controles, puertos, rutas, activos y vista de árbol.
  * @purpose_en Renders the module architecture section of the OMEGA manifest editor, including sub-tabs for infrastructure, controls, ports, routing, assets, and tree view.
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:8,sig:1lfkop6
- * @lastUpdated 2026-06-15T11:39:52.965Z
+ * @fingerprint exports:1,imports:8,sig:2nend8
+ * @lastUpdated 2026-06-20T09:17:04.231Z
  */
 
 import { useState } from 'react';

@@ -6,8 +6,8 @@
  * @refactorable true (contains too many state variables and UI parts)
  * @classification Custom Hook
  * @complexity Medium
- * @fingerprint exports:9,imports:1,sig:1is3egu
- * @lastUpdated 2026-06-15T13:12:05.976Z
+ * @fingerprint exports:9,imports:1,sig:1f2s3rt
+ * @lastUpdated 2026-06-20T10:48:54.927Z
  */
 
 import { useState, useEffect, useCallback, useRef, startTransition } from 'react';

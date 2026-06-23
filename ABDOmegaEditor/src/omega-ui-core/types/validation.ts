@@ -10,11 +10,12 @@
 
 /**
  * OMEGA Validation Types (Era 7.2.3)
+ * Canonical source of truth for validation issues.
  */
 
 export interface ValidationIssue {
   path: string;
   message: string;
   keyword: string;
-  severity: 'critical' | 'error' | 'warning' | 'audit'; 
+  severity: 'critical' | 'error' | 'warning' | 'audit' | 'info';
 }

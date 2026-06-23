@@ -1,20 +1,20 @@
 'use client';
 
 /**
- * @purpose Renderiza puntos de estado de unión sobre controles en el viewport del bastidor, con popover de unión al hacer clic.
- * @purpose_en Renders binding status dots over controls in the rack viewport, with click-to-bind popover.
+ * @purpose Renderiza puntos de estado de unión sobre controles en el viewport del bastidor, con una popover de unión al hacer clic.
+ * @purpose_en Renders binding status dots over controls in the rack viewport, with a click-to-bind popover.
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:5,sig:1rw2bdm
- * @lastUpdated 2026-06-15T20:49:08.688Z
+ * @fingerprint exports:1,imports:5,sig:163csct
+ * @lastUpdated 2026-06-20T09:43:40.713Z
  */
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import type { OMEGA_Manifest, OmegaNode, OMEGA_Contract } from '@/omega-ui-core/types/manifest';
-import type { OmegaContract } from '@/services/wasmLoader';
+import type { OmegaContract } from '@/omega-ui-core/types/contract';
 
 interface BindingOverlayProps {
   manifest: OMEGA_Manifest;

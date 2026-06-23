@@ -7,7 +7,7 @@ import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { createRef } from 'react';
 import UndoTimelinePopover from '../UndoTimelinePopover';
-import type { HistoryEntry } from '@/features/manifest-editor/types/history';
+import type { HistoryEntry } from '@/omega-ui-core/types/history';
 import type { HistoryEntry as BatchHistoryEntry } from '@/features/manifest-editor/hooks/useBatchHistory';
 
 // ── Helpers ─────────────────────────────────────────────────────────────

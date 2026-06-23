@@ -1,11 +1,11 @@
 /**
  * @purpose Gestiona el porcentaje visible de un bastidor en coordenadas del rack basado en zoom, panning y dimensiones del contenedor.
  * @purpose_en Calculates the visible portion of a rack in rack coordinates based on zoom, pan, and container dimensions.
- * @refactorable true (contains too many state variables and UI parts)
+ * @refactorable false (contains only static declarations/types/constants and a simple custom hook)
  * @classification Custom Hook
  * @complexity Low
- * @fingerprint exports:4,imports:1,sig:v2qc2w
- * @lastUpdated 2026-06-15T15:15:22.492Z
+ * @fingerprint exports:4,imports:1,sig:390kaw
+ * @lastUpdated 2026-06-20T11:07:52.899Z
  */
 
 import { useMemo } from 'react';

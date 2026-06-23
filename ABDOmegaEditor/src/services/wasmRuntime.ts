@@ -1,11 +1,11 @@
 /**
  * @purpose Gestiona actualizaciones de parámetros en tiempo real y ejecución a través de un puente WASM en el editor de manifesto OMEGA.
  * @purpose_en Manages real-time parameter updates and execution through a WASM bridge in the OMEGA manifest editor.
- * @refactorable true (contains too many state variables and UI parts)
+ * @refactorable false
  * @classification Business Service
  * @complexity Medium
- * @fingerprint exports:2,imports:6,sig:f65qdu
- * @lastUpdated 2026-06-15T17:03:41.933Z
+ * @fingerprint exports:2,imports:6,sig:new
+ * @lastUpdated 2026-06-22
  */
 
 /**
@@ -23,8 +23,9 @@ import type {
   BindingVerification,
   DeploymentResult
 } from './rpc/rpcTypes';
-import { reconciliationService } from './reconciliationService';
-import { observabilityService } from './observabilityService';
+import type { IEventBus } from '@/omega-ui-core/di/EventBus';
+import { emitEvent } from './globalEventBus';
+import { reconciliationService as legacyReconciliationService } from './reconciliationService';
 
 export class WasmRuntime {
   private rpc: OmegaRPCBridge;
@@ -36,9 +37,12 @@ export class WasmRuntime {
   private batchTimer: NodeJS.Timeout | null = null;
   private readonly BATCH_WINDOW_MS = 16; // 60Hz Target
 
-  constructor() {
+  private reconciliationSvc: typeof legacyReconciliationService;
+
+  constructor(private eventBus?: IEventBus, reconciliationService?: typeof legacyReconciliationService) {
     // Initialize RPC bridge for industrial DSP communication
     this.rpc = new OmegaRPCBridge();
+    this.reconciliationSvc = reconciliationService ?? legacyReconciliationService;
     this.startBatchTimer();
   }
 
@@ -53,6 +57,7 @@ export class WasmRuntime {
    */
   connect(onStatusChange?: (status: SyncStatus) => void) {
     this.rpc.connect(onStatusChange);
+    emitEvent(this.eventBus, 'wasm:connected', { transport: 'RPC' });
   }
 
   /**
@@ -95,14 +100,7 @@ export class WasmRuntime {
     this.rpc.applyDeltaBatch(deltas);
 
     const durationMs = Date.now() - startTime;
-    observabilityService.trackEvent({
-      correlationId: `batch_${Date.now()}`,
-      phase: 'PHASE_20_BATCHING',
-      component: 'WASM_RUNTIME',
-      state: 'SUCCESS',
-      durationMs,
-      message: `Flushed delta batch (size: ${batchSize})`
-    });
+    emitEvent(this.eventBus, 'wasm:delta:applied', { count: batchSize, latency: durationMs });
   }
   /**
    * reconcileState (Phase 20.9)
@@ -135,7 +133,7 @@ export class WasmRuntime {
       // Simulate divergence: all UI keys are absent from empty engine state
       const divergences = Object.keys(uiState);
       const conflicts = divergences.map(path =>
-        reconciliationService.resolveConflict(
+        this.reconciliationSvc.resolveConflict(
           path,
           uiState[path],
           0,
@@ -163,13 +161,13 @@ export class WasmRuntime {
       };
     }
 
-    const divergences = reconciliationService.detectDivergence(
+    const divergences = this.reconciliationSvc.detectDivergence(
       uiState as unknown as Record<string, unknown>,
       engineState as unknown as Record<string, unknown>
     );
 
     const conflicts = divergences.map(path =>
-      reconciliationService.resolveConflict(
+      this.reconciliationSvc.resolveConflict(
         path,
         uiState[path],
         engineState[path],
@@ -203,6 +201,7 @@ export class WasmRuntime {
 
     if (!rootNode) {
       console.error('WASM-BRIDGE: Cannot deploy manifest without root OmegaNode.');
+      emitEvent(this.eventBus, 'wasm:deploy', { status: 'ERR_NO_ROOT' });
       return { success: false, hash: 'ERR_NO_ROOT' };
     }
 
@@ -224,6 +223,7 @@ export class WasmRuntime {
     if (this.isMock) {
       // Skip RPC bridge entirely in mock mode
       const hash = this.computeManifestHash(manifest);
+      emitEvent(this.eventBus, 'wasm:deploy', { status: 'MOCK_SUCCESS' });
       return { success: true, hash, materialization: instance, verification };
     }
 
@@ -241,9 +241,11 @@ export class WasmRuntime {
       }
 
       const hash = this.computeManifestHash(manifest);
+      emitEvent(this.eventBus, 'wasm:deploy', { status: 'SUCCESS' });
       return { success: true, hash, materialization: instance, verification };
     } catch (err) {
       console.error('WASM-BRIDGE: Deployment failed:', err);
+      emitEvent(this.eventBus, 'wasm:deploy', { status: 'DEPLOY_FAIL' });
       return { success: false, hash: 'ERR_DEPLOY_FAIL' };
     }
   }
@@ -445,7 +447,6 @@ export class WasmRuntime {
    * getTelemetry
    * Real-time signal polling for HUD rendering.
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getTelemetry(_nodeId: string): number {
     if (this.isMock) return Math.random(); // Simulation mode
     return 0; // Runtime value placeholder

@@ -1,13 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona y renderiza notificaciones emergentes con animaciones de Framer-Motion en el editor de manifestos OMEGA.
+ * @purpose Gestiona y renderiza notificaciones emergentes con animaciones de Framer-Motion en el editor de manifesto OMEGA.
  * @purpose_en Manages and renders toast notifications with Framer-Motion animations in the OMEGA manifest editor.
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:4,imports:3,sig:ozj1n9
- * @lastUpdated 2026-06-15T13:00:37.421Z
+ * @fingerprint exports:4,imports:3,sig:1ao3ymf
+ * @lastUpdated 2026-06-20T09:44:24.319Z
  */
 
 import { createContext, useContext, useState, useCallback, useRef, type ReactNode } from 'react';

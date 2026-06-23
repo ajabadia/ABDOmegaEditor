@@ -1,30 +1,28 @@
 'use client';
 
 /**
- * @purpose Gestiona el estado y la renderización de un editor de estudio celular dentro del editor OMEGA manifest, maneja las interacciones del usuario, la gestión de bocetos y los procesos de finalización para entidades celulares.
+ * @purpose Gestiona el estado y la renderización de un editor de estudio celular dentro del manifestador OMEGA, maneja las interacciones del usuario, la gestión de bocetos y los procesos de finalización para entidades celulares.
  * @purpose_en Manages the state and rendering of a cellular study editor within the OMEGA manifest editor, handling user interactions, draft management, and finalization processes for cellular entities.
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity High
- * @fingerprint exports:1,imports:16,sig:1nmx0p3
- * @lastUpdated 2026-06-15T12:46:46.444Z
+ * @fingerprint exports:1,imports:14,sig:12hez6k
+ * @lastUpdated 2026-06-20T14:40:57.369Z
  */
 
 import { useState, useEffect, useMemo } from 'react';
 import ModalCloseButton from '../modals/ModalCloseButton';
-import { Database, Cpu } from 'lucide-react';
-import { Box, Layers, Activity, Settings2 } from 'lucide-react';
+import { Database, Cpu, Box, Layers, Activity, Settings2 } from 'lucide-react';
 
 // Core Imports
 import type { ManifestEntity, OMEGA_Manifest, CellTemplate, ComponentType } from '@/omega-ui-core/types/manifest';
-import { CellRenderer } from '@/omega-ui-core/renderers/CellRenderer';
 import { entityToNode } from '@/omega-ui-core/utils/entityToNode';
-import { BehaviorResolver } from '@/omega-ui-core/utils/behaviorResolver';
 
 // Hooks & Subcomponents
 import { useCellStudioState, DEFAULT_CELL } from './useCellStudioState';
 import { useCellStudioMode } from './useCellStudioMode';
 import { useCellStudioDraft } from './useCellStudioDraft';
+import { useCellStudioPreview } from './useCellStudioPreview';
 import { CellStudioDraftPrompt } from './CellStudioDraftPrompt';
 import { CellStudioPreviewStrip } from './CellStudioPreviewStrip';
 import { CellStudioToolbar } from './CellStudioToolbar';
@@ -72,7 +70,23 @@ export default function CellStudioContainer({
 
   const { saveDraft, loadDraft, hasDraft, clearDraft, isDraftStale } = useCellStudioDraft();
   
-  // 2. Draft Prompt State — inicializado con lazy init para evitar setState en effect
+  // 2. Preview Pipeline — mock manifest, test value, behavior resolver, preview HTML
+  const {
+    previewHTML,
+    resolved,
+    testValue,
+    mockManifest,
+    handleManifestUpdate,
+  } = useCellStudioPreview({
+    cellData: state.cellData,
+    behavior: state.behavior,
+    recipe: state.recipe,
+    soloLayerId: state.soloLayerId,
+    manifest,
+    resolveAsset,
+  });
+
+  // 3. Draft Prompt State — inicializado con lazy init para evitar setState en effect
   const [showDraftPrompt, setShowDraftPrompt] = useState(() => hasDraft());
 
   // Auto-save draft on changes (only if it actually differs from the initial state)
@@ -105,58 +119,6 @@ export default function CellStudioContainer({
       }));
     }
   }, [state.cellData.type, state.cellData.presentation, state.cellData.presentation?.component, actions]);
-
-  // Mock manifest for local aesthetic previewing
-  const [mockManifest, setMockManifest] = useState<OMEGA_Manifest>(manifest || {
-    schemaVersion: '1.0.0',
-    id: 'laboratory',
-    metadata: { name: 'Laboratory', family: 'Internal', version: '1.0.0', author: 'OMEGA' },
-    ui: {
-      dimensions: { width: 100, height: 100 },
-      controls: [],
-      jacks: [],
-      layout: { width: 100, height: 100, containers: [], planes: ['MAIN'], tabStyles: {} },
-      styles: {},
-      skinMode: 'custom',
-      palette: {
-        primary: '#00f2ff', secondary: '#ff8c00', utility: '#a0a0a0', feedback: '#32cd32',
-        hardware: '#777777', chassis: '#1a1a1a', glow: '#00f2ff', glass: 'rgba(255,255,255,0.05)',
-        warning: '#ff3300', highlight: '#ffffff'
-      },
-      colors: { accent: '#00f2ff', surface: '#121416', text: '#ffffff', weak: '#555555' }
-    },
-    resources: { wasm: 'internal', assets: [] },
-    entities: []
-  });
-
-  // 3. Computed Calculations
-  const testValue = (state.cellData.presentation?.style as Record<string, unknown>)?.testValue as number ?? state.testValue;
-
-  const resolved = useMemo(() => {
-    return BehaviorResolver.resolve(testValue, {
-      ...state.behavior,
-      frameCount: (state.behavior.mapping?.frameRange?.end || 0) - (state.behavior.mapping?.frameRange?.start || 0) + 1
-    });
-  }, [testValue, state.behavior]);
-
-  const previewHTML = useMemo(() => {
-    try {
-      return CellRenderer.renderCellHTML(entityToNode(state.cellData), {
-        zoom: 2.5,
-        runtimeValue: testValue,
-        forceFrame: resolved.frame,
-        steps: 128,
-        skin: (mockManifest.ui as OMEGA_Manifest['ui'] & { skin?: string })?.skin || 'standard',
-        manifest: mockManifest,
-        resolveAsset: resolveAsset || ((id) => id),
-        recipe: state.soloLayerId 
-          ? { ...state.recipe, layers: state.recipe.layers.filter(l => l.id === state.soloLayerId) }
-          : state.recipe
-      });
-    } catch (e) {
-      return `<div class="p-4 text-[8px] text-red-500 font-mono">RENDER_ERROR: ${e}</div>`;
-    }
-  }, [state.cellData, mockManifest, resolveAsset, state.recipe, state.soloLayerId, testValue, resolved.frame]);
 
   // 4. Action Handlers
   const handleRestoreDraft = () => {
@@ -291,7 +253,7 @@ export default function CellStudioContainer({
               setActiveTab={actions.setActiveTab}
               openAssetSelector={actions.openAssetSelector}
               setIsCommandCenterOpen={actions.setIsCommandCenterOpen}
-              handleManifestUpdate={(updates) => setMockManifest(prev => ({ ...prev, ui: { ...prev.ui, ...updates.ui } }))}
+              handleManifestUpdate={handleManifestUpdate}
             />
           </div>
 

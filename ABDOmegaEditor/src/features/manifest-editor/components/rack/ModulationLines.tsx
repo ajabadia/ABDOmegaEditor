@@ -11,7 +11,8 @@
  */
 
 import { useEffect, useState } from 'react';
-import { inputSignalService } from '@/services/inputSignalService';
+import { getService } from '@/services/globalEventBus';
+import { SERVICE_TOKENS } from '@/omega-ui-core/di';
 
 interface ModulationLinesProps {
   /** IDs of ports that have active signals with cross-modulation */
@@ -56,6 +57,7 @@ const SIGNAL_COLORS: Record<string, string> = {
  * Uses native SVG <animate> elements for smooth performance.
  */
 export const ModulationLines = ({ activePortIds, containerRef }: ModulationLinesProps) => {
+  const inputSignalService = getService(SERVICE_TOKENS.INPUT_SIGNAL_SERVICE);
   const [links, setLinks] = useState<ModulationLink[]>([]);
   const [tick, setTick] = useState(0);
 
@@ -137,7 +139,7 @@ export const ModulationLines = ({ activePortIds, containerRef }: ModulationLines
       resizeObserver.disconnect();
       clearInterval(intervalId);
     };
-  }, [activePortIds, containerRef]);
+  }, [activePortIds, containerRef, inputSignalService]);
 
   // Animated pulse value based on tick
   const pulse = 0.5 + 0.5 * Math.sin(tick * 0.2);

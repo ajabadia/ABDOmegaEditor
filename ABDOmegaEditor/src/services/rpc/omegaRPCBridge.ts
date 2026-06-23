@@ -1,11 +1,11 @@
 /**
- * @purpose Gestiona conexiones WebSocket para comunicación RPC de alta fidelidad con validación de ACK, monitoreo de latencia y bufferización del delta en el editor de manifestos OMEGA.
+ * @purpose Gestiona conexiones WebSocket para comunicación RPC de alta fidelidad con validación de ACK, monitoreo de pulso y bufferización del delta en el editor de manifesto OMEGA.
  * @purpose_en Manages WebSocket connections for high-fidelity RPC communication with ACK validation, heartbeat monitoring, and delta buffering in the OMEGA manifest editor.
- * @refactorable true (contains too many state variables and UI parts)
+ * @refactorable false
  * @classification Business Service
  * @complexity Medium
- * @fingerprint exports:1,imports:7,sig:11wb19p
- * @lastUpdated 2026-06-15T17:03:15.037Z
+ * @fingerprint exports:1,imports:7,sig:new
+ * @lastUpdated 2026-06-22
  */
 
 import type { 
@@ -16,8 +16,9 @@ import type {
   DeltaPatch
 } from './rpcTypes';
 import { RPCErrors } from './rpcTypes';
-import { observabilityService } from '../observabilityService';
-import { persistenceService } from '../persistenceService';
+import type { IEventBus } from '@/omega-ui-core/di/EventBus';
+import { emitEvent } from '../globalEventBus';
+import { persistenceService as legacyPersistenceService } from '../persistenceService';
 import { BlueprintResolver } from '@/omega-ui-core/utils/blueprintResolver';
 import { BlueprintValidator } from '@/omega-ui-core/utils/blueprintValidator';
 import type { OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
@@ -42,12 +43,16 @@ export class OmegaRPCBridge {
   private heartbeatInterval: ReturnType<typeof setTimeout> | null = null;
   private readonly HEARTBEAT_TIMEOUT = 3000; // 3 seconds threshold
   private _wasEverConnected = false;
+  protected eventBus: IEventBus | undefined;
+  protected persistenceSvc: typeof legacyPersistenceService;
 
-  constructor(url?: string) {
+  constructor(url?: string, eventBus?: IEventBus, persistenceService?: typeof legacyPersistenceService) {
     // Lazy connection — only connect when explicitly called via connect().
     // This avoids ERR_CONNECTION_REFUSED when no engine is running.
     this.url = url || 'ws://localhost:8081';
     this.sessionId = `session_${Math.random().toString(36).substring(2, 9)}_${Date.now()}`;
+    this.eventBus = eventBus;
+    this.persistenceSvc = persistenceService ?? legacyPersistenceService;
   }
 
   public connect(onStatusChange?: (status: SyncStatus) => void) {
@@ -110,19 +115,8 @@ export class OmegaRPCBridge {
    * High-fidelity full state transmission with mandatory ACK.
    */
   public async syncSnapshot(params: SnapshotParams, manifest: OMEGA_Manifest): Promise<{ success: boolean; hash: string; error?: string }> {
-    const correlationId = observabilityService.generateCorrelationId();
-    const startTime = Date.now();
-    
     this.isSyncingSnapshot = true;
     this.updateStatus('syncing');
-    
-    observabilityService.trackEvent({
-      correlationId,
-      phase: 'PHASE_20_INSTANTIATION',
-      component: 'RPC_BRIDGE',
-      state: 'START',
-      message: 'Initiating full snapshot sync'
-    });
 
     try {
       // Phase 20.4: Blueprint Runtime Instantiation
@@ -135,24 +129,16 @@ export class OmegaRPCBridge {
       // 3. Materialization (RPC Transmission)
       const response = await this.sendWithAck('bridge.syncSnapshot', { ...params, graph: canonicalGraph }) as { hash?: string };
       
-      const durationMs = Date.now() - startTime;
       this.isSyncingSnapshot = false;
       this.updateStatus('in-sync');
-      
-      observabilityService.trackEvent({
-        correlationId,
-        phase: 'PHASE_20_INSTANTIATION',
-        component: 'RPC_BRIDGE',
-        state: 'SUCCESS',
-        durationMs,
-        message: `Snapshot materialized successfully. Hash: ${response.hash}`
-      });
+
+      emitEvent(this.eventBus, 'wasm:deploy', { status: 'RPC_SYNC_SUCCESS' });
 
       // Phase 20.6: Persistence & Recovery
-      persistenceService.saveCanonicalState(
+      this.persistenceSvc.saveCanonicalState(
         params.documentId || manifest.id || 'anonymous',
         canonicalGraph,
-        correlationId,
+        `sync_${Date.now()}`,
         response.hash || 'ACK',
         manifest.schemaVersion || '7.2.3'
       );
@@ -163,16 +149,9 @@ export class OmegaRPCBridge {
       return { success: true, hash: response.hash || 'ACK' };
     } catch (err: unknown) {
       const error = err as Error;
-      const durationMs = Date.now() - startTime;
-      observabilityService.trackEvent({
-        correlationId,
-        phase: 'PHASE_20_INSTANTIATION',
-        component: 'RPC_BRIDGE',
-        state: 'REJECT',
-        durationMs,
-        code: 'SYNC_FAILED',
-        message: error.message,
-        metadata: { error: err }
+      emitEvent(this.eventBus, 'system:error', {
+        source: 'RPC_BRIDGE',
+        message: `Snapshot sync failed: ${error.message}`,
       });
 
       this.isSyncingSnapshot = false;

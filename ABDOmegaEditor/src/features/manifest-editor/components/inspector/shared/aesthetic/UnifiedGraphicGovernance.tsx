@@ -6,8 +6,8 @@
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:7,sig:1jn2g8p
- * @lastUpdated 2026-06-15T11:41:35.613Z
+ * @fingerprint exports:1,imports:7,sig:21jkcd
+ * @lastUpdated 2026-06-20T09:18:07.430Z
  */
 
 import { Image as ImageIcon, Film, Layers, Move, Maximize } from 'lucide-react';

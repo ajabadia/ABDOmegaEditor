@@ -72,7 +72,6 @@ export const orchestratorReducer = (state: OrchestratorState, action: Orchestrat
       };
 
     case 'CLOSE_DOCUMENT':
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { [action.id]: _removed, ...remainingDocs } = state.documentsById;
       const nextActiveId = state.activeDocumentId === action.id 
         ? Object.keys(remainingDocs)[0] || 'primary'

@@ -6,8 +6,8 @@
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Low
- * @fingerprint exports:1,imports:3,sig:1lz597l
- * @lastUpdated 2026-06-15T11:40:47.448Z
+ * @fingerprint exports:1,imports:3,sig:2h1jwk
+ * @lastUpdated 2026-06-20T09:17:35.844Z
  */
 
 import { CircleDot, Sun, Layers, Shield, Square } from 'lucide-react';

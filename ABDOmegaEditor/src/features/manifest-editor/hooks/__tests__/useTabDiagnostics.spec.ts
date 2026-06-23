@@ -8,7 +8,7 @@ import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals
 import { renderHook, act } from '@testing-library/react';
 import type { OMEGA_Manifest, OMEGA_Contract } from '@/omega-ui-core/types/manifest';
 import { structuralAuditor } from '@/features/manifest-editor/services/StructuralAuditor';
-import type { AuditResult } from '@/features/manifest-editor/types/diagnostics';
+import type { AuditResult } from '@/omega-ui-core/types/audit';
 import { useTabDiagnostics } from '../useTabDiagnostics';
 
 // ── Spy on structuralAuditor.extractDiagnostics ────────────────────────

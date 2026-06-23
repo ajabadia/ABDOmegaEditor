@@ -73,6 +73,42 @@ exports[`CustomizePopover — snapshots should match snapshot for closed state 1
         />
       </svg>
     </button>
+    <button
+      aria-label="Transform/Scale Tool (T)"
+      aria-pressed="false"
+      class="flex items-center justify-center rounded-xs transition-all w-7 h-7 wb-text-muted hover:wb-text hover:bg-primary/10 "
+      title="Transform/Scale Tool (T)"
+    >
+      <svg
+        aria-hidden="true"
+        class="lucide lucide-scale w-3.5 h-3.5"
+        fill="none"
+        height="24"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M12 3v18"
+        />
+        <path
+          d="m19 8 3 8a5 5 0 0 1-6 0zV7"
+        />
+        <path
+          d="M3 7h1a17 17 0 0 0 8-2 17 17 0 0 0 8 2h1"
+        />
+        <path
+          d="m5 8 3 8a5 5 0 0 1-6 0zV7"
+        />
+        <path
+          d="M7 21h10"
+        />
+      </svg>
+    </button>
     <div
       class="relative"
     >
@@ -574,6 +610,121 @@ exports[`CustomizePopover — snapshots should match snapshot for open popover (
       >
         <svg
           aria-hidden="true"
+          class="lucide lucide-scale w-3 h-3"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M12 3v18"
+          />
+          <path
+            d="m19 8 3 8a5 5 0 0 1-6 0zV7"
+          />
+          <path
+            d="M3 7h1a17 17 0 0 0 8-2 17 17 0 0 0 8 2h1"
+          />
+          <path
+            d="m5 8 3 8a5 5 0 0 1-6 0zV7"
+          />
+          <path
+            d="M7 21h10"
+          />
+        </svg>
+      </span>
+      <span
+        class="flex-1 text-[8px] font-bold uppercase tracking-wider wb-text truncate"
+      >
+        Transform Tool
+      </span>
+      <button
+        aria-label="Hide button"
+        class="p-0.5 rounded-xs hover:bg-white/10 transition-colors"
+        title="Hide button"
+      >
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-eye w-2.5 h-2.5 text-primary/60"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"
+          />
+          <circle
+            cx="12"
+            cy="12"
+            r="3"
+          />
+        </svg>
+      </button>
+    </div>
+    <div
+      class="flex items-center gap-2 px-3 py-1.5 transition-all  "
+      draggable="true"
+    >
+      <svg
+        aria-hidden="true"
+        class="lucide lucide-grip-vertical w-2.5 h-2.5 shrink-0 wb-text-muted cursor-grab active:cursor-grabbing"
+        fill="none"
+        height="24"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <circle
+          cx="9"
+          cy="12"
+          r="1"
+        />
+        <circle
+          cx="9"
+          cy="5"
+          r="1"
+        />
+        <circle
+          cx="9"
+          cy="19"
+          r="1"
+        />
+        <circle
+          cx="15"
+          cy="12"
+          r="1"
+        />
+        <circle
+          cx="15"
+          cy="5"
+          r="1"
+        />
+        <circle
+          cx="15"
+          cy="19"
+          r="1"
+        />
+      </svg>
+      <span
+        class="shrink-0 wb-text-muted"
+      >
+        <svg
+          aria-hidden="true"
           class="lucide lucide-plus w-3 h-3"
           fill="none"
           height="24"
@@ -1076,9 +1227,9 @@ exports[`CustomizePopover — snapshots should match snapshot for open popover (
     <span
       class="text-[6px] font-mono wb-text-muted"
     >
-      10
+      11
        / 
-      10
+      11
        visible
     </span>
   </div>
@@ -1387,6 +1538,121 @@ exports[`CustomizePopover — snapshots should match snapshot for open popover (
       >
         <svg
           aria-hidden="true"
+          class="lucide lucide-scale w-3 h-3"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M12 3v18"
+          />
+          <path
+            d="m19 8 3 8a5 5 0 0 1-6 0zV7"
+          />
+          <path
+            d="M3 7h1a17 17 0 0 0 8-2 17 17 0 0 0 8 2h1"
+          />
+          <path
+            d="m5 8 3 8a5 5 0 0 1-6 0zV7"
+          />
+          <path
+            d="M7 21h10"
+          />
+        </svg>
+      </span>
+      <span
+        class="flex-1 text-[8px] font-bold uppercase tracking-wider wb-text truncate"
+      >
+        Transform Tool
+      </span>
+      <button
+        aria-label="Hide button"
+        class="p-0.5 rounded-xs hover:bg-white/10 transition-colors"
+        title="Hide button"
+      >
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-eye w-2.5 h-2.5 text-primary/60"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"
+          />
+          <circle
+            cx="12"
+            cy="12"
+            r="3"
+          />
+        </svg>
+      </button>
+    </div>
+    <div
+      class="flex items-center gap-2 px-3 py-1.5 transition-all  "
+      draggable="true"
+    >
+      <svg
+        aria-hidden="true"
+        class="lucide lucide-grip-vertical w-2.5 h-2.5 shrink-0 wb-text-muted cursor-grab active:cursor-grabbing"
+        fill="none"
+        height="24"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <circle
+          cx="9"
+          cy="12"
+          r="1"
+        />
+        <circle
+          cx="9"
+          cy="5"
+          r="1"
+        />
+        <circle
+          cx="9"
+          cy="19"
+          r="1"
+        />
+        <circle
+          cx="15"
+          cy="12"
+          r="1"
+        />
+        <circle
+          cx="15"
+          cy="5"
+          r="1"
+        />
+        <circle
+          cx="15"
+          cy="19"
+          r="1"
+        />
+      </svg>
+      <span
+        class="shrink-0 wb-text-muted"
+      >
+        <svg
+          aria-hidden="true"
           class="lucide lucide-plus w-3 h-3"
           fill="none"
           height="24"
@@ -1889,9 +2155,9 @@ exports[`CustomizePopover — snapshots should match snapshot for open popover (
     <span
       class="text-[6px] font-mono wb-text-muted"
     >
-      10
+      11
        / 
-      10
+      11
        visible
     </span>
   </div>
@@ -2204,6 +2470,121 @@ exports[`CustomizePopover — snapshots should match snapshot for open popover (
       >
         <svg
           aria-hidden="true"
+          class="lucide lucide-scale w-3 h-3"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M12 3v18"
+          />
+          <path
+            d="m19 8 3 8a5 5 0 0 1-6 0zV7"
+          />
+          <path
+            d="M3 7h1a17 17 0 0 0 8-2 17 17 0 0 0 8 2h1"
+          />
+          <path
+            d="m5 8 3 8a5 5 0 0 1-6 0zV7"
+          />
+          <path
+            d="M7 21h10"
+          />
+        </svg>
+      </span>
+      <span
+        class="flex-1 text-[8px] font-bold uppercase tracking-wider wb-text truncate"
+      >
+        Transform Tool
+      </span>
+      <button
+        aria-label="Hide button"
+        class="p-0.5 rounded-xs hover:bg-white/10 transition-colors"
+        title="Hide button"
+      >
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-eye w-2.5 h-2.5 text-primary/60"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"
+          />
+          <circle
+            cx="12"
+            cy="12"
+            r="3"
+          />
+        </svg>
+      </button>
+    </div>
+    <div
+      class="flex items-center gap-2 px-3 py-1.5 transition-all  "
+      draggable="true"
+    >
+      <svg
+        aria-hidden="true"
+        class="lucide lucide-grip-vertical w-2.5 h-2.5 shrink-0 wb-text-muted cursor-grab active:cursor-grabbing"
+        fill="none"
+        height="24"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <circle
+          cx="9"
+          cy="12"
+          r="1"
+        />
+        <circle
+          cx="9"
+          cy="5"
+          r="1"
+        />
+        <circle
+          cx="9"
+          cy="19"
+          r="1"
+        />
+        <circle
+          cx="15"
+          cy="12"
+          r="1"
+        />
+        <circle
+          cx="15"
+          cy="5"
+          r="1"
+        />
+        <circle
+          cx="15"
+          cy="19"
+          r="1"
+        />
+      </svg>
+      <span
+        class="shrink-0 wb-text-muted"
+      >
+        <svg
+          aria-hidden="true"
           class="lucide lucide-plus w-3 h-3"
           fill="none"
           height="24"
@@ -2714,9 +3095,9 @@ exports[`CustomizePopover — snapshots should match snapshot for open popover (
     <span
       class="text-[6px] font-mono wb-text-muted"
     >
-      7
+      8
        / 
-      10
+      11
        visible
     </span>
   </div>

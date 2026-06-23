@@ -4,8 +4,8 @@
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Low
- * @fingerprint exports:1,imports:3,sig:1mr2l8d
- * @lastUpdated 2026-06-15T11:50:44.957Z
+ * @fingerprint exports:1,imports:3,sig:1mw14j7
+ * @lastUpdated 2026-06-20T09:18:35.348Z
  */
 
 import React from 'react';

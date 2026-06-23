@@ -183,6 +183,46 @@ describe('ToolbarIconButton — className prop', () => {
   });
 });
 
+// ── aria-pressed (WCAG toggle button) ──────────────────────────────────
+
+describe('ToolbarIconButton — aria-pressed', () => {
+  it('should set aria-pressed="true" when active=true and onClick provided', () => {
+    render(<ToolbarIconButton icon={<span />} onClick={() => {}} active />);
+    const btn = screen.getByRole('button');
+    expect(btn.getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('should set aria-pressed="false" when active=false and onClick provided', () => {
+    render(<ToolbarIconButton icon={<span />} onClick={() => {}} active={false} />);
+    const btn = screen.getByRole('button');
+    expect(btn.getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it('should NOT set aria-pressed when active prop is not provided (undefined)', () => {
+    render(<ToolbarIconButton icon={<span />} onClick={() => {}} />);
+    const btn = screen.getByRole('button');
+    expect(btn.getAttribute('aria-pressed')).toBeNull();
+  });
+
+  it('should NOT set aria-pressed when onClick is not provided', () => {
+    render(<ToolbarIconButton icon={<span />} active />);
+    const btn = screen.getByRole('button');
+    expect(btn.getAttribute('aria-pressed')).toBeNull();
+  });
+
+  it('should NOT set aria-pressed when both active and onClick are missing', () => {
+    render(<ToolbarIconButton icon={<span />} />);
+    const btn = screen.getByRole('button');
+    expect(btn.getAttribute('aria-pressed')).toBeNull();
+  });
+
+  it('should set aria-label to match title for accessibility', () => {
+    render(<ToolbarIconButton icon={<span />} onClick={() => {}} title="Select Tool" />);
+    const btn = screen.getByRole('button');
+    expect(btn.getAttribute('aria-label')).toBe('Select Tool');
+  });
+});
+
 // ── Title ───────────────────────────────────────────────────────────────
 
 describe('ToolbarIconButton — title', () => {

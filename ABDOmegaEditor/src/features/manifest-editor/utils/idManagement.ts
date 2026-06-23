@@ -1,66 +1,11 @@
 /**
- * @purpose Gestiona el reciclaje de IDs para ManifestEntities y árboles OmegaNode en el editor de manifesto OMEGA.
- * @purpose_en Manages the reciclaje de IDs para ManifestEntities y árboles OmegaNode en el editor de manifesto OMEGA.
+ * @purpose Re-export canonical id management utilities from omega-ui-core.
  * @refactorable false
  * @classification Helper Utility
  * @complexity Low
- * @fingerprint exports:2,imports:1,sig:ixnf87
- * @lastUpdated 2026-06-15T15:17:22.593Z
+ * @fingerprint exports:2,imports:0,sig:deprecated
+ * @lastUpdated 2026-06-22
+ * @deprecated Import directly from '@/omega-ui-core/utils/idManagement'
  */
 
-import type { ManifestEntity, OmegaNode, Attachment } from '@/omega-ui-core/types/manifest';
-
-/**
- * OMEGA Identity Governance (Phase 9.1)
- * Utilities for deep cloning and recursive ID regeneration.
- * Resolves RISK-004 (ID Collisions in Cross-Doc/Blueprint workflows).
- */
-
-/**
- * Regenerates the ID of a flat ManifestEntity and its internal attachments.
- */
-export const regenerateEntityId = (entity: ManifestEntity): ManifestEntity => {
-  const newId = `ent_${crypto.randomUUID().slice(0, 8)}`;
-  
-  // Deep clone to avoid mutations
-  const cloned = structuredClone(entity);
-  cloned.id = newId;
-
-  // Regenerate attachment IDs if they exist
-  if (cloned.presentation?.attachments) {
-    cloned.presentation.attachments = cloned.presentation.attachments.map((att: Attachment) => ({
-      ...att,
-      id: `att_${crypto.randomUUID().slice(0, 8)}`
-    }));
-  }
-
-  return cloned;
-};
-
-/**
- * Recursively clones an OmegaNode tree and regenerates ALL IDs.
- * Returns both the new tree and a map of old->new IDs for reference updates.
- */
-export const cloneAndRegenerateNodeIds = (node: OmegaNode): { node: OmegaNode; idMap: Record<string, string> } => {
-  const idMap: Record<string, string> = {};
-
-  const processNode = (n: OmegaNode): OmegaNode => {
-    const oldId = n.id;
-    const newId = `node_${crypto.randomUUID().slice(0, 8)}`;
-    idMap[oldId] = newId;
-
-    const cloned: OmegaNode = {
-      ...structuredClone(n),
-      id: newId
-    };
-
-    if (cloned.children && cloned.children.length > 0) {
-      cloned.children = cloned.children.map(child => processNode(child));
-    }
-
-    return cloned;
-  };
-
-  const newNode = processNode(node);
-  return { node: newNode, idMap };
-};
+export { regenerateEntityId, cloneAndRegenerateNodeIds } from '@/omega-ui-core/utils/idManagement';

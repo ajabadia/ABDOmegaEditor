@@ -32,6 +32,8 @@ export interface UCADebugContext {
   onUpdateDragOffset?: ((offset: { x: number; y: number; draggedNodeId: string } | null) => void) | undefined;
   activeResizeOffset?: { x: number; y: number; width: number; height: number; resizedNodeId: string } | null | undefined;
   onUpdateResizeOffset?: ((offset: { x: number; y: number; width: number; height: number; resizedNodeId: string } | null) => void) | undefined;
+  activeRotationOffset?: { angle: number; rotatedNodeId: string } | null | undefined;
+  onUpdateRotationOffset?: ((offset: { angle: number; rotatedNodeId: string } | null) => void) | undefined;
   /** Wraps resize operations in an undo/redo transaction */
   startTransaction?: ((label: string) => void) | undefined;
   commitTransaction?: (() => void) | undefined;

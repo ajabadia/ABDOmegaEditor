@@ -22,13 +22,14 @@ interface ViewportControlsProps {
   onToggleRulers?: (() => void) | undefined;
   rulersVisible?: boolean | undefined;
   viewMode?: string | undefined;
+  isLiveMode?: boolean;
 }
 
 /**
  * ViewportControls
  * Industrial floating toolbar for viewport navigation.
  */
-export default function ViewportControls({ zoom, onZoom, onPan, onReset, onFit, onToggleRulers, rulersVisible, viewMode }: ViewportControlsProps) {
+export default function ViewportControls({ zoom, onZoom, onPan, onReset, onFit, onToggleRulers, rulersVisible, viewMode, isLiveMode }: ViewportControlsProps) {
   const isRackView = viewMode === 'rack';
   return (
     <div className="absolute bottom-6 right-6 flex items-center gap-3 z-50">
@@ -82,8 +83,8 @@ export default function ViewportControls({ zoom, onZoom, onPan, onReset, onFit, 
         </div>
       </div>
 
-      {/* RULERS GROUP — only in rack view */}
-      {isRackView && onToggleRulers && (
+      {/* RULERS GROUP — only in rack view, hidden in live mode */}
+      {isRackView && !isLiveMode && onToggleRulers && (
         <div className="flex items-center wb-surface backdrop-blur-md border wb-outline rounded-xs p-1 shadow-2xl transition-colors duration-500">
           <button
             onClick={onToggleRulers}

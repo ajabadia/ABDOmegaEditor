@@ -6,8 +6,8 @@
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:3,imports:2,sig:16bdnca
- * @lastUpdated 2026-06-15T22:05:01.759Z
+ * @fingerprint exports:3,imports:3,sig:1hkftoa
+ * @lastUpdated 2026-06-20T12:52:21.953Z
  */
 
 import React, { useEffect, useRef, useState, useCallback, useMemo, startTransition } from 'react';
@@ -235,11 +235,11 @@ export default function CommandPalette({
 
   if (!isOpen) return null;
 
-  const actionCount = filtered.filter(i => i.type === 'action').length;
-  const nodeCount = filtered.filter(i => i.type === 'node').length;
+  const actionItems = filtered.filter((i): i is ActionItem => i.type === 'action');
+  const nodeItems = filtered.filter((i): i is NodeItem => i.type === 'node');
 
   return (
-    <div 
+    <div
       ref={focusTrapRef}
       role="dialog"
       aria-modal="true"
@@ -258,93 +258,156 @@ export default function CommandPalette({
         className="relative w-full max-w-[420px] pointer-events-auto animate-in fade-in zoom-in-95 duration-100"
         onKeyDown={handleKeyDown}
       >
-        {/* Search input */}
-        <div className="flex items-center gap-2 px-3 py-2 bg-[#0c0c0d] border border-white/15 rounded-t-xs shadow-2xl">
-          <Search className="w-3.5 h-3.5 text-white/30 shrink-0" />
-          <input
-            ref={inputRef}
-            type="text"
-            value={query}
-            onChange={(e) => { setQuery(e.target.value); setHighlightedIndex(0); }}
-            placeholder="Search nodes and actions..."
-            className="flex-1 bg-transparent border-none outline-none text-[11px] text-white/80 placeholder-white/25 font-mono"
-            spellCheck={false}
-            autoComplete="off"
-            aria-label="Search nodes and actions"
-          />
-          <span className="text-[7px] font-mono text-white/20 border border-white/10 rounded-xs px-1 py-0.5">
-            Ctrl+K
-          </span>
-        </div>
+        <PaletteSearchInput
+          ref={inputRef}
+          query={query}
+          onQueryChange={(v) => { setQuery(v); setHighlightedIndex(0); }}
+        />
 
         {/* Results */}
         <div
           ref={listRef}
           className="max-h-[320px] overflow-y-auto overscroll-contain border-x border-b border-white/10 bg-[#0c0c0d] rounded-b-xs shadow-2xl"
         >
-          {filtered.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-10 gap-1 select-none">
-              <Command className="w-6 h-6 text-white/10" />
-              <span className="text-[9px] text-white/20 font-mono">No results for &ldquo;{query}&rdquo;</span>
-            </div>
-          )}
-
-          {/* Actions section */}
-          {actionCount > 0 && (
-            <div>
-              <div className="sticky top-0 bg-[#0c0c0d] px-3 py-1 border-b border-white/5 z-10">
-                <span className="text-[6px] font-mono uppercase tracking-widest text-primary/60">Actions</span>
-              </div>
-              {filtered.map((item, idx) => {
-                if (item.type !== 'action') return null;
-                return (
-                  <PaletteItem
-                    key={`action-${item.index}`}
-                    label={item.label}
-                    category={item.category}
-                    shortcut={item.shortcut}
-                    isHighlighted={idx === highlightedIndex}
-                    onClick={() => { item.onExecute(); onClose(); }}
-                    onMouseEnter={() => setHighlightedIndex(idx)}
-                  />
-                );
-              })}
-            </div>
-          )}
-
-          {/* Nodes section */}
-          {nodeCount > 0 && (
-            <div>
-              <div className="sticky top-0 bg-[#0c0c0d] px-3 py-1 border-b border-white/5 z-10">
-                <span className="text-[6px] font-mono uppercase tracking-widest text-amber-400/60">Nodes</span>
-              </div>
-              {filtered.map((item, idx) => {
-                if (item.type !== 'node') return null;
-                return (
-                  <PaletteItem
-                    key={`node-${item.index}`}
-                    label={item.label}
-                    category={item.category}
-                    iconChar={NODE_KIND_ICONS[item.kind] || '○'}
-                    iconColor={NODE_KIND_COLORS[item.kind] || 'text-white/40'}
-                    isHighlighted={idx === highlightedIndex}
-                    onClick={() => { item.onExecute(); onClose(); }}
-                    onMouseEnter={() => setHighlightedIndex(idx)}
-                  />
-                );
-              })}
-            </div>
-          )}
+          {filtered.length === 0 && <PaletteEmptyState query={query} />}
+          <PaletteSection
+            label="Actions"
+            headerColor="text-primary/60"
+            items={actionItems}
+            offset={0}
+            highlightedIndex={highlightedIndex}
+            onItemClick={(item) => { item.onExecute(); onClose(); }}
+            onItemHover={setHighlightedIndex}
+          />
+          <PaletteSection
+            label="Nodes"
+            headerColor="text-amber-400/60"
+            items={nodeItems}
+            offset={actionItems.length}
+            highlightedIndex={highlightedIndex}
+            onItemClick={(item) => { item.onExecute(); onClose(); }}
+            onItemHover={setHighlightedIndex}
+            renderItem={(item, isHighlighted, onClick, onHover) => (
+              <PaletteItem
+                label={item.label}
+                category={item.category}
+                iconChar={NODE_KIND_ICONS[item.kind] || '○'}
+                iconColor={NODE_KIND_COLORS[item.kind] || 'text-white/40'}
+                isHighlighted={isHighlighted}
+                onClick={onClick}
+                onMouseEnter={onHover}
+              />
+            )}
+          />
         </div>
 
-        {/* Footer hint */}
-        <div className="flex items-center justify-between px-3 py-1 bg-black/40 border border-white/5 rounded-b-xs">
-          <span className="text-[6px] font-mono text-white/15">
-            <ArrowRight className="w-2 h-2 inline mr-0.5" /> Navigate &bull; Enter to select
-          </span>
-          <span className="text-[6px] font-mono text-white/15">Esc to close</span>
-        </div>
+        <PaletteFooter />
       </div>
+    </div>
+  );
+}
+
+// ── Sub-components ────────────────────────────────────────────────────────
+
+/** Search input with icon and Ctrl+K badge */
+const PaletteSearchInput = React.forwardRef<HTMLInputElement, {
+  query: string;
+  onQueryChange: (value: string) => void;
+}>(({ query, onQueryChange }, ref) => (
+  <div className="flex items-center gap-2 px-3 py-2 bg-[#0c0c0d] border border-white/15 rounded-t-xs shadow-2xl">
+    <Search className="w-3.5 h-3.5 text-white/30 shrink-0" />
+    <input
+      ref={ref}
+      type="text"
+      value={query}
+      onChange={(e) => onQueryChange(e.target.value)}
+      placeholder="Search nodes and actions..."
+      className="flex-1 bg-transparent border-none outline-none text-[11px] text-white/80 placeholder-white/25 font-mono"
+      spellCheck={false}
+      autoComplete="off"
+      aria-label="Search nodes and actions"
+    />
+    <span className="text-[7px] font-mono text-white/20 border border-white/10 rounded-xs px-1 py-0.5">
+      Ctrl+K
+    </span>
+  </div>
+));
+PaletteSearchInput.displayName = 'PaletteSearchInput';
+
+/** Empty state when no results match the query */
+function PaletteEmptyState({ query }: { query: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-10 gap-1 select-none">
+      <Command className="w-6 h-6 text-white/10" />
+      <span className="text-[9px] text-white/20 font-mono">No results for &ldquo;{query}&rdquo;</span>
+    </div>
+  );
+}
+
+/** Footer with keyboard hints */
+function PaletteFooter() {
+  return (
+    <div className="flex items-center justify-between px-3 py-1 bg-black/40 border border-white/5 rounded-b-xs">
+      <span className="text-[6px] font-mono text-white/15">
+        <ArrowRight className="w-2 h-2 inline mr-0.5" /> Navigate &bull; Enter to select
+      </span>
+      <span className="text-[6px] font-mono text-white/15">Esc to close</span>
+    </div>
+  );
+}
+
+/** A section of the palette with a sticky header and filtered items */
+function PaletteSection<T extends PaletteListItem>({
+  label,
+  headerColor,
+  items,
+  offset,
+  highlightedIndex,
+  onItemClick,
+  onItemHover,
+  renderItem,
+}: {
+  label: string;
+  headerColor: string;
+  items: T[];
+  offset: number;
+  highlightedIndex: number;
+  onItemClick: (item: T) => void;
+  onItemHover: (index: number) => void;
+  renderItem?: (item: T, isHighlighted: boolean, onClick: () => void, onHover: () => void) => React.ReactNode;
+}) {
+  if (items.length === 0) return null;
+
+  return (
+    <div>
+      <div className="sticky top-0 bg-[#0c0c0d] px-3 py-1 border-b border-white/5 z-10">
+        <span className={`text-[6px] font-mono uppercase tracking-widest ${headerColor}`}>{label}</span>
+      </div>
+      {items.map((item, idx) => {
+        const globalIdx = offset + idx;
+        const isHighlighted = globalIdx === highlightedIndex;
+
+        if (renderItem) {
+          return (
+            <React.Fragment key={`${label}-${idx}`}>
+              {renderItem(item, isHighlighted, () => onItemClick(item), () => onItemHover(globalIdx))}
+            </React.Fragment>
+          );
+        }
+
+        // Default render: ActionItem (has shortcut)
+        return (
+          <PaletteItem
+            key={`${label}-${idx}`}
+            label={item.label}
+            category={item.category}
+            shortcut={'shortcut' in item ? (item as ActionItem).shortcut : undefined}
+            isHighlighted={isHighlighted}
+            onClick={() => onItemClick(item)}
+            onMouseEnter={() => onItemHover(globalIdx)}
+          />
+        );
+      })}
     </div>
   );
 }

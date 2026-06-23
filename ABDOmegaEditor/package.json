@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "tsx src/services/persistence.test.ts && tsx src/services/batching.test.ts && tsx src/services/observability.test.ts && tsx src/services/reconciliation.test.ts && tsx src/features/manifest-editor/hooks/transaction.test.ts && tsx src/omega-ui-core/uca/circularity.test.ts && tsx src/omega-ui-core/uca/recursivePath.test.ts && tsx src/omega-ui-core/uca/utils/pathResolver.test.ts",
+    "test": "jest",
     "test:node": "node --test src/features/manifest-editor/hooks/entities/__tests__/ucaInspectorAdapter.spec.ts",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",

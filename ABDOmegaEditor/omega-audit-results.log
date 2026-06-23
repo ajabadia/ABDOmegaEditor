@@ -1,93 +1,61 @@
-﻿OMEGA SYSTEM AUDIT REPORT - 06/18/2026 10:05:04
+﻿OMEGA SYSTEM AUDIT REPORT - 06/22/2026 23:44:43
 
-[PHASE:SUCCESS] [1/6 Structural Integrity]: Passed successfully with 0 errors and 319 warnings.
+[PHASE:SUCCESS] [1/6 Structural Integrity]: Passed successfully with 0 errors and 170 warnings.
 --- WARNING DETAILS START ---
 
 [OMEGA ARCH-GUARD] Auditing architectural precedence (ADR-014)...
 
-=== ⚠️ MEDIUM RISK HALLUCINATIONS (61) ===
+=== ÔÜá´©Å MEDIUM RISK HALLUCINATIONS (18) ===
 [throw new Error] src\components\ui\contact\useContactForm.ts:66 -> throw new Error(result.error || t("error"));
-[ElementCatalog] src\features\manifest-editor\components\inspector\aesthetic\styles\library\GuildNavigator.tsx:13 -> import type { ElementCategory } from '@/omega-ui-core/governance/ElementCatalog'...
-[ElementCatalog] src\features\manifest-editor\components\inspector\aesthetic\styles\ModuleStyleLibrary.tsx:16 -> import { OMEGA_ELEMENT_CATALOG, type ElementCategory, getElementDefinition } fro...
 [allowedFragments] src\features\manifest-editor\components\inspector\attachments\AttachmentTypeAnchor.tsx:28 -> const allowedIds = hostDef?.allowedFragments || [];
-[ElementCatalog] src\features\manifest-editor\components\inspector\attachments\AttachmentTypeAnchor.tsx:16 -> import { OMEGA_ELEMENT_CATALOG, getElementDefinition } from '@/omega-ui-core/gov...
 [throw new Error] src\features\manifest-editor\components\inspector\BlueprintLibraryPanel.tsx:95 -> if (!res.ok) throw new Error(`Catalog fetch failed: ${res.status}`);
 [throw new Error] src\features\manifest-editor\components\inspector\BlueprintLibraryPanel.tsx:102 -> if (!bpRes.ok) throw new Error(`Blueprint fetch failed: ${bpRes.status}`);
+[throw new Error] src\features\manifest-editor\components\ToastContainer.tsx:39 -> if (!ctx) throw new Error('useToast must be used within a ToastProvider');
+[validate] src\features\manifest-editor\components\viewport\NumericResizePopover.tsx:172 -> else if (e.key === 'Enter') { e.preventDefault(); validateAndCommit(); }
+[validate] src\features\manifest-editor\components\viewport\NumericRotatePopover.tsx:83 -> const angle = validateAngle(angleStr);
+[validate] src\features\manifest-editor\components\viewport\NumericRotatePopover.tsx:145 -> value={validateAngle(angleStr) ?? 0}
+[validate] src\features\manifest-editor\components\viewport\NumericRotatePopover.tsx:160 -> Math.abs((validateAngle(angleStr) ?? 0) - a) < 1
+[validate] src\features\manifest-editor\hooks\io\useBundleTransfer.ts:282 -> const validation = validateManifestSchema(parsed);
+[throw new Error] src\features\manifest-editor\hooks\io\useManifestTransfer.ts:36 -> if (!parsed || typeof parsed !== 'object') throw new Error("Invalid manifest for...
+[throw new Error] src\features\manifest-editor\hooks\io\useManifestTransfer.ts:215 -> if (req !== 'granted') throw new Error('File system write permission denied.');
+[throw new Error] src\features\manifest-editor\hooks\io\useWasmTransfer.ts:108 -> throw new Error("Missing mandatory 'id' or 'ports' fields in contract.");
+[validate] src\features\manifest-editor\hooks\orchestrator\useDocumentTransactions.ts:47 -> BlueprintValidator.validate(doc.manifest.ui.tree, doc.manifest);
+[validate] src\features\manifest-editor\hooks\orchestrator\useSessionPersistence.ts:32 -> BlueprintValidator.validate(persisted.graph, { id: persisted.id });
+... and 3 more in this category.
+
+=== Ô£à LOW RISK HALLUCINATIONS (152) ===
+[ElementCatalog] src\features\manifest-editor\components\inspector\aesthetic\styles\library\GuildNavigator.tsx:13 -> import type { ElementCategory } from '@/omega-ui-core/governance/ElementCatalog'...
+[ElementCatalog] src\features\manifest-editor\components\inspector\aesthetic\styles\ModuleStyleLibrary.tsx:16 -> import { OMEGA_ELEMENT_CATALOG, type ElementCategory, getElementDefinition } fro...
+[ElementCatalog] src\features\manifest-editor\components\inspector\attachments\AttachmentTypeAnchor.tsx:16 -> import { OMEGA_ELEMENT_CATALOG, getElementDefinition } from '@/omega-ui-core/gov...
 [ElementCatalog] src\features\manifest-editor\components\inspector\sections\AestheticSection.tsx:23 -> import { getElementDefinition } from '@/omega-ui-core/governance/ElementCatalog'...
 [ElementCatalog] src\features\manifest-editor\components\inspector\sections\LogicSection.tsx:20 -> import { OMEGA_ELEMENT_CATALOG } from '@/omega-ui-core/governance/ElementCatalog...
 [ElementCatalog] src\features\manifest-editor\components\inspector\sections\SpatialSection.tsx:21 -> import { getElementDefinition } from '@/omega-ui-core/governance/ElementCatalog'...
 [ElementCatalog] src\features\manifest-editor\components\inspector\shared\aesthetic\GovernanceRegistry.ts:11 -> import type { AestheticCapability } from "@/omega-ui-core/governance/ElementCata...
 [ElementCatalog] src\features\manifest-editor\components\inspector\shared\aesthetic\IdentityGovernance.tsx:14 -> import type { AestheticCapability } from '@/omega-ui-core/governance/ElementCata...
 [ElementCatalog] src\features\manifest-editor\components\inspector\shared\aesthetic\IdentityGovernance.tsx:15 -> import { OMEGA_ELEMENT_CATALOG } from '@/omega-ui-core/governance/ElementCatalog...
-[reject] src\features\manifest-editor\components\inspector\shared\aesthetic\SequenceIngestionLab.tsx:52 -> return new Promise<HTMLImageElement>((resolve, reject) => {
-[reject] src\features\manifest-editor\components\inspector\shared\aesthetic\SequenceIngestionLab.tsx:55 -> img.onerror = reject;
-... and 46 more in this category.
-
-=== ✅ LOW RISK HALLUCINATIONS (258) ===
-[allowedFragments] src\omega-ui-core\governance\ElementCatalog.ts:20 -> * - 'capabilities' and 'allowedFragments' are soft suggestions for UI filtering.
-[allowedFragments] src\omega-ui-core\governance\ElementCatalog.ts:87 -> * `allowedFragments` is advisory only. Use it for editor UX suggestions (e.g. "+...
-[allowedFragments] src\omega-ui-core\governance\ElementCatalog.ts:90 -> allowedFragments?: string[]; // IDs of elements that can be attached to this hos...
-[allowedFragments] src\omega-ui-core\governance\ElementCatalog.ts:106 -> allowedFragments: ['rack-screw', 'label', 'illustration'],
-[allowedFragments] src\omega-ui-core\governance\ElementCatalog.ts:117 -> allowedFragments: ['label', 'illustration', 'led']
-[allowedFragments] src\omega-ui-core\governance\ElementCatalog.ts:127 -> allowedFragments: ['label', 'illustration', 'container', 'group', 'cell']
-[allowedFragments] src\omega-ui-core\governance\ElementCatalog.ts:139 -> allowedFragments: ['label', 'led', 'port', 'switch', 'stepper', 'graphic-fragmen...
-[allowedFragments] src\omega-ui-core\governance\ElementCatalog.ts:150 -> allowedFragments: ['label', 'led', 'port', 'graphic-fragment'],
-[allowedFragments] src\omega-ui-core\governance\ElementCatalog.ts:161 -> allowedFragments: ['label', 'led', 'port', 'graphic-fragment'],
-[allowedFragments] src\omega-ui-core\governance\ElementCatalog.ts:172 -> allowedFragments: ['label', 'led'],
-[allowedFragments] src\omega-ui-core\governance\ElementCatalog.ts:183 -> allowedFragments: ['label'],
-[allowedFragments] src\omega-ui-core\governance\ElementCatalog.ts:194 -> allowedFragments: ['label']
-[allowedFragments] src\omega-ui-core\governance\ElementCatalog.ts:204 -> allowedFragments: ['label']
-[allowedFragments] src\omega-ui-core\governance\ElementCatalog.ts:214 -> allowedFragments: ['label']
-[allowedFragments] src\omega-ui-core\governance\ElementCatalog.ts:226 -> allowedFragments: ['label', 'led']
-... and 243 more in this category.
+[ElementCatalog] src\features\manifest-editor\components\inspector\shared\aesthetic\UnifiedGraphicGovernance.tsx:14 -> import { getElementDefinition } from '@/omega-ui-core/governance/ElementCatalog'...
+[ElementCatalog] src\features\manifest-editor\components\inspector\shared\CanonicalStylePreview.tsx:21 -> import { getElementDefinition } from "@/omega-ui-core/governance/ElementCatalog"...
+[ElementCatalog] src\features\manifest-editor\components\inspector\shared\IndustrialGovernanceConsole.tsx:16 -> import { getElementDefinition } from '@/omega-ui-core/governance/ElementCatalog'...
+[ElementCatalog] src\features\manifest-editor\components\inspector\shared\StyleEditorModal.tsx:20 -> import { getElementDefinition } from '@/omega-ui-core/governance/ElementCatalog'...
+[ElementCatalog] src\features\manifest-editor\components\lab\CellStudioContentArea.tsx:14 -> import { OMEGA_ELEMENT_CATALOG } from '@/omega-ui-core/governance/ElementCatalog...
+[ElementCatalog] src\features\manifest-editor\components\lab\CellStudioToolbar.tsx:15 -> import { OMEGA_ELEMENT_CATALOG } from '@/omega-ui-core/governance/ElementCatalog...
+... and 137 more in this category.
 
 [SUMMARY] Audit complete.
 - High-risk:   0
-- Medium-risk: 61
-- Low-risk:    258
+- Medium-risk: 18
+- Low-risk:    152
 - JSON Report: docs/arch-audit-report.json
 - CSV Report:  docs/arch-audit-report.csv
 
-✅ ARCHITECTURAL INTEGRITY VERIFIED.
+Ô£à ARCHITECTURAL INTEGRITY VERIFIED.
 --- WARNING DETAILS END ---
 
 
 [PHASE:SUCCESS] [2/6 Type Safety (TSC)   ]: Passed successfully with 0 errors and 0 warnings.
 
-[PHASE:FAILED] [3/6 Code Linting (ESL)  ]: Failed with exit code 1 (1 errors detected, 0 warnings).
---- RAW ERROR DETAIL START ---
-
-> omega-manifest-editor@0.1.0 lint
-> eslint --quiet
-
-
-D:\desarrollos\ABDSynths\ABDOmegaEditor\src\omega-ui-core\renderers\hooks\useUCAResize.ts
-  81:70  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-✖ 1 problem (1 error, 0 warnings)
-
---- RAW ERROR DETAIL END ---
-
+[PHASE:SUCCESS] [3/6 Code Linting (ESL)  ]: Passed successfully with 0 errors and 0 warnings.
 OK: package.json exists.
 OK: tsconfig.json exists.
 OK: src/omega-ui-core/governance/ElementCatalog.ts exists.
-STATUS: ERRORS DETECTED
-
-[PHASE:FAILED] [3/6 Code Linting (ESL)  ]: Failed with exit code 1 (1 errors detected, 0 warnings).
---- RAW ERROR DETAIL START ---
-
-> omega-manifest-editor@0.1.0 lint
-> eslint --quiet
-
-
-D:\desarrollos\ABDSynths\ABDOmegaEditor\src\omega-ui-core\renderers\hooks\useUCAResize.ts
-  81:70  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-✖ 1 problem (1 error, 0 warnings)
-
---- RAW ERROR DETAIL END ---
-
-OK: package.json exists.
-OK: tsconfig.json exists.
-OK: src/omega-ui-core/governance/ElementCatalog.ts exists.
-STATUS: ERRORS DETECTED
+STATUS: ALL CHECKS PASSED

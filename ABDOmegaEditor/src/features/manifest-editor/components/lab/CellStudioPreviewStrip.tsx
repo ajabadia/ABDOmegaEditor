@@ -1,13 +1,13 @@
 'use client';
 
 /**
- * @purpose Renderiza una sección de previsualización con contenido HTML real tiempo y un relojero para ajustar valores de comportamiento.
+ * @purpose Renderiza una sección de previsualización con contenido HTML real tiempo y un deslizante para ajustar valores de comportamiento.
  * @purpose_en Renders a preview strip with real-time HTML content and a scrubber to adjust behavior values.
- * @refactorable false
+ * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:1,sig:1qc5uet
- * @lastUpdated 2026-06-15T12:47:02.181Z
+ * @fingerprint exports:1,imports:3,sig:1redw2o
+ * @lastUpdated 2026-06-20T09:18:51.208Z
  */
 
 import { useMemo } from 'react';

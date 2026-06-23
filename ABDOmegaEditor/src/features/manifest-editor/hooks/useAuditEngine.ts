@@ -12,7 +12,7 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import type { OMEGA_Manifest, OMEGA_Contract } from '@/omega-ui-core/types/manifest';
-import type { OmegaContract } from '@/services/wasmLoader';
+import type { OmegaContract } from '@/omega-ui-core/types/contract';
 import { ValidationService } from '@/services/validationService';
 import { STORAGE_KEYS } from '../constants/storage';
 import { structuralAuditor } from '../services/StructuralAuditor';

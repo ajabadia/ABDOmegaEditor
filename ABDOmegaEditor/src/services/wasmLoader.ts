@@ -1,38 +1,23 @@
 /**
  * @purpose Gestiona la instantiación y extracción de contratos OMEGA de módulos WASM auto-descriptivos.
  * @purpose_en Manages the instantiation and extraction of OMEGA contracts from self-descriptive WASM modules.
- * @refactorable true (contains too many state variables and UI parts)
+ * @refactorable false
  * @classification Business Service
  * @complexity Medium
- * @fingerprint exports:2,imports:0,sig:1hqkusy
- * @lastUpdated 2026-06-15T17:03:37.719Z
+ * @fingerprint exports:2,imports:1,sig:new
+ * @lastUpdated 2026-06-22
  */
 
 /**
  * OMEGA WASM Loader Service
  * Handles instantiation and contract extraction from self-descriptive WASM modules.
+ * 
+ * @deprecated OmegaContract moved to @/omega-ui-core/types/contract.
+ * Re-exported here for backward compatibility.
  */
 
-export interface OmegaContract {
-  omega_version: string;
-  id: string;
-  name?: string;
-  family?: string;
-  parameters: Array<{
-    id: string;
-    name: string;
-    min: number;
-    max: number;
-    default: number;
-    unit?: string | undefined;
-  }>;
-  ports: Array<{
-    id: string;
-    type: 'audio' | 'cv' | 'midi' | 'gate';
-    direction: 'input' | 'output';
-  }>;
-  firmwareHash?: string;
-}
+import type { OmegaContract } from '@/omega-ui-core/types/contract';
+export type { OmegaContract };
 
 export class WasmLoaderService {
   /**

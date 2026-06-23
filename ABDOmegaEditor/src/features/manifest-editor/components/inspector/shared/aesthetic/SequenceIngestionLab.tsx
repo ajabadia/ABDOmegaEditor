@@ -1,13 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona el consumo y secuenciado de archivos para crear tiras de película de alta calidad industrial en el editor de manifesto OMEGA.
+ * @purpose Gestiona el consumo y secuenciación de archivos para crear cintas de film industriales en el editor de manifesto OMEGA.
  * @purpose_en Manages the ingestion and sequencing of files to create industrial-grade filmstrips in the OMEGA manifest editor.
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:3,sig:nayral
- * @lastUpdated 2026-06-15T11:41:16.031Z
+ * @fingerprint exports:1,imports:3,sig:n97hvv
+ * @lastUpdated 2026-06-20T09:17:51.149Z
  */
 
 import { useState, useEffect, useRef } from 'react';

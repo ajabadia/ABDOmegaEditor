@@ -11,7 +11,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import type { OMEGA_Manifest, OMEGA_Contract } from '@/omega-ui-core/types/manifest';
 import { AuditService } from '@/services/auditService';
-import type { OmegaContract } from '@/services/wasmLoader';
+import type { OmegaContract } from '@/omega-ui-core/types/contract';
 
 /**
  * useAudit (v7.2.3)

@@ -1,13 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona y maneja el estado UI y acciones para modales en el editor de manifesto OMEGA, incluyendo el deshabilitar la visibilidad del modal, aplicar plantillas, comparar con la historia y agregar entidades desde una biblioteca.
+ * @purpose Gestiona y maneja el estado y las acciones del UI para modales en el editor de manifesto OMEGA, incluyendo el deshabilitar la visibilidad de los modales, aplicar plantillas, comparar con la historia y agregar entidades desde una biblioteca.
  * @purpose_en Manages and handles UI state and actions for modals in the OMEGA manifest editor, including toggling modal visibility, applying templates, comparing with history, and adding entities from a library.
  * @refactorable true (contains too many state variables and UI parts)
  * @classification Custom Hook
  * @complexity Medium
- * @fingerprint exports:1,imports:3,sig:1g7cecd
- * @lastUpdated 2026-06-15T20:49:50.686Z
+ * @fingerprint exports:1,imports:3,sig:1e18ups
+ * @lastUpdated 2026-06-20T11:08:16.177Z
  */
 
 import { useCallback, useState } from 'react';

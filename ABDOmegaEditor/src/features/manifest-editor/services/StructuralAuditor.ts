@@ -9,7 +9,7 @@
  */
 
 import type { OMEGA_Manifest, OmegaNode, OMEGA_Contract } from '@/omega-ui-core/types/manifest';
-import type { OmegaContract } from '@/services/wasmLoader';
+import type { OmegaContract } from '@/omega-ui-core/types/contract';
 import type { DiagnosticSource, TabDiagnostics, DiagnosticContext, AuditResult } from '../types/diagnostics';
 import { createEmptyDiagnostics } from '../types/diagnostics';
 import { CircularityAuditor } from '@/omega-ui-core/utils/circularityAuditor';

@@ -12,7 +12,7 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import type { OMEGA_Manifest, OMEGA_Contract } from '@/omega-ui-core/types/manifest';
-import type { TabDiagnostics } from '@/features/manifest-editor/types/diagnostics';
+import type { TabDiagnostics } from '@/omega-ui-core/types/audit';
 import { structuralAuditor } from '@/features/manifest-editor/services/StructuralAuditor';
 
 /**

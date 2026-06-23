@@ -5,7 +5,7 @@
  */
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { historyService } from './historyService';
-import type { HistoryEntry } from '@/features/manifest-editor/types/history';
+import type { HistoryEntry } from '@/omega-ui-core/types/history';
 import type { OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
 
 const manifestA: OMEGA_Manifest = {

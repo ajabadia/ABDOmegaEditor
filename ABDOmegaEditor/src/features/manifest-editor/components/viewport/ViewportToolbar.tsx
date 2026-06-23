@@ -1,13 +1,13 @@
 'use client';
 
 /**
- * @purpose Renderiza un toolbar para el viewport en el editor de manifesto OMEGA, proporcionando controles para alineación, distribución, configuraciones del grid y visibilidad de mini map.
+ * @purpose Renderiza un toolbar para el viewport en el editor de manifesto OMEGA, proporcionando controles para alineación, distribución, configuraciones del grid y visibilidad de mini mapa.
  * @purpose_en Renders a toolbar for the viewport in the OMEGA manifest editor, providing controls for alignment, distribution, grid settings, and mini map visibility.
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:8,sig:hri5k6
- * @lastUpdated 2026-06-15T20:49:17.925Z
+ * @fingerprint exports:1,imports:9,sig:ssl5zy
+ * @lastUpdated 2026-06-20T09:44:52.880Z
  */
 
 import React, { useState, useCallback } from 'react';
@@ -24,7 +24,8 @@ import {
   SHORTCUT_LABELS,
   mmFromHP,
 } from '@/features/manifest-editor/utils/alignmentConstants';
-import { useAlignment, gatherPositions } from '@/features/manifest-editor/hooks/useAlignment';
+import { useAlignment } from '@/features/manifest-editor/hooks/useAlignment';
+import { gatherPositions } from '@/features/manifest-editor/utils/alignmentUtils';
 import { buildGridManifestUpdate } from '../../utils/gridHelpers';
 import {
   AlignLeftIcon,

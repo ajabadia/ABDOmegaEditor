@@ -6,24 +6,32 @@
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:2,sig:bp8p4y
- * @lastUpdated 2026-06-15T13:01:36.330Z
+ * @fingerprint exports:1,imports:2,sig:qzn2cc
+ * @lastUpdated 2026-06-20T09:44:47.359Z
  */
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import type { GridGuide } from '@/omega-ui-core/types/rack';
 
-interface RulerOverlayProps {
+// ── Categorized sub-interfaces ──────────────────────────────────────
+
+interface ViewProps {
   showGuides?: boolean;
-  guides?: GridGuide[];
-  onGuidesChange?: (guides: GridGuide[]) => void;
   toolbarHeight?: number | undefined;
   pan?: { x: number; y: number } | undefined;
   zoom?: number | undefined;
   rackWidth?: number | undefined;
   rackHeight?: number | undefined;
   uiTheme?: 'dark' | 'light' | 'amber' | 'cyberpunk' | 'high-contrast' | undefined;
+  isLiveMode?: boolean;
 }
+
+interface GuidesProps {
+  guides?: GridGuide[];
+  onGuidesChange?: (guides: GridGuide[]) => void;
+}
+
+type RulerOverlayProps = ViewProps & GuidesProps;
 
 const RULER_SIZE = 22;
 const TICK_MAJOR = 50;
@@ -34,68 +42,27 @@ function generateId(): string {
   return `guide-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-// `baseRackPos` now stores the rack's direct visual top-left in section coords
-// (post-transform). It is re-measured on every pan/zoom change so the ruler
-// tick marks and guide overlays stay locked to the rack at any zoom level.
+// ── Hook: RAF-based rack position tracking ────────────────────────────
+//
+// We can't rely on React's render cycle to know when the rack has moved
+// (free-pan updates pan via requestAnimationFrame, button-pan updates it
+// synchronously, zoom changes scale, the flex parent re-centers on resize…).
+// Instead, we sample the rack's actual DOM position on every animation
+// frame and only push to state when it changes. This is order-of-magnitude
+// more robust than any useEffect/useLayoutEffect strategy because it
+// always reads the truth from the DOM, never from React's stale closure.
+// ──────────────────────────────────────────────
 
-export default function RulerOverlay({
-  showGuides = false,
-  guides = [],
-  onGuidesChange,
-  toolbarHeight = 0,
-  pan,
-  zoom = 1,
-  rackWidth = 800,
-  rackHeight = 400,
-  uiTheme = 'dark',
-}: RulerOverlayProps) {
+function useRulerPositionTracking(wrapperRef: React.RefObject<HTMLDivElement | null>) {
   const [dims, setDims] = useState({ w: 1200, h: 800 });
-  const horizontalRef = useRef<HTMLCanvasElement>(null);
-  const verticalRef = useRef<HTMLCanvasElement>(null);
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const panRef = useRef(pan);
-  const zoomRef = useRef(zoom);
-  const sectionRectRef = useRef({ left: 0, top: 0 });
-  useEffect(() => { panRef.current = pan; }, [pan]);
-  useEffect(() => { zoomRef.current = zoom; }, [zoom]);
-
-  // Drag state: creating a new guide from ruler
-  const [creating, setCreating] = useState<{
-    orientation: 'horizontal' | 'vertical';
-    pos: number;
-    inZone: boolean;
-  } | null>(null);
-
-  // Drag state: moving an existing guide
-  const [dragging, setDragging] = useState<{
-    id: string;
-    orientation: 'horizontal' | 'vertical';
-    startPos: number;
-    inZone: boolean;
-  } | null>(null);
-
-  // Stable base position of the rack in section coords (measured once at mount, before any transform)
   const [baseRackPos, setBaseRackPos] = useState({ x: 0, y: 0 });
+  const sectionRectRef = useRef({ left: 0, top: 0 });
   const baseRackPosRef = useRef(baseRackPos);
-  useEffect(() => { baseRackPosRef.current = baseRackPos; }, [baseRackPos]);
-
-  const origin = baseRackPos;
-  const th = toolbarHeight ?? 0;
-  const z = zoom ?? 1;
-
-  // ──────────────────────────────────────────────
-  // Continuous rack position tracking.
-  //
-  // We can't rely on React's render cycle to know when the rack has moved
-  // (free-pan updates pan via requestAnimationFrame, button-pan updates it
-  // synchronously, zoom changes scale, the flex parent re-centers on resize…).
-  // Instead, we sample the rack's actual DOM position on every animation
-  // frame and only push to state when it changes. This is order-of-magnitude
-  // more robust than any useEffect/useLayoutEffect strategy because it
-  // always reads the truth from the DOM, never from React's stale closure.
-  // ──────────────────────────────────────────────
   const lastBasePosRef = useRef({ x: -1, y: -1 });
   const lastDimsRef = useRef({ w: 0, h: 0 });
+
+  useEffect(() => { baseRackPosRef.current = baseRackPos; }, [baseRackPos]);
+
   useEffect(() => {
     let rafId = 0;
     const tick = () => {
@@ -126,141 +93,28 @@ export default function RulerOverlay({
     return () => cancelAnimationFrame(rafId);
   }, [wrapperRef, setBaseRackPos, setDims]);
 
-  // ──────────────────────────────────────────────
-  // Horizontal ruler drawing
-  // ──────────────────────────────────────────────
-  useEffect(() => {
-    const canvas = horizontalRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+  return { dims, baseRackPos, sectionRectRef, baseRackPosRef };
+}
 
-    const dpr = window.devicePixelRatio || 1;
-    const w = dims.w - RULER_SIZE;
-    canvas.width = w * dpr;
-    canvas.height = RULER_SIZE * dpr;
-    canvas.style.width = `${w}px`;
-    canvas.style.height = `${RULER_SIZE}px`;
-    ctx.scale(dpr, dpr);
+// ── Hook: Guide creation and dragging ──────────────────────────────────
 
-    const styles = window.getComputedStyle(canvas);
-    const rulerBg = styles.getPropertyValue('--wb-surface-inset') || '#e0e0e0';
-    const textColor = styles.getPropertyValue('--wb-text') || '#222';
-    const textMuted = styles.getPropertyValue('--wb-text-muted') || 'rgba(0,0,0,0.4)';
-    const outlineColor = styles.getPropertyValue('--wb-outline') || '#888';
+interface GuideDragState {
+  creating: { orientation: 'horizontal' | 'vertical'; pos: number; inZone: boolean } | null;
+  dragging: { id: string; orientation: 'horizontal' | 'vertical'; startPos: number; inZone: boolean } | null;
+}
 
-    ctx.fillStyle = rulerBg;
-    ctx.fillRect(0, 0, w, RULER_SIZE);
-    ctx.strokeStyle = outlineColor;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(0, RULER_SIZE - 0.5);
-    ctx.lineTo(w, RULER_SIZE - 0.5);
-    ctx.stroke();
+function useGuideDrag(
+  showGuides: boolean,
+  guides: GridGuide[],
+  onGuidesChange: ((g: GridGuide[]) => void) | undefined,
+  zoomRef: React.MutableRefObject<number>,
+  baseRackPosRef: React.MutableRefObject<{ x: number; y: number }>,
+  sectionRectRef: React.MutableRefObject<{ left: number; top: number }>,
+) {
+  const [creating, setCreating] = useState<GuideDragState['creating']>(null);
+  const [dragging, setDragging] = useState<GuideDragState['dragging']>(null);
 
-    const z = zoom ?? 1;
-    const tickStepPx = TICK_MINOR * z;
-
-  const startVal = Math.floor((RULER_SIZE - baseRackPos.x) / tickStepPx) * TICK_MINOR;
-    const endVal = Math.ceil((w + RULER_SIZE - baseRackPos.x) / z);
-
-    ctx.textAlign = 'center';
-    for (let dv = startVal; dv <= endVal; dv += TICK_MINOR) {
-      const canvasX = baseRackPos.x + dv * z - RULER_SIZE;
-      if (canvasX < -tickStepPx || canvasX > w + tickStepPx) continue;
-      const isMajor = dv % TICK_MAJOR === 0;
-      const tickH = isMajor ? 10 : 4;
-      ctx.strokeStyle = isMajor ? textColor : textMuted;
-      ctx.lineWidth = isMajor ? 1.5 : 0.7;
-      ctx.beginPath();
-      ctx.moveTo(canvasX + 0.5, RULER_SIZE - tickH);
-      ctx.lineTo(canvasX + 0.5, RULER_SIZE);
-      ctx.stroke();
-      if (isMajor) {
-        ctx.fillStyle = textColor;
-        ctx.font = 'bold 8px Inter, monospace';
-        ctx.fillText(`${dv}`, canvasX, RULER_SIZE - 12);
-      }
-    }
-
-    if (creating?.orientation === 'horizontal') {
-      const canvasY = baseRackPos.y + creating.pos * z - toolbarHeight - RULER_SIZE;
-      ctx.fillStyle = 'rgba(0, 180, 255, 0.6)';
-      ctx.fillRect(canvasY, 0, 2, RULER_SIZE);
-    }
-  }, [dims.w, creating, pan, zoom, baseRackPos, toolbarHeight, rackWidth, rackHeight, uiTheme]);
-
-  // ──────────────────────────────────────────────
-  // Vertical ruler drawing
-  // ──────────────────────────────────────────────
-  useEffect(() => {
-    const canvas = verticalRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const dpr = window.devicePixelRatio || 1;
-    const h = dims.h - RULER_SIZE;
-    canvas.width = RULER_SIZE * dpr;
-    canvas.height = h * dpr;
-    canvas.style.width = `${RULER_SIZE}px`;
-    canvas.style.height = `${h}px`;
-    ctx.scale(dpr, dpr);
-
-    const styles = window.getComputedStyle(canvas);
-    const rulerBg = styles.getPropertyValue('--wb-surface-inset') || '#e0e0e0';
-    const textColor = styles.getPropertyValue('--wb-text') || '#222';
-    const textMuted = styles.getPropertyValue('--wb-text-muted') || 'rgba(0,0,0,0.4)';
-    const outlineColor = styles.getPropertyValue('--wb-outline') || '#888';
-
-    ctx.fillStyle = rulerBg;
-    ctx.fillRect(0, 0, RULER_SIZE, h);
-    ctx.strokeStyle = outlineColor;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(RULER_SIZE - 0.5, 0);
-    ctx.lineTo(RULER_SIZE - 0.5, h);
-    ctx.stroke();
-
-    const z = zoom ?? 1;
-    const tickStepPx = TICK_MINOR * z;
-
-    const startVal = Math.floor((toolbarHeight + RULER_SIZE - baseRackPos.y) / tickStepPx) * TICK_MINOR;
-    const endVal = Math.ceil((h + toolbarHeight + RULER_SIZE - baseRackPos.y) / z);
-
-    for (let dv = startVal; dv <= endVal; dv += TICK_MINOR) {
-      const canvasY = baseRackPos.y + dv * z - toolbarHeight - RULER_SIZE;
-      if (canvasY < -tickStepPx || canvasY > h + tickStepPx) continue;
-      const isMajor = dv % TICK_MAJOR === 0;
-      const tickW = isMajor ? 10 : 4;
-      ctx.strokeStyle = isMajor ? textColor : textMuted;
-      ctx.lineWidth = isMajor ? 1.5 : 0.7;
-      ctx.beginPath();
-      ctx.moveTo(RULER_SIZE - tickW, canvasY + 0.5);
-      ctx.lineTo(RULER_SIZE, canvasY + 0.5);
-      ctx.stroke();
-      if (isMajor) {
-        ctx.save();
-        ctx.fillStyle = textColor;
-        ctx.font = 'bold 8px Inter, monospace';
-        ctx.translate(12, canvasY);
-        ctx.rotate(-Math.PI / 2);
-        ctx.textAlign = 'center';
-        ctx.fillText(`${dv}`, 0, 0);
-        ctx.restore();
-      }
-    }
-
-    if (creating?.orientation === 'vertical') {
-      const canvasX = baseRackPos.x + creating.pos * z - RULER_SIZE;
-      ctx.fillStyle = 'rgba(0, 180, 255, 0.6)';
-      ctx.fillRect(0, canvasX, RULER_SIZE, 2);
-    }
-  }, [dims.h, creating, pan, zoom, baseRackPos, toolbarHeight, rackWidth, rackHeight, uiTheme]);
-
-  // ──────────────────────────────────────────────
   // CREATING guides: mousedown on ruler
-  // ──────────────────────────────────────────────
   const handleHorizontalRulerMouseDown = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!showGuides) return;
     e.preventDefault();
@@ -271,7 +125,7 @@ export default function RulerOverlay({
     const origin = baseRackPosRef.current;
     const rackY = (e.clientY - sr.top - origin.y) / z;
     setCreating({ orientation: 'horizontal', pos: Math.round(rackY), inZone: false });
-  }, [showGuides]);
+  }, [showGuides, zoomRef, baseRackPosRef]);
 
   const handleVerticalRulerMouseDown = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!showGuides) return;
@@ -283,11 +137,9 @@ export default function RulerOverlay({
     const origin = baseRackPosRef.current;
     const rackX = (e.clientX - sr.left - origin.x) / z;
     setCreating({ orientation: 'vertical', pos: Math.round(rackX), inZone: false });
-  }, [showGuides]);
+  }, [showGuides, zoomRef, baseRackPosRef]);
 
-  // ──────────────────────────────────────────────
   // DRAGGING existing guides
-  // ──────────────────────────────────────────────
   const handleGuideDragStart = useCallback((e: React.MouseEvent, guide: GridGuide) => {
     if (!showGuides) return;
     e.preventDefault();
@@ -300,9 +152,7 @@ export default function RulerOverlay({
     });
   }, [showGuides]);
 
-  // ──────────────────────────────────────────────
-  // WINDOW-LEVEL MOUSE HANDLERS
-  // ──────────────────────────────────────────────
+  // Window-level mouse handlers
   useEffect(() => {
     if (!creating && !dragging) return;
 
@@ -313,13 +163,11 @@ export default function RulerOverlay({
 
       if (creating) {
         if (creating.orientation === 'vertical') {
-          // Vertical guide originates from the LEFT ruler → cancel zone is the left edge
           const inZone = e.clientX < RULER_SIZE + DELETE_ZONE;
           const origin = bp;
           const rackX = (e.clientX - sr.left - origin.x) / z;
           setCreating(prev => prev ? { ...prev, pos: Math.round(rackX), inZone } : null);
         } else {
-          // Horizontal guide originates from the TOP ruler → cancel zone is the top edge
           const inZone = e.clientY < RULER_SIZE + DELETE_ZONE;
           const origin = bp;
           const rackY = (e.clientY - sr.top - origin.y) / z;
@@ -354,8 +202,6 @@ export default function RulerOverlay({
 
     const handleUp = () => {
       if (creating) {
-        // Cancel creation if the cursor was released back inside the source ruler
-        // (Photoshop-style: drag a guide from a ruler, drop it back on the ruler = no-op).
         if (!creating.inZone && onGuidesChange) {
           const newGuide: GridGuide = {
             id: generateId(),
@@ -381,38 +227,231 @@ export default function RulerOverlay({
       window.removeEventListener('mousemove', handleMove);
       window.removeEventListener('mouseup', handleUp);
     };
-  }, [creating, dragging, guides, onGuidesChange, rackWidth, rackHeight, setCreating, setDragging]);
+  }, [creating, dragging, guides, onGuidesChange, sectionRectRef, baseRackPosRef, zoomRef]);
 
-  // ──────────────────────────────────────────────
-  // RENDER — pre-compute overlays outside JSX to avoid IIFE TS issues
-  // ──────────────────────────────────────────────
-  // baseRackPos now stores the rack's direct visual top-left in section coords (post-transform).
+  return {
+    creating,
+    setCreating,
+    dragging,
+    setDragging,
+    handleHorizontalRulerMouseDown,
+    handleVerticalRulerMouseDown,
+    handleGuideDragStart,
+  };
+}
 
-  // Creating guide preview line
+// ── Hook: Canvas drawing for both rulers ───────────────────────────────
+
+function drawRulerTickMarks(
+  ctx: CanvasRenderingContext2D,
+  dpr: number,
+  size: number,
+  orientation: 'horizontal' | 'vertical',
+  baseRackPos: { x: number; y: number },
+  zoom: number,
+  toolbarHeight: number,
+  creating: { orientation: 'horizontal' | 'vertical'; pos: number; inZone: boolean } | null,
+) {
+  // Read CSS custom properties from the canvas computed style
+  const computed = getComputedStyle(ctx.canvas);
+  const rulerBg = computed.getPropertyValue('--wb-surface-inset') || '#e0e0e0';
+  const textColor = computed.getPropertyValue('--wb-text') || '#222';
+  const textMuted = computed.getPropertyValue('--wb-text-muted') || 'rgba(0,0,0,0.4)';
+  const outlineColor = computed.getPropertyValue('--wb-outline') || '#888';
+
+  ctx.scale(dpr, dpr);
+  ctx.fillStyle = rulerBg;
+
+  if (orientation === 'horizontal') {
+    ctx.fillRect(0, 0, size, RULER_SIZE);
+    ctx.strokeStyle = outlineColor;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, RULER_SIZE - 0.5);
+    ctx.lineTo(size, RULER_SIZE - 0.5);
+    ctx.stroke();
+  } else {
+    ctx.fillRect(0, 0, RULER_SIZE, size);
+    ctx.strokeStyle = outlineColor;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(RULER_SIZE - 0.5, 0);
+    ctx.lineTo(RULER_SIZE - 0.5, size);
+    ctx.stroke();
+  }
+
+  const z = zoom ?? 1;
+  const tickStepPx = TICK_MINOR * z;
+  const isHorizontal = orientation === 'horizontal';
+
+  const startVal = isHorizontal
+    ? Math.floor((RULER_SIZE - baseRackPos.x) / tickStepPx) * TICK_MINOR
+    : Math.floor((toolbarHeight + RULER_SIZE - baseRackPos.y) / tickStepPx) * TICK_MINOR;
+
+  const endVal = isHorizontal
+    ? Math.ceil((size + RULER_SIZE - baseRackPos.x) / z)
+    : Math.ceil((size + toolbarHeight + RULER_SIZE - baseRackPos.y) / z);
+
+  if (isHorizontal) {
+    ctx.textAlign = 'center';
+    for (let dv = startVal; dv <= endVal; dv += TICK_MINOR) {
+      const canvasX = baseRackPos.x + dv * z - RULER_SIZE;
+      if (canvasX < -tickStepPx || canvasX > size + tickStepPx) continue;
+      const isMajor = dv % TICK_MAJOR === 0;
+      const tickH = isMajor ? 10 : 4;
+      ctx.strokeStyle = isMajor ? textColor : textMuted;
+      ctx.lineWidth = isMajor ? 1.5 : 0.7;
+      ctx.beginPath();
+      ctx.moveTo(canvasX + 0.5, RULER_SIZE - tickH);
+      ctx.lineTo(canvasX + 0.5, RULER_SIZE);
+      ctx.stroke();
+      if (isMajor) {
+        ctx.fillStyle = textColor;
+        ctx.font = 'bold 8px Inter, monospace';
+        ctx.fillText(`${dv}`, canvasX, RULER_SIZE - 12);
+      }
+    }
+
+    if (creating?.orientation === 'horizontal') {
+      const canvasY = baseRackPos.y + creating.pos * z - toolbarHeight - RULER_SIZE;
+      ctx.fillStyle = 'rgba(0, 180, 255, 0.6)';
+      ctx.fillRect(canvasY, 0, 2, RULER_SIZE);
+    }
+  } else {
+    for (let dv = startVal; dv <= endVal; dv += TICK_MINOR) {
+      const canvasY = baseRackPos.y + dv * z - toolbarHeight - RULER_SIZE;
+      if (canvasY < -tickStepPx || canvasY > size + tickStepPx) continue;
+      const isMajor = dv % TICK_MAJOR === 0;
+      const tickW = isMajor ? 10 : 4;
+      ctx.strokeStyle = isMajor ? textColor : textMuted;
+      ctx.lineWidth = isMajor ? 1.5 : 0.7;
+      ctx.beginPath();
+      ctx.moveTo(RULER_SIZE - tickW, canvasY + 0.5);
+      ctx.lineTo(RULER_SIZE, canvasY + 0.5);
+      ctx.stroke();
+      if (isMajor) {
+        ctx.save();
+        ctx.fillStyle = textColor;
+        ctx.font = 'bold 8px Inter, monospace';
+        ctx.translate(12, canvasY);
+        ctx.rotate(-Math.PI / 2);
+        ctx.textAlign = 'center';
+        ctx.fillText(`${dv}`, 0, 0);
+        ctx.restore();
+      }
+    }
+
+    if (creating?.orientation === 'vertical') {
+      const canvasX = baseRackPos.x + creating.pos * z - RULER_SIZE;
+      ctx.fillStyle = 'rgba(0, 180, 255, 0.6)';
+      ctx.fillRect(0, canvasX, RULER_SIZE, 2);
+    }
+  }
+}
+
+function useRulerCanvas(
+  dims: { w: number; h: number },
+  creating: { orientation: 'horizontal' | 'vertical'; pos: number; inZone: boolean } | null,
+  pan: { x: number; y: number } | undefined,
+  zoom: number,
+  baseRackPos: { x: number; y: number },
+  toolbarHeight: number,
+  rackWidth: number,
+  rackHeight: number,
+  uiTheme: string | undefined,
+  horizontalRef: React.RefObject<HTMLCanvasElement | null>,
+  verticalRef: React.RefObject<HTMLCanvasElement | null>,
+) {
+  // Horizontal ruler drawing
+  useEffect(() => {
+    const canvas = horizontalRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    const w = dims.w - RULER_SIZE;
+    canvas.width = w * dpr;
+    canvas.height = RULER_SIZE * dpr;
+    canvas.style.width = `${w}px`;
+    canvas.style.height = `${RULER_SIZE}px`;
+
+    drawRulerTickMarks(ctx, dpr, w, 'horizontal', baseRackPos, zoom, toolbarHeight, creating);
+  }, [dims.w, creating, pan, zoom, baseRackPos, toolbarHeight, rackWidth, rackHeight, uiTheme, horizontalRef]);
+
+  // Vertical ruler drawing
+  useEffect(() => {
+    const canvas = verticalRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    const h = dims.h - RULER_SIZE;
+    canvas.width = RULER_SIZE * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = `${RULER_SIZE}px`;
+    canvas.style.height = `${h}px`;
+
+    drawRulerTickMarks(ctx, dpr, h, 'vertical', baseRackPos, zoom, toolbarHeight, creating);
+  }, [dims.h, creating, pan, zoom, baseRackPos, toolbarHeight, rackWidth, rackHeight, uiTheme, verticalRef]);
+}
+
+// `baseRackPos` now stores the rack's direct visual top-left in section coords
+// (post-transform). It is re-measured on every pan/zoom change so the ruler
+// tick marks and guide overlays stay locked to the rack at any zoom level.
+
+export default function RulerOverlay({
+  showGuides = false,
+  guides = [],
+  onGuidesChange,
+  toolbarHeight = 0,
+  pan,
+  zoom = 1,
+  rackWidth = 800,
+  rackHeight = 400,
+  uiTheme = 'dark',
+  isLiveMode = false,
+}: RulerOverlayProps) {
+  const horizontalRef = useRef<HTMLCanvasElement>(null);
+  const verticalRef = useRef<HTMLCanvasElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const panRef = useRef(pan);
+  const zoomRef = useRef(zoom);
+  useEffect(() => { panRef.current = pan; }, [pan]);
+  useEffect(() => { zoomRef.current = zoom; }, [zoom]);
+
+  // ── Hook: RAF-based position tracking ────────────────────────────
+  const { dims, baseRackPos, sectionRectRef, baseRackPosRef } = useRulerPositionTracking(wrapperRef);
+
+  // ── Hook: Guide creation/dragging ────────────────────────────────
+  const {
+    creating, dragging,
+    handleHorizontalRulerMouseDown,
+    handleVerticalRulerMouseDown,
+    handleGuideDragStart,
+  } = useGuideDrag(showGuides, guides, onGuidesChange, zoomRef, baseRackPosRef, sectionRectRef);
+
+  // ── Hook: Canvas drawing ─────────────────────────────────────────
+  useRulerCanvas(dims, creating, pan, zoom, baseRackPos, toolbarHeight ?? 0, rackWidth, rackHeight, uiTheme, horizontalRef, verticalRef);
+
+  // ── Derived values ───────────────────────────────────────────────
+  const origin = baseRackPos;
+  const th = toolbarHeight ?? 0;
+  const z = zoom ?? 1;
+
+  // ── Pre-computed overlays ────────────────────────────────────────
   let creatingLine: React.ReactNode = null;
   if (creating) {
     const screenPos = creating.orientation === 'vertical'
       ? Math.round(origin.x + creating.pos * z)
       : Math.round(origin.y + creating.pos * z - th);
     const lineStyle: React.CSSProperties = creating.orientation === 'vertical'
-      ? {
-          left: screenPos,
-          top: RULER_SIZE,
-          bottom: 0,
-          width: 1,
-          backgroundColor: creating.inZone ? 'rgba(255, 80, 80, 0.7)' : 'rgba(0, 180, 255, 0.7)',
-        }
-      : {
-          top: screenPos,
-          left: RULER_SIZE,
-          right: 0,
-          height: 1,
-          backgroundColor: creating.inZone ? 'rgba(255, 80, 80, 0.7)' : 'rgba(0, 180, 255, 0.7)',
-        };
+      ? { left: screenPos, top: RULER_SIZE, bottom: 0, width: 1, backgroundColor: creating.inZone ? 'rgba(255, 80, 80, 0.7)' : 'rgba(0, 180, 255, 0.7)' }
+      : { top: screenPos, left: RULER_SIZE, right: 0, height: 1, backgroundColor: creating.inZone ? 'rgba(255, 80, 80, 0.7)' : 'rgba(0, 180, 255, 0.7)' };
     creatingLine = <div className="absolute pointer-events-none" style={lineStyle} />;
   }
 
-  // Existing guide overlay elements
   const guideElements: React.ReactNode[] = [];
   if (showGuides) {
     for (const guide of guides) {
@@ -422,27 +461,17 @@ export default function RulerOverlay({
       const screenPos = Math.round(isVertical
         ? origin.x + guide.position * z
         : origin.y + guide.position * z - th);
-
       const style: React.CSSProperties = isVertical
         ? { position: 'absolute', left: screenPos, top: RULER_SIZE, bottom: 0, width: 1, cursor: 'ew-resize' }
         : { position: 'absolute', top: screenPos, left: RULER_SIZE, right: 0, height: 1, cursor: 'ns-resize' };
-
       guideElements.push(
         <div
           key={guide.id}
           className="absolute transition-shadow"
           style={{
             ...style,
-            backgroundColor: inDeleteZone
-              ? 'rgba(255, 80, 80, 0.8)'
-              : isDragging
-                ? 'rgba(0, 180, 255, 0.9)'
-                : 'rgba(0, 180, 255, 0.7)',
-            boxShadow: inDeleteZone
-              ? '0 0 8px rgba(255, 80, 80, 0.6)'
-              : isDragging
-                ? '0 0 8px rgba(0, 180, 255, 0.6)'
-                : 'none',
+            backgroundColor: inDeleteZone ? 'rgba(255, 80, 80, 0.8)' : isDragging ? 'rgba(0, 180, 255, 0.9)' : 'rgba(0, 180, 255, 0.7)',
+            boxShadow: inDeleteZone ? '0 0 8px rgba(255, 80, 80, 0.6)' : isDragging ? '0 0 8px rgba(0, 180, 255, 0.6)' : 'none',
             pointerEvents: 'auto',
           }}
           onMouseDown={(e) => handleGuideDragStart(e, guide)}
@@ -450,6 +479,8 @@ export default function RulerOverlay({
       );
     }
   }
+
+  if (isLiveMode) return null;
 
   return (
     <div
@@ -461,52 +492,25 @@ export default function RulerOverlay({
         top: toolbarHeight,
       }}
     >
-      {/* Horizontal ruler — top edge, right of corner */}
       <canvas
         ref={horizontalRef}
         className="absolute"
-        style={{
-          top: 0,
-          left: RULER_SIZE,
-          height: RULER_SIZE,
-          cursor: showGuides ? 'crosshair' : 'default',
-          pointerEvents: showGuides ? 'auto' : 'none',
-        }}
+        style={{ top: 0, left: RULER_SIZE, height: RULER_SIZE, cursor: showGuides ? 'crosshair' : 'default', pointerEvents: showGuides ? 'auto' : 'none' }}
         onMouseDown={handleHorizontalRulerMouseDown}
       />
-
-      {/* Vertical ruler — left edge, below corner */}
       <canvas
         ref={verticalRef}
         className="absolute"
-        style={{
-          top: RULER_SIZE,
-          left: 0,
-          width: RULER_SIZE,
-          cursor: showGuides ? 'crosshair' : 'default',
-          pointerEvents: showGuides ? 'auto' : 'none',
-        }}
+        style={{ top: RULER_SIZE, left: 0, width: RULER_SIZE, cursor: showGuides ? 'crosshair' : 'default', pointerEvents: showGuides ? 'auto' : 'none' }}
         onMouseDown={handleVerticalRulerMouseDown}
       />
-
-      {/* Corner box */}
       <div
         className="absolute top-0 left-0 flex items-center justify-center"
-        style={{
-          width: RULER_SIZE,
-          height: RULER_SIZE,
-          backgroundColor: 'var(--wb-surface-inset)',
-          borderBottom: '1px solid var(--wb-outline)',
-          borderRight: '1px solid var(--wb-outline)'
-        }}
+        style={{ width: RULER_SIZE, height: RULER_SIZE, backgroundColor: 'var(--wb-surface-inset)', borderBottom: '1px solid var(--wb-outline)', borderRight: '1px solid var(--wb-outline)' }}
       >
         <div className="w-1.5 h-1.5 rounded-[1px]" style={{ backgroundColor: 'var(--wb-text-muted)' }} />
       </div>
-
-      {/* Creating guide preview line */}
       {creatingLine}
-
-      {/* Existing guides */}
       {guideElements}
     </div>
   );

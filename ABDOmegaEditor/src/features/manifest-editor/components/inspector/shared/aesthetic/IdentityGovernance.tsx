@@ -1,13 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona una sección colapsable para la gobernanza de identidad y activos en el editor de manifesto OMEGA, incluyendo selección de variantes, seleccionador de activos, estrategia de ajuste y configuración de filmstrip.
+ * @purpose Gestiona una sección colapsable para la gobernanza de identidad y activos en el editor de manifesto OMEGA, incluyendo selección de variantes, seleccionador de activos, estrategia de ajuste y configuraciones de filmstrip.
  * @purpose_en Manages a collapsible section for identity and asset governance in the OMEGA manifest editor, including variant selection, asset picker, fitting strategy, and filmstrip settings.
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:7,sig:1vt3osd
- * @lastUpdated 2026-06-15T11:40:34.972Z
+ * @fingerprint exports:1,imports:7,sig:r9ci9l
+ * @lastUpdated 2026-06-20T09:17:26.249Z
  */
 
 import { Fingerprint, Settings2 } from 'lucide-react';

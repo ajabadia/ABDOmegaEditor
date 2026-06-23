@@ -1,12 +1,15 @@
 /**
  * @purpose Gestiona observabilidad y métricas para el monitoreo de runtime industrial, proporcionando registro estructurado, seguimiento de latencia y IDs de correlación.
  * @purpose_en Manages observability and metrics for industrial runtime monitoring, providing structured logging, latency tracking, and correlation IDs.
- * @refactorable true (contains too many state variables and UI parts)
+ * @refactorable false
  * @classification Business Service
  * @complexity Medium
- * @fingerprint exports:3,imports:0,sig:gzbef1
- * @lastUpdated 2026-06-15T17:02:43.527Z
+ * @fingerprint exports:3,imports:1,sig:gzbef1
+ * @lastUpdated 2026-06-22
  */
+
+import type { IEventBus } from '@/omega-ui-core/di/EventBus';
+import { emitEvent } from './globalEventBus';
 
 /**
  * OMEGA ERA 7.2.3 - OBSERVABILITY SERVICE (Phase 20.5)
@@ -41,6 +44,8 @@ class ObservabilityService {
     rollbackCount: 0,
     lastHeartbeat: Date.now()
   };
+
+  constructor(private eventBus?: IEventBus) {}
 
   /**
    * generateCorrelationId
@@ -78,6 +83,8 @@ class ObservabilityService {
       this.metrics.latencies.push(durationMs);
       if (this.metrics.latencies.length > 100) this.metrics.latencies.shift();
     }
+
+    emitEvent(this.eventBus, 'system:log', { level: state, message: logMsg });
   }
 
   /**

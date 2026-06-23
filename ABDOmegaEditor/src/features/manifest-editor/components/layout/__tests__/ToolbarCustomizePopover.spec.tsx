@@ -4,8 +4,8 @@
  * Tests for the Toolbar customize popover (P8) — reorder, show/hide, reset toolbar buttons.
  * Uses the real useToolbarCustomization hook by controlling localStorage before each test.
  *
- * NOTE: loadConfig() always validates and augments the order to include all 10 TOOLBAR_BUTTONS,
- * so tests that set a partial order will see the full 10-button list after loading.
+ * NOTE: loadConfig() always validates and augments the order to include all 11 TOOLBAR_BUTTONS,
+ * so tests that set a partial order will see the full 11-button list after loading.
  */
 import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import { render, screen, fireEvent } from '@testing-library/react';
@@ -89,16 +89,16 @@ describe('CustomizePopover — header', () => {
   it('should reset the config to defaults when Reset is clicked', () => {
     // Start with some buttons hidden — count shows fewer than max
     setLocalConfig(
-      ['select', 'marquee', 'add', 'blueprints', 'config', 'live', 'zen', 'studio', 'group', 'ungroup'],
+      ['select', 'marquee', 'transform', 'add', 'blueprints', 'config', 'live', 'zen', 'studio', 'group', 'ungroup'],
       ['select', 'add', 'config'],
     );
     render(<Toolbar {...BASE_PROPS} />);
     clickCustomizeBtn();
-    // After validation: 10 buttons in order, 3 hidden → "7 / 10 visible"
-    expect(screen.getByText('7 / 10 visible')).toBeTruthy();
-    // Click reset — should revert to default (0 hidden) → "10 / 10 visible"
+    // After validation: 11 buttons in order, 3 hidden → "8 / 11 visible"
+    expect(screen.getByText('8 / 11 visible')).toBeTruthy();
+    // Click reset — should revert to default (0 hidden) → "11 / 11 visible"
     fireEvent.click(screen.getByTitle('Reset to default'));
-    expect(screen.getByText('10 / 10 visible')).toBeTruthy();
+    expect(screen.getByText('11 / 11 visible')).toBeTruthy();
   });
 });
 
@@ -110,7 +110,7 @@ describe('CustomizePopover — button list', () => {
   });
 
   it('should render all non-conditional buttons in the list', () => {
-    // DEFAULT_CONFIG has 10 buttons — 3 conditional => 7 visible
+    // DEFAULT_CONFIG has 11 buttons — 3 conditional => 8 visible
     render(<Toolbar {...BASE_PROPS} />);
     clickCustomizeBtn();
     expect(screen.getByText('Select Tool')).toBeTruthy();
@@ -133,9 +133,9 @@ describe('CustomizePopover — button list', () => {
   it('should render a drag handle (GripVertical icon) for each button', () => {
     const { container } = render(<Toolbar {...BASE_PROPS} />);
     clickCustomizeBtn();
-    // 10 total — 3 conditional (studio, group, ungroup) filtered = 7 rows
+    // 11 total — 3 conditional (studio, group, ungroup) filtered = 8 rows
     const gripIcons = container.querySelectorAll('svg.lucide-grip-vertical');
-    expect(gripIcons.length).toBe(7);
+    expect(gripIcons.length).toBe(8);
   });
 
   it('should render a visibility toggle button for each button', () => {
@@ -143,7 +143,7 @@ describe('CustomizePopover — button list', () => {
     clickCustomizeBtn();
     // Each non-conditional row should have either an Eye or EyeOff SVG
     const eyeIcons = container.querySelectorAll('svg.lucide-eye, svg.lucide-eye-off');
-    expect(eyeIcons.length).toBe(7);
+    expect(eyeIcons.length).toBe(8);
   });
 
   it('should show Eye icon for visible buttons', () => {
@@ -152,27 +152,27 @@ describe('CustomizePopover — button list', () => {
     // When nothing is hidden, all should show Eye (not EyeOff)
     const eyeIcons = container.querySelectorAll('svg.lucide-eye');
     const eyeOffIcons = container.querySelectorAll('svg.lucide-eye-off');
-    expect(eyeIcons.length).toBe(7);
+    expect(eyeIcons.length).toBe(8);
     expect(eyeOffIcons.length).toBe(0);
   });
 
   it('should show EyeOff icon for hidden buttons', () => {
-    // Hidden 3 items — the popover shows 7 non-conditional buttons, 3 hidden → 4 Eye, 3 EyeOff
+    // Hidden 3 items — the popover shows 8 non-conditional buttons, 3 hidden → 5 Eye, 3 EyeOff
     setLocalConfig(
-      ['select', 'marquee', 'add', 'blueprints', 'config', 'live', 'zen', 'studio', 'group', 'ungroup'],
+      ['select', 'marquee', 'transform', 'add', 'blueprints', 'config', 'live', 'zen', 'studio', 'group', 'ungroup'],
       ['select', 'add', 'config'],
     );
     const { container } = render(<Toolbar {...BASE_PROPS} />);
     clickCustomizeBtn();
     const eyeIcons = container.querySelectorAll('svg.lucide-eye');
     const eyeOffIcons = container.querySelectorAll('svg.lucide-eye-off');
-    expect(eyeIcons.length).toBe(4);
+    expect(eyeIcons.length).toBe(5);
     expect(eyeOffIcons.length).toBe(3);
   });
 
   it('should apply reduced opacity to hidden buttons', () => {
     setLocalConfig(
-      ['select', 'marquee', 'add', 'blueprints', 'config', 'live', 'zen', 'studio', 'group', 'ungroup'],
+      ['select', 'marquee', 'transform', 'add', 'blueprints', 'config', 'live', 'zen', 'studio', 'group', 'ungroup'],
       ['select'],
     );
     const { container } = render(<Toolbar {...BASE_PROPS} />);
@@ -188,25 +188,25 @@ describe('CustomizePopover — button list', () => {
   it('should toggle visibility when a visibility toggle button is clicked', () => {
     const { container } = render(<Toolbar {...BASE_PROPS} />);
     clickCustomizeBtn();
-    // Initially all visible — 7 Eye icons, 0 EyeOff
-    expect(container.querySelectorAll('svg.lucide-eye').length).toBe(7);
+    // Initially all visible — 8 Eye icons, 0 EyeOff
+    expect(container.querySelectorAll('svg.lucide-eye').length).toBe(8);
     // Click first Hide button (for 'select' button)
     const hideBtn = screen.getAllByTitle('Hide button')[0]!;
     fireEvent.click(hideBtn);
-    // Now 'select' should be hidden: 6 Eye, 1 EyeOff
-    expect(container.querySelectorAll('svg.lucide-eye').length).toBe(6);
+    // Now 'select' should be hidden: 7 Eye, 1 EyeOff
+    expect(container.querySelectorAll('svg.lucide-eye').length).toBe(7);
     expect(container.querySelectorAll('svg.lucide-eye-off').length).toBe(1);
   });
 
   it('should show "Show button" on EyeOff button and "Hide button" on Eye button', () => {
     setLocalConfig(
-      ['select', 'marquee', 'add', 'blueprints', 'config', 'live', 'zen', 'studio', 'group', 'ungroup'],
+      ['select', 'marquee', 'transform', 'add', 'blueprints', 'config', 'live', 'zen', 'studio', 'group', 'ungroup'],
       ['select'],
     );
     render(<Toolbar {...BASE_PROPS} />);
     clickCustomizeBtn();
     expect(screen.getByTitle('Show button')).toBeTruthy();
-    expect(screen.getAllByTitle('Hide button').length).toBe(6);
+    expect(screen.getAllByTitle('Hide button').length).toBe(7);
   });
 });
 
@@ -226,35 +226,35 @@ describe('CustomizePopover — footer', () => {
   it('should show visible/total count in the footer', () => {
     render(<Toolbar {...BASE_PROPS} />);
     clickCustomizeBtn();
-    // Default config: 10 buttons, 0 hidden → "10 / 10 visible"
-    expect(screen.getByText('10 / 10 visible')).toBeTruthy();
+    // Default config: 11 buttons, 0 hidden → "11 / 11 visible"
+    expect(screen.getByText('11 / 11 visible')).toBeTruthy();
   });
 
   it('should update visible count when buttons are hidden', () => {
     setLocalConfig(
-      ['select', 'marquee', 'add', 'live', 'zen', 'studio', 'group', 'ungroup', 'blueprints', 'config'],
+      ['select', 'marquee', 'transform', 'add', 'live', 'zen', 'studio', 'group', 'ungroup', 'blueprints', 'config'],
       ['add', 'zen'],
     );
     render(<Toolbar {...BASE_PROPS} />);
     clickCustomizeBtn();
-    // After validation: 10 buttons in order, 2 hidden → "8 / 10 visible"
-    expect(screen.getByText('8 / 10 visible')).toBeTruthy();
+    // After validation: 11 buttons in order, 2 hidden → "9 / 11 visible"
+    expect(screen.getByText('9 / 11 visible')).toBeTruthy();
   });
 
   it('should show 0 / N visible when all buttons are hidden', () => {
     setLocalConfig(
-      ['select', 'marquee', 'add', 'live', 'zen', 'studio', 'group', 'ungroup', 'blueprints', 'config'],
-      ['select', 'marquee', 'add', 'live', 'zen', 'studio', 'group', 'ungroup', 'blueprints', 'config'],
+      ['select', 'marquee', 'transform', 'add', 'live', 'zen', 'studio', 'group', 'ungroup', 'blueprints', 'config'],
+      ['select', 'marquee', 'transform', 'add', 'live', 'zen', 'studio', 'group', 'ungroup', 'blueprints', 'config'],
     );
     render(<Toolbar {...BASE_PROPS} />);
     clickCustomizeBtn();
-    expect(screen.getByText('0 / 10 visible')).toBeTruthy();
+    expect(screen.getByText('0 / 11 visible')).toBeTruthy();
   });
 
   it('should show N / N visible when no buttons are hidden', () => {
     render(<Toolbar {...BASE_PROPS} />);
     clickCustomizeBtn();
-    expect(screen.getByText('10 / 10 visible')).toBeTruthy();
+    expect(screen.getByText('11 / 11 visible')).toBeTruthy();
   });
 });
 
@@ -310,14 +310,14 @@ describe('CustomizePopover — edge cases', () => {
   });
 
   it('should handle an empty button list gracefully', () => {
-    // Even with an empty config in localStorage, loadConfig augments to 10 buttons
+    // Even with an empty config in localStorage, loadConfig augments to 11 buttons
     setLocalConfig([], []);
     render(<Toolbar {...BASE_PROPS} />);
     clickCustomizeBtn();
     expect(screen.getByText('Customize Toolbar')).toBeTruthy();
-    // After augmentation: 10 buttons, 0 hidden → "10 / 10 visible"
-    expect(screen.getByText('10 / 10 visible')).toBeTruthy();
-    // The popover should render all 7 non-conditional buttons
+    // After augmentation: 11 buttons, 0 hidden → "11 / 11 visible"
+    expect(screen.getByText('11 / 11 visible')).toBeTruthy();
+    // The popover should render all 8 non-conditional buttons
     expect(screen.getByText('Select Tool')).toBeTruthy();
   });
 
@@ -333,8 +333,8 @@ describe('CustomizePopover — edge cases', () => {
     expect(screen.getByText('Select Tool')).toBeTruthy();
     expect(screen.getByText('Live Mode')).toBeTruthy();
     // Invalid IDs are filtered — no crash, hidden list is empty (fake filtered out)
-    // Footer shows 10/10 visible (no hidden items survive validation)
-    expect(screen.getByText('10 / 10 visible')).toBeTruthy();
+    // Footer shows 11/11 visible (no hidden items survive validation)
+    expect(screen.getByText('11 / 11 visible')).toBeTruthy();
   });
 
   it('should not crash when rapidly opening and closing the popover', () => {
@@ -370,14 +370,14 @@ describe('CustomizePopover — drag & drop reorder', () => {
     render(<Toolbar {...BASE_PROPS} />);
     clickCustomizeBtn();
     const draggableItems = document.querySelectorAll('[draggable=\"true\"]');
-    expect(draggableItems.length).toBe(7);
+    expect(draggableItems.length).toBe(8);
   });
 
   it('should reorder buttons when drag ends on a different position', () => {
     render(<Toolbar {...BASE_PROPS} />);
     clickCustomizeBtn();
     const draggableItems = document.querySelectorAll('[draggable=\"true\"]');
-    expect(draggableItems.length).toBe(7);
+    expect(draggableItems.length).toBe(8);
 
     // First button label
     const secondLabel = draggableItems[1]!.querySelector('span.flex-1')?.textContent;
@@ -435,6 +435,122 @@ describe('CustomizePopover — drag & drop reorder', () => {
   });
 });
 
+// ── localStorage persistence ───────────────────────────────────────────
+
+describe('CustomizePopover — localStorage persistence', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it('should persist toggle visibility to localStorage', () => {
+    render(<Toolbar {...BASE_PROPS} />);
+    clickCustomizeBtn();
+
+    // Hide 'select' button
+    const hideBtn = screen.getAllByTitle('Hide button')[0]!;
+    fireEvent.click(hideBtn);
+
+    // Read localStorage directly
+    const raw = localStorage.getItem(STORAGE_KEY);
+    expect(raw).not.toBeNull();
+    const saved = JSON.parse(raw!);
+    expect(saved.hidden).toContain('select');
+  });
+
+  it('should persist drag-reorder to localStorage with correct content', () => {
+    render(<Toolbar {...BASE_PROPS} />);
+    clickCustomizeBtn();
+    const draggableItems = document.querySelectorAll('[draggable="true"]');
+
+    // Default order: select(0), marquee(1), transform(2), add(3), studio(4), group(5), ungroup(6), blueprints(7), config(8), live(9), zen(10)
+    // Rendered items map to full-order indices: select=0, marquee=1, transform=2, add=3, blueprints=7, config=8, live=9, zen=10
+    // Drag rendered item 0 (select, idx=0) to rendered item 2 (transform, idx=2)
+    fireEvent.dragStart(draggableItems[0]!);
+    fireEvent.dragOver(draggableItems[2]!);
+    fireEvent.dragEnd(draggableItems[0]!);
+
+    // moveButton(0, 2) removes select from 0 and inserts at 2:
+    // [marquee, transform, select, add, studio, group, ungroup, blueprints, config, live, zen]
+    const raw = localStorage.getItem(STORAGE_KEY);
+    expect(raw).not.toBeNull();
+    const saved = JSON.parse(raw!);
+    expect(saved.order).toBeDefined();
+    expect(saved.order.length).toBe(11);
+    expect(saved.order[0]).toBe('marquee');
+    expect(saved.order[1]).toBe('transform');
+    expect(saved.order[2]).toBe('select');
+    expect(saved.order[3]).toBe('add');
+    // Remaining items unchanged
+    expect(saved.order.slice(4)).toEqual(['studio', 'group', 'ungroup', 'blueprints', 'config', 'live', 'zen']);
+  });
+
+  it('should persist reset to localStorage (clear hidden)', () => {
+    // Start with hidden buttons
+    setLocalConfig(
+      ['select', 'marquee', 'transform', 'add', 'blueprints', 'config', 'live', 'zen', 'studio', 'group', 'ungroup'],
+      ['select', 'add', 'config'],
+    );
+    render(<Toolbar {...BASE_PROPS} />);
+    clickCustomizeBtn();
+    expect(screen.getByText('8 / 11 visible')).toBeTruthy();
+
+    // Click Reset
+    fireEvent.click(screen.getByTitle('Reset to default'));
+
+    // localStorage should now have empty hidden array
+    const raw = localStorage.getItem(STORAGE_KEY);
+    expect(raw).not.toBeNull();
+    const saved = JSON.parse(raw!);
+    expect(saved.hidden).toEqual([]);
+  });
+
+  it('should load config from localStorage on mount', () => {
+    // Pre-populate localStorage with a custom order
+    setLocalConfig(
+      ['live', 'zen', 'select', 'marquee', 'transform', 'add', 'blueprints', 'config', 'studio', 'group', 'ungroup'],
+      [],
+    );
+    render(<Toolbar {...BASE_PROPS} />);
+    clickCustomizeBtn();
+
+    // The first button in the customize list should be 'Live Mode'
+    const firstLabel = document.querySelectorAll('[draggable="true"]')[0]!
+      .querySelector('span.flex-1')?.textContent;
+    expect(firstLabel).toBe('Live Mode');
+  });
+
+  it('should write default config to localStorage when no prior config exists', () => {
+    expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
+    render(<Toolbar {...BASE_PROPS} />);
+    clickCustomizeBtn();
+
+    // After mount, the hook should have saved the default config
+    const raw = localStorage.getItem(STORAGE_KEY);
+    expect(raw).not.toBeNull();
+    const saved = JSON.parse(raw!);
+    expect(saved.order).toBeDefined();
+    expect(saved.order.length).toBe(11);
+    expect(saved.hidden).toEqual([]);
+  });
+
+  it('should persist toggle-then-toggle-back (unhide) to localStorage', () => {
+    render(<Toolbar {...BASE_PROPS} />);
+    clickCustomizeBtn();
+
+    // Hide 'select'
+    const hideBtn = screen.getAllByTitle('Hide button')[0]!;
+    fireEvent.click(hideBtn);
+    let saved = JSON.parse(localStorage.getItem(STORAGE_KEY)!);
+    expect(saved.hidden).toContain('select');
+
+    // Unhide 'select'
+    const showBtn = screen.getByTitle('Show button');
+    fireEvent.click(showBtn);
+    saved = JSON.parse(localStorage.getItem(STORAGE_KEY)!);
+    expect(saved.hidden).not.toContain('select');
+  });
+});
+
 // ── Snapshot tests ──────────────────────────────────────────────────────
 
 describe('CustomizePopover — snapshots', () => {
@@ -456,7 +572,7 @@ describe('CustomizePopover — snapshots', () => {
 
   it('should match snapshot for open popover (some hidden)', () => {
     setLocalConfig(
-      ['select', 'marquee', 'add', 'blueprints', 'config', 'live', 'zen', 'studio', 'group', 'ungroup'],
+      ['select', 'marquee', 'transform', 'add', 'blueprints', 'config', 'live', 'zen', 'studio', 'group', 'ungroup'],
       ['select', 'config', 'zen'],
     );
     render(<Toolbar {...BASE_PROPS} />);

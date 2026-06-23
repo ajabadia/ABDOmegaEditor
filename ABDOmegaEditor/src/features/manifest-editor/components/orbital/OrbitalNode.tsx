@@ -11,10 +11,10 @@
  */
 
 import { motion } from 'framer-motion';
-import { IntegrityOverlay } from '@/features/manifest-editor/components/viewport/IntegrityOverlay';
+import { IntegrityOverlay } from '@/omega-ui-core/renderers/components/IntegrityOverlay';
 import type { OmegaNode, OMEGA_Contract } from '@/omega-ui-core/types/manifest';
 import type { OmegaContract } from '@/services/wasmLoader';
-import type { AuditResult } from '@/services/auditService';
+import type { AuditResult } from '@/omega-ui-core/types/audit';
 
 interface OrbitalNodeProps {
   item: OmegaNode;

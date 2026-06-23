@@ -4,8 +4,8 @@
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:2,sig:egbf7b
- * @lastUpdated 2026-06-15T12:47:14.839Z
+ * @fingerprint exports:1,imports:2,sig:1mus1d5
+ * @lastUpdated 2026-06-20T09:39:57.526Z
  */
 
 import type { LayerRecipe, LayerRecipeItem } from '@/omega-ui-core/types/assetBehavior';

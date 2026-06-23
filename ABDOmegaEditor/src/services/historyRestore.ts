@@ -4,13 +4,13 @@
  * @refactorable false
  * @classification Business Service
  * @complexity Low
- * @fingerprint exports:1,imports:4,sig:19ixip2
- * @lastUpdated 2026-06-15T16:57:02.105Z
+ * @fingerprint exports:1,imports:4,sig:new
+ * @lastUpdated 2026-06-22
  */
 
 import { historyService } from './historyService';
 import { BlueprintValidator } from '@/omega-ui-core/utils/blueprintValidator';
-import { observabilityService } from './observabilityService';
+import type { IEventBus } from '@/omega-ui-core/di/EventBus';
 import type { OmegaNode, OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
 
 /**
@@ -18,11 +18,16 @@ import type { OmegaNode, OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
  * Orchestrates the safe restoration of historical manifest states.
  */
 export class HistoryRestoreEngine {
+  private static eventBus: IEventBus | undefined;
+
+  static setEventBus(bus: IEventBus | undefined) {
+    HistoryRestoreEngine.eventBus = bus;
+  }
+
   /**
    * prepareRestore
    * Loads a revision and validates it before promotion.
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   static async prepareRestore(revisionId: string, _manifest: Partial<OMEGA_Manifest>): Promise<OmegaNode[] | null> {
     const startTime = Date.now();
     const entry = historyService.getRevision(revisionId);
@@ -42,27 +47,20 @@ export class HistoryRestoreEngine {
       
       const durationMs = Date.now() - startTime;
 
-      observabilityService.trackHistoryEvent(
-        entry.correlationId,
-        'HISTORY_RESTORE_SUCCESS',
-        'SUCCESS',
-        `Validated historical revision ${revisionId} for restoration.`,
-        durationMs,
-        { revisionId }
-      );
+      HistoryRestoreEngine.eventBus?.emit('system:log', {
+        level: 'SUCCESS',
+        message: `[HISTORY RESTORE] Validated revision ${revisionId} (${durationMs}ms)`,
+      });
 
       return nodesToRestore as OmegaNode[];
     } catch (err) {
       const durationMs = Date.now() - startTime;
       console.error(`[HISTORY RESTORE] Validation failed for revision ${revisionId}:`, err);
-      
-      observabilityService.trackHistoryEvent(
-        entry.correlationId,
-        'HISTORY_RESTORE_FAILED',
-        'FAILURE',
-        `Historical revision ${revisionId} failed validation.`,
-        durationMs
-      );
+
+      HistoryRestoreEngine.eventBus?.emit('system:error', {
+        source: 'HISTORY_RESTORE',
+        message: `Revision ${revisionId} failed validation (${durationMs}ms): ${err instanceof Error ? err.message : String(err)}`,
+      });
 
       return null;
     }

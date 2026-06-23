@@ -20,8 +20,8 @@ import { extractSubtreeResources } from '@/omega-ui-core/utils/StyleResolver';
 import { validateManifestSchema } from '@/omega-ui-core/utils/manifestValidator';
 import { findNodeInTree } from '@/omega-ui-core/utils/treeUtils';
 import { generateBlueprintThumbnail } from '@/omega-ui-core/utils/BlueprintThumbnailGenerator';
-import { historyService } from '@/services/historyService';
-import { inputSignalService } from '@/services/inputSignalService';
+import { getService } from '@/services/globalEventBus';
+import { SERVICE_TOKENS } from '@/omega-ui-core/di';
 
 export const useBundleTransfer = (
   manifest: OMEGA_Manifest,
@@ -37,6 +37,8 @@ export const useBundleTransfer = (
   captureStableSnapshot: () => void,
   updateDocumentWithHistory?: (updates: { manifest?: Partial<OMEGA_Manifest> | ((prev: OMEGA_Manifest) => Partial<OMEGA_Manifest>); extraResources?: { name: string, data: ArrayBuffer, type: string }[] | ((prev: { name: string, data: ArrayBuffer, type: string }[]) => { name: string, data: ArrayBuffer, type: string }[]) }, label: string) => void
 ) => {
+  const historyService = getService(SERVICE_TOKENS.HISTORY_SERVICE);
+  const inputSignalService = getService(SERVICE_TOKENS.INPUT_SIGNAL_SERVICE);
 
   const sanitizeSVG = (content: string): string => {
     // Saneamiento básico industrial Era 7.2.3
@@ -248,7 +250,7 @@ export const useBundleTransfer = (
     } catch (err) {
       addLog(`[ERROR] Failed to generate OmegaPack: ${err}`);
     }
-  }, [manifest, issues, wasmBuffer, extraResources, addLog, processSnapshots, captureStableSnapshot]);
+  }, [manifest, issues, wasmBuffer, extraResources, addLog, processSnapshots, captureStableSnapshot, historyService, inputSignalService]);
 
   const handleBulkUpload = useCallback(async (files: FileList | File[]) => {
     const fileList = Array.from(files);

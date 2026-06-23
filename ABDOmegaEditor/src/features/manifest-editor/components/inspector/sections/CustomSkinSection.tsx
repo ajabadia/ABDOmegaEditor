@@ -1,13 +1,13 @@
 'use client';
 
 /**
- * @purpose Gestiona una sección para personalizar la piel y estilo de un editor de manifesto OMEGA, incluyendo configuraciones globales y biblioteca de elementos.
+ * @purpose Gestiona una sección para personalizar la piel y el estilo del editor de manifesto OMEGA, incluyendo configuraciones globales y biblioteca de elementos.
  * @purpose_en Manages a section for customizing the skin and style of an OMEGA manifest editor, including global settings and element library.
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:8,sig:jnjng4
- * @lastUpdated 2026-06-15T11:38:26.736Z
+ * @fingerprint exports:1,imports:8,sig:7od8cg
+ * @lastUpdated 2026-06-20T09:16:34.635Z
  */
 
 import React from 'react';

@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-06-18T19:27:20.340Z",
+  "timestamp": "2026-06-22T22:59:24.787Z",
   "counts": {
     "high": 0,
-    "medium": 13,
-    "low": 151,
-    "total": 164
+    "medium": 18,
+    "low": 152,
+    "total": 170
   },
   "details": {
     "HIGH": [],
@@ -40,8 +40,32 @@
         "pattern": "throw new Error"
       },
       {
+        "file": "src\\features\\manifest-editor\\components\\viewport\\NumericResizePopover.tsx",
+        "line": 172,
+        "content": "else if (e.key === 'Enter') { e.preventDefault(); validateAndCommit(); }",
+        "pattern": "validate"
+      },
+      {
+        "file": "src\\features\\manifest-editor\\components\\viewport\\NumericRotatePopover.tsx",
+        "line": 83,
+        "content": "const angle = validateAngle(angleStr);",
+        "pattern": "validate"
+      },
+      {
+        "file": "src\\features\\manifest-editor\\components\\viewport\\NumericRotatePopover.tsx",
+        "line": 145,
+        "content": "value={validateAngle(angleStr) ?? 0}",
+        "pattern": "validate"
+      },
+      {
+        "file": "src\\features\\manifest-editor\\components\\viewport\\NumericRotatePopover.tsx",
+        "line": 160,
+        "content": "Math.abs((validateAngle(angleStr) ?? 0) - a) < 1",
+        "pattern": "validate"
+      },
+      {
         "file": "src\\features\\manifest-editor\\hooks\\io\\useBundleTransfer.ts",
-        "line": 280,
+        "line": 282,
         "content": "const validation = validateManifestSchema(parsed);",
         "pattern": "validate"
       },
@@ -59,13 +83,19 @@
       },
       {
         "file": "src\\features\\manifest-editor\\hooks\\io\\useWasmTransfer.ts",
-        "line": 105,
+        "line": 108,
         "content": "throw new Error(\"Missing mandatory 'id' or 'ports' fields in contract.\");",
         "pattern": "throw new Error"
       },
       {
+        "file": "src\\features\\manifest-editor\\hooks\\orchestrator\\useDocumentTransactions.ts",
+        "line": 47,
+        "content": "BlueprintValidator.validate(doc.manifest.ui.tree, doc.manifest);",
+        "pattern": "validate"
+      },
+      {
         "file": "src\\features\\manifest-editor\\hooks\\orchestrator\\useSessionPersistence.ts",
-        "line": 30,
+        "line": 32,
         "content": "BlueprintValidator.validate(persisted.graph, { id: persisted.id });",
         "pattern": "validate"
       },
@@ -190,6 +220,12 @@
         "line": 13,
         "content": "import { OMEGA_ELEMENT_CATALOG } from '@/omega-ui-core/governance/ElementCatalog';",
         "pattern": "ElementCatalog"
+      },
+      {
+        "file": "src\\omega-ui-core\\di\\ServiceContainer.ts",
+        "line": 34,
+        "content": "throw new Error(`Service not registered: ${token}`);",
+        "pattern": "throw new Error"
       },
       {
         "file": "src\\omega-ui-core\\governance\\ElementCatalog.ts",

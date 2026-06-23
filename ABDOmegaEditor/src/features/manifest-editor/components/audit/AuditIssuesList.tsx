@@ -15,7 +15,7 @@ import {
   FileText, CheckCircle2 
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import type { AuditResult, AuditIssue } from '@/features/manifest-editor/types/diagnostics';
+import type { AuditResult, AuditIssue } from '@/omega-ui-core/types/audit';
 
 // Modular Sub-components
 import InspectionCard from './InspectionCard';

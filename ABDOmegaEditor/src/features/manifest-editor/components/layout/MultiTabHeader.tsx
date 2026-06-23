@@ -6,14 +6,14 @@
  * @refactorable true (contains too many state variables and UI parts)
  * @classification UI Component
  * @complexity Medium
- * @fingerprint exports:1,imports:4,sig:1qe027g
- * @lastUpdated 2026-06-15T12:47:56.786Z
+ * @fingerprint exports:1,imports:4,sig:1uyba9u
+ * @lastUpdated 2026-06-20T09:40:25.229Z
  */
 
 import React from 'react';
 import { X, Rows, Columns, type LucideIcon } from 'lucide-react';
 import type { WorkbenchTab, WorkbenchPaneId } from '@/features/manifest-editor/hooks/useWorkbenchState';
-import type { Diagnostic } from '@/features/manifest-editor/types/diagnostics';
+import type { Diagnostic } from '@/omega-ui-core/types/audit';
 
 interface MultiTabHeaderProps {
   paneId: WorkbenchPaneId;
