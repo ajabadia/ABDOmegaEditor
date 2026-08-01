@@ -37,7 +37,7 @@ export default function TieredSection({
   // Theme-safe level styles — no hardcoded black/white
   const levelStyles = {
     essential: 'border-l-2 border-primary bg-primary/5 hover:bg-primary/8',
-    advanced:  'border-l-2 border-wb-outline bg-wb-surface-subtle hover:bg-wb-surface-hover',
+    advanced:  'border-l-2 border-wb-outline wb-surface-subtle hover:wb-surface-hover',
     diagnostics: 'border-l-2 border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/8'
   };
 

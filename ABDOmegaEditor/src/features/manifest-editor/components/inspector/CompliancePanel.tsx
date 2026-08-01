@@ -32,9 +32,9 @@ interface StatusConfigItem {
 }
 
 const STATUS_CONFIG: Record<string, StatusConfigItem> = {
-  CERTIFIED: { color: 'text-[#00ff9d]', bg: 'bg-[#00ff9d]/5', border: 'border-[#00ff9d]/20', icon: ShieldCheck, label: 'CERTIFIED' },
-  DRAFT: { color: 'text-[#ffcc00]', bg: 'bg-[#ffcc00]/5', border: 'border-[#ffcc00]/20', icon: ShieldAlert, label: 'DRAFT' },
-  CRITICAL_FAIL: { color: 'text-[#ff3e3e]', bg: 'bg-[#ff3e3e]/5', border: 'border-[#ff3e3e]/20', icon: ShieldX, label: 'FAILURE' }
+  CERTIFIED: { color: 'text-green-500', bg: 'bg-green-500/10', border: 'border-green-500/20', icon: ShieldCheck, label: 'CERTIFIED' },
+  DRAFT: { color: 'text-yellow-500', bg: 'bg-yellow-500/10', border: 'border-yellow-500/20', icon: ShieldAlert, label: 'DRAFT' },
+  CRITICAL_FAIL: { color: 'text-red-500', bg: 'bg-red-500/10', border: 'border-red-500/20', icon: ShieldX, label: 'FAILURE' }
 };
 
 type SeverityGroup = 'critical' | 'warning' | 'info';
@@ -82,7 +82,7 @@ export default function CompliancePanel({ audit, manifest, onNavigate }: Complia
   }
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden text-[9px] font-sans select-none">
+    <div className="flex-1 flex flex-col overflow-hidden text-[10.5px] font-sans select-none">
       <ComplianceHeader audit={audit} manifest={manifest} statusConfig={statusConfig} />
 
       {/* Issues List */}
@@ -110,23 +110,23 @@ function ComplianceHeader({ audit, manifest, statusConfig }: {
 }) {
   const StatusIcon = statusConfig.icon;
   return (
-    <div className="shrink-0 p-2 border-b border-white/5 bg-black/20">
+    <div className="shrink-0 p-2 border-b wb-outline wb-surface-subtle">
       <div className="flex items-center gap-2 mb-1.5">
         <div className={`w-6 h-6 rounded-xs border flex items-center justify-center ${statusConfig.border} ${statusConfig.bg}`}>
           <StatusIcon className={`w-3.5 h-3.5 ${statusConfig.color}`} />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
-            <span className="font-black uppercase tracking-wider text-[8px] wb-text">Compliance</span>
-            <span className={`text-[7px] font-mono font-black uppercase ${statusConfig.color}`}>{statusConfig.label}</span>
+            <span className="font-black uppercase tracking-wider text-[10px] wb-text">Compliance</span>
+            <span className={`text-[9px] font-mono font-black uppercase ${statusConfig.color}`}>{statusConfig.label}</span>
           </div>
-          <div className="text-[6px] font-mono wb-text-muted truncate">{manifest.metadata?.name || manifest.id}</div>
+          <div className="text-[8px] font-mono wb-text-muted truncate" title={manifest.metadata?.name || manifest.id}>{manifest.metadata?.name || manifest.id}</div>
         </div>
         <span className={`text-lg font-black font-mono ${statusConfig.color}`}>{audit.score}</span>
       </div>
 
       {/* Progress bar */}
-      <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+      <div className="w-full h-1 wb-surface-strong rounded-full overflow-hidden">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${audit.score}%` }}
@@ -146,11 +146,11 @@ function ComplianceHeader({ audit, manifest, statusConfig }: {
           <div
             key={c.label}
             className={`flex items-center gap-1 px-1.5 py-0.5 rounded-xs border ${
-              c.val ? 'border-[#00ff9d]/20 bg-[#00ff9d]/5' : 'border-red-500/20 bg-red-500/5'
+              c.val ? 'border-green-500/20 bg-green-500/10' : 'border-red-500/20 bg-red-500/10'
             }`}
           >
-            <div className={`w-1.5 h-1.5 rounded-full ${c.val ? 'bg-[#00ff9d]' : 'bg-red-500'}`} />
-            <span className={`text-[6px] font-black uppercase tracking-wider ${c.val ? 'text-[#00ff9d]' : 'text-red-400'}`}>
+            <div className={`w-1.5 h-1.5 rounded-full ${c.val ? 'bg-green-500' : 'bg-red-500'}`} />
+            <span className={`text-[8px] font-black uppercase tracking-wider ${c.val ? 'text-green-500' : 'text-red-400'}`}>
               {c.label}
             </span>
           </div>
@@ -158,20 +158,20 @@ function ComplianceHeader({ audit, manifest, statusConfig }: {
       </div>
 
       {/* Sync & Seal Metrics */}
-      <div className="mt-1.5 border-t border-white/5 pt-1.5 space-y-1 text-[6px] font-mono text-white/40">
+      <div className="mt-1.5 border-t wb-outline pt-1.5 space-y-1 text-[8px] font-mono wb-text-muted">
         <div className="flex justify-between">
           <span className="uppercase">Metadata Density</span>
           <span className="text-primary font-bold">{manifest.metadata?.rack?.width || 12}HP</span>
         </div>
         <div className="flex justify-between">
           <span className="uppercase">WASM Runtime Sync</span>
-          <span className={audit.isHashMatched ? 'text-[#00ff9d] font-bold' : 'text-red-400 font-bold'}>
+          <span className={audit.isHashMatched ? 'text-green-500 font-bold' : 'text-red-400 font-bold'}>
             {audit.isHashMatched ? 'COHERENT' : 'DEGRADED'} ({audit.fingerprint?.slice(0, 8) || 'NONE'})
           </span>
         </div>
-        <div className="flex justify-between items-center bg-white/5 p-1 rounded-xs border border-white/5">
+        <div className="flex justify-between items-center wb-surface-strong p-1 rounded-xs border wb-outline">
           <span className="uppercase font-bold">Certification Status</span>
-          <span className={audit.isCompliant ? 'text-[#00ff9d] font-bold' : 'text-red-400 font-bold'}>
+          <span className={audit.isCompliant ? 'text-green-500 font-bold' : 'text-red-400 font-bold'}>
             {audit.isCompliant ? 'OMEGA_CERTIFIED' : 'CERTIFICATION_DENIED'}
           </span>
         </div>
@@ -197,16 +197,16 @@ function IssuesAccordion({ groupedIssues, expandedGroups, onToggleGroup, onNavig
         const GrpIcon = cfg.icon;
 
         return (
-          <div key={group} className="flex flex-col border border-white/5 rounded-xs overflow-hidden">
+          <div key={group} className="flex flex-col border wb-outline rounded-xs overflow-hidden">
             <button
               onClick={() => onToggleGroup(group)}
-              className={`flex items-center gap-1.5 px-2 py-1.5 ${cfg.bg} ${cfg.border} border-b border-white/5 hover:bg-white/5 transition-colors text-left`}
+              className={`flex items-center gap-1.5 px-2 py-1.5 ${cfg.bg} ${cfg.border} border-b wb-outline hover:wb-surface-hover transition-colors text-left`}
               aria-label={`${cfg.label} issues`}
             >
               {isExpanded ? <ChevronDown className="w-2.5 h-2.5" /> : <ChevronRight className="w-2.5 h-2.5" />}
               <GrpIcon className={`w-3 h-3 ${cfg.color}`} />
-              <span className={`text-[7px] font-black uppercase tracking-wider ${cfg.color}`}>{cfg.label}</span>
-              <span className="text-[6px] font-mono wb-text-muted ml-auto">{issues.length}</span>
+              <span className={`text-[9px] font-black uppercase tracking-wider ${cfg.color}`}>{cfg.label}</span>
+              <span className="text-[8px] font-mono wb-text-muted ml-auto">{issues.length}</span>
             </button>
 
             <AnimatePresence>
@@ -234,18 +234,18 @@ function IssuesAccordion({ groupedIssues, expandedGroups, onToggleGroup, onNavig
 /** Empty state when all checks pass */
 function ComplianceEmptyState() {
   return (
-    <div className="flex-grow flex flex-col items-center justify-center py-12 px-4 gap-4 border border-[#00ff9d]/10 bg-[#00ff9d]/2 rounded-sm mx-1.5 mt-1.5 relative overflow-hidden">
+    <div className="flex-grow flex flex-col items-center justify-center py-12 px-4 gap-4 border border-green-500/10 bg-green-500/5 rounded-sm mx-1.5 mt-1.5 relative overflow-hidden">
       <div className="relative">
-        <ShieldCheck className="w-8 h-8 text-[#00ff9d] opacity-50 relative z-10" />
+        <ShieldCheck className="w-8 h-8 text-green-500 opacity-50 relative z-10" />
         <motion.div 
           animate={{ scale: [1, 1.25, 1], opacity: [0.15, 0.4, 0.15] }}
           transition={{ duration: 2.5, repeat: Infinity }}
-          className="absolute inset-0 bg-[#00ff9d] rounded-full blur-xl z-0"
+          className="absolute inset-0 bg-green-500 rounded-full blur-xl z-0"
         />
       </div>
       <div className="text-center space-y-1 relative z-10">
-        <p className="text-[#00ff9d] text-[8px] font-black uppercase tracking-[0.3em]">System Certified</p>
-        <p className="text-white/30 text-[6px] uppercase font-bold tracking-wider max-w-[180px] mx-auto leading-normal">
+        <p className="text-green-500 text-[10px] font-black uppercase tracking-[0.3em]">System Certified</p>
+        <p className="wb-text-muted text-[8px] uppercase font-bold tracking-wider max-w-[180px] mx-auto leading-normal">
           Hardware logic and architectural compliance verified under Aseptic Industrial Standard V7.2.3.
         </p>
       </div>
@@ -256,14 +256,14 @@ function ComplianceEmptyState() {
 /** Collapsible guidelines section */
 function GuidelinesSection({ show, onToggle }: { show: boolean; onToggle: () => void }) {
   return (
-    <div className="flex flex-col border border-white/5 rounded-xs overflow-hidden mt-1.5 shrink-0 mx-1.5 mb-1.5">
+    <div className="flex flex-col border wb-outline rounded-xs overflow-hidden mt-1.5 shrink-0 mx-1.5 mb-1.5">
       <button
         onClick={onToggle}
-        className="flex items-center gap-1.5 px-2 py-1.5 bg-primary/5 border-b border-white/5 hover:bg-white/5 transition-colors text-left"
+        className="flex items-center gap-1.5 px-2 py-1.5 bg-primary/5 border-b wb-outline hover:wb-surface-hover transition-colors text-left"
         aria-label={show ? 'Hide aseptic guidelines' : 'Show aseptic guidelines'}
       >
         {show ? <ChevronDown className="w-2.5 h-2.5" /> : <ChevronRight className="w-2.5 h-2.5" />}
-        <span className="text-[7px] font-black uppercase tracking-wider text-primary">Aseptic Guidelines v7.2</span>
+        <span className="text-[9px] font-black uppercase tracking-wider text-primary">Aseptic Guidelines v7.2</span>
       </button>
       <AnimatePresence>
         {show && (
@@ -272,23 +272,23 @@ function GuidelinesSection({ show, onToggle }: { show: boolean; onToggle: () => 
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.15 }}
-            className="overflow-hidden bg-black/20 p-2 space-y-2 text-[7px] leading-relaxed wb-text-muted"
+            className="overflow-hidden bg-black/20 p-2 space-y-2 text-[9px] leading-relaxed wb-text-muted"
           >
             <div>
               <h4 className="font-bold text-primary/70 uppercase">WASM Binding</h4>
               <p className="italic">&quot;La gobernanza exige que cada componente tenga un Registry Role explícito vinculado a una dirección de memoria del contrato WASM.&quot;</p>
             </div>
-            <div className="border-t border-white/5 my-1" />
+            <div className="border-t wb-outline my-1" />
             <div>
               <h4 className="font-bold text-primary/70 uppercase">Spatial Integrity</h4>
               <p className="italic">&quot;La integridad espacial requiere que todos los elementos interactivos residan al menos a 12px de los bordes del rack para garantizar la paridad física.&quot;</p>
             </div>
-            <div className="border-t border-white/5 my-1" />
+            <div className="border-t wb-outline my-1" />
             <div>
               <h4 className="font-bold text-primary/70 uppercase">Identity Branding</h4>
               <p className="italic">&quot;La REGLA DE ORO (saturación 0.8) garantiza que la identidad visual se integre con el chasis industrial sin distraer de la funcionalidad técnica.&quot;</p>
             </div>
-            <div className="border-t border-white/5 my-1" />
+            <div className="border-t wb-outline my-1" />
             <div>
               <h4 className="font-bold text-primary/70 uppercase">Asset Governance</h4>
               <p className="italic">&quot;Cualquier activo faltante bloquea la exportación crítica. El HAZARD PATTERN es el único indicador aceptado para violaciones de integridad de recursos.&quot;</p>
@@ -303,10 +303,10 @@ function GuidelinesSection({ show, onToggle }: { show: boolean; onToggle: () => 
 /** Footer with export button */
 function ComplianceFooter({ onDownload }: { onDownload: () => void }) {
   return (
-    <div className="shrink-0 p-2 border-t border-white/5 bg-black/20 flex gap-1.5">
+    <div className="shrink-0 p-2 border-t wb-outline wb-surface-subtle flex gap-1.5">
       <button
         onClick={onDownload}
-        className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-xs bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 text-[7px] font-black uppercase tracking-wider transition-all"
+        className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-xs bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 text-[9px] font-black uppercase tracking-wider transition-all"
         aria-label="Export certification report"
       >
         <Download className="w-3 h-3" />
@@ -354,15 +354,15 @@ function IssueCard({ issue, onNavigate }: { issue: AuditIssue; onNavigate?: ((pa
   const recommendation = getRecommendation(keyword);
 
   return (
-    <div className="border-b border-white/5 last:border-b-0">
+    <div className="border-b wb-outline last:border-b-0">
       {/* Clickable row — toggle detail */}
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center gap-1.5 px-2 py-1.5 hover:bg-white/5 transition-colors text-left"
+        className="w-full flex items-center gap-1.5 px-2 py-1.5 hover:wb-surface-hover transition-colors text-left"
         aria-label={expanded ? `Collapse ${issue.message}` : `Expand ${issue.message}`}
       >
         <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${severityColor.split(' ')[0]}`} />
-        <span className="text-[7px] font-mono font-bold wb-text truncate flex-1">{issue.message}</span>
+        <span className="text-[9px] font-mono font-bold wb-text truncate flex-1" title={issue.message}>{issue.message}</span>
         {expanded ? <ChevronDown className="w-2 h-2 shrink-0 wb-text-muted" /> : <ChevronRight className="w-2 h-2 shrink-0 wb-text-muted" />}
       </button>
 
@@ -374,33 +374,33 @@ function IssueCard({ issue, onNavigate }: { issue: AuditIssue; onNavigate?: ((pa
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.12 }}
-            className="overflow-hidden bg-black/20"
+            className="overflow-hidden wb-surface-subtle"
           >
             <div className="px-3 pb-2.5 pt-1 flex flex-col gap-2">
               <div className="flex items-center gap-2">
-                <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-white/5 text-[6px] font-black uppercase tracking-wider ${category.color}`}>
+                <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-full wb-surface-strong text-[8px] font-black uppercase tracking-wider ${category.color}`}>
                   <category.icon className="w-2 h-2" />
                   {category.label}
                 </div>
                 {issue.path && (
-                  <span className="text-[6px] font-mono wb-text-muted bg-white/5 px-1.5 py-0.5 rounded-full truncate max-w-[120px]">
+                  <span className="text-[8px] font-mono wb-text-muted wb-surface-strong px-1.5 py-0.5 rounded-full truncate max-w-[120px]">
                     {issue.path}
                   </span>
                 )}
               </div>
 
               {/* Technical Recommendation Box */}
-              <div className="p-2 bg-black/40 border border-white/5 rounded-xs space-y-1">
-                <div className="flex items-center gap-1 text-[6px] font-black uppercase tracking-wider text-primary/70">
+              <div className="p-2 wb-surface-inset border wb-outline rounded-xs space-y-1">
+                <div className="flex items-center gap-1 text-[8px] font-black uppercase tracking-wider text-primary/70">
                   <Target className="w-2 h-2" />
                   Recommendation
                 </div>
-                <p className="text-[7px] text-white/50 font-medium italic leading-relaxed">
+                <p className="text-[9px] wb-text-muted font-medium italic leading-relaxed">
                   &quot;{recommendation}&quot;
                 </p>
               </div>
 
-              <div className="flex items-center justify-between text-[6px] font-mono text-white/30">
+              <div className="flex items-center justify-between text-[8px] font-mono wb-text-muted">
                 {issue.code && <span>CODE: {issue.code}</span>}
                 
                 {/* Locate in Workbench */}
@@ -410,7 +410,7 @@ function IssueCard({ issue, onNavigate }: { issue: AuditIssue; onNavigate?: ((pa
                       e.stopPropagation();
                       onNavigate(issue.path!);
                     }}
-                    className="flex items-center gap-1 text-[6px] font-black uppercase tracking-wider text-primary hover:text-white transition-colors"
+                    className="flex items-center gap-1 text-[8px] font-black uppercase tracking-wider text-primary hover:wb-text transition-colors"
                     aria-label={`Locate in workbench: ${issue.message}`}
                   >
                     Locate <ArrowRight className="w-2 h-2" />

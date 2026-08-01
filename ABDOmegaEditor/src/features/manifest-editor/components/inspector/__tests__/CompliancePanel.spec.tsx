@@ -137,7 +137,7 @@ describe('CompliancePanel — compliance matrix', () => {
 
   it('should show green dot for passed checks', () => {
     const { container } = render(<CompliancePanel audit={createBaseAudit()} manifest={BASE_MANIFEST} />);
-    const greenDots = container.querySelectorAll('.bg-\\[\\#00ff9d\\]');
+    const greenDots = container.querySelectorAll('.bg-green-500');
     expect(greenDots.length).toBeGreaterThan(0);
   });
 

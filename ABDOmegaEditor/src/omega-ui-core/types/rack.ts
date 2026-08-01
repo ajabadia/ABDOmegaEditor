@@ -18,7 +18,11 @@ export type ComponentType =
   | 'port'
   | 'led'
   | 'display'
-  | 'label';
+  | 'label'
+  | 'select'
+  | 'illustration'
+  | 'scope'
+  | 'terminal';
 
 export type SliderOrientation = 'vertical' | 'horizontal';
 export type PortOrientation = 'top' | 'bottom' | 'left' | 'right';

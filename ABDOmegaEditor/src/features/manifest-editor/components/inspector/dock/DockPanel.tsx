@@ -35,12 +35,12 @@ export function DockPanel({
   icon,
   onClose,
   children,
-  width = 'w-[260px]',
+  width = 'w-full',
   variant = 'default',
   accentColor
 }: DockPanelProps) {
   return (
-    <div className={`${width} h-full flex flex-col overflow-hidden shrink-0 relative`}>
+    <div className={`${width} h-full flex flex-col overflow-hidden relative`}>
       {/* Colored top indicator strip */}
       {accentColor && (
         <div

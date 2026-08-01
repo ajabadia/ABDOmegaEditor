@@ -2,7 +2,7 @@
 
 exports[`DockPanelHeader — snapshots should match snapshot for default variant 1`] = `
 <div
-  class="px-3 py-2 bg-black/30 border-b wb-outline flex items-center justify-between cursor-pointer text-foreground/80 hover:text-foreground hover:bg-white/5 transition-colors"
+  class="px-3 py-2 wb-surface-subtle border-b wb-outline flex items-center justify-between cursor-pointer wb-text hover:wb-surface-hover transition-colors"
 >
   <div
     class="flex items-center gap-2"

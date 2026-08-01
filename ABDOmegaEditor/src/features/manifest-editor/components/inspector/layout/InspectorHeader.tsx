@@ -22,7 +22,7 @@ interface InspectorHeaderProps {
 
 export default function InspectorHeader({ id, isModule, isPinned, onPin, onClose }: InspectorHeaderProps) {
   return (
-    <header className="p-4 border-b wb-outline bg-black/5 flex items-center justify-between shrink-0">
+    <header className="p-4 border-b wb-outline wb-surface-subtle flex items-center justify-between shrink-0">
       <div className="flex items-center gap-3">
         <div className="w-8 h-8 rounded-xs bg-primary/10 border border-primary/20 flex items-center justify-center">
            {isModule ? <Package className="w-4 h-4 text-primary" /> : <Settings className="w-4 h-4 text-primary" />}
@@ -39,7 +39,7 @@ export default function InspectorHeader({ id, isModule, isPinned, onPin, onClose
         {onPin && (
           <button 
             onClick={onPin}
-            className={`p-1.5 rounded-xs transition-all ${isPinned ? 'text-primary bg-primary/20 shadow-[0_0_10px_rgba(var(--primary-rgb),0.2)]' : 'text-white/20 hover:text-white/40 hover:bg-white/5'}`}
+            className={`p-1.5 rounded-xs transition-all ${isPinned ? 'text-primary bg-primary/20 shadow-[0_0_10px_rgba(var(--primary-rgb),0.2)]' : 'wb-text-muted hover:wb-text hover:wb-surface-hover'}`}
             title={isPinned ? "Unpin Node" : "Pin Node to Reference View"}
             aria-label={isPinned ? "Unpin Node" : "Pin Node to Reference View"}
           >

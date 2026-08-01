@@ -70,7 +70,7 @@ interface HeaderProps {
     aestheticsGlobals: boolean;
     aestheticsElements: boolean;
     architecture: boolean;
-    diagnostics: boolean;
+    diagnostics?: boolean;
   } | undefined;
   onToggleRackSection?: ((section: 'identity' | 'essentialIdentity' | 'identityBranding' | 'globalUiSkin' | 'activeConstructionPlane' | 'moduleTaxonomy' | 'physicalEmulationProfile' | 'aestheticsGlobals' | 'aestheticsElements' | 'architecture' | 'diagnostics') => void) | undefined;
   // Phase 39 — recovered from backup MenuBar

@@ -208,14 +208,6 @@ export default function CustomSkinSection({ manifest, onUpdate, resolveAsset, ac
           />
         )}
       </div>
- 
-      {/* FOOTER GOVERNANCE INFO */}
-      <div className="p-4 border border-dashed wb-outline rounded-xs bg-black/20">
-         <p className="text-[7px] wb-text-muted font-bold uppercase tracking-tighter leading-tight italic">
-            Industrial Warning: You are editing the module&apos;s custom design DNA. 
-            These settings override OMEGA standard themes and define the atomic physics of your instrument.
-         </p>
-      </div>
     </div>
   );
 }

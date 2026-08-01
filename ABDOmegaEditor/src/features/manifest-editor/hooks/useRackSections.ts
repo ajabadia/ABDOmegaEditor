@@ -27,29 +27,46 @@ export interface RackSections {
   aestheticsGlobals: boolean;
   aestheticsElements: boolean;
   architecture: boolean;
-  diagnostics: boolean;
 }
 
 export function useRackSections() {
   const [rackSections, setRackSections] = useState<RackSections>({
-    identity: true,
+    identity: false,
     essentialIdentity: true,
-    identityBranding: true,
-    globalUiSkin: true,
-    activeConstructionPlane: true,
-    moduleTaxonomy: true,
-    physicalEmulationProfile: true,
-    aestheticsGlobals: true,
-    aestheticsElements: true,
-    architecture: true,
-    diagnostics: true,
+    identityBranding: false,
+    globalUiSkin: false,
+    activeConstructionPlane: false,
+    moduleTaxonomy: false,
+    physicalEmulationProfile: false,
+    aestheticsGlobals: false,
+    aestheticsElements: false,
+    architecture: false,
   });
 
   const handleToggleRackSection = useCallback((section: string) => {
-    setRackSections(prev => ({
-      ...prev,
-      [section]: !prev[section as keyof RackSections],
-    }));
+    setRackSections(prev => {
+      if (!(section in prev)) return prev;
+      const key = section as keyof RackSections;
+      const isCurrentlyActive = prev[key] === true;
+
+      const next: RackSections = {
+        identity: false,
+        essentialIdentity: false,
+        identityBranding: false,
+        globalUiSkin: false,
+        activeConstructionPlane: false,
+        moduleTaxonomy: false,
+        physicalEmulationProfile: false,
+        aestheticsGlobals: false,
+        aestheticsElements: false,
+        architecture: false,
+      };
+
+      if (!isCurrentlyActive) {
+        next[key] = true;
+      }
+      return next;
+    });
   }, []);
 
   return { rackSections, handleToggleRackSection };

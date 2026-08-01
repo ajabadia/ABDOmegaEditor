@@ -29,7 +29,7 @@ interface DockHistoryPanelProps {
 export function DockHistoryPanel({ pastHistory, onUndoTo }: DockHistoryPanelProps) {
   if (pastHistory.length === 0) {
     return (
-      <div className="flex-grow flex items-center justify-center text-foreground/20 text-[8px] uppercase tracking-widest gap-1 py-4 select-none">
+      <div className="flex-grow flex items-center justify-center text-foreground/20 text-[10px] uppercase tracking-widest gap-1 py-4 select-none">
         <History className="w-3 h-3" />
         <span>Clean History</span>
       </div>
@@ -37,18 +37,18 @@ export function DockHistoryPanel({ pastHistory, onUndoTo }: DockHistoryPanelProp
   }
 
   return (
-    <div className="flex-grow overflow-y-auto bg-black/25 flex flex-col py-1 select-none">
+    <div className="flex-grow overflow-y-auto wb-surface-subtle flex flex-col py-1 select-none">
       {pastHistory.map((entry, index) => (
         <div
           key={index}
           onClick={() => onUndoTo(index)}
-          className="w-full text-left px-3 py-1 text-[8px] font-mono uppercase tracking-widest text-foreground/60 hover:bg-primary/10 hover:text-primary border-l-2 border-transparent hover:border-primary transition-all cursor-pointer flex items-center justify-between group"
+          className="w-full text-left px-3 py-1 text-[10px] font-mono uppercase tracking-widest text-foreground/60 hover:bg-primary/10 hover:text-primary border-l-2 border-transparent hover:border-primary transition-all cursor-pointer flex items-center justify-between group"
         >
           <div className="flex items-center gap-1.5 truncate">
             <span className="text-primary opacity-0 group-hover:opacity-100 shrink-0 transition-opacity">&gt;</span>
-            <span className="truncate">{entry.label}</span>
+            <span className="truncate" title={entry.label}>{entry.label}</span>
           </div>
-          <span className="text-[6px] opacity-30 shrink-0">
+          <span className="text-[8px] opacity-30 shrink-0">
             {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
           </span>
         </div>

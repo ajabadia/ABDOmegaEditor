@@ -32,7 +32,7 @@ export function CommonFields({ id, label, x, y, width, height, onChange }: Commo
       </div>
       <div className="grid grid-cols-4 gap-2">
         <div>
-          <label className="text-[10px] text-gray-500 block">X</label>
+          <label className="text-xs text-gray-500 block">X</label>
           <input
             className="w-full bg-[#1a1a1a] border border-[#333] rounded px-1 py-0.5 text-xs text-white"
             type="number"
@@ -41,7 +41,7 @@ export function CommonFields({ id, label, x, y, width, height, onChange }: Commo
           />
         </div>
         <div>
-          <label className="text-[10px] text-gray-500 block">Y</label>
+          <label className="text-xs text-gray-500 block">Y</label>
           <input
             className="w-full bg-[#1a1a1a] border border-[#333] rounded px-1 py-0.5 text-xs text-white"
             type="number"
@@ -50,7 +50,7 @@ export function CommonFields({ id, label, x, y, width, height, onChange }: Commo
           />
         </div>
         <div>
-          <label className="text-[10px] text-gray-500 block">W</label>
+          <label className="text-xs text-gray-500 block">W</label>
           <input
             className="w-full bg-[#1a1a1a] border border-[#333] rounded px-1 py-0.5 text-xs text-white"
             type="number"
@@ -59,7 +59,7 @@ export function CommonFields({ id, label, x, y, width, height, onChange }: Commo
           />
         </div>
         <div>
-          <label className="text-[10px] text-gray-500 block">H</label>
+          <label className="text-xs text-gray-500 block">H</label>
           <input
             className="w-full bg-[#1a1a1a] border border-[#333] rounded px-1 py-0.5 text-xs text-white"
             type="number"

@@ -50,16 +50,16 @@ describe('DockPanelHeader — variants', () => {
   it('should apply default variant classes when variant is not specified', () => {
     render(<DockPanelHeader {...defaultProps} />);
     const header = screen.getByText('Layers').closest('div')?.parentElement as HTMLElement;
-    expect(header.className).toContain('bg-black/30');
-    expect(header.className).toContain('hover:bg-white/5');
+    expect(header.className).toContain('wb-surface-subtle');
+    expect(header.className).toContain('hover:wb-surface-hover');
   });
 
   it('should apply default variant classes when variant="default"', () => {
     render(<DockPanelHeader {...defaultProps} variant="default" />);
     const header = screen.getByText('Layers').closest('div')?.parentElement as HTMLElement;
-    expect(header.className).toContain('bg-black/30');
-    expect(header.className).toContain('hover:bg-white/5');
-    expect(header.className).toContain('text-foreground/80');
+    expect(header.className).toContain('wb-surface-subtle');
+    expect(header.className).toContain('hover:wb-surface-hover');
+    expect(header.className).toContain('wb-text');
   });
 
   it('should apply subtle variant classes when variant="subtle"', () => {

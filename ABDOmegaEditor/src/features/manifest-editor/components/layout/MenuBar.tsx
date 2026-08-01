@@ -70,7 +70,7 @@ export interface MenuBarProps {
     aestheticsGlobals: boolean;
     aestheticsElements: boolean;
     architecture: boolean;
-    diagnostics: boolean;
+    diagnostics?: boolean;
   } | undefined;
   onToggleRackSection?: ((section: 'identity' | 'essentialIdentity' | 'identityBranding' | 'globalUiSkin' | 'activeConstructionPlane' | 'moduleTaxonomy' | 'physicalEmulationProfile' | 'aestheticsGlobals' | 'aestheticsElements' | 'architecture' | 'diagnostics') => void) | undefined;
   onSetTool?: ((tool: 'select' | 'marquee' | 'add' | 'studio' | 'transform' | null) => void) | undefined;

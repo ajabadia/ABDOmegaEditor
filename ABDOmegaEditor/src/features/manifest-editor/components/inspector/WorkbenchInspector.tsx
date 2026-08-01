@@ -79,6 +79,7 @@ interface WorkbenchInspectorProps {
   } | undefined;
   inspectorLevel?: 'simple' | 'medium' | 'advanced' | undefined;
   activeSection?: string | undefined;
+  onToggleRackSection?: ((section: string) => void) | undefined;
 }
 
 import { HorizontalSplitDivider } from './layout/HorizontalSplitDivider';

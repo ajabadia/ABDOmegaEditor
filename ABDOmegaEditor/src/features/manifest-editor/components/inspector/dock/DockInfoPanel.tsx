@@ -85,14 +85,14 @@ export function DockInfoPanel({
   const selectedInfo = getSelectedInfo();
 
   return (
-    <div className="flex-grow p-3 overflow-y-auto flex flex-col gap-2 bg-black/20 text-[8px] font-mono uppercase tracking-wider text-foreground/60 select-text">
+    <div className="flex-grow p-3 overflow-y-auto flex flex-col gap-2 wb-surface-subtle text-[10px] font-mono uppercase tracking-wider wb-text-muted select-text">
       {selectedInfo ? (
         <>
           <div className="flex items-center gap-1.5 text-primary font-bold">
             <Crosshair className="w-3 h-3" />
             <span>Entity: {selectedInfo.id}</span>
           </div>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-1 border-t border-white/5 pt-1.5 col-span-2">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-1 border-t wb-outline pt-1.5 col-span-2">
             <div>Type: <span className="text-foreground">{selectedInfo.type || 'Jack'}</span></div>
             <div>Label: <span className="text-foreground">{selectedInfo.label || 'None'}</span></div>
             <div>Pos X: <span className="text-foreground">{selectedInfo.x || 0}px</span></div>
@@ -107,7 +107,7 @@ export function DockInfoPanel({
           <span>No item selected</span>
         </div>
       )}
-      <div className="my-2 border-t border-white/5 pt-2">
+      <div className="my-2 border-t wb-outline pt-2">
         <DiagnosticBlock
           title="OMEGA Sync Status"
           signals={[
@@ -123,7 +123,7 @@ export function DockInfoPanel({
           ]}
         />
       </div>
-      <div className="border-t border-white/5 pt-2 mt-auto grid grid-cols-2 gap-x-4 shrink-0">
+      <div className="border-t wb-outline pt-2 mt-auto grid grid-cols-2 gap-x-4 shrink-0">
         <div>Live Engine: <span className={isLiveMode ? 'text-accent' : 'text-red-500'}>{isLiveMode ? 'Online' : 'Offline'}</span></div>
         <div>Theme: <span className="text-foreground">{uiTheme}</span></div>
       </div>

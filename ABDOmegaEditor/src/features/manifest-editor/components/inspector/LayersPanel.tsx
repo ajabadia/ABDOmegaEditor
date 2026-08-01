@@ -13,7 +13,7 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { List, useListRef } from 'react-window';
 import { motion } from 'framer-motion';
-import { Sliders, Radio, ListFilter } from 'lucide-react';
+import { ListFilter } from 'lucide-react';
 import type { OMEGA_Manifest, OmegaNode } from '@/omega-ui-core/types/manifest';
 import { findParentInTree } from '@/features/manifest-editor/hooks/entities/ucaInspectorAdapter';
 import { useBatchHistory } from '@/features/manifest-editor/hooks/useBatchHistory';
@@ -55,7 +55,6 @@ interface ToggleProps {
 /** CRUD operations on nodes */
 interface CrudProps {
   onRemoveItem?: ((id: string) => void) | undefined;
-  onAddEntity?: (type: 'control' | 'jack') => void;
   onDuplicateItem?: ((id: string) => void) | undefined;
   onDuplicateGroup?: ((id: string) => void) | undefined;
   onUpdateItem?: ((id: string, updates: Partial<OmegaNode>) => void) | undefined;
@@ -98,7 +97,6 @@ export default function LayersPanel({
   onToggleVisibility,
   onToggleLock,
   onRemoveItem,
-  onAddEntity,
   multiSelectedIds = [],
   onSelectMultiple,
   onGroupSelected,
@@ -286,7 +284,7 @@ export default function LayersPanel({
 
   return (
     <div
-      className="flex-1 flex flex-col overflow-hidden wb-surface text-[9px] font-sans relative"
+      className="flex-1 flex flex-col overflow-hidden wb-surface text-[10.5px] font-sans relative"
       onClick={closeContextMenu}
     >
       <LayersPanelFilterBar
@@ -368,8 +366,6 @@ export default function LayersPanel({
         <EmptyTreeState />
       )}
 
-      <QuickAddSection onAddEntity={onAddEntity} visibleCount={visibleCount} />
-
       {contextMenu && (
         <LayersPanelContextMenu
           x={contextMenu.x}
@@ -402,7 +398,7 @@ function DragGhostOverlay({ dragGhost }: { dragGhost: { x: number; y: number; la
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9 }}
       transition={{ duration: 0.12, ease: 'easeOut' }}
-      className="fixed pointer-events-none z-[9999] flex items-center gap-2 px-3 py-1.5 rounded-xs border shadow-2xl text-[8px] font-bold uppercase tracking-widest"
+      className="fixed pointer-events-none z-[9999] flex items-center gap-2 px-3 py-1.5 rounded-xs border shadow-2xl text-[10px] font-bold uppercase tracking-widest"
       style={{
         left: dragGhost.x + 12, top: dragGhost.y - 20,
         backgroundColor: `${dragGhost.color}18`, borderColor: `${dragGhost.color}66`,
@@ -421,7 +417,7 @@ function EmptyTreeState() {
   return (
     <div className="flex-1 flex flex-col items-center justify-center py-10 opacity-30 gap-1.5">
       <ListFilter className="w-5 h-5 wb-text" />
-      <span className="text-[7px] font-black uppercase tracking-widest wb-text">No tree data</span>
+      <span className="text-[9px] font-black uppercase tracking-widest wb-text">No tree data</span>
     </div>
   );
 }
@@ -431,28 +427,8 @@ function EmptyFilterState({ onClearFilters }: { onClearFilters: () => void }) {
   return (
     <div className="flex-1 flex flex-col items-center justify-center py-10 opacity-40 gap-1.5">
       <ListFilter className="w-5 h-5 wb-text" />
-      <span className="text-[7px] font-black uppercase tracking-widest wb-text">No layers match filters</span>
-      <button onClick={onClearFilters} className="text-[7px] font-mono text-primary/60 hover:text-primary underline underline-offset-2">Clear all filters</button>
-    </div>
-  );
-}
-
-/** Quick Add section for Param Control / Signal Port */
-function QuickAddSection({ onAddEntity, visibleCount }: { onAddEntity?: ((type: 'control' | 'jack') => void) | undefined; visibleCount: number }) {
-  if (!onAddEntity || visibleCount <= 0) return null;
-  return (
-    <div className="shrink-0 px-1.5 pb-1.5">
-      <div className="pt-2 border-t wb-outline flex flex-col gap-1">
-        <div className="px-1.5 text-[7px] font-black wb-text-muted uppercase tracking-widest">Quick Add</div>
-        <button onClick={() => onAddEntity('control')} title="Add parameter control"
-          className="w-full flex items-center gap-2 px-2 py-1.5 rounded-xs text-[8px] font-bold uppercase text-left hover:bg-primary/20 hover:text-primary transition-colors wb-text-muted">
-          <Sliders className="w-3.5 h-3.5" /> <span>Param Control</span>
-        </button>
-        <button onClick={() => onAddEntity('jack')} title="Add signal port"
-          className="w-full flex items-center gap-2 px-2 py-1.5 rounded-xs text-[8px] font-bold uppercase text-left hover:bg-primary/20 hover:text-primary transition-colors wb-text-muted">
-          <Radio className="w-3.5 h-3.5" /> <span>Signal Port</span>
-        </button>
-      </div>
+      <span className="text-[9px] font-black uppercase tracking-widest wb-text">No layers match filters</span>
+      <button onClick={onClearFilters} className="text-[9px] font-mono text-primary/60 hover:text-primary underline underline-offset-2">Clear all filters</button>
     </div>
   );
 }

@@ -45,7 +45,7 @@ export function LedEditor({ node, onChange, inspectorLevel }: LedEditorProps) {
             onChange={(c) => onChange({ style: { ...s, indicatorColor: c } })}
           />
           <div>
-            <label className="text-[10px] text-gray-500 block">Polarity</label>
+            <label className="text-xs text-gray-500 block">Polarity</label>
             <select
               className="w-full bg-[#1a1a1a] border border-[#333] rounded px-1 py-0.5 text-xs text-white"
               value={s.polarity || 'normal'}

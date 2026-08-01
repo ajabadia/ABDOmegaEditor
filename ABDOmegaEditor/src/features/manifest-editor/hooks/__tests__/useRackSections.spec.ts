@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  *
- * Tests for useRackSections hook — pure state, zero dependencies.
+ * Tests for useRackSections hook — mutually exclusive state model.
  */
 import { describe, it, expect } from '@jest/globals';
 import { renderHook, act } from '@testing-library/react';
@@ -18,105 +18,56 @@ const ALL_KEYS: (keyof RackSections)[] = [
   'aestheticsGlobals',
   'aestheticsElements',
   'architecture',
-  'diagnostics',
 ];
 
-// ── Initial state ──────────────────────────────────────────────────────
-
 describe('useRackSections — initial state', () => {
-  it('should start with all 11 sections defaulting to true', () => {
+  it('should start with essentialIdentity defaulting to true, all others to false', () => {
     const { result } = renderHook(() => useRackSections());
     const sections = result.current.rackSections;
 
-    expect(sections.identity).toBe(true);
     expect(sections.essentialIdentity).toBe(true);
-    expect(sections.identityBranding).toBe(true);
-    expect(sections.globalUiSkin).toBe(true);
-    expect(sections.activeConstructionPlane).toBe(true);
-    expect(sections.moduleTaxonomy).toBe(true);
-    expect(sections.physicalEmulationProfile).toBe(true);
-    expect(sections.aestheticsGlobals).toBe(true);
-    expect(sections.aestheticsElements).toBe(true);
-    expect(sections.architecture).toBe(true);
-    expect(sections.diagnostics).toBe(true);
+    
+    // Check all other keys are false
+    ALL_KEYS.forEach(key => {
+      if (key !== 'essentialIdentity') {
+        expect(sections[key]).toBe(false);
+      }
+    });
   });
 
-  it('should contain exactly 11 keys', () => {
+  it('should contain exactly 10 keys', () => {
     const { result } = renderHook(() => useRackSections());
     const keys = Object.keys(result.current.rackSections);
-    expect(keys).toHaveLength(11);
+    expect(keys).toHaveLength(10);
   });
 });
 
-// ── handleToggleRackSection ────────────────────────────────────────────
-
-describe('useRackSections — handleToggleRackSection', () => {
-  it('should toggle identity from true to false', () => {
+describe('useRackSections — handleToggleRackSection (exclusive selection)', () => {
+  it('should toggle a section to true and set all others to false', () => {
     const { result } = renderHook(() => useRackSections());
+    
     act(() => {
-      result.current.handleToggleRackSection('identity');
-    });
-    expect(result.current.rackSections.identity).toBe(false);
-  });
-
-  it('should toggle a section back from false to true on second call', () => {
-    const { result } = renderHook(() => useRackSections());
-    act(() => {
-      result.current.handleToggleRackSection('identity');
-    });
-    expect(result.current.rackSections.identity).toBe(false);
-
-    act(() => {
-      result.current.handleToggleRackSection('identity');
-    });
-    expect(result.current.rackSections.identity).toBe(true);
-  });
-
-  it('should preserve other sections when toggling one', () => {
-    const { result } = renderHook(() => useRackSections());
-    act(() => {
-      result.current.handleToggleRackSection('diagnostics');
+      result.current.handleToggleRackSection('globalUiSkin');
     });
 
-    // diagnostics flipped
-    expect(result.current.rackSections.diagnostics).toBe(false);
-    // all others unchanged
-    expect(result.current.rackSections.identity).toBe(true);
-    expect(result.current.rackSections.essentialIdentity).toBe(true);
-    expect(result.current.rackSections.identityBranding).toBe(true);
     expect(result.current.rackSections.globalUiSkin).toBe(true);
-    expect(result.current.rackSections.activeConstructionPlane).toBe(true);
-    expect(result.current.rackSections.moduleTaxonomy).toBe(true);
-    expect(result.current.rackSections.physicalEmulationProfile).toBe(true);
-    expect(result.current.rackSections.aestheticsGlobals).toBe(true);
-    expect(result.current.rackSections.aestheticsElements).toBe(true);
-    expect(result.current.rackSections.architecture).toBe(true);
+    expect(result.current.rackSections.essentialIdentity).toBe(false);
   });
 
-  it('should toggle every key independently', () => {
+  it('should toggle the active section to false when clicked again', () => {
     const { result } = renderHook(() => useRackSections());
-
-    for (const key of ALL_KEYS) {
-      act(() => {
-        result.current.handleToggleRackSection(key);
-      });
-    }
-
-    // All should now be false
-    for (const key of ALL_KEYS) {
+    
+    // essentialIdentity starts as true. Click it again:
+    act(() => {
+      result.current.handleToggleRackSection('essentialIdentity');
+    });
+    
+    expect(result.current.rackSections.essentialIdentity).toBe(false);
+    
+    // Ensure all keys are false now
+    ALL_KEYS.forEach(key => {
       expect(result.current.rackSections[key]).toBe(false);
-    }
-
-    // Toggle all back
-    for (const key of ALL_KEYS) {
-      act(() => {
-        result.current.handleToggleRackSection(key);
-      });
-    }
-
-    for (const key of ALL_KEYS) {
-      expect(result.current.rackSections[key]).toBe(true);
-    }
+    });
   });
 
   it('should handle an unknown key gracefully (no crash)', () => {
@@ -126,13 +77,11 @@ describe('useRackSections — handleToggleRackSection', () => {
         result.current.handleToggleRackSection('nonexistent');
       });
     }).not.toThrow();
-    // The unknown key adds an entry with value undefined → !undefined = true
-    // but the state shape remains unchanged (RackSections doesn't have that key)
-    expect(result.current.rackSections.identity).toBe(true);
+    
+    // Identity state remains intact
+    expect(result.current.rackSections.essentialIdentity).toBe(true);
   });
 });
-
-// ── Return shape ───────────────────────────────────────────────────────
 
 describe('useRackSections — return shape', () => {
   it('should return rackSections and handleToggleRackSection', () => {

@@ -45,9 +45,9 @@ export default function DiagnosticBlock({ signals, title }: DiagnosticBlockProps
   };
 
   return (
-    <div className="bg-black/40 border border-white/5 rounded-xs p-3 space-y-3">
+    <div className="wb-surface-inset border wb-outline rounded-xs p-3 space-y-3">
       {title && (
-        <div className="flex items-center gap-2 border-b border-white/5 pb-2 mb-1">
+        <div className="flex items-center gap-2 border-b wb-outline pb-2 mb-1">
           <Activity className="w-3 h-3 text-amber-500/50" />
           <span className="text-[7px] font-black uppercase tracking-widest text-amber-500/50">{title}</span>
         </div>

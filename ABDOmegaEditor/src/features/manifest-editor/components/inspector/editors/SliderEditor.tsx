@@ -36,7 +36,7 @@ export function SliderEditor({ node, onChange, inspectorLevel }: SliderEditorPro
       {showMedium && (
         <>
           <div>
-            <label className="text-[10px] text-gray-500 block">Orientation</label>
+            <label className="text-xs text-gray-500 block">Orientation</label>
             <select
               className="w-full bg-[#1a1a1a] border border-[#333] rounded px-1 py-0.5 text-xs text-white"
               value={s.orientation || 'vertical'}
@@ -56,7 +56,7 @@ export function SliderEditor({ node, onChange, inspectorLevel }: SliderEditorPro
       {showAdvanced && (
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="text-[10px] text-gray-500 block">Asset</label>
+            <label className="text-xs text-gray-500 block">Asset</label>
             <input
               className="w-full bg-[#1a1a1a] border border-[#333] rounded px-1 py-0.5 text-xs text-white"
               value={s.asset || ''}
@@ -64,7 +64,7 @@ export function SliderEditor({ node, onChange, inspectorLevel }: SliderEditorPro
             />
           </div>
           <div>
-            <label className="text-[10px] text-gray-500 block">Frames</label>
+            <label className="text-xs text-gray-500 block">Frames</label>
             <input
               className="w-full bg-[#1a1a1a] border border-[#333] rounded px-1 py-0.5 text-xs text-white"
               type="number"
@@ -83,7 +83,7 @@ export function SliderEditor({ node, onChange, inspectorLevel }: SliderEditorPro
       {showAdvanced && (
         <div className="grid grid-cols-3 gap-2">
           <div>
-            <label className="text-[10px] text-gray-500 block">Min</label>
+            <label className="text-xs text-gray-500 block">Min</label>
             <input
               className="w-full bg-[#1a1a1a] border border-[#333] rounded px-1 py-0.5 text-xs text-white"
               type="number"
@@ -92,7 +92,7 @@ export function SliderEditor({ node, onChange, inspectorLevel }: SliderEditorPro
             />
           </div>
           <div>
-            <label className="text-[10px] text-gray-500 block">Max</label>
+            <label className="text-xs text-gray-500 block">Max</label>
             <input
               className="w-full bg-[#1a1a1a] border border-[#333] rounded px-1 py-0.5 text-xs text-white"
               type="number"
@@ -101,7 +101,7 @@ export function SliderEditor({ node, onChange, inspectorLevel }: SliderEditorPro
             />
           </div>
           <div>
-            <label className="text-[10px] text-gray-500 block">Default</label>
+            <label className="text-xs text-gray-500 block">Default</label>
             <input
               className="w-full bg-[#1a1a1a] border border-[#333] rounded px-1 py-0.5 text-xs text-white"
               type="number"

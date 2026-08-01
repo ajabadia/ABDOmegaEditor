@@ -11,23 +11,17 @@
  */
 
 import React from 'react';
-import { Info, Cpu, LayoutGrid, Palette, Layout, Activity, Tag, Box, Layers } from 'lucide-react';
+import { Info, Cpu, Paintbrush, Palette, Layout } from 'lucide-react';
 import { DockIconBar } from './DockIconBar';
 import type { DockIconBarButton } from './DockIconBar';
 
 // Granular section IDs — must match WorkbenchContainer rackSections and PropertyPanel visibleSections
 type SectionId =
-  | 'identity'
   | 'essentialIdentity'
-  | 'identityBranding'
   | 'globalUiSkin'
-  | 'activeConstructionPlane'
-  | 'moduleTaxonomy'
   | 'physicalEmulationProfile'
   | 'aestheticsGlobals'
-  | 'aestheticsElements'
-  | 'architecture'
-  | 'diagnostics';
+  | 'architecture';
 
 interface RackSectionDef {
   id: SectionId;
@@ -37,22 +31,16 @@ interface RackSectionDef {
 }
 
 interface DockRackSectionToolbarProps {
-  rackSections: Partial<Record<SectionId, boolean>>;
+  rackSections: Partial<Record<string, boolean>>;
   onToggleRackSection: (section: string) => void;
 }
 
 const SECTIONS: RackSectionDef[] = [
-  { id: 'identity',                icon: <Info className="w-4 h-4" />,        title: 'Toggle Identity',                   level: 'essential' },
-  { id: 'essentialIdentity',       icon: <Tag className="w-4 h-4" />,         title: 'Toggle Essential Identity',         level: 'essential' },
-  { id: 'identityBranding',        icon: <Cpu className="w-4 h-4" />,         title: 'Toggle Identity Branding',          level: 'essential' },
-  { id: 'globalUiSkin',            icon: <Palette className="w-4 h-4" />,     title: 'Toggle Global UI Skin',             level: 'advanced' },
-  { id: 'activeConstructionPlane', icon: <LayoutGrid className="w-4 h-4" />,  title: 'Toggle Construction Plane',         level: 'advanced' },
-  { id: 'moduleTaxonomy',          icon: <Box className="w-4 h-4" />,         title: 'Toggle Module Taxonomy',            level: 'advanced' },
-  { id: 'physicalEmulationProfile',icon: <Activity className="w-4 h-4" />,    title: 'Toggle Physical Emulation Profile', level: 'advanced' },
-  { id: 'aestheticsGlobals',       icon: <Layers className="w-4 h-4" />,      title: 'Toggle Aesthetics Globals',         level: 'advanced' },
-  { id: 'aestheticsElements',      icon: <Palette className="w-4 h-4" />,     title: 'Toggle Aesthetics Elements',        level: 'advanced' },
+  { id: 'essentialIdentity',       icon: <Info className="w-4 h-4" />,        title: 'Toggle Identity',                   level: 'essential' },
+  { id: 'globalUiSkin',            icon: <Paintbrush className="w-4 h-4" />,  title: 'Toggle UI Skin',                    level: 'essential' },
+  { id: 'physicalEmulationProfile',icon: <Cpu className="w-4 h-4" />,         title: 'Toggle Chassis',                    level: 'essential' },
+  { id: 'aestheticsGlobals',       icon: <Palette className="w-4 h-4" />,     title: 'Toggle Aesthetics',                 level: 'advanced' },
   { id: 'architecture',            icon: <Layout className="w-4 h-4" />,      title: 'Toggle Architecture',               level: 'advanced' },
-  { id: 'diagnostics',             icon: <Activity className="w-4 h-4" />,    title: 'Toggle Diagnostics',                level: 'advanced' },
 ];
 
 const buttons: DockIconBarButton[] = SECTIONS.map(({ id, icon, title }) => ({ id, icon, title }));
@@ -64,10 +52,23 @@ export function DockRackSectionToolbar({
   rackSections,
   onToggleRackSection
 }: DockRackSectionToolbarProps) {
+  const isSectionActive = (id: string) => {
+    if (id === 'essentialIdentity') {
+      return !!(rackSections.essentialIdentity || rackSections.identityBranding || rackSections.moduleTaxonomy);
+    }
+    if (id === 'globalUiSkin') {
+      return !!(rackSections.globalUiSkin || rackSections.activeConstructionPlane);
+    }
+    if (id === 'aestheticsGlobals') {
+      return !!(rackSections.aestheticsGlobals || rackSections.aestheticsElements);
+    }
+    return rackSections[id as keyof typeof rackSections] === true;
+  };
+
   return (
     <DockIconBar
       buttons={buttons}
-      isActive={(id) => rackSections[id as SectionId] !== false}
+      isActive={(id) => isSectionActive(id)}
       onButtonClick={(id) => onToggleRackSection(id)}
       label="RACK SECT"
       groups={[

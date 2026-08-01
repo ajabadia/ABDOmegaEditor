@@ -11,7 +11,7 @@
  */
 
 import { useState, useMemo } from 'react';
-import { Info, Layout, Palette, Zap, Activity, Box, Cpu, Paintbrush, Layers, Shield } from 'lucide-react';
+import { Info, Palette, Zap, Activity, Box, Cpu, Paintbrush, Layers, Shield } from 'lucide-react';
 import type { InspectorSection } from '@/components/ui/InspectorNav';
 
 export interface UseInspectorSectionsOptions {
@@ -69,36 +69,39 @@ export function useInspectorSections({
     if (!isModule && !isBulk && visibleSections?.identity !== false) {
       list.push({ id: 'identity', label: 'Identity', icon: Info, color: 'text-cyan-400' });
     }
-    if (isModule && !isBulk) {
-      if (visibleSections?.essentialIdentity !== false)
-        list.push({ id: 'identity', label: 'Identity', icon: Info, color: 'text-cyan-400' });
-      if (visibleSections?.globalUiSkin !== false)
-        list.push({ id: 'ui-skin', label: 'UI Skin', icon: Paintbrush, color: 'text-cyan-400' });
-      if (visibleSections?.activeConstructionPlane !== false)
-        list.push({ id: 'plane', label: 'Plane', icon: Layers, color: 'text-cyan-400' });
-      if (visibleSections?.physicalEmulationProfile !== false)
-        list.push({ id: 'emulation', label: 'Chassis', icon: Cpu, color: 'text-cyan-400' });
+    if (isModule && !isBulk && visibleSections) {
+      const activeKey = Object.keys(visibleSections).find(
+        k => visibleSections[k as keyof typeof visibleSections] === true
+      );
+      if (activeKey === 'essentialIdentity' || activeKey === 'identityBranding' || activeKey === 'moduleTaxonomy') {
+        list.push({ id: 'essentialIdentity', label: 'Essential', icon: Info, color: 'text-cyan-400' });
+        list.push({ id: 'identityBranding', label: 'Branding', icon: Cpu, color: 'text-cyan-400' });
+        list.push({ id: 'moduleTaxonomy', label: 'Taxonomy', icon: Box, color: 'text-cyan-400' });
+      } else if (activeKey === 'globalUiSkin' || activeKey === 'activeConstructionPlane') {
+        list.push({ id: 'globalUiSkin', label: 'UI Skin', icon: Paintbrush, color: 'text-cyan-400' });
+        list.push({ id: 'activeConstructionPlane', label: 'Plane', icon: Layers, color: 'text-cyan-400' });
+      } else if (activeKey === 'aestheticsGlobals' || activeKey === 'aestheticsElements') {
+        list.push({ id: 'aestheticsGlobals', label: 'Globals', icon: Box, color: 'text-purple-400' });
+        list.push({ id: 'aestheticsElements', label: 'Elements', icon: Palette, color: 'text-purple-400' });
+      }
     }
-    if (!isModule && !isBulk) {
+    if (!isModule && !isBulk && (lvl === 'medium' || lvl === 'advanced')) {
       list.push({ id: 'simulation', label: 'Sim', icon: Activity, color: 'text-emerald-400' });
     }
 
     // Medium / Advanced only sections
     if (lvl === 'medium' || lvl === 'advanced') {
-      if (isModule && !isBulk && visibleSections?.aestheticsGlobals !== false) {
-        list.push({ id: 'globals', label: 'Globals', icon: Box, color: 'text-purple-400' });
+      if (!isModule && visibleSections?.aestheticsElements !== false) {
+        list.push({ id: 'aesthetics', label: 'Design', icon: Palette, color: 'text-purple-400' });
       }
-      if (visibleSections?.aestheticsElements !== false) {
-        list.push({ id: 'aesthetics', label: isModule ? 'Elements' : 'Design', icon: Palette, color: 'text-purple-400' });
-      }
-      if (!isBulk && visibleSections?.architecture !== false) {
-        list.push({ id: 'architecture', label: isModule ? 'Arch' : 'Logic', icon: isModule ? Layout : Zap, color: 'text-emerald-400' });
+      if (!isModule && !isBulk && visibleSections?.architecture !== false) {
+        list.push({ id: 'architecture', label: 'Logic', icon: Zap, color: 'text-emerald-400' });
       }
     }
 
     // Advanced only sections
     if (lvl === 'advanced') {
-      if (visibleSections?.diagnostics !== false) {
+      if (!isModule && visibleSections?.diagnostics !== false) {
         list.push({ id: 'diagnostics', label: 'Registry', icon: Shield, color: 'text-amber-400' });
       }
     }

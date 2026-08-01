@@ -30,7 +30,7 @@ const COLOR_NAMES: Record<string, string> = {
 export function ColorInput({ label, value, onChange }: ColorInputProps) {
   return (
     <div>
-      <label className="text-[10px] text-gray-500 block">{label}</label>
+      <label className="text-xs text-gray-500 block">{label}</label>
       <div className="flex items-center gap-1">
         <input
           className="w-5 h-5 rounded border border-[#333] cursor-pointer"

@@ -17,6 +17,10 @@ import { SwitchEditor } from './SwitchEditor';
 import { ButtonEditor } from './ButtonEditor';
 import { DisplayEditor } from './DisplayEditor';
 import { LabelEditor } from './LabelEditor';
+import { SelectEditor } from './SelectEditor';
+import { IllustrationEditor } from './IllustrationEditor';
+import { ScopeEditor } from './ScopeEditor';
+import { TerminalEditor } from './TerminalEditor';
 import { GroupEditor } from './GroupEditor';
 import { RackPropertiesEditor } from './RackPropertiesEditor';
 import { PluginRegistry } from '@/lib/plugins/PluginRegistry';
@@ -53,6 +57,10 @@ export function ComponentEditor({ selection, onChange, inspectorLevel, onSaveGro
         case 'button': return <ButtonEditor node={node} onChange={handler} inspectorLevel={inspectorLevel} />;
         case 'display': return <DisplayEditor node={node} onChange={handler} inspectorLevel={inspectorLevel} />;
         case 'label': return <LabelEditor node={node} onChange={handler} inspectorLevel={inspectorLevel} />;
+        case 'select': return <SelectEditor node={node} onChange={handler} inspectorLevel={inspectorLevel} />;
+        case 'illustration': return <IllustrationEditor node={node} onChange={handler} inspectorLevel={inspectorLevel} />;
+        case 'scope': return <ScopeEditor node={node} onChange={handler} inspectorLevel={inspectorLevel} />;
+        case 'terminal': return <TerminalEditor node={node} onChange={handler} inspectorLevel={inspectorLevel} />;
         default: {
           const PluginEditor = PluginRegistry.getEditor(node.type);
           if (PluginEditor) {

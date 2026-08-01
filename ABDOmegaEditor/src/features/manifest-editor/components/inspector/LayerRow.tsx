@@ -243,15 +243,15 @@ export const LayerRow = ({
                   }
                 }}
                 aria-label={`Rename layer ${node.id}`}
-                className="bg-black/80 border border-primary/50 text-[8px] font-mono uppercase px-1 py-0.5 rounded-xs text-white focus:outline-none max-w-[120px]"
+                className="wb-surface-inset border border-primary/50 text-[10px] font-mono uppercase px-1 py-0.5 rounded-xs wb-text focus:outline-none max-w-[120px]"
                 autoFocus
                 onClick={(e) => e.stopPropagation()}
               />
             ) : (
               <div className="flex flex-col overflow-hidden min-w-0" onDoubleClick={() => { setIsEditing(true); setEditValue((node.meta?.label as string) || node.id); }}>
-                <span className="font-mono text-[8px] uppercase tracking-wider truncate leading-tight">{node.id}</span>
+                <span className="font-mono text-[10px] uppercase tracking-wider truncate leading-tight" title={node.id}>{node.id}</span>
                 {(node.meta?.label as string) && (
-                  <span className="text-[7px] opacity-50 uppercase tracking-widest truncate leading-tight">{node.meta?.label as string}</span>
+                  <span className="text-[9px] opacity-50 uppercase tracking-widest truncate leading-tight" title={node.meta?.label as string}>{node.meta?.label as string}</span>
                 )}
               </div>
             )}
@@ -260,7 +260,7 @@ export const LayerRow = ({
           <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
             {hasChildren && childCount > 0 && (
               <span
-                className="inline-flex items-center justify-center min-w-[12px] h-3 px-[3px] rounded-[2px] text-[6px] font-black leading-none tabular-nums"
+                className="inline-flex items-center justify-center min-w-[12px] h-3 px-[3px] rounded-[2px] text-[8px] font-black leading-none tabular-nums"
                 style={{
                   backgroundColor: `${nodeColor}22`,
                   color: nodeColor,
@@ -271,8 +271,8 @@ export const LayerRow = ({
                 {childCount}
               </span>
             )}
-            {isHidden && <span className="text-[6px] font-black text-red-400/60 uppercase tracking-widest mr-0.5" title="Hidden">H</span>}
-            {isLocked && <span className="text-[6px] font-black text-amber-400/60 uppercase tracking-widest mr-0.5" title="Locked">L</span>}
+            {isHidden && <span className="text-[8px] font-black text-red-400/60 uppercase tracking-widest mr-0.5" title="Hidden">H</span>}
+            {isLocked && <span className="text-[8px] font-black text-amber-400/60 uppercase tracking-widest mr-0.5" title="Locked">L</span>}
             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <button
                 onClick={() => onToggleVisibility(node.id)}
@@ -297,7 +297,7 @@ export const LayerRow = ({
                   title="Delete"
                   aria-label="Delete"
                 >
-                  <span className="text-[7px] font-black">DEL</span>
+                  <span className="text-[9px] font-black">DEL</span>
                 </button>
               )}
             </div>

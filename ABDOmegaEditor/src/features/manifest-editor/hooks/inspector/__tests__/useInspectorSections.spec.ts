@@ -31,15 +31,21 @@ function getSectionLabels(defs: ReturnType<typeof useInspectorSections>['section
   return defs.map((s) => s.label);
 }
 
+// ── Helpers ────────────────────────────────────────────────────────────
+
+const identityVisible = { essentialIdentity: true } as const;
+const skinVisible = { globalUiSkin: true } as const;
+const aestheticsVisible = { aestheticsGlobals: true } as const;
+
 // ── Initial state / default sections ───────────────────────────────────
 
 describe('useInspectorSections — default section definitions', () => {
-  it('should return identity and sim for simple-level node mode', () => {
+  it('should return only identity for simple-level node mode (simulation is medium+)', () => {
     const { result } = renderHook(() =>
       useInspectorSections(nodeOptions({ inspectorLevel: 'simple' })),
     );
     const ids = getSectionIds(result.current.sectionDefs);
-    expect(ids).toEqual(['identity', 'simulation']);
+    expect(ids).toEqual(['identity']);
   });
 
   it('should return identity, sim, aesthetics, and logic for medium-level node mode', () => {
@@ -66,25 +72,61 @@ describe('useInspectorSections — default section definitions', () => {
     expect(ids).toContain('diagnostics');
   });
 
-  it('should return identity, ui-skin, plane, emulation, globals, elements, arch for medium-level module mode', () => {
+  it('should return empty for module mode without visibleSections', () => {
     const { result } = renderHook(() =>
       useInspectorSections(moduleOptions({ inspectorLevel: 'medium' })),
     );
     const ids = getSectionIds(result.current.sectionDefs);
-    expect(ids).toContain('identity');
-    expect(ids).toContain('ui-skin');
-    expect(ids).toContain('plane');
-    expect(ids).toContain('emulation');
-    expect(ids).toContain('globals');
-    expect(ids).toContain('aesthetics');
-    expect(ids).toContain('architecture');
+    expect(ids).toHaveLength(0);
+  });
+
+  it('should return identity-group sections when essentialIdentity is active in module mode', () => {
+    const { result } = renderHook(() =>
+      useInspectorSections(moduleOptions({
+        inspectorLevel: 'medium',
+        visibleSections: identityVisible,
+      })),
+    );
+    const ids = getSectionIds(result.current.sectionDefs);
+    expect(ids).toContain('essentialIdentity');
+    expect(ids).toContain('identityBranding');
+    expect(ids).toContain('moduleTaxonomy');
     expect(ids).not.toContain('simulation');
     expect(ids).not.toContain('diagnostics');
   });
 
+  it('should return skin-group sections when globalUiSkin is active in module mode', () => {
+    const { result } = renderHook(() =>
+      useInspectorSections(moduleOptions({
+        inspectorLevel: 'medium',
+        visibleSections: skinVisible,
+      })),
+    );
+    const ids = getSectionIds(result.current.sectionDefs);
+    expect(ids).toContain('globalUiSkin');
+    expect(ids).toContain('activeConstructionPlane');
+    expect(ids).not.toContain('simulation');
+  });
+
+  it('should return aesthetics-group sections when aestheticsGlobals is active in module mode', () => {
+    const { result } = renderHook(() =>
+      useInspectorSections(moduleOptions({
+        inspectorLevel: 'medium',
+        visibleSections: aestheticsVisible,
+      })),
+    );
+    const ids = getSectionIds(result.current.sectionDefs);
+    expect(ids).toContain('aestheticsGlobals');
+    expect(ids).toContain('aestheticsElements');
+    expect(ids).not.toContain('simulation');
+  });
+
   it('should NOT include simulation for module mode', () => {
     const { result } = renderHook(() =>
-      useInspectorSections(moduleOptions({ inspectorLevel: 'medium' })),
+      useInspectorSections(moduleOptions({
+        inspectorLevel: 'medium',
+        visibleSections: identityVisible,
+      })),
     );
     const ids = getSectionIds(result.current.sectionDefs);
     expect(ids).not.toContain('simulation');
@@ -92,39 +134,38 @@ describe('useInspectorSections — default section definitions', () => {
 
   it('should NOT include node-only sections for module mode', () => {
     const { result } = renderHook(() =>
-      useInspectorSections(moduleOptions({ inspectorLevel: 'advanced' })),
+      useInspectorSections(moduleOptions({
+        inspectorLevel: 'advanced',
+        visibleSections: identityVisible,
+      })),
     );
     const labels = getSectionLabels(result.current.sectionDefs);
-    // Node-specific labels
     expect(labels).not.toContain('Sim');
+    expect(labels).not.toContain('Registry');
+    expect(labels).not.toContain('Logic');
   });
 });
 
 // ── Bulk mode ──────────────────────────────────────────────────────────
 
 describe('useInspectorSections — bulk mode', () => {
-  it('should return empty sections for bulk mode when isModule is false', () => {
+  it('should return only aesthetics for bulk mode at medium level', () => {
     const { result } = renderHook(() =>
       useInspectorSections(bulkOptions({ inspectorLevel: 'medium' })),
     );
-    // Bulk with isModule=false: no identity, no module sections, no simulation
-    // Only medium/advanced sections: aesthetics, architecture — but isBulk blocks architecture
-    // For node bulk: aesthetics appears (no isModule guard)
     const ids = getSectionIds(result.current.sectionDefs);
     expect(ids).toHaveLength(1); // only 'aesthetics'
     expect(ids).not.toContain('identity');
     expect(ids).not.toContain('simulation');
-    expect(ids).not.toContain('architecture'); // blocked by isBulk
+    expect(ids).not.toContain('architecture');
     expect(ids).not.toContain('diagnostics');
   });
 
-  it('should return even fewer sections when inspectorLevel is simple in bulk mode', () => {
+  it('should return empty sections when inspectorLevel is simple in bulk mode', () => {
     const { result } = renderHook(() =>
       useInspectorSections(bulkOptions({ inspectorLevel: 'simple' })),
     );
     const ids = getSectionIds(result.current.sectionDefs);
-    // simple level: no medium/advanced sections → only section is from basic level which requires !isBulk
-    // So: identity (blocked by isBulk), simulation (blocked by isBulk) → empty
     expect(ids).toHaveLength(0);
   });
 });
@@ -132,25 +173,33 @@ describe('useInspectorSections — bulk mode', () => {
 // ── Level-based filtering ──────────────────────────────────────────────
 
 describe('useInspectorSections — level-based visibility', () => {
-  it('should not include globals or diagnostics at simple level for module mode', () => {
+  it('should show module sections at any level when their activeKey is truthy', () => {
     const { result } = renderHook(() =>
-      useInspectorSections(moduleOptions({ inspectorLevel: 'simple' })),
+      useInspectorSections(moduleOptions({
+        inspectorLevel: 'simple',
+        visibleSections: aestheticsVisible,
+      })),
     );
     const ids = getSectionIds(result.current.sectionDefs);
-    expect(ids).not.toContain('globals');
+    // Module sections are not gated by inspectorLevel — they show whenever visibleSections has a truthy activeKey
+    expect(ids).toContain('aestheticsGlobals');
+    expect(ids).toContain('aestheticsElements');
+    // Node-only sections are still gated
     expect(ids).not.toContain('diagnostics');
     expect(ids).not.toContain('aesthetics');
     expect(ids).not.toContain('architecture');
   });
 
-  it('should include globals, aesthetics, and architecture at medium level for module mode', () => {
+  it('should include aesthetics sections at medium level for module mode', () => {
     const { result } = renderHook(() =>
-      useInspectorSections(moduleOptions({ inspectorLevel: 'medium' })),
+      useInspectorSections(moduleOptions({
+        inspectorLevel: 'medium',
+        visibleSections: aestheticsVisible,
+      })),
     );
     const ids = getSectionIds(result.current.sectionDefs);
-    expect(ids).toContain('globals');
-    expect(ids).toContain('aesthetics');
-    expect(ids).toContain('architecture');
+    expect(ids).toContain('aestheticsGlobals');
+    expect(ids).toContain('aestheticsElements');
   });
 
   it('should include diagnostics only at advanced level for node mode', () => {
@@ -173,34 +222,34 @@ describe('useInspectorSections — level-based visibility', () => {
 // ── Section labels ─────────────────────────────────────────────────────
 
 describe('useInspectorSections — section labels', () => {
-  it('should use "Design" label for node aesthetics and "Elements" for module', () => {
+  it('should use "Design" label for node aesthetics', () => {
     const node = renderHook(() =>
       useInspectorSections(nodeOptions({ inspectorLevel: 'medium' })),
-    );
-    const mod = renderHook(() =>
-      useInspectorSections(moduleOptions({ inspectorLevel: 'medium' })),
     );
 
     const nodeAesthetics = node.result.current.sectionDefs.find((s) => s.id === 'aesthetics');
-    const modAesthetics = mod.result.current.sectionDefs.find((s) => s.id === 'aesthetics');
-
     expect(nodeAesthetics?.label).toBe('Design');
+  });
+
+  it('should use "Elements" label for module aestheticsElements', () => {
+    const mod = renderHook(() =>
+      useInspectorSections(moduleOptions({
+        inspectorLevel: 'medium',
+        visibleSections: aestheticsVisible,
+      })),
+    );
+
+    const modAesthetics = mod.result.current.sectionDefs.find((s) => s.id === 'aestheticsElements');
     expect(modAesthetics?.label).toBe('Elements');
   });
 
-  it('should use "Logic" label for node architecture and "Arch" for module', () => {
+  it('should use "Logic" label for node architecture', () => {
     const node = renderHook(() =>
       useInspectorSections(nodeOptions({ inspectorLevel: 'medium' })),
     );
-    const mod = renderHook(() =>
-      useInspectorSections(moduleOptions({ inspectorLevel: 'medium' })),
-    );
 
     const nodeArch = node.result.current.sectionDefs.find((s) => s.id === 'architecture');
-    const modArch = mod.result.current.sectionDefs.find((s) => s.id === 'architecture');
-
     expect(nodeArch?.label).toBe('Logic');
-    expect(modArch?.label).toBe('Arch');
   });
 
   it('should include "Registry" label for diagnostics', () => {
@@ -251,18 +300,17 @@ describe('useInspectorSections — visibleSections filtering', () => {
     expect(ids).toContain('architecture');
   });
 
-  it('should hide module-only sections when their visibility is false', () => {
+  it('should return empty for module mode when all visibleSections are false', () => {
     const { result } = renderHook(() =>
       useInspectorSections(moduleOptions({
         visibleSections: { globalUiSkin: false, activeConstructionPlane: false, physicalEmulationProfile: false },
       })),
     );
     const ids = getSectionIds(result.current.sectionDefs);
-    expect(ids).not.toContain('ui-skin');
-    expect(ids).not.toContain('plane');
-    expect(ids).not.toContain('emulation');
-    expect(ids).toContain('identity');     // still visible
-    expect(ids).toContain('aesthetics');   // still visible
+    // With all falsy, no activeKey is found, so module returns empty
+    expect(ids).not.toContain('globalUiSkin');
+    expect(ids).not.toContain('activeConstructionPlane');
+    expect(ids).toHaveLength(0);
   });
 });
 

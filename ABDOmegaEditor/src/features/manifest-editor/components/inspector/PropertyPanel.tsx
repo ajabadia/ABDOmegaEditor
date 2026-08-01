@@ -10,6 +10,7 @@
  * @lastUpdated 2026-06-20T20:07:23.322Z
  */
 
+import React from 'react';
 import type { ManifestEntity, OMEGA_Manifest, OMEGA_Modulation, LayoutContainer, ExtraResource, OmegaNode, HybridEntityUpdate } from '@/omega-ui-core/types/manifest';
 
 // Specialized Sections
@@ -26,6 +27,8 @@ import CustomSkinSection from '@/features/manifest-editor/components/inspector/s
 
 // Merged Identity sections
 import ModuleIdentitySection from '@/features/manifest-editor/components/inspector/sections/module/ModuleIdentitySection';
+import ModuleBrandingSection from '@/features/manifest-editor/components/inspector/sections/module/ModuleBrandingSection';
+import ModuleTaxonomySection from '@/features/manifest-editor/components/inspector/sections/module/ModuleTaxonomySection';
 import ModuleChassisSection from '@/features/manifest-editor/components/inspector/sections/module/ModuleChassisSection';
 import ModuleSkinSelector from '@/features/manifest-editor/components/inspector/sections/identity/ModuleSkinSelector';
 import ModulePlaneSelector from '@/features/manifest-editor/components/inspector/sections/identity/ModulePlaneSelector';
@@ -100,14 +103,17 @@ interface DisplayProps {
   visibleSections?: {
       identity?: boolean;
       essentialIdentity?: boolean;
+      identityBranding?: boolean;
       globalUiSkin?: boolean;
       activeConstructionPlane?: boolean;
+      moduleTaxonomy?: boolean;
       physicalEmulationProfile?: boolean;
       aestheticsGlobals?: boolean;
       aestheticsElements?: boolean;
       architecture?: boolean;
       diagnostics?: boolean;
     } | undefined;
+  onToggleRackSection?: ((section: string) => void) | undefined;
 }
 
 export type PropertyPanelProps = ItemProps & CallbackProps & ModulationProps & ContainerProps & BlueprintProps & ResourceProps & DisplayProps;
@@ -132,13 +138,30 @@ export default function PropertyPanel(props: PropertyPanelProps) {
   });
 
   // ── Section definitions + active section state ────────────────────
-  const { sectionDefs, activeSection, setActiveSection } = useInspectorSections({
+  const { sectionDefs, activeSection: localActiveSection, setActiveSection } = useInspectorSections({
     isModule,
     isBulk,
     visibleSections: props.visibleSections,
     inspectorLevel: props.inspectorLevel,
     activeSectionProp: props.activeSection,
   });
+
+  // Derive activeSection from visibleSections if module, else use local hook state
+  const activeSection = React.useMemo(() => {
+    if (!isModule || !props.visibleSections) return localActiveSection;
+    const activeKey = Object.keys(props.visibleSections).find(
+      k => props.visibleSections![k as keyof typeof props.visibleSections]
+    );
+    return activeKey || 'essentialIdentity';
+  }, [isModule, props.visibleSections, localActiveSection]);
+
+  const setActiveSectionWrapper = React.useCallback((tabId: string) => {
+    if (isModule && props.onToggleRackSection) {
+      props.onToggleRackSection(tabId);
+    } else {
+      setActiveSection(tabId);
+    }
+  }, [isModule, props.onToggleRackSection, setActiveSection]);
 
   const itemId = (item && 'id' in item ? item.id : 'MANIFEST') || 'MANIFEST';
   const { isPlaying, toggleSimulation } = useDryRunSimulation(isModule || isBulk ? null : itemId);
@@ -148,7 +171,7 @@ export default function PropertyPanel(props: PropertyPanelProps) {
   if (!item || !liveItem) return null;
 
   return (
-    <div className={`h-full wb-surface border-l wb-outline flex flex-col shadow-2xl overflow-hidden transition-all duration-500 ${mode === 'active' ? 'ring-1 ring-primary/20 shadow-[inset_0_0_40px_rgba(var(--primary-rgb),0.02)]' : 'opacity-90 shadow-none'}`}>
+    <div className={`flex-1 min-h-0 wb-surface border-l wb-outline flex flex-col shadow-2xl overflow-hidden transition-all duration-500 ${mode === 'active' ? 'ring-1 ring-primary/20 shadow-[inset_0_0_40px_rgba(var(--primary-rgb),0.02)]' : 'opacity-90 shadow-none'}`}>
       <InspectorHeader
         id={isBulk ? `${props.multiSelectedIds?.length} Items` : (itemId || 'MANIFEST')}
         isModule={!!isModule && !isBulk}
@@ -162,13 +185,13 @@ export default function PropertyPanel(props: PropertyPanelProps) {
         <InspectorNav
           sections={sectionDefs}
           activeSection={activeSection}
-          setActiveSection={setActiveSection}
+          setActiveSection={setActiveSectionWrapper}
         />
       )}
 
       {/* SOBERANIA BANNER — Top Placement (Era 8) */}
       {(isReadOnly || isBulk) && (
-        <div className={`flex items-center gap-2 px-3 py-1 border-b text-[7px] font-black uppercase tracking-widest ${isBulk ? 'bg-blue-500/10 border-blue-500/20 text-blue-500' : (mode === 'reference' ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' : 'bg-red-500/10 border-red-500/20 text-red-500')}`}>
+        <div className={`flex items-center gap-2 px-3 py-1 border-b text-[9px] font-black uppercase tracking-widest ${isBulk ? 'bg-blue-500/10 border-blue-500/20 text-blue-500' : (mode === 'reference' ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' : 'bg-red-500/10 border-red-500/20 text-red-500')}`}>
           <div className={`w-1 h-1 rounded-full animate-pulse ${isBulk ? 'bg-blue-500' : (mode === 'reference' ? 'bg-amber-500' : 'bg-red-500')}`} />
           <span>{isBulk ? `Bulk Editing ${props.multiSelectedIds?.length} Items` : (mode === 'reference' ? 'Reference Mode (Pinned)' : 'Read-Only Mode')}</span>
         </div>
@@ -178,28 +201,28 @@ export default function PropertyPanel(props: PropertyPanelProps) {
         {/* BULK UPDATE HANDLER */}
         {isBulk && (
            <div className="p-4 bg-blue-500/5 border border-blue-500/20 rounded-sm mb-4 space-y-3">
-              <div className="text-[8px] font-bold text-blue-400 uppercase mb-2">Bulk Synchronization Active</div>
-              <div className="text-[7px] text-blue-300/60 leading-relaxed uppercase">
+<div className="text-[10px] font-bold text-blue-400 uppercase mb-2">Bulk Synchronization Active</div>
+               <div className="text-[9px] text-blue-300/60 leading-relaxed uppercase">
                 Any changes made to &quot;Design &amp; Aesthetics&quot; or &quot;System Diagnostics&quot; below will be applied to all selected nodes simultaneously.
               </div>
               {bulkIntersection && (
                 <div className="grid grid-cols-2 gap-2 pt-2 border-t border-blue-500/10">
-                  <div className="text-[7px] font-black uppercase tracking-wider text-blue-400/80">Property</div>
-                  <div className="text-[7px] font-black uppercase tracking-wider text-blue-400/80">Value</div>
-                  <div className="text-[7px] uppercase text-blue-300/60">Width</div>
-                  <div className={`text-[7px] font-bold ${bulkIntersection.layout.width.common ? 'text-blue-300' : 'text-amber-400'}`}>
+                  <div className="text-[9px] font-black uppercase tracking-wider text-blue-400/80">Property</div>
+                  <div className="text-[9px] font-black uppercase tracking-wider text-blue-400/80">Value</div>
+                  <div className="text-[9px] uppercase text-blue-300/60">Width</div>
+                  <div className={`text-[9px] font-bold ${bulkIntersection.layout.width.common ? 'text-blue-300' : 'text-amber-400'}`}>
                     {bulkIntersection.layout.width.common ? String(bulkIntersection.layout.width.value) : 'Mixed'}
                   </div>
-                  <div className="text-[7px] uppercase text-blue-300/60">Height</div>
-                  <div className={`text-[7px] font-bold ${bulkIntersection.layout.height.common ? 'text-blue-300' : 'text-amber-400'}`}>
+                  <div className="text-[9px] uppercase text-blue-300/60">Height</div>
+                  <div className={`text-[9px] font-bold ${bulkIntersection.layout.height.common ? 'text-blue-300' : 'text-amber-400'}`}>
                     {bulkIntersection.layout.height.common ? String(bulkIntersection.layout.height.value) : 'Mixed'}
                   </div>
-                  <div className="text-[7px] uppercase text-blue-300/60">Role</div>
-                  <div className={`text-[7px] font-bold ${bulkIntersection.role.common ? 'text-blue-300' : 'text-amber-400'}`}>
+                  <div className="text-[9px] uppercase text-blue-300/60">Role</div>
+                  <div className={`text-[9px] font-bold ${bulkIntersection.role.common ? 'text-blue-300' : 'text-amber-400'}`}>
                     {bulkIntersection.role.common ? String(bulkIntersection.role.value) : 'Mixed'}
                   </div>
-                  <div className="text-[7px] uppercase text-blue-300/60">Label</div>
-                  <div className={`text-[7px] font-bold ${bulkIntersection.label.common ? 'text-blue-300' : 'text-amber-400'}`}>
+                  <div className="text-[9px] uppercase text-blue-300/60">Label</div>
+                  <div className={`text-[9px] font-bold ${bulkIntersection.label.common ? 'text-blue-300' : 'text-amber-400'}`}>
                     {bulkIntersection.label.common ? String(bulkIntersection.label.value) : 'Mixed'}
                   </div>
                 </div>
@@ -216,6 +239,7 @@ export default function PropertyPanel(props: PropertyPanelProps) {
                 </div>
                 <NodeComponentEditor
                   node={liveItem as OmegaNode}
+                  manifest={enrichedManifest || props.manifest}
                   onUpdate={props.onUpdate}
                   inspectorLevel={props.inspectorLevel}
                   onSaveGroupAsBlueprint={props.onSaveGroupAsBlueprint}
@@ -235,8 +259,8 @@ export default function PropertyPanel(props: PropertyPanelProps) {
           </TieredSection>
         )}
 
-        {/* 1. ESSENTIAL IDENTITY (MODULE) — merged Signature + Branding + Taxonomy */}
-        {activeSection === 'identity' && isModule && !isBulk && props.visibleSections?.essentialIdentity !== false && (
+        {/* Module Identity Sub-sections */}
+        {activeSection === 'essentialIdentity' && isModule && !isBulk && (
           <TieredSection title="Essential Identity" level="essential" icon={Info} defaultOpen={true}>
               <ModuleIdentitySection
                 manifest={item as OMEGA_Manifest}
@@ -246,9 +270,28 @@ export default function PropertyPanel(props: PropertyPanelProps) {
           </TieredSection>
         )}
 
-        {/* 3. GLOBAL UI SKIN (MODULE) */}
-        {activeSection === 'ui-skin' && isModule && !isBulk && props.visibleSections?.globalUiSkin !== false && (
-          <TieredSection title="Global UI Skin" level="essential" icon={Paintbrush}>
+        {activeSection === 'identityBranding' && isModule && !isBulk && (
+          <TieredSection title="Identity Branding" level="essential" icon={Cpu} defaultOpen={true}>
+              <ModuleBrandingSection
+                manifest={item as OMEGA_Manifest}
+                onUpdate={(u) => props.onUpdate?.(u)}
+                resolveAsset={props.resolveAsset}
+              />
+          </TieredSection>
+        )}
+
+        {activeSection === 'moduleTaxonomy' && isModule && !isBulk && (
+          <TieredSection title="Module Taxonomy" level="essential" icon={Box} defaultOpen={true}>
+              <ModuleTaxonomySection
+                manifest={item as OMEGA_Manifest}
+                onUpdate={(u) => props.onUpdate?.(u)}
+              />
+          </TieredSection>
+        )}
+
+        {/* Module UI Skin & Construction Plane Sub-sections */}
+        {activeSection === 'globalUiSkin' && isModule && !isBulk && (
+          <TieredSection title="Global UI Skin" level="essential" icon={Paintbrush} defaultOpen={true}>
              <ModuleSkinSelector
                manifest={item as OMEGA_Manifest}
                onUpdate={(u) => props.onUpdate?.(u)}
@@ -257,9 +300,8 @@ export default function PropertyPanel(props: PropertyPanelProps) {
           </TieredSection>
         )}
 
-        {/* 4. ACTIVE CONSTRUCTION PLANE (MODULE) */}
-        {activeSection === 'plane' && isModule && !isBulk && props.visibleSections?.activeConstructionPlane !== false && (
-          <TieredSection title="Active Construction Plane" level="essential" icon={Layers}>
+        {activeSection === 'activeConstructionPlane' && isModule && !isBulk && (
+          <TieredSection title="Active Construction Plane" level="essential" icon={Layers} defaultOpen={true}>
              <ModulePlaneSelector
                manifest={item as OMEGA_Manifest}
                onUpdate={(u) => props.onUpdate?.(u)}
@@ -268,9 +310,9 @@ export default function PropertyPanel(props: PropertyPanelProps) {
           </TieredSection>
         )}
 
-        {/* 5. CHASSIS (MODULE) — merged MechanicalSpec + PowerParity */}
-        {activeSection === 'emulation' && isModule && !isBulk && props.visibleSections?.physicalEmulationProfile !== false && (
-          <TieredSection title="Physical Emulation Profile" level="essential" icon={Cpu}>
+        {/* Chassis Emulation Section */}
+        {activeSection === 'physicalEmulationProfile' && isModule && !isBulk && (
+          <TieredSection title="Physical Emulation Profile" level="essential" icon={Cpu} defaultOpen={true}>
              <ModuleChassisSection
                manifest={item as OMEGA_Manifest}
                onUpdate={(u) => props.onUpdate?.(u)}
@@ -281,16 +323,16 @@ export default function PropertyPanel(props: PropertyPanelProps) {
         {/* SIMULATION LEVEL - DRY-RUN CLIENT LFO */}
         {activeSection === 'simulation' && !isModule && !isBulk && (
           <TieredSection title="Simulation (Dry-Run)" level="essential" icon={Activity} defaultOpen={true}>
-            <div className="space-y-3 p-3 bg-black/40 border wb-outline rounded-sm">
+            <div className="space-y-3 p-3 wb-surface-inset border wb-outline rounded-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-[9px] font-black uppercase tracking-wider text-white">Client LFO Simulation</div>
-                  <div className="text-[7px] text-white/50 uppercase">Modulates value at 1Hz (0.0 to 1.0) without WASM</div>
+                  <div className="text-[10.5px] font-black uppercase tracking-wider wb-text">Client LFO Simulation</div>
+                  <div className="text-[9px] wb-text-muted uppercase">Modulates value at 1Hz (0.0 to 1.0) without WASM</div>
                 </div>
                 <button
                   onClick={toggleSimulation}
                   aria-label={isPlaying ? 'Stop LFO simulation' : 'Start LFO simulation'}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xs text-[8px] font-bold uppercase transition-all duration-300 ${isPlaying ? 'bg-primary text-black shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)] border border-primary animate-pulse' : 'bg-black/60 border wb-outline text-white/70 hover:border-primary/40 hover:text-white'}`}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xs text-[10px] font-bold uppercase transition-all duration-300 ${isPlaying ? 'bg-primary text-black shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)] border border-primary animate-pulse' : 'wb-surface-inset border wb-outline wb-text hover:border-primary/40 hover:wb-text'}`}
                 >
                   {isPlaying ? (
                     <>
@@ -308,118 +350,122 @@ export default function PropertyPanel(props: PropertyPanelProps) {
               {isPlaying && (
                 <div className="flex items-center gap-2 bg-primary/5 border border-primary/20 p-2 rounded-xs">
                   <div className="w-1.5 h-1.5 bg-primary rounded-full animate-ping" />
-                  <span className="text-[7px] text-primary font-bold uppercase tracking-wider">LFO Active: Modulating control angle/intensity...</span>
+                  <span className="text-[9px] text-primary font-bold uppercase tracking-wider">LFO Active: Modulating control angle/intensity...</span>
                 </div>
               )}
             </div>
           </TieredSection>
         )}
 
-        {/* DESIGN GLOBALS */}
-        {activeSection === 'globals' && isModule && !isBulk && props.visibleSections?.aestheticsGlobals !== false && (
-          <TieredSection title="Aesthetics Globals" level="advanced" icon={Box}>
-             <CustomSkinSection
+        {/* Module Aesthetics Globals */}
+        {activeSection === 'aestheticsGlobals' && isModule && !isBulk && (
+          <TieredSection title="Aesthetics Globals" level="essential" icon={Box} defaultOpen={true}>
+            <CustomSkinSection
+              manifest={item as OMEGA_Manifest}
+              onUpdate={(u) => props.onUpdate?.(u)}
+              resolveAsset={props.resolveAsset}
+              activeRackTab={props.activeTab || 'MAIN'}
+              onOpenConfig={props.onOpenConfig}
+              forceTab="globals"
+            />
+          </TieredSection>
+        )}
+
+        {/* DESIGN ELEMENTS / AESTHETICS */}
+        {((activeSection === 'aesthetics' && !isModule) || (activeSection === 'aestheticsElements' && isModule)) && (
+          isModule && !isBulk ? (
+            <TieredSection title="Aesthetics Elements" level="advanced" icon={Palette} defaultOpen={true}>
+              <CustomSkinSection
                 manifest={item as OMEGA_Manifest}
                 onUpdate={(u) => props.onUpdate?.(u)}
                 resolveAsset={props.resolveAsset}
                 activeRackTab={props.activeTab || 'MAIN'}
                 onOpenConfig={props.onOpenConfig}
-                forceTab="globals"
+                forceTab="elements"
               />
-          </TieredSection>
+            </TieredSection>
+          ) : (
+            <TieredSection title="Design & Aesthetics" level="advanced" icon={Palette} defaultOpen={true}>
+              <AestheticSection
+                 item={liveItem as OmegaNode}
+                 manifest={enrichedManifest}
+                 onUpdate={(u) => {
+                   if (isBulk && props.multiSelectedIds) {
+                     props.multiSelectedIds.forEach(id => {
+                       props.onUpdateItem?.(id, u as HybridEntityUpdate);
+                     });
+                   } else {
+                     props.onUpdate?.(u);
+                   }
+                 }}
+                 resolveAsset={props.resolveAsset}
+                 onOpenConfig={props.onOpenConfig}
+               />
+            </TieredSection>
+          )
         )}
 
-        {/* DESIGN ELEMENTS / AESTHETICS */}
-        {activeSection === 'aesthetics' && props.visibleSections?.aestheticsElements !== false && (
-          <TieredSection title={isModule ? "Aesthetics Elements" : "Design & Aesthetics"} level="advanced" icon={Palette}>
-            {isModule && !isBulk ? (
-              <CustomSkinSection
-                 manifest={item as OMEGA_Manifest}
-                 onUpdate={(u) => props.onUpdate?.(u)}
-                 resolveAsset={props.resolveAsset}
-                 activeRackTab={props.activeTab || 'MAIN'}
-                 onOpenConfig={props.onOpenConfig}
-                 forceTab="elements"
-               />
-            ) : (
-               <AestheticSection
+        {/* LOGIC & ARCHITECTURE */}
+        {activeSection === 'architecture' && !isBulk && props.visibleSections?.architecture !== false && (
+          isModule ? (
+            <TieredSection title="Architecture" level="advanced" icon={Layout} defaultOpen={true}>
+              <ModuleArchitectureSection
+                manifest={item as OMEGA_Manifest}
+                onUpdate={(u) => props.onUpdate?.(u)}
+                addContainer={props.addContainer!}
+                updateContainer={props.updateContainer!}
+                removeContainer={props.removeContainer!}
+                onSelectItem={props.onSelectItem!}
+                onAddEntity={props.onAddEntity!}
+                onDuplicateItem={props.onDuplicateItem!}
+                onRemoveItem={props.onRemoveItem!}
+                onAddModulation={props.onAddModulation!}
+                onRemoveModulation={props.onRemoveModulation!}
+                onUpdateModulation={props.onUpdateModulation!}
+                onOpenModGrid={props.onOpenModGrid!}
+                extraResources={props.extraResources}
+                onTriggerUpload={() => props.onTriggerUpload?.('resource-upload')}
+                onRemoveResource={props.onRemoveResource}
+                highlightPath={props.highlightPath || undefined}
+                onOpenLibrary={props.onOpenLibrary}
+              />
+            </TieredSection>
+          ) : (
+            <TieredSection title="Logic & Ports" level="advanced" icon={Zap}>
+               <div className="space-y-6">
+                  <LogicSection item={liveItem as OmegaNode} onUpdate={(u) => props.onUpdate?.(u)} availableBinds={props.availableBinds || []} onHelp={props.onHelp} highlightPath={props.highlightPath} />
+                  <AttachmentsSection item={liveItem as OmegaNode} manifest={enrichedManifest} onUpdate={(u) => props.onUpdate?.(u)} availableBinds={props.availableBinds || []} onHelp={props.onHelp} onOpenConfig={props.onOpenConfig} />
+               </div>
+            </TieredSection>
+          )
+        )}
+
+        {/* DIAGNOSTICS LEVEL */}
+        {activeSection === 'diagnostics' && !isModule && props.visibleSections?.diagnostics !== false && (
+          <TieredSection title="Low-Level Registry Role" level="diagnostics" icon={Layers}>
+             <div className="space-y-4">
+                <EngineeringSection
                   item={liveItem as OmegaNode}
-                  manifest={enrichedManifest}
                   onUpdate={(u) => {
                     if (isBulk && props.multiSelectedIds) {
                       props.multiSelectedIds.forEach(id => {
                         props.onUpdateItem?.(id, u as HybridEntityUpdate);
                       });
                     } else {
-                      props.onUpdate?.(u);
+                      props.onUpdate?.(u as Partial<OmegaNode>);
                     }
                   }}
-                  resolveAsset={props.resolveAsset}
-                  onOpenConfig={props.onOpenConfig}
+                  onHelp={props.onHelp}
+                  highlightPath={props.highlightPath}
+                  standalone={true}
                 />
-            )}
-          </TieredSection>
-        )}
-
-        {/* LOGIC & ARCHITECTURE */}
-        {activeSection === 'architecture' && !isBulk && props.visibleSections?.architecture !== false && (
-          <TieredSection title={isModule ? "Architecture" : "Logic & Ports"} level="advanced" icon={isModule ? Layout : Zap}>
-             {isModule ? (
-               <ModuleArchitectureSection
-                  manifest={item as OMEGA_Manifest}
-                  onUpdate={(u) => props.onUpdate?.(u)}
-                  addContainer={props.addContainer!}
-                  updateContainer={props.updateContainer!}
-                  removeContainer={props.removeContainer!}
-                  onSelectItem={props.onSelectItem!}
-                  onAddEntity={props.onAddEntity!}
-                  onDuplicateItem={props.onDuplicateItem!}
-                  onRemoveItem={props.onRemoveItem!}
-                  onAddModulation={props.onAddModulation!}
-                  onRemoveModulation={props.onRemoveModulation!}
-                  onUpdateModulation={props.onUpdateModulation!}
-                  onOpenModGrid={props.onOpenModGrid!}
-                  extraResources={props.extraResources}
-                  onTriggerUpload={() => props.onTriggerUpload?.('resource-upload')}
-                  onRemoveResource={props.onRemoveResource}
-                  highlightPath={props.highlightPath || undefined}
-                  onOpenLibrary={props.onOpenLibrary}
-                />
-             ) : (
-               <div className="space-y-6">
-                  <LogicSection item={liveItem as OmegaNode} onUpdate={(u) => props.onUpdate?.(u)} availableBinds={props.availableBinds || []} onHelp={props.onHelp} highlightPath={props.highlightPath} />
-                  <AttachmentsSection item={liveItem as OmegaNode} manifest={enrichedManifest} onUpdate={(u) => props.onUpdate?.(u)} availableBinds={props.availableBinds || []} onHelp={props.onHelp} onOpenConfig={props.onOpenConfig} />
-               </div>
-             )}
-          </TieredSection>
-        )}
-
-        {/* DIAGNOSTICS LEVEL */}
-        {activeSection === 'diagnostics' && props.visibleSections?.diagnostics !== false && (
-          <TieredSection title="Low-Level Registry Role" level="diagnostics" icon={Layers}>
-           <div className="space-y-4">
-              <EngineeringSection
-                item={liveItem as OmegaNode}
-                onUpdate={(u) => {
-                  if (isBulk && props.multiSelectedIds) {
-                    props.multiSelectedIds.forEach(id => {
-                      props.onUpdateItem?.(id, u as HybridEntityUpdate);
-                    });
-                  } else {
-                    props.onUpdate?.(u as Partial<OmegaNode>);
-                  }
-                }}
-                onHelp={props.onHelp}
-                highlightPath={props.highlightPath}
-                standalone={true}
-              />
-              {!!isUcaNode(liveItem) && !isModule && !isBulk && (
-                <LayoutGovernanceSection
-                  node={liveItem as OmegaNode}
-                  onUpdate={(u) => props.onUpdate?.(u)}
-                />
-              )}
-           </div>
+                {!!isUcaNode(liveItem) && !isBulk && (
+                  <LayoutGovernanceSection
+                    node={liveItem as OmegaNode}
+                    onUpdate={(u) => props.onUpdate?.(u)}
+                  />
+                )}
+             </div>
           </TieredSection>
         )}
       </div>

@@ -142,10 +142,21 @@
 
   .custom-scrollbar::-webkit-scrollbar {
     width: 4px;
+    height: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 2px;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(0, 240, 255, 0.1);
+    background: rgba(0, 240, 255, 0.25);
+    border-radius: 2px;
   }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 240, 255, 0.6);
+  }
+
+  /* Theme-specific custom scrollbars */
   [data-ui-theme="light"] .custom-scrollbar::-webkit-scrollbar-thumb {
     background: #cbd5e1;
   }
@@ -154,6 +165,30 @@
   }
   [data-ui-theme="light"] .custom-scrollbar::-webkit-scrollbar-track {
     background: #f1f5f9;
+  }
+
+  [data-ui-theme="amber"] .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(245, 158, 11, 0.25);
+  }
+  [data-ui-theme="amber"] .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(245, 158, 11, 0.6);
+  }
+
+  [data-ui-theme="cyberpunk"] .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 45, 149, 0.25);
+  }
+  [data-ui-theme="cyberpunk"] .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 45, 149, 0.6);
+  }
+
+  [data-ui-theme="high-contrast"] .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.45);
+  }
+  [data-ui-theme="high-contrast"] .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.85);
+  }
+  [data-ui-theme="high-contrast"] .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
   }
 }
 
@@ -367,6 +402,7 @@
 .wb-surface-subtle { background-color: var(--wb-surface-subtle) !important; }
 .wb-surface-strong { background-color: var(--wb-surface-strong) !important; }
 .wb-surface-inset { background-color: var(--wb-surface-inset) !important; }
+.wb-surface-hover { background-color: var(--wb-surface-hover) !important; }
 .wb-outline { border-color: var(--wb-outline) !important; }
 .wb-text { color: var(--wb-text) !important; }
 .wb-text-muted { color: var(--wb-text-muted) !important; }

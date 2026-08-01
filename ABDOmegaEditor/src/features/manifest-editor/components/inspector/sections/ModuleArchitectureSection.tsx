@@ -18,6 +18,7 @@ import EntityListSection from '@/features/manifest-editor/components/inspector/s
 import ModulationSection from '@/features/manifest-editor/components/inspector/sections/ModulationSection';
 import ResourceSection from '@/features/manifest-editor/components/inspector/sections/ResourceSection';
 import TreeSection from '@/features/manifest-editor/components/inspector/sections/TreeSection';
+import InspectorCollapsible from '../shared/InspectorCollapsible';
   
 interface ModuleArchitectureSectionProps {
   manifest: OMEGA_Manifest;
@@ -73,217 +74,229 @@ export default function ModuleArchitectureSection({
   ];
   
   return (
-    <div className="flex flex-col h-full">
-      {/* LEGACY FALLBACK TOGGLE */}
-      <div className={`mb-4 p-2 border rounded-xs flex items-center justify-between transition-colors ${
-        manifest.ui?.useUCA === false ? 'bg-amber-500/10 border-amber-500/30' : 'bg-white/5 border-white/10'
-      }`}>
-        <div className="flex flex-col">
-          <span className={`text-[7px] font-black uppercase tracking-widest ${manifest.ui?.useUCA === false ? 'text-amber-500' : 'text-white/50'}`}>Legacy Rendering Fallback</span>
-          <span className={`text-[6px] font-medium ${manifest.ui?.useUCA === false ? 'text-amber-500/70' : 'text-white/30'}`}>Temporarily revert to flat-array pipeline</span>
-        </div>            <button
-              onClick={() => onUpdate({ ui: { ...manifest.ui, useUCA: manifest.ui?.useUCA === false ? true : false } })}
-              aria-label={manifest.ui?.useUCA === false ? 'Disable legacy fallback' : 'Enable legacy fallback'}
-              className={`px-3 py-1 text-[8px] font-black uppercase rounded-full border transition-all ${
-                manifest.ui?.useUCA === false
-                  ? 'bg-amber-500 border-amber-500 text-black' 
-                  : 'border-white/20 text-white/50 hover:bg-white/10'
-              }`}
-            >
-              {manifest.ui?.useUCA === false ? 'ACTIVE' : 'OFF'}
-            </button>
-      </div>
-
-      {/* UCA DEBUG INSPECTOR */}
-      {manifest.ui?.useUCA !== false && (
-        <div className="mb-4 p-2 bg-purple-500/5 border border-purple-500/20 rounded-xs flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <div className="flex flex-col">
-              <span className="text-[7px] font-black uppercase text-purple-500 tracking-widest">UCA Debug Inspector</span>
-              <span className="text-[6px] text-purple-500/60 font-medium">Visual overlay and node selection</span>
+    <div className="flex flex-col">
+      {/* SYSTEM & GRID SETTINGS COLLAPSIBLE */}
+      <div className="mb-4">
+        <InspectorCollapsible
+          title="System & Grid Settings"
+          icon={Settings2}
+          defaultOpen={false}
+        >
+          <div className="space-y-4 pt-3">
+            {/* LEGACY FALLBACK TOGGLE */}
+            <div className={`p-2 border rounded-xs flex items-center justify-between transition-colors ${
+              manifest.ui?.useUCA === false ? 'bg-amber-500/10 border-amber-500/30' : 'bg-white/5 border-white/10'
+            }`}>
+              <div className="flex flex-col">
+                <span className={`text-[7px] font-black uppercase tracking-widest ${manifest.ui?.useUCA === false ? 'text-amber-500' : 'text-white/50'}`}>Legacy Rendering Fallback</span>
+                <span className={`text-[6px] font-medium ${manifest.ui?.useUCA === false ? 'text-amber-500/70' : 'text-white/30'}`}>Temporarily revert to flat-array pipeline</span>
+              </div>
+              <button
+                onClick={() => onUpdate({ ui: { ...manifest.ui, useUCA: manifest.ui?.useUCA === false ? true : false } })}
+                aria-label={manifest.ui?.useUCA === false ? 'Disable legacy fallback' : 'Enable legacy fallback'}
+                className={`px-3 py-1 text-[8px] font-black uppercase rounded-full border transition-all ${
+                  manifest.ui?.useUCA === false
+                    ? 'bg-amber-500 border-amber-500 text-black' 
+                    : 'border-white/20 text-white/50 hover:bg-white/10'
+                }`}
+              >
+                {manifest.ui?.useUCA === false ? 'ACTIVE' : 'OFF'}
+              </button>
             </div>
-            <button
-              onClick={() => onUpdate({ 
-                ui: { 
-                  ...manifest.ui, 
-                  ucaDebug: { 
-                    enabled: !manifest.ui?.ucaDebug?.enabled,
-                    showLabels: manifest.ui?.ucaDebug?.showLabels ?? true,
-                    hideDecorative: manifest.ui?.ucaDebug?.hideDecorative ?? false,
-                    showCADOverlay: manifest.ui?.ucaDebug?.showCADOverlay ?? false,
-                    selectedId: manifest.ui?.ucaDebug?.selectedId
-                  } as UcaDebugConfig
-                } 
-              })}
-              aria-label={manifest.ui?.ucaDebug?.enabled ? 'Disable UCA debug' : 'Enable UCA debug'}
-              className={`px-3 py-1 text-[8px] font-black uppercase rounded-full border transition-all ${
-                manifest.ui?.ucaDebug?.enabled 
-                  ? 'bg-purple-500 border-purple-500 text-black' 
-                  : 'border-purple-500/30 text-purple-500/50 hover:bg-purple-500/10'
-              }`}
-            >
-              {manifest.ui?.ucaDebug?.enabled ? 'ON' : 'OFF'}
-            </button>
-          </div>
-          {manifest.ui?.ucaDebug?.enabled && (
-            <div className="flex gap-4 pt-1 border-t border-purple-500/10">
-              <label className="flex items-center gap-1.5 text-[8px] font-medium text-white/70 cursor-pointer hover:text-white">
-                <input 
-                  type="checkbox" 
-                  checked={manifest.ui?.ucaDebug?.showLabels !== false} 
-                  onChange={(e) => onUpdate({ 
-                    ui: { 
-                      ...manifest.ui, 
-                      ucaDebug: { 
-                        enabled: manifest.ui?.ucaDebug?.enabled || false, 
-                        showLabels: e.target.checked,
-                        hideDecorative: manifest.ui?.ucaDebug?.hideDecorative ?? false,
-                        showCADOverlay: manifest.ui?.ucaDebug?.showCADOverlay ?? false,
-                        selectedId: manifest.ui?.ucaDebug?.selectedId
-                      } as UcaDebugConfig
-                    } 
-                  })}
-                  className="accent-purple-500 w-2.5 h-2.5 bg-black/50 border-purple-500/30 rounded-sm"
-                /> Show Boundaries
-              </label>
-              <label className="flex items-center gap-1.5 text-[8px] font-medium text-white/70 cursor-pointer hover:text-white">
-                <input 
-                  type="checkbox" 
-                  checked={manifest.ui?.ucaDebug?.hideDecorative || false} 
-                  onChange={(e) => onUpdate({ 
-                    ui: { 
-                      ...manifest.ui, 
-                      ucaDebug: { 
-                        enabled: manifest.ui?.ucaDebug?.enabled || false, 
-                        hideDecorative: e.target.checked,
-                        showLabels: manifest.ui?.ucaDebug?.showLabels ?? true,
-                        showCADOverlay: manifest.ui?.ucaDebug?.showCADOverlay ?? false,
-                        selectedId: manifest.ui?.ucaDebug?.selectedId
-                      } as UcaDebugConfig
-                    } 
-                  })}
-                  className="accent-purple-500 w-2.5 h-2.5 bg-black/50 border-purple-500/30 rounded-sm"
-                /> Hide Decorative
-              </label>
-              <label className="flex items-center gap-1.5 text-[8px] font-medium text-white/70 cursor-pointer hover:text-white">
-                <input 
-                  type="checkbox" 
-                  checked={manifest.ui?.ucaDebug?.showCADOverlay || false} 
-                  onChange={(e) => onUpdate({ 
-                    ui: { 
-                      ...manifest.ui, 
-                      ucaDebug: { 
-                        enabled: manifest.ui?.ucaDebug?.enabled || false, 
-                        showCADOverlay: e.target.checked,
-                        showLabels: manifest.ui?.ucaDebug?.showLabels ?? true,
-                        hideDecorative: manifest.ui?.ucaDebug?.hideDecorative ?? false,
-                        selectedId: manifest.ui?.ucaDebug?.selectedId
-                      } as UcaDebugConfig
-                    } 
-                  })}
-                  className="accent-purple-500 w-2.5 h-2.5 bg-black/50 border-purple-500/30 rounded-sm"
-                /> Show CAD Layout
-              </label>
-            </div>
-          )}
-        </div>
-      )}
 
-      {/* GRID SNAPPING (Phase 4.3.3) */}
-      <div className="mb-4 p-2 bg-emerald-500/5 border border-emerald-500/20 rounded-xs flex flex-col gap-2">
-        <div className="flex items-center justify-between">
-          <div className="flex flex-col">
-            <span className="text-[7px] font-black uppercase text-emerald-500 tracking-widest">Grid Snapping (Era 7.2.3)</span>
-            <span className="text-[6px] text-emerald-500/60 font-medium">Align nodes to discrete spatial grid</span>
-          </div>
-          <button
-            onClick={() => onUpdate({ 
-              ui: { 
-                ...manifest.ui, 
-                layout: { 
-                  ...manifest.ui?.layout, 
-                  width: manifest.ui?.layout?.width ?? 800,
-                  height: manifest.ui?.layout?.height ?? 600,
-                  containers: manifest.ui?.layout?.containers || [],
-                  grid: { 
-                    enabled: !manifest.ui?.layout?.grid?.enabled,
-                    spacingX: manifest.ui?.layout?.grid?.spacingX ?? 24,
-                    spacingY: manifest.ui?.layout?.grid?.spacingY ?? 24,
-                    snapMode: manifest.ui?.layout?.grid?.snapMode ?? 'center'
-                  } as GridConfig
-                } 
-              } 
-            })}
-            aria-label={manifest.ui?.layout?.grid?.enabled ? 'Disable grid snapping' : 'Enable grid snapping'}
-            className={`px-3 py-1 text-[8px] font-black uppercase rounded-full border transition-all ${
-              manifest.ui?.layout?.grid?.enabled 
-                ? 'bg-emerald-500 border-emerald-500 text-black' 
-                : 'border-emerald-500/30 text-emerald-500/50 hover:bg-emerald-500/10'
-            }`}
-          >
-            {manifest.ui?.layout?.grid?.enabled ? 'ACTIVE' : 'OFF'}
-          </button>
-        </div>
-        {manifest.ui?.layout?.grid?.enabled && (
-          <div className="flex gap-4 pt-1 border-t border-emerald-500/10 items-center">
-              <div className="flex items-center gap-1.5 text-[8px] font-medium text-white/70">
-                <span>X:</span>
-                <input 
-                  type="number" 
-                  value={manifest.ui?.layout?.grid?.spacingX || 24}
-                  onChange={(e) => {
-                    const grid = manifest.ui?.layout?.grid || { spacingX: 24, spacingY: 24, enabled: false, snapMode: 'center' };
-                    onUpdate({ 
+            {/* UCA DEBUG INSPECTOR */}
+            {manifest.ui?.useUCA !== false && (
+              <div className="p-2 bg-purple-500/5 border border-purple-500/20 rounded-xs flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex flex-col">
+                    <span className="text-[7px] font-black uppercase text-purple-500 tracking-widest">UCA Debug Inspector</span>
+                    <span className="text-[6px] text-purple-500/60 font-medium">Visual overlay and node selection</span>
+                  </div>
+                  <button
+                    onClick={() => onUpdate({ 
                       ui: { 
                         ...manifest.ui, 
-                        layout: { 
-                          ...manifest.ui?.layout, 
-                          width: manifest.ui?.layout?.width ?? 800,
-                          height: manifest.ui?.layout?.height ?? 600,
-                          containers: manifest.ui?.layout?.containers || [], 
-                          grid: { 
-                            ...grid, 
-                            spacingX: parseInt(e.target.value) || 1,
-                            snapMode: grid.snapMode ?? 'center'
-                          } as GridConfig
-                        } 
+                        ucaDebug: { 
+                          enabled: !manifest.ui?.ucaDebug?.enabled,
+                          showLabels: manifest.ui?.ucaDebug?.showLabels ?? true,
+                          hideDecorative: manifest.ui?.ucaDebug?.hideDecorative ?? false,
+                          showCADOverlay: manifest.ui?.ucaDebug?.showCADOverlay ?? false,
+                          selectedId: manifest.ui?.ucaDebug?.selectedId
+                        } as UcaDebugConfig
                       } 
-                    });
-                  }}
-                  aria-label="Grid spacing X"
-                  className="w-8 bg-black/40 border border-emerald-500/20 rounded-sm px-1 text-[8px] outline-none focus:border-emerald-500/50"
-                />
-             </div>
-             <div className="flex items-center gap-1.5 text-[8px] font-medium text-white/70">
-                <span>Y:</span>
-                <input 
-                  type="number" 
-                  value={manifest.ui?.layout?.grid?.spacingY || 24}
-                  onChange={(e) => {
-                    const grid = manifest.ui?.layout?.grid || { spacingX: 24, spacingY: 24, enabled: false, snapMode: 'center' };
-                    onUpdate({ 
-                      ui: { 
-                        ...manifest.ui, 
-                        layout: { 
-                          ...manifest.ui?.layout, 
-                          width: manifest.ui?.layout?.width ?? 800,
-                          height: manifest.ui?.layout?.height ?? 600,
-                          containers: manifest.ui?.layout?.containers || [], 
-                          grid: { 
-                            ...grid, 
-                            spacingY: parseInt(e.target.value) || 1,
-                            snapMode: grid.snapMode ?? 'center'
-                          } as GridConfig
-                        } 
+                    })}
+                    aria-label={manifest.ui?.ucaDebug?.enabled ? 'Disable UCA debug' : 'Enable UCA debug'}
+                    className={`px-3 py-1 text-[8px] font-black uppercase rounded-full border transition-all ${
+                      manifest.ui?.ucaDebug?.enabled 
+                        ? 'bg-purple-500 border-purple-500 text-black' 
+                        : 'border-purple-500/30 text-purple-500/50 hover:bg-purple-500/10'
+                    }`}
+                  >
+                    {manifest.ui?.ucaDebug?.enabled ? 'ON' : 'OFF'}
+                  </button>
+                </div>
+                {manifest.ui?.ucaDebug?.enabled && (
+                  <div className="flex gap-4 pt-1 border-t border-purple-500/10">
+                    <label className="flex items-center gap-1.5 text-[8px] font-medium text-white/70 cursor-pointer hover:text-white">
+                      <input 
+                        type="checkbox" 
+                        checked={manifest.ui?.ucaDebug?.showLabels !== false} 
+                        onChange={(e) => onUpdate({ 
+                          ui: { 
+                            ...manifest.ui, 
+                            ucaDebug: { 
+                              enabled: manifest.ui?.ucaDebug?.enabled || false, 
+                              showLabels: e.target.checked,
+                              hideDecorative: manifest.ui?.ucaDebug?.hideDecorative ?? false,
+                              showCADOverlay: manifest.ui?.ucaDebug?.showCADOverlay ?? false,
+                              selectedId: manifest.ui?.ucaDebug?.selectedId
+                            } as UcaDebugConfig
+                          } 
+                        })}
+                        className="accent-purple-500 w-2.5 h-2.5 bg-black/50 border-purple-500/30 rounded-sm"
+                      /> Show Boundaries
+                    </label>
+                    <label className="flex items-center gap-1.5 text-[8px] font-medium text-white/70 cursor-pointer hover:text-white">
+                      <input 
+                        type="checkbox" 
+                        checked={manifest.ui?.ucaDebug?.hideDecorative || false} 
+                        onChange={(e) => onUpdate({ 
+                          ui: { 
+                            ...manifest.ui, 
+                            ucaDebug: { 
+                              enabled: manifest.ui?.ucaDebug?.enabled || false, 
+                              hideDecorative: e.target.checked,
+                              showLabels: manifest.ui?.ucaDebug?.showLabels ?? true,
+                              showCADOverlay: manifest.ui?.ucaDebug?.showCADOverlay ?? false,
+                              selectedId: manifest.ui?.ucaDebug?.selectedId
+                            } as UcaDebugConfig
+                          } 
+                        })}
+                        className="accent-purple-500 w-2.5 h-2.5 bg-black/50 border-purple-500/30 rounded-sm"
+                      /> Hide Decorative
+                    </label>
+                    <label className="flex items-center gap-1.5 text-[8px] font-medium text-white/70 cursor-pointer hover:text-white">
+                      <input 
+                        type="checkbox" 
+                        checked={manifest.ui?.ucaDebug?.showCADOverlay || false} 
+                        onChange={(e) => onUpdate({ 
+                          ui: { 
+                            ...manifest.ui, 
+                            ucaDebug: { 
+                              enabled: manifest.ui?.ucaDebug?.enabled || false, 
+                              showCADOverlay: e.target.checked,
+                              showLabels: manifest.ui?.ucaDebug?.showLabels ?? true,
+                              hideDecorative: manifest.ui?.ucaDebug?.hideDecorative ?? false,
+                              selectedId: manifest.ui?.ucaDebug?.selectedId
+                            } as UcaDebugConfig
+                          } 
+                        })}
+                        className="accent-purple-500 w-2.5 h-2.5 bg-black/50 border-purple-500/30 rounded-sm"
+                      /> Show CAD Layout
+                    </label>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* GRID SNAPPING (Phase 4.3.3) */}
+            <div className="p-2 bg-emerald-500/5 border border-emerald-500/20 rounded-xs flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col">
+                  <span className="text-[7px] font-black uppercase text-emerald-500 tracking-widest">Grid Snapping (Era 7.2.3)</span>
+                  <span className="text-[6px] text-emerald-500/60 font-medium">Align nodes to discrete spatial grid</span>
+                </div>
+                <button
+                  onClick={() => onUpdate({ 
+                    ui: { 
+                      ...manifest.ui, 
+                      layout: { 
+                        ...manifest.ui?.layout, 
+                        width: manifest.ui?.layout?.width ?? 800,
+                        height: manifest.ui?.layout?.height ?? 600,
+                        containers: manifest.ui?.layout?.containers || [],
+                        grid: { 
+                          enabled: !manifest.ui?.layout?.grid?.enabled,
+                          spacingX: manifest.ui?.layout?.grid?.spacingX ?? 24,
+                          spacingY: manifest.ui?.layout?.grid?.spacingY ?? 24,
+                          snapMode: manifest.ui?.layout?.grid?.snapMode ?? 'center'
+                        } as GridConfig
                       } 
-                    });
-                  }}
-                  aria-label="Grid spacing Y"
-                  className="w-8 bg-black/40 border border-emerald-500/20 rounded-sm px-1 text-[8px] outline-none focus:border-emerald-500/50"
-                />
-             </div>
+                    } 
+                  })}
+                  aria-label={manifest.ui?.layout?.grid?.enabled ? 'Disable grid snapping' : 'Enable grid snapping'}
+                  className={`px-3 py-1 text-[8px] font-black uppercase rounded-full border transition-all ${
+                    manifest.ui?.layout?.grid?.enabled 
+                      ? 'bg-emerald-500 border-emerald-500 text-black' 
+                      : 'border-emerald-500/30 text-emerald-500/50 hover:bg-emerald-500/10'
+                  }`}
+                >
+                  {manifest.ui?.layout?.grid?.enabled ? 'ACTIVE' : 'OFF'}
+                </button>
+              </div>
+              {manifest.ui?.layout?.grid?.enabled && (
+                <div className="flex gap-4 pt-1 border-t border-emerald-500/10 items-center">
+                    <div className="flex items-center gap-1.5 text-[8px] font-medium text-white/70">
+                      <span>X:</span>
+                      <input 
+                        type="number" 
+                        value={manifest.ui?.layout?.grid?.spacingX || 24}
+                        onChange={(e) => {
+                          const grid = manifest.ui?.layout?.grid || { spacingX: 24, spacingY: 24, enabled: false, snapMode: 'center' };
+                          onUpdate({ 
+                            ui: { 
+                              ...manifest.ui, 
+                              layout: { 
+                                ...manifest.ui?.layout, 
+                                width: manifest.ui?.layout?.width ?? 800,
+                                height: manifest.ui?.layout?.height ?? 600,
+                                containers: manifest.ui?.layout?.containers || [], 
+                                grid: { 
+                                  ...grid, 
+                                  spacingX: parseInt(e.target.value) || 1,
+                                  snapMode: grid.snapMode ?? 'center'
+                                } as GridConfig
+                              } 
+                            } 
+                          });
+                        }}
+                        aria-label="Grid spacing X"
+                        className="w-8 bg-black/40 border border-emerald-500/20 rounded-sm px-1 text-[8px] outline-none focus:border-emerald-500/50"
+                      />
+                   </div>
+                   <div className="flex items-center gap-1.5 text-[8px] font-medium text-white/70">
+                      <span>Y:</span>
+                      <input 
+                        type="number" 
+                        value={manifest.ui?.layout?.grid?.spacingY || 24}
+                        onChange={(e) => {
+                          const grid = manifest.ui?.layout?.grid || { spacingX: 24, spacingY: 24, enabled: false, snapMode: 'center' };
+                          onUpdate({ 
+                            ui: { 
+                              ...manifest.ui, 
+                              layout: { 
+                                ...manifest.ui?.layout, 
+                                width: manifest.ui?.layout?.width ?? 800,
+                                height: manifest.ui?.layout?.height ?? 600,
+                                containers: manifest.ui?.layout?.containers || [], 
+                                grid: { 
+                                  ...grid, 
+                                  spacingY: parseInt(e.target.value) || 1,
+                                  snapMode: grid.snapMode ?? 'center'
+                                } as GridConfig
+                              } 
+                            } 
+                          });
+                        }}
+                        aria-label="Grid spacing Y"
+                        className="w-8 bg-black/40 border border-emerald-500/20 rounded-sm px-1 text-[8px] outline-none focus:border-emerald-500/50"
+                      />
+                   </div>
+                </div>
+              )}
+            </div>
           </div>
-        )}
+        </InspectorCollapsible>
       </div>
 
       {/* SUB-NAVIGATION */}
@@ -305,7 +318,7 @@ export default function ModuleArchitectureSection({
       </div>
   
       {/* CONTENT AREA */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar pr-1">
+      <div className="flex flex-col">
         {activeSubTab === 'tree' && manifest.ui?.useUCA !== false && (
           <TreeSection 
             manifest={manifest} 

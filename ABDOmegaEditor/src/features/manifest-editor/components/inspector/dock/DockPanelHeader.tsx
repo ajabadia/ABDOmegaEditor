@@ -32,7 +32,7 @@ export interface DockPanelHeaderProps {
 
 const VARIANT_CLASSES: Record<string, string> = {
   default:
-    'px-3 py-2 bg-black/30 border-b wb-outline flex items-center justify-between cursor-pointer text-foreground/80 hover:text-foreground hover:bg-white/5 transition-colors',
+    'px-3 py-2 wb-surface-subtle border-b wb-outline flex items-center justify-between cursor-pointer wb-text hover:wb-surface-hover transition-colors',
   subtle:
     'px-3 py-2 wb-surface-subtle border-b wb-outline flex items-center justify-between cursor-pointer wb-text hover:bg-primary/10 transition-colors',
 };

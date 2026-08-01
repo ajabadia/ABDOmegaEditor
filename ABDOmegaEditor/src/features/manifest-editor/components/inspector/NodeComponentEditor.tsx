@@ -12,7 +12,7 @@
 
 import React from 'react';
 import type { OmegaNode, HybridEntityUpdate, OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
-import type { ComponentNode, ComponentType, GroupNode, ComponentStyle } from '@/omega-ui-core/types/rack';
+import type { ComponentNode, ComponentType, GroupNode, ComponentStyle, RackManifest } from '@/omega-ui-core/types/rack';
 import { ComponentEditor } from '@/features/manifest-editor/components/inspector/editors';
 
 import { CONTROL_DEFINITIONS } from '../../constants/entityDefinitions';
@@ -20,6 +20,10 @@ import { CONTROL_DEFINITIONS } from '../../constants/entityDefinitions';
 const KIND_TO_COMPONENT_TYPE: Record<string, ComponentType> = (() => {
   const map: Record<string, ComponentType> = {
     'port': 'port',
+    'select': 'select',
+    'illustration': 'illustration',
+    'scope': 'scope',
+    'terminal': 'terminal',
   };
   CONTROL_DEFINITIONS.forEach((def) => {
     let baseType = def.type;
@@ -34,6 +38,7 @@ const KIND_TO_COMPONENT_TYPE: Record<string, ComponentType> = (() => {
 
 export interface NodeComponentEditorProps {
   node: OmegaNode;
+  manifest?: OMEGA_Manifest | undefined;
   onUpdate?: ((updates: Partial<OMEGA_Manifest> | HybridEntityUpdate) => void) | undefined;
   inspectorLevel?: 'simple' | 'medium' | 'advanced' | undefined;
   onSaveGroupAsBlueprint?: ((groupNode: GroupNode, exposedParams?: import('@/features/manifest-editor/components/modals/ExposeParametersDialog').ExposedParam[]) => void) | undefined;
@@ -42,6 +47,7 @@ export interface NodeComponentEditorProps {
 
 export default function NodeComponentEditor({
   node,
+  manifest,
   onUpdate,
   inspectorLevel,
   onSaveGroupAsBlueprint,
@@ -63,6 +69,30 @@ export default function NodeComponentEditor({
         <div className="text-[9px] font-black uppercase tracking-wider text-white/40 mb-2">Component Editor</div>
         <ComponentEditor
           selection={{ type: 'component', node: cnode }}
+          onChange={(u) => onUpdate?.(u as Record<string, unknown>)}
+          inspectorLevel={inspectorLevel}
+        />
+      </div>
+    );
+  }
+
+  if (node.kind === 'rack') {
+    const rackManifest: RackManifest = {
+      id: node.id,
+      name: (node.meta?.label as string) || node.id,
+      author: manifest?.metadata?.author,
+      version: manifest?.metadata?.version || '0.0.0',
+      width: manifest?.ui?.layout?.width || 800,
+      height: manifest?.ui?.layout?.height || 600,
+      grid: manifest?.ui?.layout?.grid || { enabled: true, spacingX: 8, spacingY: 8, snapMode: 'center' },
+      skin: manifest?.ui?.skin,
+      children: [],
+    };
+    return (
+      <div className="border-t border-white/10 pt-3 mt-2">
+        <div className="text-[9px] font-black uppercase tracking-wider text-white/40 mb-2">Rack Editor</div>
+        <ComponentEditor
+          selection={{ type: 'rack', manifest: rackManifest }}
           onChange={(u) => onUpdate?.(u as Record<string, unknown>)}
           inspectorLevel={inspectorLevel}
         />

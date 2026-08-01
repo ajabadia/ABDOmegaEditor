@@ -23,11 +23,15 @@ interface DockIconStripProps {
 }
 
 const ICONS: DockIconBarButton[] = [
+  // Structure
   { id: 'window_layers', icon: <Layers className="w-4 h-4" />, title: 'Layers' },
-  { id: 'window_rack_properties', icon: <Settings className="w-4 h-4" />, title: 'Rack Properties' },
+  // Edit
   { id: 'window_properties', icon: <Sliders className="w-4 h-4" />, title: 'Element Properties' },
-  { id: 'window_blueprints', icon: <Zap className="w-4 h-4" />, title: 'Blueprint Library' },
+  { id: 'window_rack_properties', icon: <Settings className="w-4 h-4" />, title: 'Rack Properties' },
+  // Quality
   { id: 'window_compliance', icon: <Shield className="w-4 h-4" />, title: 'Compliance' },
+  { id: 'window_blueprints', icon: <Zap className="w-4 h-4" />, title: 'Blueprint Library' },
+  // Diagnostics
   { id: 'window_info', icon: <Info className="w-4 h-4" />, title: 'Information' },
   { id: 'window_history', icon: <History className="w-4 h-4" />, title: 'History' },
   { id: 'window_logs', icon: <Terminal className="w-4 h-4" />, title: 'Terminal Logs' },

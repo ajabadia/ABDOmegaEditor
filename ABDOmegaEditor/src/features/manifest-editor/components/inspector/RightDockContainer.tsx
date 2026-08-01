@@ -214,6 +214,15 @@ export default function RightDockContainer(props: RightDockContainerProps) {
 
   // ── Panel sizes (persisted) ─────────────────────────────────────────
   const [panelSizes, setPanelSizes] = useState<Record<string, number>>(loadPanelSizes);
+  const [customWidth, setCustomWidth] = useState<number>(() => {
+    if (typeof window === 'undefined') return 0;
+    try {
+      const saved = localStorage.getItem('omega_dock_width');
+      return saved ? parseInt(saved, 10) : 0;
+    } catch {
+      return 0;
+    }
+  });
 
   const handleLayout = useCallback((layout: Record<string, number>) => {
     setPanelSizes(layout);
@@ -225,13 +234,47 @@ export default function RightDockContainer(props: RightDockContainerProps) {
     return panelSizes[id] ?? defaultPct;
   };
 
+  const defaultWidth = activeCount * 260;
+  const currentWidth = showContent
+    ? Math.max(customWidth || defaultWidth, activeCount * 200)
+    : 0;
+
   return (
     <div className="h-full flex flex-row select-none" role="complementary" aria-label="Inspector panels">
 
+      {/* Drag handle for resizing the whole dock (left edge of content drawer) */}
+      {showContent && (
+        <div
+          onMouseDown={(e) => {
+            e.preventDefault();
+            const startX = e.clientX;
+            const initialWidth = currentWidth;
+            const handleMouseMove = (moveEvent: MouseEvent) => {
+              const deltaX = moveEvent.clientX - startX;
+              const newWidth = Math.min(window.innerWidth * 0.7, Math.max(activeCount * 200, initialWidth - deltaX));
+              setCustomWidth(newWidth);
+              try {
+                localStorage.setItem('omega_dock_width', String(newWidth));
+              } catch {}
+            };
+            const handleMouseUp = () => {
+              document.removeEventListener('mousemove', handleMouseMove);
+              document.removeEventListener('mouseup', handleMouseUp);
+            };
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+          }}
+          className="w-1.5 hover:w-2 wb-surface-inset hover:bg-accent/20 border-l border-r wb-outline/40 cursor-col-resize transition-all duration-200 z-40 shrink-0 flex items-center justify-center"
+          title="Drag to resize inspector panels"
+        >
+          <div className="w-[1px] h-4 bg-foreground/20 hover:bg-primary/50 transition-colors" />
+        </div>
+      )}
+
       {/* 1. DOCK EXPANDED CONTENT DRAWER — uses react-resizable-panels */}
       <div
-        className="flex-shrink-0 flex flex-row bg-black/10 overflow-hidden transition-all duration-300 relative border-l wb-outline"
-        style={{ width: showContent ? `${Math.max(activeCount * 260, 260)}px` : '0px', borderLeftWidth: showContent ? '1px' : '0px', maxWidth: '70vw' }}
+        className="flex-shrink-0 flex flex-row wb-surface overflow-hidden transition-all duration-300 relative"
+        style={{ width: `${currentWidth}px`, maxWidth: '70vw' }}
       >
         <PanelGroup orientation="horizontal" onLayoutChange={handleLayout} className="h-full">
 
@@ -255,7 +298,6 @@ export default function RightDockContainer(props: RightDockContainerProps) {
                       onToggleVisibility={onToggleVisibility}
                       onToggleLock={onToggleLock}
                       onRemoveItem={onRemoveItem}
-                      onAddEntity={props.onAddEntity}
                       multiSelectedIds={props.multiSelectedIds}
                       onSelectMultiple={props.onSelectMultiple}
                       onGroupSelected={props.onGroupSelected}
@@ -296,7 +338,7 @@ export default function RightDockContainer(props: RightDockContainerProps) {
                   </div>
                 </DockPanel>
               </Panel>
-              <PanelResizeHandle className="w-1 hover:w-1.5 bg-white/5 hover:bg-primary/20 transition-all cursor-col-resize shrink-0" />
+              <PanelResizeHandle className="w-1 hover:w-1.5 wb-surface-strong hover:bg-primary/20 transition-all cursor-col-resize shrink-0" />
             </>
           )}
 
@@ -310,7 +352,7 @@ export default function RightDockContainer(props: RightDockContainerProps) {
                   onClose={() => onToggleWindow('window_properties')}
                   accentColor="var(--wb-accent)"
                 >
-                  <div className="flex-1 overflow-y-auto">
+                  <div className="flex-1 flex flex-col overflow-hidden">
                     {selectedItemId ? (
                       <WorkbenchInspector
                         isLiveMode={props.isLiveMode} uiTheme={props.uiTheme}
@@ -345,7 +387,7 @@ export default function RightDockContainer(props: RightDockContainerProps) {
                         activeSection={props.activeSection}
                       />
                     ) : (
-                      <div className="h-full flex flex-col items-center justify-center text-foreground/30 text-[10px] uppercase tracking-widest gap-2 py-20">
+                      <div className="h-full flex flex-col items-center justify-center text-foreground/30 text-xs uppercase tracking-widest gap-2 py-20">
                         <Sliders className="w-5 h-5 opacity-40 text-primary" />
                         <span>Select an element</span>
                       </div>
@@ -353,7 +395,7 @@ export default function RightDockContainer(props: RightDockContainerProps) {
                   </div>
                 </DockPanel>
               </Panel>
-              <PanelResizeHandle className="w-1 hover:w-1.5 bg-white/5 hover:bg-primary/20 transition-all cursor-col-resize shrink-0" />
+              <PanelResizeHandle className="w-1 hover:w-1.5 wb-surface-strong hover:bg-primary/20 transition-all cursor-col-resize shrink-0" />
             </>
           )}
 
@@ -367,7 +409,7 @@ export default function RightDockContainer(props: RightDockContainerProps) {
                   onClose={() => onToggleWindow('window_rack_properties')}
                   accentColor="#a855f7"
                 >
-                  <div className="flex-1 overflow-y-auto">
+                  <div className="flex-1 flex flex-col overflow-hidden">
                     <WorkbenchInspector
                       isLiveMode={props.isLiveMode} uiTheme={props.uiTheme}
                       manifest={manifest} selectedItem={manifest}
@@ -398,13 +440,14 @@ export default function RightDockContainer(props: RightDockContainerProps) {
                       multiSelectedIds={props.multiSelectedIds}
                       onSelectMultiple={props.onSelectMultiple}
                       visibleSections={rackSections}
+                      onToggleRackSection={onToggleRackSection}
                       inspectorLevel={inspectorLevel}
                       activeSection={props.activeSection}
                     />
                   </div>
                 </DockPanel>
               </Panel>
-              <PanelResizeHandle className="w-1 hover:w-1.5 bg-white/5 hover:bg-primary/20 transition-all cursor-col-resize shrink-0" />
+              <PanelResizeHandle className="w-1 hover:w-1.5 wb-surface-strong hover:bg-primary/20 transition-all cursor-col-resize shrink-0" />
             </>
           )}
 
@@ -428,7 +471,7 @@ export default function RightDockContainer(props: RightDockContainerProps) {
                   </div>
                 </DockPanel>
               </Panel>
-              <PanelResizeHandle className="w-1 hover:w-1.5 bg-white/5 hover:bg-primary/20 transition-all cursor-col-resize shrink-0" />
+              <PanelResizeHandle className="w-1 hover:w-1.5 wb-surface-strong hover:bg-primary/20 transition-all cursor-col-resize shrink-0" />
             </>
           )}
 
@@ -454,7 +497,7 @@ export default function RightDockContainer(props: RightDockContainerProps) {
                   </div>
                 </DockPanel>
               </Panel>
-              <PanelResizeHandle className="w-1 hover:w-1.5 bg-white/5 hover:bg-primary/20 transition-all cursor-col-resize shrink-0" />
+              <PanelResizeHandle className="w-1 hover:w-1.5 wb-surface-strong hover:bg-primary/20 transition-all cursor-col-resize shrink-0" />
             </>
           )}
 
@@ -469,52 +512,49 @@ export default function RightDockContainer(props: RightDockContainerProps) {
                   variant="subtle"
                   accentColor="#ef4444"
                 >
-                  <div className="flex-1 overflow-hidden flex flex-col relative bg-black/40">
+                  <div className="flex-1 overflow-hidden flex flex-col relative wb-surface-inset">
                     <LogTerminal logs={props.logs || []} />
                   </div>
                 </DockPanel>
               </Panel>
-              <PanelResizeHandle className="w-1 hover:w-1.5 bg-white/5 hover:bg-primary/20 transition-all cursor-col-resize shrink-0" />
+              <PanelResizeHandle className="w-1 hover:w-1.5 wb-surface-strong hover:bg-primary/20 transition-all cursor-col-resize shrink-0" />
             </>
           )}
 
-          {/* COMBINED COLUMN: INFO & HISTORY */}
-          {(windowStates.window_info || windowStates.window_history) && (
-            <>
-              <Panel defaultSize={getPanelSize('info', 12)} minSize={8}>
-                <div className="h-full flex flex-col overflow-hidden divide-y divide-white/10 bg-black/10">
-                  {windowStates.window_info && (
-                    <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-                      <DockPanel
-                        title="Information"
-                        icon={<Info className="w-3.5 h-3.5 text-primary" />}
-                        onClose={() => onToggleWindow('window_info')}
-                      >
-                        <DockInfoPanel
-                          selectedItem={selectedItem}
-                          selectedItemId={selectedItemId}
-                          contract={props.contract}
-                          isLiveMode={props.isLiveMode}
-                          uiTheme={props.uiTheme}
-                        />
-                      </DockPanel>
-                    </div>
-                  )}
+          {/* INFO PANEL */}
+          {windowStates.window_info && (
+            <Panel defaultSize={getPanelSize('info', 8)} minSize={4}>
+              <div className="h-full flex flex-col overflow-hidden wb-surface">
+                <DockPanel
+                  title="Information"
+                  icon={<Info className="w-3.5 h-3.5 text-primary" />}
+                  onClose={() => onToggleWindow('window_info')}
+                >
+                  <DockInfoPanel
+                    selectedItem={selectedItem}
+                    selectedItemId={selectedItemId}
+                    contract={props.contract}
+                    isLiveMode={props.isLiveMode}
+                    uiTheme={props.uiTheme}
+                  />
+                </DockPanel>
+              </div>
+            </Panel>
+          )}
 
-                  {windowStates.window_history && (
-                    <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-                      <DockPanel
-                        title="History"
-                        icon={<History className="w-3.5 h-3.5 text-primary" />}
-                        onClose={() => onToggleWindow('window_history')}
-                      >
-                        <DockHistoryPanel pastHistory={pastHistory} onUndoTo={onUndoTo} />
-                      </DockPanel>
-                    </div>
-                  )}
-                </div>
-              </Panel>
-            </>
+          {/* HISTORY PANEL */}
+          {windowStates.window_history && (
+            <Panel defaultSize={getPanelSize('history', 8)} minSize={4}>
+              <div className="h-full flex flex-col overflow-hidden wb-surface">
+                <DockPanel
+                  title="History"
+                  icon={<History className="w-3.5 h-3.5 text-primary" />}
+                  onClose={() => onToggleWindow('window_history')}
+                >
+                  <DockHistoryPanel pastHistory={pastHistory} onUndoTo={onUndoTo} />
+                </DockPanel>
+              </div>
+            </Panel>
           )}
 
         </PanelGroup>
@@ -524,10 +564,10 @@ export default function RightDockContainer(props: RightDockContainerProps) {
       {activeCount > 0 && (
         <div
           onClick={onToggleCollapse}
-          className="w-1.5 hover:w-2 bg-black/40 hover:bg-[#ff8c00]/30 border-l border-r wb-outline/40 flex items-center justify-center cursor-pointer select-none transition-all duration-200 group z-40 shrink-0"
+          className="w-1.5 hover:w-2 wb-surface-inset hover:bg-accent/20 border-l border-r wb-outline/40 flex items-center justify-center cursor-pointer select-none transition-all duration-200 group z-40 shrink-0"
           title={isCollapsed ? 'Expand Dock' : 'Collapse Dock'}
         >
-          <span className="text-[6px] opacity-40 group-hover:opacity-100 transition-opacity text-foreground select-none">
+          <span className="text-[8px] opacity-40 group-hover:opacity-100 transition-opacity text-foreground select-none">
             {isCollapsed ? '◀' : '▶'}
           </span>
         </div>

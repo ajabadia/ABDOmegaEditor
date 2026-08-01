@@ -250,9 +250,20 @@ describe('NodeComponentEditor — other node kinds return null', () => {
     expect(container.innerHTML).toBe('');
   });
 
-  it('should return null for "rack" kind', () => {
-    const { container } = render(<NodeComponentEditor node={makeOtherKindNode('rack')} onUpdate={jest.fn()} />);
-    expect(container.innerHTML).toBe('');
+  it('should render RackEditor for "rack" kind', () => {
+    render(<NodeComponentEditor node={makeOtherKindNode('rack')} onUpdate={jest.fn()} />);
+    expect(screen.getByTestId('component-editor')).toBeTruthy();
+  });
+
+  it('should pass selection type "rack" for rack nodes', () => {
+    render(<NodeComponentEditor node={makeOtherKindNode('rack')} onUpdate={jest.fn()} />);
+    const editor = screen.getByTestId('component-editor');
+    expect(editor.getAttribute('data-selection-type')).toBe('rack');
+  });
+
+  it('should render with "Rack Editor" section title for rack nodes', () => {
+    render(<NodeComponentEditor node={makeOtherKindNode('rack')} onUpdate={jest.fn()} />);
+    expect(screen.getByText('Rack Editor')).toBeTruthy();
   });
 
   it('should return null for "label" kind', () => {
