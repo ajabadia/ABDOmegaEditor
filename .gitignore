@@ -2,3 +2,6 @@
 .env*
 *.rar
 *.zip
+
+# ABDOmegaUnified es repo propio (github.com/ajabadia/ABDOmegaUnified)
+ABDOmegaUnified/
