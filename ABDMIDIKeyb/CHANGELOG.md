@@ -4,6 +4,31 @@ All notable changes to ABDKeyboard will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.1.2] - 2025-08-25
+
+### Added
+- Sustain pedal (CC#64 emulation) — auto-generated toggle button with green LED
+  - Ctrl+Space / Cmd+Space keyboard shortcut
+  - `onSustainChange(on)` callback for parent app integration
+  - `setSustain(bool)` / `getSustain()` / `toggleSustain()` public API
+  - Panic automatically releases sustain
+  - Pass `sustainBtnId` to bind to external DOM element
+- Velocity control — `onVelocityChange(note, velocity)` callback fires on every note-on
+  - `velocitySource: 'yPosition'` calculates from touch Y position
+  - `fixedVelocity: 0.85` config for constant velocity
+  - `velocityCurve: 'soft'|'hard'|'linear'|'normal'|'fixed'` response curves
+- Aftertouch — channel and polyphonic pressure generation from pointer movement
+  - `enableAftertouch: true` enables Y-movement pressure on held keys
+  - `aftertouchMode: 'channel'|'polyphonic'` — shared or per-note pressure
+  - `aftertouchSensitivity: 0.5` — pointer-to-pressure mapping (0..1)
+  - `onAftertouch(note, pressure)` callback — note=-1 for channel, note=N for polyphonic
+  - `setAftertouch(note, pressure)` / `releaseAftertouch(note)` / `getAftertouch()` API
+  - Integrates with `enablePressureDisplay` for visual feedback on held keys
+- 30 new unit tests (88 total, up from 58)
+  - Sustain pedal: toggle, LED, auto-gen, panic release, idempotent
+  - Velocity: callback, fixedVelocity, CSS variable, curves, per-note
+  - Aftertouch: channel/polyphonic API, release, clamping, pointer generation, modes, panic
+
 ## [0.1.1] - 2025-08-25
 
 ### Added

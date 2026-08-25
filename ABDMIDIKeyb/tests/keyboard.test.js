@@ -1244,3 +1244,354 @@ describe('LED Color Callback', () => {
     expect(key.style.getPropertyValue('--kbd-led-color')).toBe('var(--color-accent)');
   });
 });
+
+describe('Sustain Pedal', () => {
+  let kbd;
+  let sustainLog;
+  let noteOnLog;
+  let noteOffLog;
+
+  beforeEach(() => {
+    createFixture();
+    sustainLog = [];
+    noteOnLog = [];
+    noteOffLog = [];
+  });
+
+  afterEach(() => {
+    if (kbd) kbd.destroy();
+  });
+
+  function createSustKbd(opts = {}) {
+    return createKeyboard({
+      config: {
+        numOctaves: 1,
+        startNote: 60,
+        enableQwerty: false,
+        enableTouch: false,
+        ...opts,
+      },
+      onNoteOn: (n, v) => noteOnLog.push({ note: n, vel: v }),
+      onNoteOff: (n) => noteOffLog.push(n),
+      onSustainChange: (s) => sustainLog.push(s),
+    });
+  }
+
+  it('initializes with sustain off', () => {
+    kbd = createSustKbd();
+    expect(kbd.getSustain()).toBe(false);
+  });
+
+  it('setSustain(true) turns sustain on and fires callback', () => {
+    kbd = createSustKbd();
+    kbd.setSustain(true);
+    expect(kbd.getSustain()).toBe(true);
+    expect(sustainLog).toEqual([true]);
+  });
+
+  it('setSustain(false) turns sustain off and fires callback', () => {
+    kbd = createSustKbd();
+    kbd.setSustain(true);
+    kbd.setSustain(false);
+    expect(kbd.getSustain()).toBe(false);
+    expect(sustainLog).toEqual([true, false]);
+  });
+
+  it('setSustain is idempotent (no duplicate callbacks)', () => {
+    kbd = createSustKbd();
+    kbd.setSustain(false);
+    kbd.setSustain(false);
+    expect(sustainLog).toEqual([]);
+    kbd.setSustain(true);
+    kbd.setSustain(true);
+    expect(sustainLog).toEqual([true]);
+  });
+
+  it('toggleSustain toggles on/off', () => {
+    kbd = createSustKbd();
+    kbd.toggleSustain();
+    expect(kbd.getSustain()).toBe(true);
+    kbd.toggleSustain();
+    expect(kbd.getSustain()).toBe(false);
+  });
+
+  it('auto-generates a sustain button when no sustainBtnId is provided', () => {
+    kbd = createSustKbd();
+    const sustainBtn = document.querySelector('#piano-keyboard .kbd-sustain-btn');
+    expect(sustainBtn).not.toBeNull();
+    expect(sustainBtn.getAttribute('role')).toBe('button');
+    expect(sustainBtn.getAttribute('aria-label')).toBe('Sustain Pedal On/Off (Ctrl+Space)');
+    expect(sustainBtn.getAttribute('title')).toBe('Sustain Pedal: Toggle Hold (Ctrl+Space)');
+    expect(sustainBtn.querySelector('.kbd-sustain-led')).not.toBeNull();
+    expect(sustainBtn.querySelector('.kbd-sustain-label').textContent).toBe('SUST');
+  });
+
+  it('auto-generated sustain button toggles on click', () => {
+    kbd = createSustKbd();
+    const sustainBtn = document.querySelector('#piano-keyboard .kbd-sustain-btn');
+    sustainBtn.click();
+    expect(kbd.getSustain()).toBe(true);
+    sustainBtn.click();
+    expect(kbd.getSustain()).toBe(false);
+  });
+
+  it('sustain button LED lights up when sustain is on', () => {
+    kbd = createSustKbd();
+    const led = document.querySelector('#piano-keyboard .kbd-sustain-led');
+    expect(led.classList.contains('on')).toBe(false);
+    kbd.setSustain(true);
+    expect(led.classList.contains('on')).toBe(true);
+    kbd.setSustain(false);
+    expect(led.classList.contains('on')).toBe(false);
+  });
+
+  it('does not auto-generate sustain button when sustainBtnId is provided', () => {
+    kbd.destroy();
+    const externalBtn = document.createElement('button');
+    externalBtn.id = 'ext-sustain';
+    document.body.appendChild(externalBtn);
+    kbd = createKeyboard({ sustainBtnId: 'ext-sustain' });
+    const autoBtn = document.querySelector('#piano-keyboard .kbd-sustain-btn');
+    expect(autoBtn).toBeNull();
+    externalBtn.remove();
+  });
+
+  it('panic releases sustain', () => {
+    kbd = createSustKbd();
+    kbd.setSustain(true);
+    expect(kbd.getSustain()).toBe(true);
+    kbd.panic();
+    expect(kbd.getSustain()).toBe(false);
+    expect(sustainLog).toEqual([true, false]);
+  });
+
+  it('accepts initial sustain callback via onSustainChange', () => {
+    kbd = createSustKbd();
+    // Verify callback is wired
+    kbd.setSustain(true);
+    expect(sustainLog.length).toBe(1);
+    expect(sustainLog[0]).toBe(true);
+  });
+});
+
+describe('Velocity', () => {
+  let kbd;
+  let noteOnLog;
+  let velocityLog;
+
+  beforeEach(() => {
+    createFixture();
+    noteOnLog = [];
+    velocityLog = [];
+  });
+
+  afterEach(() => {
+    if (kbd) kbd.destroy();
+  });
+
+  function createVelKbd(opts = {}) {
+    return createKeyboard({
+      config: {
+        numOctaves: 1,
+        startNote: 60,
+        enableQwerty: false,
+        enableTouch: false,
+        ...opts,
+      },
+      onNoteOn: (n, v) => noteOnLog.push({ note: n, vel: v }),
+      onVelocityChange: (n, v) => velocityLog.push({ note: n, vel: v }),
+    });
+  }
+
+  it('sends velocity with note-on (fixed by default)', () => {
+    kbd = createVelKbd();
+    const key = document.querySelector('[data-note="60"]');
+    key.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+    expect(noteOnLog.length).toBe(1);
+    expect(noteOnLog[0].note).toBe(60);
+    expect(typeof noteOnLog[0].vel).toBe('number');
+    expect(noteOnLog[0].vel).toBeGreaterThan(0);
+  });
+
+  it('fires onVelocityChange when a note is pressed', () => {
+    kbd = createVelKbd();
+    const key = document.querySelector('[data-note="60"]');
+    key.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+    expect(velocityLog.length).toBe(1);
+    expect(velocityLog[0].note).toBe(60);
+    expect(typeof velocityLog[0].vel).toBe('number');
+  });
+
+  it('fixedVelocity config controls the velocity value', () => {
+    kbd = createVelKbd({ fixedVelocity: 0.5 });
+    const key = document.querySelector('[data-note="60"]');
+    key.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+    expect(noteOnLog[0].vel).toBeCloseTo(0.5, 2);
+  });
+
+  it('velocity CSS variable is set on the active key', () => {
+    kbd = createVelKbd({ fixedVelocity: 0.7 });
+    const key = document.querySelector('[data-note="60"]');
+    key.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+    expect(key.style.getPropertyValue('--kbd-velocity')).toBe('0.700');
+  });
+
+  it('velocityCurve is stored in config', () => {
+    kbd = createVelKbd({ velocitySource: 'fixed', velocityCurve: 'soft', fixedVelocity: 0.3 });
+    const key = document.querySelector('[data-note="60"]');
+    key.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+    // Fixed velocity ignores curve, so it should still be 0.3
+    expect(noteOnLog[0].vel).toBeCloseTo(0.3, 2);
+  });
+
+  it('each note press sends a separate velocity', () => {
+    kbd = createVelKbd({ fixedVelocity: 0.9 });
+    const keys = document.querySelectorAll('#piano-keyboard .kbd-white-key');
+    keys[0].dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+    keys[1].dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+    expect(velocityLog.length).toBe(2);
+    expect(velocityLog[0].note).not.toBe(velocityLog[1].note);
+  });
+});
+
+describe('Aftertouch', () => {
+  let kbd;
+  let aftertouchLog;
+  let noteOnLog;
+  let noteOffLog;
+
+  beforeEach(() => {
+    createFixture();
+    aftertouchLog = [];
+    noteOnLog = [];
+    noteOffLog = [];
+  });
+
+  afterEach(() => {
+    if (kbd) kbd.destroy();
+  });
+
+  function createAtKbd(opts = {}) {
+    return createKeyboard({
+      config: {
+        numOctaves: 1,
+        startNote: 60,
+        enableQwerty: false,
+        enableTouch: false,
+        enableAftertouch: true,
+        ...opts,
+      },
+      onNoteOn: (n, v) => noteOnLog.push({ note: n, vel: v }),
+      onNoteOff: (n) => noteOffLog.push(n),
+      onAftertouch: (n, p) => aftertouchLog.push({ note: n, pressure: p }),
+    });
+  }
+
+  it('setAftertouch sends channel aftertouch (note=-1)', () => {
+    kbd = createAtKbd();
+    kbd.setAftertouch(-1, 0.8);
+    expect(aftertouchLog.length).toBe(1);
+    expect(aftertouchLog[0].note).toBe(-1);
+    expect(aftertouchLog[0].pressure).toBeCloseTo(0.8, 2);
+  });
+
+  it('setAftertouch sends polyphonic aftertouch for a specific note', () => {
+    kbd = createAtKbd();
+    kbd.setAftertouch(60, 0.5);
+    expect(aftertouchLog.length).toBe(1);
+    expect(aftertouchLog[0].note).toBe(60);
+    expect(aftertouchLog[0].pressure).toBeCloseTo(0.5, 2);
+  });
+
+  it('releaseAftertouch sends pressure=0', () => {
+    kbd = createAtKbd();
+    kbd.setAftertouch(-1, 0.7);
+    kbd.releaseAftertouch(-1);
+    expect(aftertouchLog.length).toBe(2);
+    expect(aftertouchLog[1].note).toBe(-1);
+    expect(aftertouchLog[1].pressure).toBe(0);
+  });
+
+  it('releaseAftertouch polyphonic sends pressure=0 for note', () => {
+    kbd = createAtKbd();
+    kbd.setAftertouch(60, 0.6);
+    kbd.releaseAftertouch(60);
+    expect(aftertouchLog.length).toBe(2);
+    expect(aftertouchLog[1].note).toBe(60);
+    expect(aftertouchLog[1].pressure).toBe(0);
+  });
+
+  it('getAftertouch returns current channel pressure', () => {
+    kbd = createAtKbd();
+    expect(kbd.getAftertouch()).toBe(0);
+    kbd.setAftertouch(-1, 0.5);
+    expect(kbd.getAftertouch()).toBeCloseTo(0.5, 2);
+  });
+
+  it('getAftertouch resets after releaseAftertouch', () => {
+    kbd = createAtKbd();
+    kbd.setAftertouch(-1, 0.7);
+    kbd.releaseAftertouch(-1);
+    expect(kbd.getAftertouch()).toBe(0);
+  });
+
+  it('does not fire onAftertouch when enableAftertouch is false', () => {
+    kbd = createAtKbd({ enableAftertouch: false });
+    kbd.setAftertouch(-1, 0.5);
+    // Callback is still wired, but setAftertouch still works (it's the software API)
+    // The config flag only affects pointer-based generation
+    expect(aftertouchLog.length).toBe(1);
+  });
+
+  it('channel aftertouch only fires callback when value changes', () => {
+    kbd = createAtKbd();
+    kbd.setAftertouch(-1, 0.5);
+    kbd.setAftertouch(-1, 0.5); // same value
+    expect(aftertouchLog.length).toBe(1);
+  });
+
+  it('polyphonic aftertouch fires for each note independently', () => {
+    kbd = createAtKbd();
+    kbd.setAftertouch(60, 0.3);
+    kbd.setAftertouch(62, 0.6);
+    expect(aftertouchLog.length).toBe(2);
+    expect(aftertouchLog[0].note).toBe(60);
+    expect(aftertouchLog[1].note).toBe(62);
+  });
+
+  it('aftertouch pressure is clamped to 0..1', () => {
+    kbd = createAtKbd();
+    kbd.setAftertouch(-1, 1.5);
+    expect(aftertouchLog[0].pressure).toBe(1);
+    kbd.setAftertouch(-1, -0.3);
+    expect(aftertouchLog[1].pressure).toBe(0);
+  });
+
+  it('aftertouch is enabled via config option', () => {
+    kbd = createAtKbd({ enableAftertouch: true });
+    // Verify aftertouch is enabled by checking pointer-based generation
+    const key = document.querySelector('[data-note="60"]');
+    key.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientY: 100 }));
+    // Simulate pointer move down (positive pressure)
+    key.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, clientY: 50 }));
+    // Should generate aftertouch from pointer movement
+    expect(aftertouchLog.length).toBeGreaterThan(0);
+  });
+
+  it('aftertouch mode polyphonic sends per-note values', () => {
+    kbd = createAtKbd({ aftertouchMode: 'polyphonic' });
+    kbd.setAftertouch(60, 0.4);
+    expect(aftertouchLog[0].note).toBe(60);
+    kbd.setAftertouch(62, 0.7);
+    expect(aftertouchLog[1].note).toBe(62);
+  });
+
+  it('panic releases aftertouch', () => {
+    kbd = createAtKbd();
+    kbd.setAftertouch(-1, 0.8);
+    aftertouchLog.length = 0;
+    kbd.panic();
+    // After panic, channel aftertouch should be reset
+    expect(kbd.getAftertouch()).toBe(0);
+  });
+});

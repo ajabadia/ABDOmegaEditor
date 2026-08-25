@@ -97,6 +97,10 @@ export function createKeyboard(deps = {}) {
     onModWheel = () => {},
     onPanic = null,
     onOctaveChange = null,
+    onSustainChange = null,
+    onAftertouch = null,
+    onVelocityChange = null,
+    sustainBtnId = null,
     config = {}
   } = deps;
 
@@ -114,13 +118,18 @@ export function createKeyboard(deps = {}) {
     enableVintageWear: config.enableVintageWear ?? false,      // ABDCZ101 feature
     enableQwerty: config.enableQwerty ?? true,
     enableTouch: config.enableTouch ?? true,
+    enableAftertouch: config.enableAftertouch ?? false,  // aftertouch generation from pointer
+    aftertouchMode: config.aftertouchMode ?? 'channel',  // 'channel' | 'polyphonic'
+    aftertouchSensitivity: config.aftertouchSensitivity ?? 0.5,  // 0..1
     getLedColor: config.getLedColor ?? null,  // (bridge) => color string
     getPressureState: config.getPressureState ?? null, // () => { aftertouch, modWheel, pitchBend }
   };
 
   // ── State ──
   let octaveShift = 0;
-  const activeKeys = new Map();   // baseNote -> { actualNote, element, velocity }
+  let sustainOn = false;
+  let _channelAftertouch = 0;  // channel aftertouch value (0..1)
+  const activeKeys = new Map();   // baseNote -> { actualNote, element, velocity, startPointerY }
   const qwertyActive = new Set();
   let destroyed = false;
   let _pressureRafId = null;
@@ -179,7 +188,7 @@ export function createKeyboard(deps = {}) {
         }
       }
 
-      activeKeys.set(midiNote, { actualNote, element: key, velocity });
+      activeKeys.set(midiNote, { actualNote, element: key, velocity, startPointerY: e.clientY ?? null });
       key.classList.add('active');
       key.style.setProperty('--kbd-velocity', velocity.toFixed(3));
 
@@ -188,12 +197,26 @@ export function createKeyboard(deps = {}) {
       key.style.setProperty('--kbd-led-color', color);
 
       onNoteOn(actualNote, velocity);
+      if (onVelocityChange) onVelocityChange(actualNote, velocity);
     };
 
     const stopNote = (e) => {
       if (e) { e.preventDefault(); e.stopPropagation(); }
       if (!activeKeys.has(midiNote)) return;
       const { actualNote, element } = activeKeys.get(midiNote);
+
+      // Release aftertouch for this note
+      if (cfg.enableAftertouch && onAftertouch) {
+        if (cfg.aftertouchMode === 'polyphonic') {
+          onAftertouch(actualNote, 0);
+        } else {
+          if (_channelAftertouch > 0) {
+            _channelAftertouch = 0;
+            onAftertouch(-1, 0);
+          }
+        }
+      }
+
       activeKeys.delete(midiNote);
       if (element) {
         element.classList.remove('active');
@@ -223,6 +246,28 @@ export function createKeyboard(deps = {}) {
     key.addEventListener('pointerdown', playNote);
     key.addEventListener('pointerup', stopNote);
     key.addEventListener('pointerleave', stopNote);
+
+    // Aftertouch generation from pointer Y movement
+    if (cfg.enableAftertouch) {
+      key.addEventListener('pointermove', (e) => {
+        if (!activeKeys.has(midiNote)) return;
+        const state = activeKeys.get(midiNote);
+        if (state.startPointerY == null) return;
+        const deltaY = state.startPointerY - (e.clientY ?? state.startPointerY);
+        const maxDelta = key.getBoundingClientRect().height * 0.8;
+        const rawPressure = Math.max(0, Math.min(1, (deltaY / maxDelta) * cfg.aftertouchSensitivity * 2));
+        const pressure = Math.round(rawPressure * 127) / 127;
+
+        if (cfg.aftertouchMode === 'polyphonic') {
+          if (onAftertouch) onAftertouch(actualNote, pressure);
+        } else {
+          if (pressure !== _channelAftertouch) {
+            _channelAftertouch = pressure;
+            if (onAftertouch) onAftertouch(-1, pressure); // note=-1 = channel aftertouch
+          }
+        }
+      });
+    }
 
     if (cfg.enableTouch) {
       key.addEventListener('touchstart', playNote, { passive: false });
@@ -271,6 +316,13 @@ export function createKeyboard(deps = {}) {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'q') {
       e.preventDefault();
       panic();
+      return;
+    }
+
+    // Ctrl+Space / Cmd+Space → Toggle Sustain Pedal
+    if ((e.ctrlKey || e.metaKey) && e.key === ' ') {
+      e.preventDefault();
+      toggleSustain();
       return;
     }
 
@@ -396,12 +448,18 @@ export function createKeyboard(deps = {}) {
 
   function updatePressureDisplay() {
     _pressureRafId = null;
-    if (!cfg.getPressureState) return;
 
-    const state = cfg.getPressureState();
-    let at = Math.max(0, Math.min(1, state.aftertouch || 0));
-    let mw = Math.max(0, Math.min(1, state.modWheel || 0));
-    let pb = Math.max(-1, Math.min(1, state.pitchBend || 0));
+    // Read pressure state: external source or internal aftertouch
+    let at = 0, mw = 0, pb = 0;
+    if (cfg.getPressureState) {
+      const state = cfg.getPressureState();
+      at = Math.max(0, Math.min(1, state.aftertouch || 0));
+      mw = Math.max(0, Math.min(1, state.modWheel || 0));
+      pb = Math.max(-1, Math.min(1, state.pitchBend || 0));
+    } else if (cfg.enableAftertouch) {
+      // Use internal aftertouch as the pressure source for visual display
+      at = _channelAftertouch;
+    }
 
     // Skip frame if values haven't changed (performance optimization)
     if (Math.abs(at - _prevAT) < 0.01 && Math.abs(mw - _prevMW) < 0.01 && Math.abs(pb - _prevPB) < 0.01) {
@@ -488,10 +546,43 @@ export function createKeyboard(deps = {}) {
   }
 
   // ══════════════════════════════════════════════════════════════
+  //  SUSTAIN PEDAL (CC#64 emulation)
+  //  Toggle on/off via button click, public API, or keyboard shortcut
+  // ══════════════════════════════════════════════════════════════
+
+  function updateSustainVisuals() {
+    const led = container.querySelector('.kbd-sustain-led');
+    if (!led) return;
+    if (sustainOn) {
+      led.classList.add('on');
+    } else {
+      led.classList.remove('on');
+    }
+  }
+
+  function setSustain(on) {
+    const val = !!on;
+    if (val === sustainOn) return;
+    sustainOn = val;
+    updateSustainVisuals();
+    if (onSustainChange) onSustainChange(sustainOn);
+  }
+
+  function toggleSustain() {
+    setSustain(!sustainOn);
+  }
+
+  // ══════════════════════════════════════════════════════════════
   //  PUBLIC API: PANIC
   // ══════════════════════════════════════════════════════════════
 
   function panic() {
+    // Also release sustain and aftertouch on panic
+    if (sustainOn) setSustain(false);
+    if (_channelAftertouch > 0) {
+      _channelAftertouch = 0;
+      if (onAftertouch) onAftertouch(-1, 0);
+    }
     for (const [baseNote, { actualNote, element }] of activeKeys) {
       if (element) {
         element.classList.remove('active', 'kbd-pressured', 'kbd-pitch-bent');
@@ -541,6 +632,27 @@ export function createKeyboard(deps = {}) {
       container.appendChild(autoPanic);
     }
 
+    // Auto-generate sustain pedal button (next to panic button)
+    if (sustainBtnId) {
+      const sustainBtn = document.getElementById(sustainBtnId);
+      if (sustainBtn) {
+        sustainBtn.addEventListener('click', toggleSustain);
+      }
+    } else {
+      const autoSustain = document.createElement('div');
+      autoSustain.className = 'kbd-sustain-btn';
+      autoSustain.setAttribute('role', 'button');
+      autoSustain.setAttribute('tabindex', '0');
+      autoSustain.setAttribute('aria-label', 'Sustain Pedal On/Off (Ctrl+Space)');
+      autoSustain.setAttribute('title', 'Sustain Pedal: Toggle Hold (Ctrl+Space)');
+      autoSustain.innerHTML = `<span class="kbd-sustain-led"></span><span class="kbd-sustain-label">SUST</span>`;
+      autoSustain.addEventListener('click', toggleSustain);
+      autoSustain.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSustain(); }
+      });
+      container.appendChild(autoSustain);
+    }
+
     if (cfg.enableQwerty) {
       window.addEventListener('keydown', handleKeydown);
       window.addEventListener('keyup', handleKeyup);
@@ -549,7 +661,7 @@ export function createKeyboard(deps = {}) {
     updateOctaveLEDs();
 
     // Start pressure display loop if enabled
-    if (cfg.enablePressureDisplay && cfg.getPressureState) {
+    if (cfg.enablePressureDisplay && (cfg.getPressureState || cfg.enableAftertouch)) {
       _pressureRafId = requestAnimationFrame(updatePressureDisplay);
     }
   }
@@ -583,6 +695,32 @@ export function createKeyboard(deps = {}) {
         if (velocity != null) keyEl.style.setProperty('--kbd-velocity', velocity.toFixed(3));
       }
     },
+    setSustain,
+    getSustain: () => sustainOn,
+    toggleSustain,
+    // Aftertouch API
+    setAftertouch: (note, pressure) => {
+      const p = Math.max(0, Math.min(1, pressure));
+      if (note === -1 || note === null) {
+        // Channel aftertouch — skip if value unchanged
+        if (p === _channelAftertouch) return;
+        _channelAftertouch = p;
+        if (onAftertouch) onAftertouch(-1, p);
+      } else {
+        // Polyphonic aftertouch — callback only (state tracked by parent)
+        if (onAftertouch) onAftertouch(note, p);
+      }
+    },
+    releaseAftertouch: (note) => {
+      if (note === -1 || note === null) {
+        _channelAftertouch = 0;
+        if (onAftertouch) onAftertouch(-1, 0);
+      } else {
+        if (onAftertouch) onAftertouch(note, 0);
+      }
+    },
+    getAftertouch: () => _channelAftertouch,
+    // Velocity API
     setLedColor: (color) => { cfg.ledColor = color; },
     setOctaveCount: (numOctaves, startNote) => {
       cfg.numOctaves = numOctaves;
