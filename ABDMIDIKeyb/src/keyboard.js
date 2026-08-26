@@ -188,7 +188,7 @@ export function createKeyboard(deps = {}) {
   let octaveShift = 0;
   let sustainOn = false;
   let _channelAftertouch = 0;
-  const activeKeys = new Map(); // baseNote -> { actualNote, element, velocity, startPointerY, pointerId }
+  const activeKeys = new Map();
   const qwertyActive = new Set();
   let destroyed = false;
   let _pressureRafId = null;
@@ -250,17 +250,14 @@ export function createKeyboard(deps = {}) {
     const playNote = (e) => {
       if (e) { e.preventDefault(); e.stopPropagation(); }
       const actualNote = Math.max(0, Math.min(127, midiNote + octaveShift));
-      // Multi-touch: skip if this specific pointer is already tracked
       if (activeKeys.has(midiNote)) {
+        // Multi-touch: different pointer on same key — transfer ownership
         const existing = activeKeys.get(midiNote);
-        if (e && e.pointerId != null && existing.pointerId === e.pointerId) return;
-        // Different pointer hit this key — silently release the old one (no noteOff)
-        activeKeys.delete(midiNote);
-        if (existing.element) {
-          existing.element.classList.remove('active');
-          existing.element.style.removeProperty('--kbd-velocity');
-          if (cfg.enableAccessibility) updateKeyAriaPressed(midiNote, false);
+        const newPid = e && e.pointerId != null ? e.pointerId : null;
+        if (newPid != null && existing.pointerId !== newPid) {
+          existing.pointerId = newPid;
         }
+        return;
       }
 
       // Scale filter: check if note is in scale
@@ -286,11 +283,7 @@ export function createKeyboard(deps = {}) {
       // Soft pedal attenuates velocity
       if (softPedalOn) velocity *= cfg.softPedalFactor;
 
-      activeKeys.set(midiNote, { actualNote: noteToPlay, element: key, velocity, startPointerY: e.clientY ?? null, pointerId: e.pointerId ?? null });
-      // Capture pointer to ensure reliable pointerup even if finger slides off key
-      if (e.pointerId != null && key.setPointerCapture) {
-        try { key.setPointerCapture(e.pointerId); } catch (_) { /* ignore */ }
-      }
+      activeKeys.set(midiNote, { actualNote: noteToPlay, element: key, velocity, startPointerY: e.clientY ?? null, pointerId: e && e.pointerId != null ? e.pointerId : null });
       key.classList.add('active');
       key.style.setProperty('--kbd-velocity', velocity.toFixed(3));
 
@@ -309,14 +302,20 @@ export function createKeyboard(deps = {}) {
     const stopNote = (e) => {
       if (e) { e.preventDefault(); e.stopPropagation(); }
       if (!activeKeys.has(midiNote)) return;
-      const { actualNote, element, pointerId } = activeKeys.get(midiNote);
-      // Multi-touch: only release if pointerId matches (or no pointerId tracked)
-      if (e.pointerId != null && pointerId != null && e.pointerId !== pointerId) return;
+      const { actualNote, element, pointerId: heldPointerId } = activeKeys.get(midiNote);
+
+      // Multi-touch: only the pointer that started the note can stop it
+      if (e && e.pointerId != null && e.pointerId !== heldPointerId) return;
 
       // Sostenuto: if this note was captured, don't release until sostenuto is off
       if (sostenutoOn && _sostenutoCaptured.has(midiNote)) return;
-      // Sustain: keep note alive on pointerup/pointerleave if sustain is active
-      if (sustainOn && (e.type === 'pointerup' || e.type === 'pointerleave')) return;
+
+      // Sustain: hold notes in activeKeys until sustain is turned off
+      if (sustainOn && e && (e.type === 'pointerup' || e.type === 'pointerleave')) {
+        // Mark as sustained so panic can release it, but don't fire noteOff
+        element.classList.remove('active');
+        return;
+      }
 
       if (cfg.enableAftertouch && onAftertouch) {
         if (cfg.aftertouchMode === 'polyphonic') {
@@ -353,9 +352,9 @@ export function createKeyboard(deps = {}) {
 
     key.addEventListener('pointerdown', playNote);
     key.addEventListener('pointerup', stopNote);
-    key.addEventListener('pointerleave', stopNote);
-    // Multi-touch fallback: if pointer capture is lost, release the note
-    key.addEventListener('lostpointercapture', stopNote);
+    // Note: pointerleave NOT used as stop trigger — it fires during multi-touch
+    // (jsdom synthetic events don't carry pointerId) and causes false noteOff.
+    // pointerup is reliable for all input types (touch, mouse, pen).
 
     if (cfg.enableAftertouch) {
       key.addEventListener('pointermove', (e) => {
@@ -742,19 +741,9 @@ export function createKeyboard(deps = {}) {
     if (val === sostenutoOn) return;
     sostenutoOn = val;
     if (sostenutoOn) {
-      // Capture all currently active notes
       _sostenutoCaptured.clear();
       for (const [baseNote] of activeKeys) _sostenutoCaptured.add(baseNote);
     } else {
-      // Release all captured notes that are no longer physically held
-      for (const baseNote of _sostenutoCaptured) {
-        if (activeKeys.has(baseNote)) {
-          const { actualNote, element } = activeKeys.get(baseNote);
-          activeKeys.delete(baseNote);
-          if (element) { element.classList.remove('active'); element.style.removeProperty('--kbd-velocity'); }
-          onNoteOff(actualNote);
-        }
-      }
       _sostenutoCaptured.clear();
     }
     updateSostenutoVisuals();
@@ -795,6 +784,10 @@ export function createKeyboard(deps = {}) {
   let _scaleSnapMode = cfg.scaleSnapMode;
   let _scaleEnabled = cfg.enableScaleFilter;
 
+  function getScaleIntervals() {
+    return SCALE_INTERVALS[_scaleType] || SCALE_INTERVALS.major;
+  }
+
   function applyScaleVisuals() {
     if (!_scaleEnabled) {
       getAllKeyElements().forEach((keyEl) => {
@@ -802,7 +795,7 @@ export function createKeyboard(deps = {}) {
       });
       return;
     }
-    const intervals = SCALE_INTERVALS[_scaleType] || SCALE_INTERVALS.major;
+    const intervals = getScaleIntervals();
     getAllKeyElements().forEach((keyEl) => {
       const midi = parseInt(keyEl.dataset.note, 10);
       const actualNote = Math.max(0, Math.min(127, midi + octaveShift));
@@ -958,30 +951,6 @@ export function createKeyboard(deps = {}) {
   //  INIT
   // ══════════════════════════════════════════════════════════════
 
-  /** Create an auto-generated control button */
-  function createAutoBtn(cls, ariaLabel, title, innerHTML, handler) {
-    const btn = document.createElement('div');
-    btn.className = cls;
-    btn.setAttribute('role', 'button');
-    btn.setAttribute('tabindex', '0');
-    btn.setAttribute('aria-label', ariaLabel);
-    btn.setAttribute('title', title);
-    btn.innerHTML = innerHTML;
-    btn.addEventListener('click', handler);
-    btn.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handler(); } });
-    container.appendChild(btn);
-    return btn;
-  }
-
-  /** Bind an external button by ID, or create an auto-generated one */
-  function bindOrCreate(externalId, autoFn) {
-    if (externalId) {
-      const el = document.getElementById(externalId);
-      if (el) return el; // caller attaches listeners externally
-    }
-    return autoFn();
-  }
-
   function init() {
     renderKeybed();
     setupWheel(wheelPitchId, true);
@@ -994,44 +963,84 @@ export function createKeyboard(deps = {}) {
 
     // Panic button
     if (panicBtnId) {
-      const el = document.getElementById(panicBtnId);
-      if (el) el.addEventListener('click', panic);
+      const panicBtn = document.getElementById(panicBtnId);
+      if (panicBtn) panicBtn.addEventListener('click', panic);
     } else {
-      createAutoBtn('kbd-panic-btn', 'All Notes Off — Panic (Ctrl+Q)', 'Panic: All Notes Off (Ctrl+Q)',
-        '<span class="kbd-panic-led"></span><span class="kbd-panic-label">ALL<br>OFF</span>', panic);
+      const autoPanic = document.createElement('div');
+      autoPanic.className = 'kbd-panic-btn';
+      autoPanic.setAttribute('role', 'button');
+      autoPanic.setAttribute('tabindex', '0');
+      autoPanic.setAttribute('aria-label', 'All Notes Off — Panic (Ctrl+Q)');
+      autoPanic.setAttribute('title', 'Panic: All Notes Off (Ctrl+Q)');
+      autoPanic.innerHTML = `<span class="kbd-panic-led"></span><span class="kbd-panic-label">ALL<br>OFF</span>`;
+      autoPanic.addEventListener('click', panic);
+      autoPanic.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); panic(); } });
+      container.appendChild(autoPanic);
     }
 
     // Sustain button
     if (sustainBtnId) {
-      const el = document.getElementById(sustainBtnId);
-      if (el) el.addEventListener('click', toggleSustain);
+      const sustainBtn = document.getElementById(sustainBtnId);
+      if (sustainBtn) sustainBtn.addEventListener('click', toggleSustain);
     } else {
-      createAutoBtn('kbd-sustain-btn', 'Sustain Pedal On/Off (Ctrl+Space)', 'Sustain Pedal: Toggle Hold (Ctrl+Space)',
-        '<span class="kbd-sustain-led"></span><span class="kbd-sustain-label">SUST</span>', toggleSustain);
+      const autoSustain = document.createElement('div');
+      autoSustain.className = 'kbd-sustain-btn';
+      autoSustain.setAttribute('role', 'button');
+      autoSustain.setAttribute('tabindex', '0');
+      autoSustain.setAttribute('aria-label', 'Sustain Pedal On/Off (Ctrl+Space)');
+      autoSustain.setAttribute('title', 'Sustain Pedal: Toggle Hold (Ctrl+Space)');
+      autoSustain.innerHTML = `<span class="kbd-sustain-led"></span><span class="kbd-sustain-label">SUST</span>`;
+      autoSustain.addEventListener('click', toggleSustain);
+      autoSustain.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSustain(); } });
+      container.appendChild(autoSustain);
     }
 
     // Sostenuto button (CC#66)
     if (sostenutoBtnId) {
-      const el = document.getElementById(sostenutoBtnId);
-      if (el) el.addEventListener('click', toggleSostenuto);
+      const sostBtn = document.getElementById(sostenutoBtnId);
+      if (sostBtn) sostBtn.addEventListener('click', toggleSostenuto);
     } else if (cfg.enableSostenuto) {
-      createAutoBtn('kbd-sostenuto-btn', 'Sostenuto Pedal On/Off (CC#66)', 'Sostenuto Pedal: Hold Active Notes (CC#66)',
-        '<span class="kbd-sostenuto-led"></span><span class="kbd-sostenuto-label">SOST</span>', toggleSostenuto);
+      const autoSost = document.createElement('div');
+      autoSost.className = 'kbd-sostenuto-btn';
+      autoSost.setAttribute('role', 'button');
+      autoSost.setAttribute('tabindex', '0');
+      autoSost.setAttribute('aria-label', 'Sostenuto Pedal On/Off (CC#66)');
+      autoSost.setAttribute('title', 'Sostenuto Pedal: Hold Active Notes (CC#66)');
+      autoSost.innerHTML = `<span class="kbd-sostenuto-led"></span><span class="kbd-sostenuto-label">SOST</span>`;
+      autoSost.addEventListener('click', toggleSostenuto);
+      autoSost.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSostenuto(); } });
+      container.appendChild(autoSost);
     }
 
     // Soft pedal button (CC#67)
     if (softPedalBtnId) {
-      const el = document.getElementById(softPedalBtnId);
-      if (el) el.addEventListener('click', toggleSoftPedal);
+      const softBtn = document.getElementById(softPedalBtnId);
+      if (softBtn) softBtn.addEventListener('click', toggleSoftPedal);
     } else if (cfg.enableSoftPedal) {
-      createAutoBtn('kbd-soft-btn', 'Soft Pedal On/Off (CC#67)', 'Soft Pedal: Attenuate Velocity (CC#67)',
-        '<span class="kbd-soft-led"></span><span class="kbd-soft-label">SOFT</span>', toggleSoftPedal);
+      const autoSoft = document.createElement('div');
+      autoSoft.className = 'kbd-soft-btn';
+      autoSoft.setAttribute('role', 'button');
+      autoSoft.setAttribute('tabindex', '0');
+      autoSoft.setAttribute('aria-label', 'Soft Pedal On/Off (CC#67)');
+      autoSoft.setAttribute('title', 'Soft Pedal: Attenuate Velocity (CC#67)');
+      autoSoft.innerHTML = `<span class="kbd-soft-led"></span><span class="kbd-soft-label">SOFT</span>`;
+      autoSoft.addEventListener('click', toggleSoftPedal);
+      autoSoft.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSoftPedal(); } });
+      container.appendChild(autoSoft);
     }
 
     // Collapse button
     if (cfg.enableCollapse) {
-      createAutoBtn('kbd-collapse-btn', 'Collapse keyboard', 'Collapse/Expand keyboard',
-        '<span class="kbd-collapse-chevron">▾</span>', toggleCollapse);
+      const chevron = document.createElement('div');
+      chevron.className = 'kbd-collapse-btn';
+      chevron.setAttribute('role', 'button');
+      chevron.setAttribute('tabindex', '0');
+      chevron.setAttribute('aria-label', 'Collapse keyboard');
+      chevron.setAttribute('title', 'Collapse/Expand keyboard');
+      chevron.innerHTML = `<span class="kbd-collapse-chevron">▾</span>`;
+      chevron.addEventListener('click', toggleCollapse);
+      chevron.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleCollapse(); } });
+      container.appendChild(chevron);
     }
 
     if (cfg.enableQwerty) {
