@@ -25,10 +25,11 @@
 - [ ] Update HANDOFF.md
 
 ## Phase 4: ABDCZ101 Integration
-- [ ] Port ABDCZ101 keyboard features (vintage wear, 49-key mode)
-- [ ] QWERTY validation with CZ-101 note range
-- [ ] Test with ABDCZ101 bridge events
-- [ ] Update HANDOFF.md
+- [x] Vintage wear stains (ported from ABDCZ101)
+- [x] 49-key mode (CZ101_PRESET with numOctaves:4, startNote:48)
+- [x] QWERTY CZ-101 range validation (C3–C7)
+- [x] ABDCZ101 bridge tests (14 tests: preset, keys, range, sustain, panic, octave)
+- [x] Update HANDOFF.md
 
 ## Phase 5: Polish
 - [x] Panic button — auto-generated to right of keybed with red LED + tooltip
@@ -72,6 +73,7 @@
 - [x] Chord Memory config — enableChordMemory, maxChordSlots
 - [x] Chord Memory API — saveChord, playChord, releaseChord, getChords, clearChord, clearAllChords
 - [x] Chord Memory tests (13 tests: save, play, release, clear, slots, API, disabled mode)
-- [ ] Animation performance audit (will-change, compositor layers)
+- [x] Animation performance audit (will-change, compositor layers, CSS optimization)
+- [x] ABDCZ101 bridge tests (14 tests: preset, 49 keys, QWERTY range, sustain, panic, octave)
 - [ ] Multi-touch edge cases (simultaneous keys on same octave)
 - [ ] README screenshots / GIF demos

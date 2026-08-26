@@ -78,6 +78,19 @@ function snapToScale(midiNote, rootNote, intervals) {
   return midiNote;
 }
 
+// ── Presets ──
+/** CZ-101 preset: 49 keys, vintage wear, no wheels, QWERTY enabled */
+export const CZ101_PRESET = {
+  numOctaves: 4,
+  startNote: 48, // C3 (CZ-101 range: C3–C7)
+  enableVintageWear: true,
+  enableQwerty: true,
+  enableIvoryTexture: false,
+  enablePressureDisplay: false,
+  enablePitchBendDisplace: false,
+  enableAftertouch: false,
+};
+
 // ── Per-key ivory texture (from ABDEep) ──
 function applyIvoryTexture(key, midiNote) {
   const seed = (midiNote * 12345) % 100;

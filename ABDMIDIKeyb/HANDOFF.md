@@ -177,7 +177,34 @@ const kbd = createKeyboard({
 | Z–M (lower row) | Play notes (when QWERTY enabled) |
 | Q–] (upper row) | Play notes (when QWERTY enabled) |
 
-## Test Coverage (182 tests)
+### New: Sostenuto Pedal (CC#66)
+
+- **`enableSostenuto: true`** (config) — enables sostenuto pedal
+- Captures all currently active notes when engaged; notes pressed AFTER are NOT captured
+- **`setSostenuto(bool)`** / **`getSostenuto()`** / **`toggleSostenuto()`** public API
+- **`onSostenutoChange(on)`** callback for parent app integration
+- **Ctrl+Shift+Space** keyboard shortcut
+- Auto-generated button with orange LED
+- **Panic releases sostenuto** automatically
+
+### New: Soft Pedal (CC#67)
+
+- **`enableSoftPedal: true`** (config) — enables soft pedal
+- Attenuates velocity: `velocity *= softPedalFactor` (default: 0.65)
+- **`setSoftPedal(bool)`** / **`getSoftPedal()`** / **`toggleSoftPedal()`** public API
+- **`onSoftPedalChange(on)`** callback for parent app integration
+- **Ctrl+Alt+Space** keyboard shortcut
+- Auto-generated button with purple LED
+- **Panic releases soft pedal** automatically
+
+### New: ABDCZ101 Preset
+
+- **`CZ101_PRESET`** exported constant with CZ-101-specific config
+- 49 keys (4 octaves, C3–C7), vintage wear enabled, no wheels
+- **`import { CZ101_PRESET } from '@abdsynths/keyboard'`**
+- Usage: `createKeyboard({ ...CZ101_PRESET, onNoteOn: ... })`
+
+## Test Coverage (230 tests)
 
 | Section | Tests | Coverage |
 |---|---|---|
@@ -198,6 +225,11 @@ const kbd = createKeyboard({
 | Aftertouch | 13 | Channel, polyphonic, release, clamping, pointer, panic |
 | Scale Filter | 19 | Enable/disable, block/snap, scales, root, QWERTY, visuals |
 | Chord Memory | 13 | Save, play, release, clear, slots, API, disabled mode |
+| ResizeObserver | 5 | Creates, disabled, disconnects, re-render, safe after destroy |
+| Accessibility | 19 | ARIA, live regions, keyboard nav, wheel labels |
+| Collapse | 14 | Auto-gen, expand/collapse, click/keyboard, chevron, aria |
+| Chord Memory Bridge | 34 | Save, play, release, workflow, edge cases |
+| ABDCZ101 Bridge | 14 | Preset, 49 keys, QWERTY range, sustain, panic, octave |
 
 ## Known Issues
 
@@ -205,6 +237,6 @@ const kbd = createKeyboard({
 
 ## Files to Touch for Modifications
 
-- `src/keyboard.js` — Core logic, key rendering, event handlers, panic/sustain/sostenuto/soft auto-gen, aftertouch, scale filter, chord memory
-- `src/keyboard.css` — Visual styling, theme tokens, panic/sustain/sostenuto/soft button styles, scale filter dimming, chord memory
+- `src/keyboard.js` — Core logic, key rendering, event handlers, all pedals, aftertouch, scale filter, chord memory, CZ-101 preset
+- `src/keyboard.css` — Visual styling, theme tokens, all button styles, scale filter dimming, chord memory, sostenuto/soft pedal
 - `tests/keyboard.test.js` — Unit tests (182 tests)

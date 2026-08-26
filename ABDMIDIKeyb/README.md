@@ -610,16 +610,15 @@ createKeyboard({
 ### ABDCZ101 (vintage feel)
 
 ```js
+import { CZ101_PRESET } from '@abdsynths/keyboard';
+
 createKeyboard({
-  config: {
-    numOctaves: 4,
-    startNote: 36,
-    enableVintageWear: true,
-    enableQwerty: true,
-  },
-  wheelPitchId: null,  // CZ-101 has no wheels
-  wheelModId: null,
+  ...CZ101_PRESET,
+  onNoteOn: (n, v) => bridge.noteOn(n, v),
+  onNoteOff: (n) => bridge.noteOff(n),
+  onSustainChange: (on) => bridge.sustain(on),
 });
+// 49 keys (C3–C7), vintage wear, QWERTY, no wheels
 ```
 
 ## CSS Theme Tokens
@@ -638,7 +637,7 @@ All colors and fonts are customizable via CSS custom properties:
 ```bash
 cd ABDKeyboard
 npm install
-npm test  # 182 tests, vitest + jsdom
+npm test  # 230 tests, vitest + jsdom
 ```
 
 ## License
