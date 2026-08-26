@@ -173,46 +173,42 @@ cp -r ../ABDKeyboard/src/ ./src/components/keyboard/
   <em>⬆ Live demo: QWERTY notes → velocity control → aftertouch → sustain pedal → panic flash</em>
 </div>
 
-Interactive demo page showing all features — open `demo/index.html` in a browser:
+### Interactive Demo
+
+Open `demo/index.html` in a browser to try all features:
 
 ```bash
-# macOS
-open demo/index.html
-
-# Windows
-start demo/index.html
-
-# Linux
-xdg-open demo/index.html
+open demo/index.html        # macOS
+start demo/index.html       # Windows
+xdg-open demo/index.html    # Linux
 ```
 
-### GIF sequence breakdown
+### Feature Showcase
 
-| Frame | Feature demonstrated |
+| Feature | How to test |
 |---|---|
-| 1–2 | Idle keyboard → C major chord (QWERTY: Q+E+T) |
-| 3–7 | Melody: single notes C D E F G with velocity |
-| 8–10 | Velocity control: top (soft) → bottom (loud) → middle |
-| 11 | Aftertouch: click + drag down on C4 |
-| 12 | Sustain pedal: notes held after key release |
-| 13 | Chromatic scale: Z-M row full hold |
-| 14–15 | Panic: Ctrl+Q red LED flash → all notes off |
-| 16 | Clean idle state |
+| **Velocity** | Click a key — top = soft, bottom = loud |
+| **Aftertouch** | Click + hold, drag mouse down |
+| **Sustain** | Click SUSTAIN button or `Ctrl+Space` |
+| **Sostenuto** | Hold keys, click SOST button, release keys |
+| **Soft Pedal** | Click SOFT button — velocity is attenuated |
+| **Panic** | Click PANIC button or `Ctrl+Q` |
+| **Octave Shift** | Arrow Up/Down or OCT buttons |
+| **QWERTY Input** | Z-M (lower row), Q-] (upper row) |
+| **Scale Filter** | Config: `enableScaleFilter: true, scaleType: 'minor'` |
+| **Chord Memory** | Config: `enableChordMemory: true` — save/replay chords |
+| **Collapse** | Config: `enableCollapse: true` — chevron button |
 
-See [`demo/README.md`](demo/README.md) for full GIF recording instructions and alternative tools.
+### GIF Recording
 
-### Regenerating the GIF
+See [`demo/README.md`](demo/README.md) for full instructions.
 
+**Quick capture:**
 ```bash
-# 1. Capture frames with headless Chrome
 node demo/capture.mjs
-
-# 2. Assemble into animated GIF with ffmpeg
 ffmpeg -framerate 6 -i demo/frames/frame-%03d.png \
   -vf "scale=960:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" \
   -loop 0 demo/keyboard-demo.gif
-
-# Output: demo/keyboard-demo.gif (~224KB, 16 frames, 6fps, loops forever)
 ```
 
 ## Usage
@@ -637,7 +633,7 @@ All colors and fonts are customizable via CSS custom properties:
 ```bash
 cd ABDKeyboard
 npm install
-npm test  # 230 tests, vitest + jsdom
+npm test  # 243 tests, vitest + jsdom
 ```
 
 ## License

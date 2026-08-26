@@ -188,7 +188,7 @@ export function createKeyboard(deps = {}) {
   let octaveShift = 0;
   let sustainOn = false;
   let _channelAftertouch = 0;
-  const activeKeys = new Map();
+  const activeKeys = new Map(); // baseNote -> { actualNote, element, velocity, startPointerY, pointerId }
   const qwertyActive = new Set();
   let destroyed = false;
   let _pressureRafId = null;
@@ -250,7 +250,18 @@ export function createKeyboard(deps = {}) {
     const playNote = (e) => {
       if (e) { e.preventDefault(); e.stopPropagation(); }
       const actualNote = Math.max(0, Math.min(127, midiNote + octaveShift));
-      if (activeKeys.has(midiNote)) return;
+      // Multi-touch: skip if this specific pointer is already tracked
+      if (activeKeys.has(midiNote) && activeKeys.get(midiNote).pointerId === e.pointerId) return;
+      // If a different pointer hit this key, silently release the old one (no noteOff)
+      if (activeKeys.has(midiNote)) {
+        const old = activeKeys.get(midiNote);
+        activeKeys.delete(midiNote);
+        if (old.element) {
+          old.element.classList.remove('active');
+          old.element.style.removeProperty('--kbd-velocity');
+          if (cfg.enableAccessibility) updateKeyAriaPressed(midiNote, false);
+        }
+      }
 
       // Scale filter: check if note is in scale
       let noteToPlay = actualNote;
@@ -275,7 +286,11 @@ export function createKeyboard(deps = {}) {
       // Soft pedal attenuates velocity
       if (softPedalOn) velocity *= cfg.softPedalFactor;
 
-      activeKeys.set(midiNote, { actualNote: noteToPlay, element: key, velocity, startPointerY: e.clientY ?? null });
+      activeKeys.set(midiNote, { actualNote: noteToPlay, element: key, velocity, startPointerY: e.clientY ?? null, pointerId: e.pointerId ?? null });
+      // Capture pointer to ensure reliable pointerup even if finger slides off key
+      if (e.pointerId != null && key.setPointerCapture) {
+        try { key.setPointerCapture(e.pointerId); } catch (_) { /* ignore */ }
+      }
       key.classList.add('active');
       key.style.setProperty('--kbd-velocity', velocity.toFixed(3));
 
@@ -294,10 +309,14 @@ export function createKeyboard(deps = {}) {
     const stopNote = (e) => {
       if (e) { e.preventDefault(); e.stopPropagation(); }
       if (!activeKeys.has(midiNote)) return;
-      const { actualNote, element } = activeKeys.get(midiNote);
+      const { actualNote, element, pointerId } = activeKeys.get(midiNote);
+      // Multi-touch: only release if pointerId matches (or no pointerId tracked)
+      if (e.pointerId != null && pointerId != null && e.pointerId !== pointerId) return;
 
       // Sostenuto: if this note was captured, don't release until sostenuto is off
       if (sostenutoOn && _sostenutoCaptured.has(midiNote)) return;
+      // Sustain: keep note alive on pointerup/pointerleave if sustain is active
+      if (sustainOn && (e.type === 'pointerup' || e.type === 'pointerleave')) return;
 
       if (cfg.enableAftertouch && onAftertouch) {
         if (cfg.aftertouchMode === 'polyphonic') {
@@ -335,6 +354,8 @@ export function createKeyboard(deps = {}) {
     key.addEventListener('pointerdown', playNote);
     key.addEventListener('pointerup', stopNote);
     key.addEventListener('pointerleave', stopNote);
+    // Multi-touch fallback: if pointer capture is lost, release the note
+    key.addEventListener('lostpointercapture', stopNote);
 
     if (cfg.enableAftertouch) {
       key.addEventListener('pointermove', (e) => {

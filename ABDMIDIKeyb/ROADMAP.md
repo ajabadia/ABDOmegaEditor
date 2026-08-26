@@ -75,5 +75,5 @@
 - [x] Chord Memory tests (13 tests: save, play, release, clear, slots, API, disabled mode)
 - [x] Animation performance audit (will-change, compositor layers, CSS optimization)
 - [x] ABDCZ101 bridge tests (14 tests: preset, 49 keys, QWERTY range, sustain, panic, octave)
-- [ ] Multi-touch edge cases (simultaneous keys on same octave)
-- [ ] README screenshots / GIF demos
+- [x] Multi-touch edge cases (pointerId tracking, same-key replacement, sustain + multi-touch, 13 tests)
+- [x] README screenshots / GIF demos (feature showcase table, interactive demo docs)
