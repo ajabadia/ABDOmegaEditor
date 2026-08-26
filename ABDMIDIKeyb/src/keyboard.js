@@ -251,14 +251,14 @@ export function createKeyboard(deps = {}) {
       if (e) { e.preventDefault(); e.stopPropagation(); }
       const actualNote = Math.max(0, Math.min(127, midiNote + octaveShift));
       // Multi-touch: skip if this specific pointer is already tracked
-      if (activeKeys.has(midiNote) && activeKeys.get(midiNote).pointerId === e.pointerId) return;
-      // If a different pointer hit this key, silently release the old one (no noteOff)
       if (activeKeys.has(midiNote)) {
-        const old = activeKeys.get(midiNote);
+        const existing = activeKeys.get(midiNote);
+        if (e && e.pointerId != null && existing.pointerId === e.pointerId) return;
+        // Different pointer hit this key — silently release the old one (no noteOff)
         activeKeys.delete(midiNote);
-        if (old.element) {
-          old.element.classList.remove('active');
-          old.element.style.removeProperty('--kbd-velocity');
+        if (existing.element) {
+          existing.element.classList.remove('active');
+          existing.element.style.removeProperty('--kbd-velocity');
           if (cfg.enableAccessibility) updateKeyAriaPressed(midiNote, false);
         }
       }
@@ -742,9 +742,19 @@ export function createKeyboard(deps = {}) {
     if (val === sostenutoOn) return;
     sostenutoOn = val;
     if (sostenutoOn) {
+      // Capture all currently active notes
       _sostenutoCaptured.clear();
       for (const [baseNote] of activeKeys) _sostenutoCaptured.add(baseNote);
     } else {
+      // Release all captured notes that are no longer physically held
+      for (const baseNote of _sostenutoCaptured) {
+        if (activeKeys.has(baseNote)) {
+          const { actualNote, element } = activeKeys.get(baseNote);
+          activeKeys.delete(baseNote);
+          if (element) { element.classList.remove('active'); element.style.removeProperty('--kbd-velocity'); }
+          onNoteOff(actualNote);
+        }
+      }
       _sostenutoCaptured.clear();
     }
     updateSostenutoVisuals();
@@ -785,10 +795,6 @@ export function createKeyboard(deps = {}) {
   let _scaleSnapMode = cfg.scaleSnapMode;
   let _scaleEnabled = cfg.enableScaleFilter;
 
-  function getScaleIntervals() {
-    return SCALE_INTERVALS[_scaleType] || SCALE_INTERVALS.major;
-  }
-
   function applyScaleVisuals() {
     if (!_scaleEnabled) {
       getAllKeyElements().forEach((keyEl) => {
@@ -796,7 +802,7 @@ export function createKeyboard(deps = {}) {
       });
       return;
     }
-    const intervals = getScaleIntervals();
+    const intervals = SCALE_INTERVALS[_scaleType] || SCALE_INTERVALS.major;
     getAllKeyElements().forEach((keyEl) => {
       const midi = parseInt(keyEl.dataset.note, 10);
       const actualNote = Math.max(0, Math.min(127, midi + octaveShift));
@@ -952,6 +958,30 @@ export function createKeyboard(deps = {}) {
   //  INIT
   // ══════════════════════════════════════════════════════════════
 
+  /** Create an auto-generated control button */
+  function createAutoBtn(cls, ariaLabel, title, innerHTML, handler) {
+    const btn = document.createElement('div');
+    btn.className = cls;
+    btn.setAttribute('role', 'button');
+    btn.setAttribute('tabindex', '0');
+    btn.setAttribute('aria-label', ariaLabel);
+    btn.setAttribute('title', title);
+    btn.innerHTML = innerHTML;
+    btn.addEventListener('click', handler);
+    btn.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handler(); } });
+    container.appendChild(btn);
+    return btn;
+  }
+
+  /** Bind an external button by ID, or create an auto-generated one */
+  function bindOrCreate(externalId, autoFn) {
+    if (externalId) {
+      const el = document.getElementById(externalId);
+      if (el) return el; // caller attaches listeners externally
+    }
+    return autoFn();
+  }
+
   function init() {
     renderKeybed();
     setupWheel(wheelPitchId, true);
@@ -964,84 +994,44 @@ export function createKeyboard(deps = {}) {
 
     // Panic button
     if (panicBtnId) {
-      const panicBtn = document.getElementById(panicBtnId);
-      if (panicBtn) panicBtn.addEventListener('click', panic);
+      const el = document.getElementById(panicBtnId);
+      if (el) el.addEventListener('click', panic);
     } else {
-      const autoPanic = document.createElement('div');
-      autoPanic.className = 'kbd-panic-btn';
-      autoPanic.setAttribute('role', 'button');
-      autoPanic.setAttribute('tabindex', '0');
-      autoPanic.setAttribute('aria-label', 'All Notes Off — Panic (Ctrl+Q)');
-      autoPanic.setAttribute('title', 'Panic: All Notes Off (Ctrl+Q)');
-      autoPanic.innerHTML = `<span class="kbd-panic-led"></span><span class="kbd-panic-label">ALL<br>OFF</span>`;
-      autoPanic.addEventListener('click', panic);
-      autoPanic.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); panic(); } });
-      container.appendChild(autoPanic);
+      createAutoBtn('kbd-panic-btn', 'All Notes Off — Panic (Ctrl+Q)', 'Panic: All Notes Off (Ctrl+Q)',
+        '<span class="kbd-panic-led"></span><span class="kbd-panic-label">ALL<br>OFF</span>', panic);
     }
 
     // Sustain button
     if (sustainBtnId) {
-      const sustainBtn = document.getElementById(sustainBtnId);
-      if (sustainBtn) sustainBtn.addEventListener('click', toggleSustain);
+      const el = document.getElementById(sustainBtnId);
+      if (el) el.addEventListener('click', toggleSustain);
     } else {
-      const autoSustain = document.createElement('div');
-      autoSustain.className = 'kbd-sustain-btn';
-      autoSustain.setAttribute('role', 'button');
-      autoSustain.setAttribute('tabindex', '0');
-      autoSustain.setAttribute('aria-label', 'Sustain Pedal On/Off (Ctrl+Space)');
-      autoSustain.setAttribute('title', 'Sustain Pedal: Toggle Hold (Ctrl+Space)');
-      autoSustain.innerHTML = `<span class="kbd-sustain-led"></span><span class="kbd-sustain-label">SUST</span>`;
-      autoSustain.addEventListener('click', toggleSustain);
-      autoSustain.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSustain(); } });
-      container.appendChild(autoSustain);
+      createAutoBtn('kbd-sustain-btn', 'Sustain Pedal On/Off (Ctrl+Space)', 'Sustain Pedal: Toggle Hold (Ctrl+Space)',
+        '<span class="kbd-sustain-led"></span><span class="kbd-sustain-label">SUST</span>', toggleSustain);
     }
 
     // Sostenuto button (CC#66)
     if (sostenutoBtnId) {
-      const sostBtn = document.getElementById(sostenutoBtnId);
-      if (sostBtn) sostBtn.addEventListener('click', toggleSostenuto);
+      const el = document.getElementById(sostenutoBtnId);
+      if (el) el.addEventListener('click', toggleSostenuto);
     } else if (cfg.enableSostenuto) {
-      const autoSost = document.createElement('div');
-      autoSost.className = 'kbd-sostenuto-btn';
-      autoSost.setAttribute('role', 'button');
-      autoSost.setAttribute('tabindex', '0');
-      autoSost.setAttribute('aria-label', 'Sostenuto Pedal On/Off (CC#66)');
-      autoSost.setAttribute('title', 'Sostenuto Pedal: Hold Active Notes (CC#66)');
-      autoSost.innerHTML = `<span class="kbd-sostenuto-led"></span><span class="kbd-sostenuto-label">SOST</span>`;
-      autoSost.addEventListener('click', toggleSostenuto);
-      autoSost.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSostenuto(); } });
-      container.appendChild(autoSost);
+      createAutoBtn('kbd-sostenuto-btn', 'Sostenuto Pedal On/Off (CC#66)', 'Sostenuto Pedal: Hold Active Notes (CC#66)',
+        '<span class="kbd-sostenuto-led"></span><span class="kbd-sostenuto-label">SOST</span>', toggleSostenuto);
     }
 
     // Soft pedal button (CC#67)
     if (softPedalBtnId) {
-      const softBtn = document.getElementById(softPedalBtnId);
-      if (softBtn) softBtn.addEventListener('click', toggleSoftPedal);
+      const el = document.getElementById(softPedalBtnId);
+      if (el) el.addEventListener('click', toggleSoftPedal);
     } else if (cfg.enableSoftPedal) {
-      const autoSoft = document.createElement('div');
-      autoSoft.className = 'kbd-soft-btn';
-      autoSoft.setAttribute('role', 'button');
-      autoSoft.setAttribute('tabindex', '0');
-      autoSoft.setAttribute('aria-label', 'Soft Pedal On/Off (CC#67)');
-      autoSoft.setAttribute('title', 'Soft Pedal: Attenuate Velocity (CC#67)');
-      autoSoft.innerHTML = `<span class="kbd-soft-led"></span><span class="kbd-soft-label">SOFT</span>`;
-      autoSoft.addEventListener('click', toggleSoftPedal);
-      autoSoft.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSoftPedal(); } });
-      container.appendChild(autoSoft);
+      createAutoBtn('kbd-soft-btn', 'Soft Pedal On/Off (CC#67)', 'Soft Pedal: Attenuate Velocity (CC#67)',
+        '<span class="kbd-soft-led"></span><span class="kbd-soft-label">SOFT</span>', toggleSoftPedal);
     }
 
     // Collapse button
     if (cfg.enableCollapse) {
-      const chevron = document.createElement('div');
-      chevron.className = 'kbd-collapse-btn';
-      chevron.setAttribute('role', 'button');
-      chevron.setAttribute('tabindex', '0');
-      chevron.setAttribute('aria-label', 'Collapse keyboard');
-      chevron.setAttribute('title', 'Collapse/Expand keyboard');
-      chevron.innerHTML = `<span class="kbd-collapse-chevron">▾</span>`;
-      chevron.addEventListener('click', toggleCollapse);
-      chevron.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleCollapse(); } });
-      container.appendChild(chevron);
+      createAutoBtn('kbd-collapse-btn', 'Collapse keyboard', 'Collapse/Expand keyboard',
+        '<span class="kbd-collapse-chevron">▾</span>', toggleCollapse);
     }
 
     if (cfg.enableQwerty) {
