@@ -4,6 +4,56 @@ All notable changes to ABDKeyboard will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.1.5] - 2025-08-26
+
+### Added
+- Chord Memory — save and replay note groups (from ABDEep roadmap)
+  - `enableChordMemory: true` config option
+  - `maxChordSlots: 12` — configurable number of slots (1..12)
+  - `saveChord(slot, notes?)` — save notes to a slot (or currently active notes)
+  - `playChord(slot)` — replay saved chord (calls `onNoteOn` for each note)
+  - `releaseChord(slot)` — release chord notes (calls `onNoteOff` for each)
+  - `getChords()` — returns array of saved chords
+  - `clearChord(slot)` / `clearAllChords()` — clear slots
+  - Visual feedback: `.kbd-chord-saved` (amber) and `.kbd-chord-playing` (green) CSS classes
+  - Works with both pointer/touch and QWERTY input
+  - 13 new unit tests (182 total, up from 169)
+
+## [0.1.4] - 2025-08-26
+
+### Added
+- Scale filter — lock keys to a musical scale (major, minor, pentatonic, blues, dorian, etc.)
+  - `enableScaleFilter: true` config option
+  - `scaleType: 'major'|'minor'|'pentatonic'|'blues'|'dorian'|'phrygian'|'lydian'|'mixolydian'|'minor_pentatonic'|'whole_tone'|'chromatic'`
+  - `scaleRoot: 0` — root note (0=C, 2=D, 4=E, 5=F, 7=G, 9=A, 11=B)
+  - `scaleSnapMode: 'block'|'snap'` — skip notes outside scale or snap to nearest
+  - `setScaleFilter(type, root?)` / `getScaleFilter()` / `disableScaleFilter()` public API
+  - Visual dimming of keys outside the scale (CSS class `.kbd-key-outside-scale`)
+  - Works with both pointer/touch and QWERTY input
+  - 19 new unit tests (169 total, up from 150)
+
+## [0.1.3] - 2025-08-26
+
+### Added
+- Sostenuto pedal (CC#66 emulation) — captures active notes only
+  - Auto-generated button with orange LED
+  - Ctrl+Shift+Space keyboard shortcut
+  - `onSostenutoChange(on)` callback for parent app integration
+  - `setSostenuto(bool)` / `getSostenuto()` / `toggleSostenuto()` public API
+  - Only notes physically held at engagement time are captured
+  - Panic automatically releases sostenuto
+- Soft pedal (CC#67 emulation) — attenuates velocity
+  - Auto-generated button with purple LED
+  - Ctrl+Alt+Space keyboard shortcut
+  - `onSoftPedalChange(on)` callback for parent app integration
+  - `setSoftPedal(bool)` / `getSoftPedal()` / `toggleSoftPedal()` public API
+  - `softPedalFactor: 0.65` config for velocity multiplier
+  - Affects both pointer and QWERTY input
+  - Panic automatically releases soft pedal
+- 24 new unit tests (150 total, up from 126)
+  - Sostenuto pedal: toggle, capture, LED, auto-gen, panic, idempotent
+  - Soft pedal: toggle, LED, velocity attenuation, QWERTY, panic
+
 ## [0.1.2] - 2025-08-25
 
 ### Added

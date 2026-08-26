@@ -24,8 +24,12 @@ Assembled from the strongest features of **ABDMS2000**, **ABDEep**, and **ABDCZ1
 | Auto-generated panic button | All | Styled button to right of keybed with red LED + tooltip |
 | Panic keyboard shortcut | All | Ctrl+Q / Cmd+Q triggers All Notes Off |
 | Sustain pedal (CC#64) | All | Toggle button + Ctrl+Space, onSustainChange callback |
+| Sostenuto pedal (CC#66) | All | Captures active notes only — orange LED + Ctrl+Shift+Space |
+| Soft pedal (CC#67) | All | Attenuates velocity — purple LED + Ctrl+Alt+Space |
 | Aftertouch (channel + polyphonic) | ABDEep | Configurable pressure generation from pointer or software API |
 | Velocity callback | ABDEep | onVelocityChange fires on every note-on with velocity value |
+| Scale filter | All | Lock keys to a musical scale (major, minor, pentatonic, blues, etc.) |
+| Chord Memory | ABDEep | Save/replay note groups — up to 12 slots with visual feedback |
 
 ## Layout Diagram
 
@@ -63,18 +67,18 @@ Assembled from the strongest features of **ABDMS2000**, **ABDEep**, and **ABDCZ1
 │  │  └────────────────────────────────────────────────────────────────┘ │  │
 │  │                                                                      │  │
 │  │  ┌────────────────────────────────────────────────────────────────┐ │  │
-│  │  │                        PANIC + SUSTAIN                         │ │  │
+│  │  │               PANIC + SUSTAIN + SOSTENUTO + SOFT                  │ │  │
 │  │  │                                                                │ │  │
-│  │  │   ┌──────────┐   ┌──────────┐                                  │ │  │
-│  │  │   │ 🔴 LED   │   │ 🟢 LED   │                                  │ │  │
-│  │  │   │  ALL     │   │  SUST    │                                  │ │  │
-│  │  │   │  OFF     │   │          │                                  │ │  │
-│  │  │   │          │   │          │                                  │ │  │
-│  │  │   │ [Ctrl+Q] │   │[Ctrl+SP] │                                  │ │  │
-│  │  │   └──────────┘   └──────────┘                                  │ │  │
-│  │  │   Panic Button    Sustain Button                                │ │  │
-│  │  └────────────────────────────────────────────────────────────────┘ │  │
-│  └──────────────────────────────────────────────────────────────────────┘  │
+│  │  │   ┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────┐   │ │  │
+│  │  │   │ 🔴 LED   │   │ 🟢 LED   │   │ 🟠 LED   │   │ 🟣 LED   │   │ │  │
+│  │  │   │  ALL     │   │  SUST    │   │  SOST    │   │  SOFT    │   │ │  │
+│  │  │   │  OFF     │   │  CC#64   │   │  CC#66   │   │  CC#67   │   │ │  │
+│  │  │   │          │   │          │   │          │   │          │   │ │  │
+│  │  │   │ [Ctrl+Q] │   │[Ctrl+SP] │   │[^Ctrl+SP]│   │[!Ctrl+SP]│   │ │  │
+│  │  │   └──────────┘   └──────────┘   └──────────┘   └──────────┘   │ │  │
+│  │  │   Panic          Sustain        Sostenuto       Soft Pedal     │ │  │
+│  └────────────────────────────────────────────────────────────────────────┘ │  │
+└──────────────────────────────────────────────────────────────────────────────┘
 │                                                                             │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │  INTERACTION MODEL                                                          │
@@ -90,6 +94,14 @@ Assembled from the strongest features of **ABDMS2000**, **ABDEep**, and **ABDCZ1
 │  🔹 Sustain:      Toggle on/off → onSustainChange callback                 │
 │                   Visual: green LED on sustain button                      │
 │                   MIDI: CC#64 emulation                                    │
+│                                                                             │
+│  🔹 Sostenuto:    Captures active notes only → onSostenutoChange callback  │
+│                   Visual: orange LED on sostenuto button                    │
+│                   MIDI: CC#66 emulation                                    │
+│                                                                             │
+│  🔹 Soft Pedal:   Attenuates velocity → onSoftPedalChange callback         │
+│                   Visual: purple LED on soft pedal button                   │
+│                   MIDI: CC#67 emulation                                    │
 │                                                                             │
 │  🔹 Panic:        Release all notes + flash LEDs                           │
 │                   Visual: red strobe on all keys + panic button LED        │
@@ -226,6 +238,8 @@ const kbd = createKeyboard({
   onModWheel: (val) => bridge.modWheel(val),
   onPanic: () => bridge.allNotesOff(),
   onSustainChange: (on) => on ? bridge.sustainOn() : bridge.sustainOff(),
+  onSostenutoChange: (on) => on ? bridge.sostenutoOn() : bridge.sostenutoOff(),
+  onSoftPedalChange: (on) => on ? bridge.softOn() : bridge.softOff(),
   onAftertouch: (note, pressure) => {
     if (note === -1) bridge.channelPressure(pressure);   // channel AT
     else bridge.polyPressure(note, pressure);            // polyphonic AT
@@ -250,19 +264,35 @@ const kbd = createKeyboard({
     enableAftertouch: false,       // generate aftertouch from pointer movement
     aftertouchMode: 'channel',     // 'channel' | 'polyphonic'
     aftertouchSensitivity: 0.5,   // 0..1 — how much Y-movement maps to pressure
+    enableScaleFilter: false,      // lock keys to a musical scale
+    scaleType: 'major',            // major|minor|pentatonic|blues|dorian|...
+    scaleRoot: 0,                  // root note (0=C, 2=D, 4=E, ...)
+    scaleSnapMode: 'block',        // 'block' (skip) | 'snap' (nearest note)
+    enableChordMemory: false,      // chord memory (save/replay note groups)
+    maxChordSlots: 12,             // number of chord slots (1..12)
     getLedColor: null,             // () => '#ff3366' for dynamic color
     getPressureState: null,        // () => { aftertouch, modWheel, pitchBend }
   },
 });
 
 // ── Velocity control ──
-kbd.setLedColor('#ff3366');
-
-// ── Sustain pedal (CC#64 emulation) ──
+kbd.setLedColor('#ff3366');  // ── Sustain pedal (CC#64 emulation) ──
 kbd.setSustain(true);     // activate sustain
 kbd.setSustain(false);    // release sustain
 kbd.toggleSustain();      // toggle
 kbd.getSustain();         // true | false
+
+// ── Sostenuto pedal (CC#66 emulation) ──
+kbd.setSostenuto(true);   // capture active notes
+kbd.setSostenuto(false);  // release captured notes
+kbd.toggleSostenuto();    // toggle
+kbd.getSostenuto();       // true | false
+
+// ── Soft pedal (CC#67 emulation) ──
+kbd.setSoftPedal(true);   // attenuate velocity
+kbd.setSoftPedal(false);  // restore velocity
+kbd.toggleSoftPedal();    // toggle
+kbd.getSoftPedal();       // true | false
 
 // ── Aftertouch (CC#132 / polyphonic) ──
 kbd.setAftertouch(-1, 0.8);    // channel aftertouch (note=-1)
@@ -270,6 +300,22 @@ kbd.setAftertouch(60, 0.5);    // polyphonic aftertouch for note 60
 kbd.releaseAftertouch(-1);      // release channel aftertouch
 kbd.releaseAftertouch(60);      // release polyphonic aftertouch
 kbd.getAftertouch();            // current channel pressure (0..1)
+
+// ── Scale Filter ──
+kbd.setScaleFilter('major', 0);   // C major scale (C D E F G A B)
+kbd.setScaleFilter('minor', 9);   // A minor scale
+kbd.setScaleFilter('pentatonic'); // C pentatonic (default root)
+kbd.getScaleFilter();             // { type, root, snapMode }
+kbd.disableScaleFilter();         // remove scale lock
+
+// ── Chord Memory ──
+kbd.saveChord(0, [60, 64, 67]);   // save C major triad to slot 0
+kbd.saveChord(1);                  // save current active notes to slot 1
+kbd.playChord(0);                  // replay slot 0
+kbd.releaseChord(0);               // release slot 0 notes
+kbd.getChords();                   // [[60,64,67], [62,66,69], null, ...]
+kbd.clearChord(0);                 // clear slot 0
+kbd.clearAllChords();              // clear all slots
 });
 
 // Panic: click the auto-generated button to the right of the keys,
@@ -316,6 +362,18 @@ kbd.destroy();                  // Full cleanup
 │  kbd.getSustain()                    Current state: true | false            │
 │  kbd.toggleSustain()                 Toggle sustain on/off                  │
 │                                                                             │
+│  SOSTENUTO (CC#66)                                                           │
+│  ──────────────────────────────────────────────────────────────────────────  │
+│  kbd.setSostenuto(on)                Capture active notes only              │
+│  kbd.getSostenuto()                  Current state: true | false            │
+│  kbd.toggleSostenuto()               Toggle sostenuto on/off                │
+│                                                                             │
+│  SOFT PEDAL (CC#67)                                                          │
+│  ──────────────────────────────────────────────────────────────────────────  │
+│  kbd.setSoftPedal(on)                Attenuate velocity                     │
+│  kbd.getSoftPedal()                  Current state: true | false            │
+│  kbd.toggleSoftPedal()               Toggle soft pedal on/off               │
+│                                                                             │
 │  AFTERTOUCH                                                                  │
 │  ──────────────────────────────────────────────────────────────────────────  │
 │  kbd.setAftertouch(note, pressure)   note=-1 for channel, N for poly       │
@@ -328,16 +386,36 @@ kbd.destroy();                  // Full cleanup
 │  kbd.setLedColor(hex)                Override LED color globally            │
 │  kbd.destroy()                       Full cleanup + DOM reset               │
 │                                                                             │
+│  SCALE FILTER                                                                │
+│  ──────────────────────────────────────────────────────────────────────────  │
+│  kbd.setScaleFilter(type, root?)     Enable scale lock                     │
+│                                     type: 'major'|'minor'|'pentatonic'|... │
+│                                     root: 0=C, 2=D, 4=E (default: 0)      │
+│  kbd.getScaleFilter()                Returns { type, root, snapMode }      │
+│  kbd.disableScaleFilter()            Remove scale lock                     │
+│                                                                             │
+│  CHORD MEMORY                                                                │
+│  ──────────────────────────────────────────────────────────────────────────  │
+│  kbd.saveChord(slot, notes?)         Save chord to slot (0..maxSlots-1)    │
+│                                     notes: MIDI array or current active    │
+│  kbd.playChord(slot)                 Replay saved chord                    │
+│  kbd.releaseChord(slot)              Release chord notes                   │
+│  kbd.getChords()                     Returns array of saved chords         │
+│  kbd.clearChord(slot)                Clear a chord slot                    │
+│  kbd.clearAllChords()                Clear all chord memory                │
+│                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │  KEYBOARD SHORTCUTS                                                         │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
-│  Ctrl+Q / Cmd+Q            Panic — All Notes Off + flash                   │
-│  Ctrl+Space / Cmd+Space    Toggle Sustain Pedal (CC#64)                    │
-│  Arrow Up                  Shift octave up                                 │
-│  Arrow Down                Shift octave down                               │
+│  Ctrl+Q / Cmd+Q              Panic — All Notes Off + flash                 │
+│  Ctrl+Space / Cmd+Space      Toggle Sustain Pedal (CC#64)                  │
+│  Ctrl+Shift+Space            Toggle Sostenuto Pedal (CC#66)                │
+│  Ctrl+Alt+Space              Toggle Soft Pedal (CC#67)                      │
+│  Arrow Up                    Shift octave up                               │
+│  Arrow Down                  Shift octave down                             │
 │                                                                             │
 │  QWERTY NOTES (when enableQwerty: true)                                    │
 │  ──────────────────────────────────────────────────────────────────────────  │
@@ -371,6 +449,12 @@ kbd.destroy();                  // Full cleanup
 │                                                                             │
 │  onSustainChange(on)               Sustain toggled                         │
 │                                    on: true (sustain on) | false (off)    │
+│                                                                             │
+│  onSostenutoChange(on)             Sostenuto toggled                       │
+│                                    on: true (on) | false (off)            │
+│                                                                             │
+│  onSoftPedalChange(on)             Soft pedal toggled                      │
+│                                    on: true (on) | false (off)            │
 │                                                                             │
 │  onAftertouch(note, pressure)      Aftertouch changed                      │
 │                                    note: -1 (channel) or N (polyphonic)   │
@@ -415,6 +499,24 @@ kbd.destroy();                  // Full cleanup
 │  enableQwerty         true     QWERTY keyboard input                       │
 │  enableTouch          true     Touch support (mobile/tablet)               │
 │                                                                             │
+│  PEDALS                                                                     │
+│  ──────────────────────────────────────────────────────────────────────────  │
+│  enableSostenuto      false    Sostenuto pedal (CC#66) — hold active notes │
+│  enableSoftPedal      false    Soft pedal (CC#67) — attenuate velocity     │
+│  softPedalFactor      0.65     Velocity multiplier when soft pedal on      │
+│                                                                             │
+│  SCALE FILTER                                                                │
+│  ──────────────────────────────────────────────────────────────────────────  │
+│  enableScaleFilter    false    Lock keys to a musical scale                │
+│  scaleType            'major'  major|minor|pentatonic|blues|dorian|etc.   │
+│  scaleRoot            0        Root note (0=C, 2=D, 4=E, ...)            │
+│  scaleSnapMode        'block'  'block' (skip) | 'snap' (nearest note)    │
+│                                                                             │
+│  CHORD MEMORY                                                                │
+│  ──────────────────────────────────────────────────────────────────────────  │
+│  enableChordMemory    false    Enable chord memory feature                 │
+│  maxChordSlots        12       Number of chord slots (1..12)              │
+│                                                                             │
 │  EXTERNAL SOURCES                                                            │
 │  ──────────────────────────────────────────────────────────────────────────  │
 │  getLedColor          null     () => '#ff3366'  Dynamic LED color         │
@@ -432,6 +534,10 @@ kbd.destroy();                  // Full cleanup
 │  Key release         Note Off (0x80)           note                         │
 │  Sustain on          CC#64 (0xB0) value>0      —                           │
 │  Sustain off         CC#64 (0xB0) value=0      —                           │
+│  Sostenuto on        CC#66 (0xB0) value>0      capture active notes       │
+│  Sostenuto off       CC#66 (0xB0) value=0      release captured           │
+│  Soft pedal on       CC#67 (0xB0) value>0      attenuate velocity         │
+│  Soft pedal off      CC#67 (0xB0) value=0      restore velocity           │
 │  Channel AT          Aftertouch (0xD0)         pressure (0..127)           │
 │  Polyphonic AT       Poly AT (0xA0)            note, pressure              │
 │  Pitch bend          Pitch Bend (0xE0)         -1.0..+1.0                 │
@@ -448,6 +554,8 @@ kbd.destroy();                  // Full cleanup
 |---|---|---|
 | **Ctrl+Q / Cmd+Q** | **Panic — All Notes Off + flash** | Always active |
 | **Ctrl+Space / Cmd+Space** | **Toggle Sustain Pedal (CC#64)** | Always active |
+| **Ctrl+Shift+Space** | **Toggle Sostenuto Pedal (CC#66)** | Always active |
+| **Ctrl+Alt+Space** | **Toggle Soft Pedal (CC#67)** | Always active |
 | Arrow Up | Shift octave up | Always active |
 | Arrow Down | Shift octave down | Always active |
 | Z–M (lower row) | Play notes C3–G4 | QWERTY enabled |
@@ -480,6 +588,11 @@ createKeyboard({
     enableAftertouch: true,
     aftertouchMode: 'polyphonic',
     aftertouchSensitivity: 0.6,
+    enableScaleFilter: true,
+    scaleType: 'major',
+    scaleSnapMode: 'snap',
+    enableChordMemory: true,
+    maxChordSlots: 12,
   },
   getLedColor: () => arpActive ? '#ff3366' : seqActive ? '#9933ff' : 'var(--color-accent)',
   getPressureState: () => ({ aftertouch: at, modWheel: mw, pitchBend: pb }),
@@ -489,6 +602,8 @@ createKeyboard({
   },
   onVelocityChange: (note, vel) => synth.updateVelocity(note, vel),
   onSustainChange: (on) => synth.setSustain(on),
+  onSostenutoChange: (on) => synth.setSostenuto(on),
+  onSoftPedalChange: (on) => synth.setSoftPedal(on),
 });
 ```
 
@@ -523,7 +638,7 @@ All colors and fonts are customizable via CSS custom properties:
 ```bash
 cd ABDKeyboard
 npm install
-npm test  # 88 tests, vitest + jsdom
+npm test  # 182 tests, vitest + jsdom
 ```
 
 ## License

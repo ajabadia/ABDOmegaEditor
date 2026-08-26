@@ -29,13 +29,17 @@ const QWERTY_MAP = {
   'q': 12, '2': 13, 'w': 14, '3': 15, 'e': 16, 'r': 17, '5': 18, 't': 19,
   '6': 20, 'y': 21, '7': 22, 'u': 23, 'i': 24, '9': 25, 'o': 26, '0': 27,
   'p': 28, '[': 29, '=': 30, ']': 31
-};
+};const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
 const OCTAVE_PATTERN = [
   { offset: 0, sharp: 1 }, { offset: 2, sharp: 3 }, { offset: 4, sharp: null },
-  { offset: 5, sharp: 6 }, { offset: 7, sharp: 8 }, { offset: 9, sharp: 10 },
-  { offset: 11, sharp: null }
+  { offset: 5, sharp: 6 }, { offset: 7, sharp: 8 }, { offset: 9, sharp: 10 }, { offset: 11, sharp: null }
 ];
+
+/** Convert MIDI note number to readable name (e.g., 60 → 'C4') */
+function midiToName(midi) {
+  return NOTE_NAMES[midi % 12] + Math.floor(midi / 12 - 1);
+}
 
 // ── Velocity curves (from ABDEep) ──
 function applyVelocityCurve(raw, curve) {
@@ -100,6 +104,7 @@ export function createKeyboard(deps = {}) {
     onSustainChange = null,
     onAftertouch = null,
     onVelocityChange = null,
+    onCollapseChange = null,
     sustainBtnId = null,
     config = {}
   } = deps;
@@ -121,6 +126,18 @@ export function createKeyboard(deps = {}) {
     enableAftertouch: config.enableAftertouch ?? false,  // aftertouch generation from pointer
     aftertouchMode: config.aftertouchMode ?? 'channel',  // 'channel' | 'polyphonic'
     aftertouchSensitivity: config.aftertouchSensitivity ?? 0.5,  // 0..1
+    enableAccessibility: config.enableAccessibility ?? false,  // ARIA roles, keyboard nav, live regions
+    enableCollapse: config.enableCollapse ?? false,  // chevron button to collapse/expand keyboard
+    enableResizeObserver: config.enableResizeObserver ?? true,  // auto re-render on container resize
+    enableSostenuto: config.enableSostenuto ?? false,  // CC#66 — sostenuto pedal
+    enableSoftPedal: config.enableSoftPedal ?? false,  // CC#67 — soft pedal
+    softPedalFactor: config.softPedalFactor ?? 0.65,  // velocity multiplier
+    enableScaleFilter: config.enableScaleFilter ?? false,
+    scaleType: config.scaleType ?? 'major',
+    scaleRoot: config.scaleRoot ?? 60,
+    scaleSnapMode: config.scaleSnapMode ?? 'block',
+    enableChordMemory: config.enableChordMemory ?? false,
+    maxChordSlots: config.maxChordSlots ?? 12,
     getLedColor: config.getLedColor ?? null,  // (bridge) => color string
     getPressureState: config.getPressureState ?? null, // () => { aftertouch, modWheel, pitchBend }
   };
@@ -133,6 +150,14 @@ export function createKeyboard(deps = {}) {
   const qwertyActive = new Set();
   let destroyed = false;
   let _pressureRafId = null;
+  let _focusedKeyIndex = -1;  // for keyboard navigation within keybed
+  let _liveRegion = null;     // for screen reader announcements
+  let _collapsed = false;     // keyboard collapse state
+  let _resizeObserver = null;
+  let sostenutoOn = false;
+  const _sostenutoCaptured = new Set();
+  let softPedalOn = false;
+  const _chords = new Array(cfg.maxChordSlots).fill(null); // chord memory slots
 
   const container = document.getElementById(containerId);
   if (!container) {
@@ -140,13 +165,23 @@ export function createKeyboard(deps = {}) {
     return { destroy() {}, panic() {}, sweep() {}, getOctave: () => 0 };
   }
 
+  let _keysWrapper = null;
+
   // ══════════════════════════════════════════════════════════════
   //  KEYBED RENDERING
   // ══════════════════════════════════════════════════════════════
 
   function renderKeybed() {
-    container.innerHTML = '';
     container.classList.add('kbd-piano-keys');
+    if (!_keysWrapper) {
+      _keysWrapper = container.querySelector('.kbd-keys-wrapper');
+      if (!_keysWrapper) {
+        _keysWrapper = document.createElement('div');
+        _keysWrapper.className = 'kbd-keys-wrapper';
+        container.prepend(_keysWrapper);
+      }
+    }
+    _keysWrapper.innerHTML = '';
 
     for (let oct = 0; oct < cfg.numOctaves; oct++) {
       const base = cfg.startNote + oct * 12;
@@ -157,11 +192,11 @@ export function createKeyboard(deps = {}) {
           const blackKey = createKeyElement(base + p.sharp, true);
           whiteKey.appendChild(blackKey);
         }
-        container.appendChild(whiteKey);
+        _keysWrapper.appendChild(whiteKey);
       }
     }
     // High C
-    container.appendChild(createKeyElement(cfg.startNote + cfg.numOctaves * 12, false));
+    _keysWrapper.appendChild(createKeyElement(cfg.startNote + cfg.numOctaves * 12, false));
   }
 
   function createKeyElement(midiNote, isBlack) {
@@ -172,6 +207,9 @@ export function createKeyboard(deps = {}) {
     // Apply visual texture
     if (cfg.enableIvoryTexture && !isBlack) applyIvoryTexture(key, midiNote);
     if (cfg.enableVintageWear) applyVintageWear(key, midiNote, isBlack);
+
+    // Apply ARIA attributes when accessibility is enabled
+    if (cfg.enableAccessibility) applyKeyAria(key, midiNote);
 
     const playNote = (e) => {
       if (e) { e.preventDefault(); e.stopPropagation(); }
@@ -191,6 +229,12 @@ export function createKeyboard(deps = {}) {
       activeKeys.set(midiNote, { actualNote, element: key, velocity, startPointerY: e.clientY ?? null });
       key.classList.add('active');
       key.style.setProperty('--kbd-velocity', velocity.toFixed(3));
+
+      // Accessibility: update ARIA state and announce
+      if (cfg.enableAccessibility) {
+        updateKeyAriaPressed(midiNote, true);
+        announce(`${midiToName(actualNote)} on, velocity ${Math.round(velocity * 100)}%`);
+      }
 
       // Resolve LED color (ABDEep: different color per arp/seq/chord mode)
       const color = (cfg.getLedColor) ? cfg.getLedColor() : (cfg.ledColor || 'var(--color-accent)');
@@ -222,6 +266,12 @@ export function createKeyboard(deps = {}) {
         element.classList.remove('active');
         element.style.removeProperty('--kbd-velocity');
       }
+
+      // Accessibility: update ARIA state
+      if (cfg.enableAccessibility) {
+        updateKeyAriaPressed(midiNote, false);
+      }
+
       onNoteOff(actualNote);
 
       // Pressure release animation (ABDEep)
@@ -279,6 +329,133 @@ export function createKeyboard(deps = {}) {
   }
 
   // ══════════════════════════════════════════════════════════════
+  //  ACCESSIBILITY (ARIA + keyboard navigation + live regions)
+  // ══════════════════════════════════════════════════════════════
+
+  /** Announce a message to screen readers via live region */
+  function announce(message) {
+    if (!cfg.enableAccessibility || !_liveRegion) return;
+    _liveRegion.textContent = message;
+  }
+
+  /** Get all focusable key elements in DOM order */
+  function getAllKeyElements() {
+    return Array.from(container.querySelectorAll('.kbd-white-key, .kbd-black-key'));
+  }
+
+  /** Apply ARIA attributes to a key element */
+  function applyKeyAria(keyEl, midiNote) {
+    const noteName = midiToName(midiNote);
+    keyEl.setAttribute('role', 'button');
+    keyEl.setAttribute('tabindex', '-1');  // not in tab order by default
+    keyEl.setAttribute('aria-label', `Note ${noteName} (MIDI ${midiNote})`);
+    keyEl.setAttribute('aria-pressed', 'false');
+  }
+
+  /** Update aria-pressed state for a key */
+  function updateKeyAriaPressed(midiNote, pressed) {
+    const keyEl = container.querySelector(`[data-note="${midiNote}"]`);
+    if (keyEl) keyEl.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+  }
+
+  /** Focus a key by index for keyboard navigation */
+  function focusKey(index) {
+    const keys = getAllKeyElements();
+    if (keys.length === 0) return;
+    // Remove tabindex from previously focused key
+    if (_focusedKeyIndex >= 0 && _focusedKeyIndex < keys.length) {
+      keys[_focusedKeyIndex].setAttribute('tabindex', '-1');
+    }
+    _focusedKeyIndex = Math.max(0, Math.min(keys.length - 1, index));
+    keys[_focusedKeyIndex].setAttribute('tabindex', '0');
+    keys[_focusedKeyIndex].focus();
+  }
+
+  /** Setup live region for screen reader announcements */
+  function setupAccessibility() {
+    if (!cfg.enableAccessibility) return;
+
+    // Create live region (offscreen, aria-live='polite')
+    _liveRegion = document.createElement('div');
+    _liveRegion.setAttribute('role', 'status');
+    _liveRegion.setAttribute('aria-live', 'polite');
+    _liveRegion.setAttribute('aria-atomic', 'true');
+    _liveRegion.className = 'kbd-sr-only';
+    container.appendChild(_liveRegion);
+
+    // Set ARIA attributes on container
+    container.setAttribute('role', 'group');
+    container.setAttribute('aria-label', 'Virtual piano keyboard');
+
+    // Apply ARIA to all keys
+    getAllKeyElements().forEach((keyEl) => {
+      const midiNote = parseInt(keyEl.dataset.note, 10);
+      applyKeyAria(keyEl, midiNote);
+    });
+
+    // Make first key focusable for Tab entry
+    const keys = getAllKeyElements();
+    if (keys.length > 0) {
+      keys[0].setAttribute('tabindex', '0');
+      _focusedKeyIndex = 0;
+    }
+
+    // Add keyboard navigation event listener
+    container.addEventListener('keydown', handleA11yKeyNav);
+  }
+
+  /** Handle keyboard navigation within the keybed */
+  function handleA11yKeyNav(e) {
+    if (!cfg.enableAccessibility) return;
+    const keys = getAllKeyElements();
+    if (keys.length === 0) return;
+
+    switch (e.key) {
+      case 'ArrowRight':
+        e.preventDefault();
+        focusKey(_focusedKeyIndex + 1);
+        announceNote(keys[_focusedKeyIndex]);
+        break;
+      case 'ArrowLeft':
+        e.preventDefault();
+        focusKey(_focusedKeyIndex - 1);
+        announceNote(keys[_focusedKeyIndex]);
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        // Move to black key above (skip roughly 7 keys)
+        focusKey(Math.max(0, _focusedKeyIndex - 7));
+        announceNote(keys[_focusedKeyIndex]);
+        break;
+      case 'ArrowDown':
+        e.preventDefault();
+        // Move to white key below
+        focusKey(Math.min(keys.length - 1, _focusedKeyIndex + 7));
+        announceNote(keys[_focusedKeyIndex]);
+        break;
+      case 'Home':
+        e.preventDefault();
+        focusKey(0);
+        announceNote(keys[0]);
+        break;
+      case 'End':
+        e.preventDefault();
+        focusKey(keys.length - 1);
+        announceNote(keys[keys.length - 1]);
+        break;
+    }
+  }
+
+  /** Announce the focused note */
+  function announceNote(keyEl) {
+    if (!keyEl) return;
+    const midiNote = parseInt(keyEl.dataset.note, 10);
+    const noteName = midiToName(midiNote);
+    const isActive = activeKeys.has(midiNote);
+    announce(`${noteName}, MIDI ${midiNote}${isActive ? ', playing' : ''}`);
+  }
+
+  // ══════════════════════════════════════════════════════════════
   //  OCTAVE SHIFT + LEDS
   // ══════════════════════════════════════════════════════════════
 
@@ -301,7 +478,9 @@ export function createKeyboard(deps = {}) {
     const maxSemitones = cfg.maxOctaveShift * 12;
     octaveShift = Math.max(-maxSemitones, Math.min(maxSemitones, octaveShift + delta * 12));
     updateOctaveLEDs();
-    if (onOctaveChange) onOctaveChange(octaveShift / 12);
+    const oct = octaveShift / 12;
+    if (cfg.enableAccessibility) announce(`Octave shift ${oct > 0 ? '+' : ''}${oct}`);
+    if (onOctaveChange) onOctaveChange(oct);
   }
 
   // ══════════════════════════════════════════════════════════════
@@ -348,6 +527,10 @@ export function createKeyboard(deps = {}) {
         }
         activeKeys.set(midiNote, { actualNote, element: keyEl || null, velocity: cfg.fixedVelocity });
         onNoteOn(actualNote, cfg.fixedVelocity);
+        if (cfg.enableAccessibility) {
+          updateKeyAriaPressed(midiNote, true);
+          announce(`${midiToName(actualNote)} on, velocity ${Math.round(cfg.fixedVelocity * 100)}%`);
+        }
       }
     }
   }
@@ -367,6 +550,7 @@ export function createKeyboard(deps = {}) {
           element.style.removeProperty('--kbd-velocity');
         }
         activeKeys.delete(midiNote);
+        if (cfg.enableAccessibility) updateKeyAriaPressed(midiNote, false);
         onNoteOff(actualNote);
       }
     }
@@ -389,6 +573,7 @@ export function createKeyboard(deps = {}) {
       <label class="kbd-wheel-label">${label}</label>
       <div class="kbd-wheel-sprite" style="position:relative;width:18px;height:76px;background-image:url('assets/bender.png');background-position:0px ${isPitch ? -3800 : 0}px;background-repeat:no-repeat;border-radius:3px;box-shadow:inset 0 2px 4px rgba(0,0,0,0.8);">
         <input type="range" class="kbd-wheel-slider" min="${minVal}" max="${maxVal}" value="0" step="1"
+          aria-label="${isPitch ? 'Pitch Bend Wheel' : 'Modulation Wheel'}"
           style="position:absolute;top:0;left:0;width:18px;height:76px;writing-mode:vertical-lr;direction:rtl;margin:0;cursor:pointer;opacity:0;z-index:5;">
       </div>
       <div class="kbd-wheel-value">${formatWheelValue(0, isPitch)}</div>
@@ -507,7 +692,7 @@ export function createKeyboard(deps = {}) {
    * @param {number} speedMs - ms between each key
    */
   function sweep(direction = 'right', speedMs = 12) {
-    const keys = Array.from(container.querySelectorAll('.kbd-white-key, .kbd-black-key'));
+    const keys = Array.from((_keysWrapper || container).querySelectorAll('.kbd-white-key, .kbd-black-key'));
     if (!keys.length) return;
 
     const ordered = direction === 'left' ? [...keys].reverse() : keys;
@@ -522,7 +707,7 @@ export function createKeyboard(deps = {}) {
 
   /** Panic: triple strobe across all keys */
   function panicFlash() {
-    const keys = Array.from(container.querySelectorAll('.kbd-white-key, .kbd-black-key'));
+    const keys = Array.from((_keysWrapper || container).querySelectorAll('.kbd-white-key, .kbd-black-key'));
     const panicLed = container.querySelector('.kbd-panic-led');
     if (!keys.length && !panicLed) return;
 
@@ -565,11 +750,134 @@ export function createKeyboard(deps = {}) {
     if (val === sustainOn) return;
     sustainOn = val;
     updateSustainVisuals();
+    if (cfg.enableAccessibility) announce(`Sustain ${sustainOn ? 'on' : 'off'}`);
     if (onSustainChange) onSustainChange(sustainOn);
   }
 
   function toggleSustain() {
     setSustain(!sustainOn);
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  //  COLLAPSE / EXPAND
+  // ══════════════════════════════════════════════════════════════
+
+  function setCollapsed(collapsed) {
+    if (!cfg.enableCollapse) return;
+    const val = !!collapsed;
+    if (val === _collapsed) return;
+    _collapsed = val;
+
+    const chevron = container.querySelector('.kbd-collapse-btn');
+    if (chevron) {
+      const label = chevron.querySelector('.kbd-collapse-chevron');
+      if (label) label.textContent = _collapsed ? '▴' : '▾';
+      chevron.setAttribute('aria-label', _collapsed ? 'Expand keyboard' : 'Collapse keyboard');
+    }
+
+    if (_collapsed) {
+      container.classList.add('kbd-collapsed');
+      if (_keysWrapper) _keysWrapper.classList.add('kbd-collapsed');
+    } else {
+      container.classList.remove('kbd-collapsed');
+      if (_keysWrapper) _keysWrapper.classList.remove('kbd-collapsed');
+    }
+
+    if (cfg.enableAccessibility) announce(_collapsed ? 'Keyboard collapsed' : 'Keyboard expanded');
+    if (onCollapseChange) onCollapseChange(_collapsed);
+  }
+
+  function toggleCollapse() {
+    setCollapsed(!_collapsed);
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  //  CHORD MEMORY — save and replay note groups
+  // ══════════════════════════════════════════════════════════════
+
+  /** Internal: highlight a key visually (used by chord play and public API) */
+  function _highlightKey(midiNote, velocity) {
+    const keyEl = container.querySelector(`[data-note="${midiNote}"]`);
+    if (keyEl) {
+      keyEl.classList.add('active');
+      keyEl.style.setProperty('--kbd-led-color', cfg.ledColor || 'var(--color-accent)');
+      if (velocity != null) keyEl.style.setProperty('--kbd-velocity', velocity.toFixed(3));
+    }
+  }
+
+  /** Internal: release a key visually and clean up active state */
+  function _releaseKey(midiNote) {
+    // First try to find in activeKeys map
+    for (const [baseNote, { actualNote, element }] of activeKeys) {
+      if (actualNote === midiNote) {
+        if (element) element.classList.remove('active');
+        activeKeys.delete(baseNote);
+        return;
+      }
+    }
+    // If not in activeKeys (e.g. chord play), find by DOM data-note
+    const keyEl = container.querySelector(`[data-note="${midiNote}"]`);
+    if (keyEl) keyEl.classList.remove('active');
+  }
+
+  /** Save a chord to a slot (0-indexed). If notes not provided, saves currently active notes. */
+  function saveChord(slot, notes) {
+    if (!cfg.enableChordMemory) return;
+    const s = Math.max(0, Math.min(_chords.length - 1, slot));
+    if (notes && Array.isArray(notes)) {
+      _chords[s] = notes.slice().sort((a, b) => a - b);
+    } else {
+      _chords[s] = Array.from(activeKeys.values()).map(n => n.actualNote).sort((a, b) => a - b);
+    }
+    if (cfg.enableAccessibility) announce(`Chord ${s + 1} saved: ${_chords[s].length} notes`);
+  }
+
+  /** Replay a chord from a slot. Calls onNoteOn for each saved note. */
+  function playChord(slot) {
+    if (!cfg.enableChordMemory) return;
+    const s = Math.max(0, Math.min(_chords.length - 1, slot));
+    const notes = _chords[s];
+    if (!notes || notes.length === 0) return;
+    for (const note of notes) {
+      const vel = cfg.fixedVelocity;
+      _highlightKey(note, vel);
+      onNoteOn(note, vel);
+      if (onVelocityChange) onVelocityChange(note, vel);
+    }
+    if (cfg.enableAccessibility) announce(`Chord ${s + 1} played: ${notes.length} notes`);
+  }
+
+  /** Release all notes in a chord slot. Calls onNoteOff for each saved note. */
+  function releaseChord(slot) {
+    if (!cfg.enableChordMemory) return;
+    const s = Math.max(0, Math.min(_chords.length - 1, slot));
+    const notes = _chords[s];
+    if (!notes) return;
+    for (const note of notes) {
+      _releaseKey(note);
+      onNoteOff(note);
+    }
+    if (cfg.enableAccessibility) announce(`Chord ${s + 1} released`);
+  }
+
+  /** Get all saved chords (array of arrays, or null for empty slots). */
+  function getChords() {
+    return _chords.map(chord => chord ? [...chord] : null);
+  }
+
+  /** Clear a specific chord slot. */
+  function clearChord(slot) {
+    if (!cfg.enableChordMemory) return;
+    const s = Math.max(0, Math.min(_chords.length - 1, slot));
+    _chords[s] = null;
+    if (cfg.enableAccessibility) announce(`Chord ${s + 1} cleared`);
+  }
+
+  /** Clear all chord memory slots. */
+  function clearAllChords() {
+    if (!cfg.enableChordMemory) return;
+    for (let i = 0; i < _chords.length; i++) _chords[i] = null;
+    if (cfg.enableAccessibility) announce('All chords cleared');
   }
 
   // ══════════════════════════════════════════════════════════════
@@ -595,6 +903,7 @@ export function createKeyboard(deps = {}) {
     }
     activeKeys.clear();
     qwertyActive.clear();
+    if (cfg.enableAccessibility) announce('Panic: All notes off');
     panicFlash();
     if (onPanic) onPanic();
   }
@@ -610,8 +919,14 @@ export function createKeyboard(deps = {}) {
 
     const octUp = document.getElementById(octUpId);
     const octDown = document.getElementById(octDownId);
-    if (octUp) octUp.addEventListener('click', () => shiftOctave(1));
-    if (octDown) octDown.addEventListener('click', () => shiftOctave(-1));
+    if (octUp) {
+      octUp.addEventListener('click', () => shiftOctave(1));
+      if (cfg.enableAccessibility) octUp.setAttribute('aria-label', 'Shift octave up');
+    }
+    if (octDown) {
+      octDown.addEventListener('click', () => shiftOctave(-1));
+      if (cfg.enableAccessibility) octDown.setAttribute('aria-label', 'Shift octave down');
+    }
 
     if (panicBtnId) {
       const panicBtn = document.getElementById(panicBtnId);
@@ -653,6 +968,22 @@ export function createKeyboard(deps = {}) {
       container.appendChild(autoSustain);
     }
 
+    // Auto-generate collapse/expand chevron button (must be created before setCollapsed)
+    if (cfg.enableCollapse) {
+      const chevron = document.createElement('div');
+      chevron.className = 'kbd-collapse-btn';
+      chevron.setAttribute('role', 'button');
+      chevron.setAttribute('tabindex', '0');
+      chevron.setAttribute('aria-label', 'Collapse keyboard');
+      chevron.setAttribute('title', 'Collapse/Expand keyboard');
+      chevron.innerHTML = `<span class="kbd-collapse-chevron">▾</span>`;
+      chevron.addEventListener('click', toggleCollapse);
+      chevron.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleCollapse(); }
+      });
+      container.appendChild(chevron);
+    }
+
     if (cfg.enableQwerty) {
       window.addEventListener('keydown', handleKeydown);
       window.addEventListener('keyup', handleKeyup);
@@ -663,6 +994,29 @@ export function createKeyboard(deps = {}) {
     // Start pressure display loop if enabled
     if (cfg.enablePressureDisplay && (cfg.getPressureState || cfg.enableAftertouch)) {
       _pressureRafId = requestAnimationFrame(updatePressureDisplay);
+    }
+
+    // Setup accessibility features
+    setupAccessibility();
+
+    // Setup ResizeObserver for auto re-render (with dimension guard to prevent loops)
+    let _lastWidth = 0;
+    let _lastHeight = 0;
+    if (cfg.enableResizeObserver && typeof ResizeObserver !== 'undefined') {
+      _resizeObserver = new ResizeObserver((entries) => {
+        if (destroyed || _collapsed) return;
+        for (const entry of entries) {
+          const { width, height } = entry.contentRect;
+          if (Math.abs(width - _lastWidth) < 3 && Math.abs(height - _lastHeight) < 3) {
+            continue;
+          }
+          _lastWidth = width;
+          _lastHeight = height;
+          renderKeybed();
+          if (cfg.enableAccessibility) setupAccessibility();
+        }
+      });
+      _resizeObserver.observe(container);
     }
   }
 
@@ -675,29 +1029,31 @@ export function createKeyboard(deps = {}) {
     setOctave: (oct) => {
       octaveShift = Math.max(-cfg.maxOctaveShift * 12, Math.min(cfg.maxOctaveShift * 12, oct * 12));
       updateOctaveLEDs();
+      if (cfg.enableAccessibility) announce(`Octave shift ${oct > 0 ? '+' : ''}${oct}`);
       if (onOctaveChange) onOctaveChange(oct);
     },
     releaseNote: (midiNote) => {
-      for (const [baseNote, { actualNote, element }] of activeKeys) {
-        if (actualNote === midiNote) {
-          if (element) element.classList.remove('active');
-          activeKeys.delete(baseNote);
-          onNoteOff(actualNote);
-          break;
-        }
-      }
+      _releaseKey(midiNote);
+      onNoteOff(midiNote);
     },
     highlightNote: (midiNote, velocity) => {
-      const keyEl = container.querySelector(`[data-note="${midiNote}"]`);
-      if (keyEl) {
-        keyEl.classList.add('active');
-        keyEl.style.setProperty('--kbd-led-color', cfg.ledColor || 'var(--color-accent)');
-        if (velocity != null) keyEl.style.setProperty('--kbd-velocity', velocity.toFixed(3));
-      }
+      _highlightKey(midiNote, velocity);
     },
     setSustain,
     getSustain: () => sustainOn,
     toggleSustain,
+    // Collapse API
+    collapse: () => setCollapsed(true),
+    expand: () => setCollapsed(false),
+    toggleCollapse,
+    isCollapsed: () => _collapsed,
+    // Chord Memory API
+    saveChord,
+    playChord,
+    releaseChord,
+    getChords,
+    clearChord,
+    clearAllChords,
     // Aftertouch API
     setAftertouch: (note, pressure) => {
       const p = Math.max(0, Math.min(1, pressure));
@@ -731,9 +1087,16 @@ export function createKeyboard(deps = {}) {
     destroy: () => {
       destroyed = true;
       if (_pressureRafId) cancelAnimationFrame(_pressureRafId);
+      if (_resizeObserver) {
+        _resizeObserver.disconnect();
+        _resizeObserver = null;
+      }
       if (cfg.enableQwerty) {
         window.removeEventListener('keydown', handleKeydown);
         window.removeEventListener('keyup', handleKeyup);
+      }
+      if (cfg.enableAccessibility) {
+        container.removeEventListener('keydown', handleA11yKeyNav);
       }
       container.innerHTML = '';
       activeKeys.clear();

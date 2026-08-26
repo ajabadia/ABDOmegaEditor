@@ -20,7 +20,7 @@
 - [x] Port LED color by mode (getLedColor callback)
 - [x] Implement aftertouch generation (channel + polyphonic modes)
 - [x] Implement velocity callback (onVelocityChange)
-- [ ] Port chord memory (ABDEep feature)
+- [x] Chord Memory — save/replay note groups with visual feedback (12 slots)
 - [ ] Test with ABDEep bridge events
 - [ ] Update HANDOFF.md
 
@@ -49,7 +49,29 @@
 - [x] Sustain pedal tests (11 tests: toggle, LED, auto-gen, panic release)
 - [x] Velocity tests (6 tests: callback, fixedVelocity, CSS, curves, per-note)
 - [x] Aftertouch tests (13 tests: channel, polyphonic, release, clamping, pointer, panic)
-- [ ] Accessibility (ARIA labels, keyboard navigation for screen readers)
+- [x] Sostenuto pedal (CC#66) — captures active notes only, auto-generated button with orange LED
+- [x] Sostenuto keyboard shortcut — Ctrl+Shift+Space toggles sostenuto
+- [x] Sostenuto public API — setSostenuto, getSostenuto, toggleSostenuto, onSostenutoChange
+- [x] Soft pedal (CC#67) — attenuates velocity, auto-generated button with purple LED
+- [x] Soft pedal keyboard shortcut — Ctrl+Alt+Space toggles soft pedal
+- [x] Soft pedal public API — setSoftPedal, getSoftPedal, toggleSoftPedal, onSoftPedalChange
+- [x] Accessibility (ARIA labels, keyboard navigation for screen readers)
+- [x] Collapse/Expand button — chevron to collapse keyboard downward, enableCollapse config
+- [x] ResizeObserver — auto re-render keybed when container size changes
+- [x] Sostenuto pedal tests (12 tests: toggle, capture, LED, auto-gen, panic, idempotent)
+- [x] Soft pedal tests (12 tests: toggle, LED, velocity attenuation, QWERTY, panic)
+- [x] Accessibility tests (19 tests: ARIA, live regions, keyboard nav, wheel labels)
+- [x] Collapse tests (14 tests: auto-gen, expand/collapse, click/keyboard, chevron, aria)
+- [x] ResizeObserver tests (5 tests: creates, disabled, disconnects, re-render, safe after destroy)
+- [x] Scale filter — lock keys to a musical scale (major, minor, pentatonic, blues, dorian, etc.)
+- [x] Scale filter config — enableScaleFilter, scaleType, scaleRoot, scaleSnapMode
+- [x] Scale filter public API — setScaleFilter, getScaleFilter, disableScaleFilter
+- [x] Scale filter visuals — dimming of keys outside the scale
+- [x] Scale filter tests (19 tests: enable/disable, block/snap modes, scales, root, QWERTY, visuals)
+- [x] Chord Memory — save/replay note groups with visual feedback
+- [x] Chord Memory config — enableChordMemory, maxChordSlots
+- [x] Chord Memory API — saveChord, playChord, releaseChord, getChords, clearChord, clearAllChords
+- [x] Chord Memory tests (13 tests: save, play, release, clear, slots, API, disabled mode)
 - [ ] Animation performance audit (will-change, compositor layers)
 - [ ] Multi-touch edge cases (simultaneous keys on same octave)
 - [ ] README screenshots / GIF demos

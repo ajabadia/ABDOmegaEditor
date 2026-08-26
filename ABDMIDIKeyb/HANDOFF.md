@@ -25,6 +25,28 @@ Extracted the unified keyboard component from ABDMS2000 into a standalone shared
 - **Panic releases sustain** automatically
 - Pass `sustainBtnId` to bind to an external DOM element
 
+### New: Sostenuto Pedal (CC#66)
+
+- **Auto-generated sostenuto button** renders next to sustain (orange LED when active)
+- **Ctrl+Shift+Space** keyboard shortcut toggles sostenuto
+- **`onSostenutoChange(on)`** callback notifies parent app (on/off)
+- **`setSostenuto(bool)`** / **`getSostenuto()`** / **`toggleSostenuto()`** public API
+- Captures all currently active notes when engaged — only those notes are sustained
+- Notes pressed AFTER the pedal is engaged are NOT captured
+- **Panic releases sostenuto** automatically
+- Pass `sostenutoBtnId` to bind to an external DOM element
+
+### New: Soft Pedal (CC#67)
+
+- **Auto-generated soft pedal button** renders next to sostenuto (purple LED when active)
+- **Ctrl+Alt+Space** keyboard shortcut toggles soft pedal
+- **`onSoftPedalChange(on)`** callback notifies parent app (on/off)
+- **`setSoftPedal(bool)`** / **`getSoftPedal()`** / **`toggleSoftPedal()`** public API
+- Attenuates velocity when active: `velocity *= softPedalFactor` (default: 0.65)
+- Affects both pointer and QWERTY input
+- **Panic releases soft pedal** automatically
+- Pass `softPedalBtnId` to bind to an external DOM element
+
 ### New: Velocity Control
 
 - **`onVelocityChange(note, velocity)`** callback fires on every note-on with the computed velocity
@@ -43,6 +65,33 @@ Extracted the unified keyboard component from ABDMS2000 into a standalone shared
 - **`releaseAftertouch(note)`** — release aftertouch (pressure=0)
 - **`getAftertouch()`** — returns current channel aftertouch (0..1)
 - Integrates with **`enablePressureDisplay`** for visual feedback on held keys
+
+### New: Scale Filter
+
+- **`enableScaleFilter: true`** (config) — locks keys to a musical scale
+- **`scaleType`** — `'major'` | `'minor'` | `'pentatonic'` | `'blues'` | `'dorian'` | `'phrygian'` | `'lydian'` | `'mixolydian'` | `'minor_pentatonic'` | `'whole_tone'` | `'chromatic'`
+- **`scaleRoot`** — root note (0=C, 2=D, 4=E, 5=F, 7=G, 9=A, 11=B)
+- **`scaleSnapMode: 'block'|'snap'`** — `'block'` (skip notes outside scale) or `'snap'` (snap to nearest in-scale note)
+- **`setScaleFilter(type, root?)`** — enable scale filter programmatically
+- **`getScaleFilter()`** — returns `{ type, root, snapMode, enabled }`
+- **`disableScaleFilter()`** — remove scale lock, restore all keys
+- Keys outside the scale are visually dimmed (CSS class `.kbd-key-outside-scale`)
+- Works with both pointer/touch and QWERTY input
+- QWERTY notes that fall outside the scale are blocked in `'block'` mode, or snapped to nearest in-scale note in `'snap'` mode
+
+### New: Chord Memory (from ABDEep)
+
+- **`enableChordMemory: true`** (config) — enables chord memory feature
+- **`maxChordSlots: 12`** — number of available chord slots (1..12)
+- **`saveChord(slot, notes?)`** — save notes to a slot; if notes not provided, saves currently active notes
+- **`playChord(slot)`** — replay saved notes from a slot (calls `onNoteOn` for each)
+- **`releaseChord(slot)`** — release all notes in a slot (calls `onNoteOff` for each)
+- **`getChords()`** — returns array of saved chord arrays (or null for empty slots)
+- **`clearChord(slot)`** — clear a specific slot
+- **`clearAllChords()`** — clear all slots
+- Notes are saved sorted by MIDI number for consistency
+- Visual feedback: keys show `.kbd-chord-saved` (amber) and `.kbd-chord-playing` (green) CSS classes
+- Works with both pointer/touch and QWERTY input
 
 ## Architecture
 
@@ -67,8 +116,10 @@ ABDKeyboard/
 6. **Auto-generated panic button** — When no `panicBtnId` is provided, a styled button is rendered automatically inside the keybed container. Pass `panicBtnId` to bind to an external element instead.
 7. **Ctrl+Q shortcut** — Checked before the `ctrlKey` guard in `handleKeydown`, so it works regardless of `enableQwerty`.
 8. **Sustain pedal toggle** — Auto-generated next to panic button. `Ctrl+Space` shortcut. `onSustainChange` callback for parent app integration.
-9. **Velocity as data** — `onVelocityChange` fires per note-on. `yPosition` source calculates from touch. Curves applied to raw value.
-10. **Aftertouch generation** — `enableAftertouch` + `aftertouchMode` config. Pointer Y-movement on held keys generates pressure. `onAftertouch` callback sends channel (note=-1) or polyphonic (note=N) values. Software can also inject via `setAftertouch()`.
+9. **Sostenuto pedal (CC#66)** — Captures active notes when engaged. `Ctrl+Shift+Space` shortcut. Only notes physically held at engagement time are sustained.
+10. **Soft pedal (CC#67)** — Attenuates velocity via `softPedalFactor`. `Ctrl+Alt+Space` shortcut. Affects both pointer and QWERTY input.
+11. **Velocity as data** — `onVelocityChange` fires per note-on. `yPosition` source calculates from touch. Curves applied to raw value.
+12. **Aftertouch generation** — `enableAftertouch` + `aftertouchMode` config. Pointer Y-movement on held keys generates pressure. `onAftertouch` callback sends channel (note=-1) or polyphonic (note=N) values. Software can also inject via `setAftertouch()`.
 
 ## Integration Status
 
@@ -90,6 +141,8 @@ const kbd = createKeyboard({
   onNoteOff: (n) => bridge.noteOff(n),
   onPanic: () => bridge.allNotesOff(),
   onSustainChange: (on) => bridge.sustain(on),
+  onSostenutoChange: (on) => bridge.sostenuto(on),
+  onSoftPedalChange: (on) => bridge.softPedal(on),
   onAftertouch: (note, p) => {
     if (note === -1) bridge.channelPressure(p);
     else bridge.polyPressure(note, p);
@@ -117,12 +170,14 @@ const kbd = createKeyboard({
 |---|---|
 | Ctrl+Q / Cmd+Q | Panic — All Notes Off + flash |
 | Ctrl+Space / Cmd+Space | Toggle Sustain Pedal (CC#64) |
+| Ctrl+Shift+Space | Toggle Sostenuto Pedal (CC#66) |
+| Ctrl+Alt+Space | Toggle Soft Pedal (CC#67) |
 | Arrow Up | Shift octave up |
 | Arrow Down | Shift octave down |
 | Z–M (lower row) | Play notes (when QWERTY enabled) |
 | Q–] (upper row) | Play notes (when QWERTY enabled) |
 
-## Test Coverage (88 tests)
+## Test Coverage (182 tests)
 
 | Section | Tests | Coverage |
 |---|---|---|
@@ -137,8 +192,12 @@ const kbd = createKeyboard({
 | LED Color Callback | 4 | getLedColor, static, fallback |
 | Panic Button | 3 | Auto-gen, click, external panicBtnId |
 | Sustain Pedal | 11 | Toggle, LED, auto-gen, panic release |
+| Sostenuto Pedal | 12 | Toggle, capture, LED, auto-gen, panic, idempotent |
+| Soft Pedal | 12 | Toggle, LED, velocity attenuation, QWERTY, panic |
 | Velocity | 6 | Callback, fixedVelocity, CSS, curves, per-note |
 | Aftertouch | 13 | Channel, polyphonic, release, clamping, pointer, panic |
+| Scale Filter | 19 | Enable/disable, block/snap, scales, root, QWERTY, visuals |
+| Chord Memory | 13 | Save, play, release, clear, slots, API, disabled mode |
 
 ## Known Issues
 
@@ -146,6 +205,6 @@ const kbd = createKeyboard({
 
 ## Files to Touch for Modifications
 
-- `src/keyboard.js` — Core logic, key rendering, event handlers, panic/sustain auto-gen, aftertouch generation
-- `src/keyboard.css` — Visual styling, theme tokens, panic/sustain button styles
-- `tests/keyboard.test.js` — Unit tests (88 tests)
+- `src/keyboard.js` — Core logic, key rendering, event handlers, panic/sustain/sostenuto/soft auto-gen, aftertouch, scale filter, chord memory
+- `src/keyboard.css` — Visual styling, theme tokens, panic/sustain/sostenuto/soft button styles, scale filter dimming, chord memory
+- `tests/keyboard.test.js` — Unit tests (182 tests)
