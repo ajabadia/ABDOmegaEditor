@@ -617,6 +617,63 @@ createKeyboard({
 // 49 keys (C3–C7), vintage wear, QWERTY, no wheels
 ```
 
+## Pure Utilities (`utils.js`)
+
+Standalone functions you can import directly without creating a keyboard instance:
+
+```js
+import { midiToName, SCALE_INTERVALS, isInScale, snapToScale, CZ101_PRESET } from '@abdsynths/keyboard/utils.js';
+
+midiToName(60);                              // 'C4'
+SCALE_INTERVALS.major;                       // [0,2,4,5,7,9,11]
+isInScale(61, 60, SCALE_INTERVALS.major);    // false
+snapToScale(61, 60, SCALE_INTERVALS.major);  // 62 (snaps to D)
+```
+
+| Export | Type | Description |
+|---|---|---|
+| `QWERTY_MAP` | Object | Key→offset mapping (37 keys, Ableton/JUCE standard) |
+| `NOTE_NAMES` | Array | `['C','C#','D',...,'B']` |
+| `OCTAVE_PATTERN` | Array | 7 white keys with sharp offsets |
+| `midiToName(midi)` | Function | MIDI 60 → `'C4'` |
+| `applyVelocityCurve(raw, curve)` | Function | Apply soft/hard/linear/fixed curve |
+| `SCALE_INTERVALS` | Object | 16 scales: major, minor, pentatonic, blues, dorian, etc. |
+| `isInScale(note, root, intervals)` | Function | Check if note belongs to scale |
+| `snapToScale(note, root, intervals)` | Function | Snap to nearest in-scale note |
+| `CZ101_PRESET` | Object | Pre-configured config for CZ-101 (49 keys, vintage) |
+| `applyIvoryTexture(key, midi)` | Function | Apply deterministic ivory HSL variation |
+| `applyVintageWear(key, midi, isBlack)` | Function | Apply random stain classes |
+
+## Integration Checklist
+
+To add ABDKeyboard to your project:
+
+1. **Copy source files** → `cp -r ABDKeyboard/src/ ./src/components/keyboard/`
+2. **Include CSS** → `<link rel="stylesheet" href="src/components/keyboard/keyboard.css">`
+3. **Create a container div** → `<div id="piano-keyboard"></div>`
+4. **Initialize** → `createKeyboard({ containerId: 'piano-keyboard', onNoteOn: ... })`
+5. **Wire callbacks** → Connect `onNoteOn`, `onNoteOff`, etc. to your synth bridge
+6. **Style** → Override `--kbd-*` CSS variables for your theme
+
+### Hello World (5 lines)
+
+```html
+<!DOCTYPE html>
+<html><head>
+  <link rel="stylesheet" href="src/keyboard.css">
+</head><body>
+  <div id="piano-keyboard"></div>
+  <script type="module">
+    import { createKeyboard } from './src/keyboard.js';
+    createKeyboard({
+      containerId: 'piano-keyboard',
+      onNoteOn: (n, v) => console.log('ON:', n, v),
+      onNoteOff: (n) => console.log('OFF:', n),
+    });
+  </script>
+</body></html>
+```
+
 ## CSS Theme Tokens
 
 All colors and fonts are customizable via CSS custom properties:
@@ -633,7 +690,7 @@ All colors and fonts are customizable via CSS custom properties:
 ```bash
 cd ABDKeyboard
 npm install
-npm test  # 243 tests, vitest + jsdom
+npm test  # 318 tests, vitest + jsdom
 ```
 
 ## License

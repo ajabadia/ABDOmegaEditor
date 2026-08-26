@@ -98,12 +98,23 @@ Extracted the unified keyboard component from ABDMS2000 into a standalone shared
 ```
 ABDKeyboard/
 ├── src/
-│   ├── keyboard.js    — createKeyboard() factory, ~480 lines
-│   └── keyboard.css   — Theme tokens + panic/sustain button styles, ~420 lines
+│   ├── keyboard.js    — createKeyboard() factory, stateful logic, ~1053 lines
+│   ├── utils.js       — Pure functions (scales, velocity, textures), ~118 lines
+│   └── keyboard.css   — Theme tokens + all button/animation styles, ~881 lines
 ├── tests/
-│   └── keyboard.test.js — 88 unit tests (vitest + jsdom)
-├── package.json       — @abdsynths/keyboard, exports
+│   ├── keyboard.test.js             — 182 tests (core, pedals, accessibility, collapse, resize)
+│   ├── utils.test.js                — 75 tests (pure functions: scales, velocity, textures)
+│   ├── chord-memory-bridge.test.js  — 34 tests (ABDEep bridge integration)
+│   ├── cz101-bridge.test.js         — 14 tests (CZ-101 preset integration)
+│   └── multitouch.test.js           — 13 tests (multi-touch edge cases)
+├── demo/
+│   ├── index.html     — Interactive demo page
+│   ├── keyboard-demo.gif — Recording of demo
+│   └── capture.mjs    — Frame capture script for GIF
+├── package.json       — vitest config
 └── README.md, CHANGELOG.md, HANDOFF.md, ROADMAP.md
+
+Total: 318 tests, 2052 lines of source code
 ```
 
 ## Key Design Decisions
@@ -126,42 +137,80 @@ ABDKeyboard/
 | Project | Status | Import Path |
 |---|---|---|
 | ABDMS2000 | ✅ Active | `WebUI/src/components/keyboard.js` (copy) |
-| ABDEep | 🔄 Pending | Needs adaptation (velocity curves, pressure display) |
-| ABDCZ101 | 🔄 Pending | Needs adaptation (vintage wear, QWERTY) |
+| ABDEep | ✅ Tested | Bridge integration tests (34 tests) |
+| ABDCZ101 | ✅ Tested | CZ-101 preset integration tests (14 tests) |
 
 ## How to Integrate into a New Project
 
-```js
-import { createKeyboard } from '@abdsynths/keyboard';
-// or from a local copy / submodule
+### Step 1: Copy the source files
 
-const kbd = createKeyboard({
-  containerId: 'piano-keyboard',
-  onNoteOn: (n, v) => bridge.noteOn(n, v),
-  onNoteOff: (n) => bridge.noteOff(n),
-  onPanic: () => bridge.allNotesOff(),
-  onSustainChange: (on) => bridge.sustain(on),
-  onSostenutoChange: (on) => bridge.sostenuto(on),
-  onSoftPedalChange: (on) => bridge.softPedal(on),
-  onAftertouch: (note, p) => {
-    if (note === -1) bridge.channelPressure(p);
-    else bridge.polyPressure(note, p);
-  },
-  onVelocityChange: (note, vel) => bridge.velocityUpdate(note, vel),
-  config: {
-    numOctaves: 4,
-    enableQwerty: true,
-    enableAftertouch: true,
-    aftertouchMode: 'polyphonic',
-  },
-});
-// Panic button auto-generated to the right of the keys.
-// Sustain button auto-generated next to panic.
-// Ctrl+Q → Panic, Ctrl+Space → Toggle Sustain
+```bash
+cp -r ABDKeyboard/src/ ./src/components/keyboard/
+# Files: keyboard.js, utils.js, keyboard.css
 ```
 
+### Step 2: Create the required DOM
+
 ```html
-<link rel="stylesheet" href="@abdsynths/keyboard/src/keyboard.css">
+<!-- Minimum required: just a container div -->
+<div id="piano-keyboard"></div>
+
+<!-- Optional: external buttons (auto-generated if omitted) -->
+<button id="oct-up">Oct+</button>
+<button id="oct-down">Oct-</button>
+<div id="led-up"></div>
+<div id="led-down"></div>
+
+<!-- Optional: pitch/mod wheels (auto-generated if omitted) -->
+<div id="pitch-wheel"></div>
+<div id="mod-wheel"></div>
+```
+
+### Step 3: Include the CSS
+
+```html
+<link rel="stylesheet" href="src/components/keyboard/keyboard.css">
+```
+
+### Step 4: Initialize the keyboard
+
+```js
+import { createKeyboard } from './src/components/keyboard/keyboard.js';
+
+const kbd = createKeyboard({
+  containerId: 'piano-keyboard',  // REQUIRED — the container div ID
+  onNoteOn: (note, vel) => bridge.noteOn(note, vel),
+  onNoteOff: (note) => bridge.noteOff(note),
+});
+// That's it — panic + sustain buttons auto-generated!
+```
+
+### Step 5 (optional): Use pure utilities directly
+
+```js
+import { midiToName, SCALE_INTERVALS, isInScale, CZ101_PRESET } from './src/components/keyboard/utils.js';
+
+midiToName(60);                    // 'C4'
+isInScale(61, 60, SCALE_INTERVALS.major);  // false (C# not in C major)
+```
+
+### Minimal HTML (hello world)
+
+```html
+<!DOCTYPE html>
+<html><head>
+  <link rel="stylesheet" href="src/keyboard.css">
+</head><body>
+  <div id="piano-keyboard"></div>
+  <script type="module">
+    import { createKeyboard } from './src/keyboard.js';
+    createKeyboard({
+      containerId: 'piano-keyboard',
+      onNoteOn: (n, v) => console.log('Note ON:', n, v),
+      onNoteOff: (n) => console.log('Note OFF:', n),
+    });
+  </script>
+</body></html>
 ```
 
 ## Keyboard Shortcuts
