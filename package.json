@@ -1,0 +1,12 @@
+{
+  "name": "abdsynths-workspace",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Workspace pnpm para la suite ABDSynths (paquetes compartidos zero-copy).",
+  "packageManager": "pnpm@10.25.0",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  }
+}
