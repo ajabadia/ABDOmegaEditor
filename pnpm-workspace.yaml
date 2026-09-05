@@ -1,0 +1,6 @@
+packages:
+  - ABDSharedAssets
+  - ABDSharedCode/MidiKeyboard
+  - ABDMS2000
+  - ABDCZ101
+  - ABDEEP
