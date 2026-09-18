@@ -26,6 +26,9 @@ Documentos técnicos y normativos vigentes que rigen el funcionamiento del edito
 - [OMEGA_ENGINEERING_MANIFEST_SPEC.md](file:///d:/desarrollos/ABDSynths/ABDOmegaEditor/docs/specs-and-architecture/OMEGA_ENGINEERING_MANIFEST_SPEC.md) - Formato de especificación del archivo de manifiesto `.acemm` interpretado por el motor modular.
 - [OMEGA_History_Architecture.md](file:///d:/desarrollos/ABDSynths/ABDOmegaEditor/docs/specs-and-architecture/OMEGA_History_Architecture.md) - Detalles del flujo e interfaz de restauración de historial en el Monaco Editor.
 - [OMEGA_Architectural_Precedence_Policy.md](file:///d:/desarrollos/ABDSynths/ABDOmegaEditor/docs/specs-and-architecture/OMEGA_Architectural_Precedence_Policy.md) - Política estricta sobre la jerarquía y precedencia de diseño de manifiestos frente al código host.
+- [SELF_CONTAINED_MANIFEST.md](file:///d:/desarrollos/ABDSynths/ABDOmegaEditor/docs/specs-and-architecture/SELF_CONTAINED_MANIFEST.md) - Especificación del manifiesto autocontenido `.acemm`.
+- [synthedit_design_proposal.md](file:///d:/desarrollos/ABDSynths/ABDOmegaEditor/docs/specs-and-architecture/synthedit_design_proposal.md) - Propuesta de diseño para la integración con SynthEdit.
+- [synthedit_migration_guide.md](file:///d:/desarrollos/ABDSynths/ABDOmegaEditor/docs/specs-and-architecture/synthedit_migration_guide.md) - Guía de migración hacia/desde SynthEdit.
 
 ---
 
@@ -56,6 +59,12 @@ Ubicación: [`docs/planning-and-roadmaps/`](file:///d:/desarrollos/ABDSynths/ABD
 Planificación activa y contratos vigentes.
 
 - [phase_7_1_contracts.ts](file:///d:/desarrollos/ABDSynths/ABDOmegaEditor/docs/planning-and-roadmaps/phase_7_1_contracts.ts) - Mapeo TypeScript activo de interfaces de contrato.
+- [ROADMAP.md](file:///d:/desarrollos/ABDSynths/ABDOmegaEditor/docs/planning-and-roadmaps/ROADMAP.md) - Hitos, metas e histórico del roadmap del proyecto.
+- [ROADMAP_HISTORY.md](file:///d:/desarrollos/ABDSynths/ABDOmegaEditor/docs/planning-and-roadmaps/ROADMAP_HISTORY.md) - Historial evolutivo del roadmap por eras.
+- [REGRESSION_RECOVERY_PLAN.md](file:///d:/desarrollos/ABDSynths/ABDOmegaEditor/docs/planning-and-roadmaps/REGRESSION_RECOVERY_PLAN.md) - Plan de recuperación de regresiones (23/23 completado).
+- [implementation_plan.md](file:///d:/desarrollos/ABDSynths/ABDOmegaEditor/docs/planning-and-roadmaps/implementation_plan.md) - Plan de implementación general.
+- [container_format_plan.md](file:///d:/desarrollos/ABDSynths/ABDOmegaEditor/docs/planning-and-roadmaps/container_format_plan.md) - Plan del formato de contenedores del manifiesto.
+- [LLM_DOCUMENTATION_PLAN.md](file:///d:/desarrollos/ABDSynths/ABDOmegaEditor/docs/planning-and-roadmaps/LLM_DOCUMENTATION_PLAN.md) - Plan maestro de documentación LLM del repositorio.
 
 ---
 
@@ -70,15 +79,20 @@ Recursos binarios e imágenes de referencia de skins/layouts vigentes.
 
 ---
 
+### 📈 7. Seguimiento y Bitácoras Activos
+Ubicación: [`docs/seguimiento/`](file:///d:/desarrollos/ABDSynths/ABDOmegaEditor/docs/seguimiento/)
+Seguimiento de sesiones, progreso y bitácoras de cambios aplicados.
+
+- [CHAT_LOG.md](file:///d:/desarrollos/ABDSynths/ABDOmegaEditor/docs/seguimiento/CHAT_LOG.md) - Bitácora de chat e histórico de cambios aplicados en sesiones.
+- [progress.md](file:///d:/desarrollos/ABDSynths/ABDOmegaEditor/docs/seguimiento/progress.md) - Progreso y control de tareas de desarrollo.
+
+---
+
 ## 📦 Historial y Archivo (Implementados / Deprecados)
 Ubicación: [`docs/archive/`](file:///d:/desarrollos/ABDSynths/ABDOmegaEditor/docs/archive/)
 Documentos históricos, planes completados, reportes antiguos y especificaciones deprecadas que ya han sido implementados o no se usan activamente.
 
-- **Archivos de Seguimiento** ([`docs/archive/seguimiento/`](file:///d:/desarrollos/ABDSynths/ABDOmegaEditor/docs/archive/seguimiento/)): Bitácoras y seguimientos de cambios históricos del proyecto.
-  - [CHANGELOG.md](file:///d:/desarrollos/ABDSynths/ABDOmegaEditor/docs/archive/seguimiento/CHANGELOG.md) - Historial de versiones y lanzamientos anteriores.
-  - [ROADMAP.md](../ROADMAP.md) - Hitos, metas e histórico del roadmap del proyecto.
-  - [progress.md](file:///d:/desarrollos/ABDSynths/ABDOmegaEditor/docs/archive/seguimiento/progress.md) - Progreso y control de tareas de desarrollo anteriores.
-  - [CHAT_LOG.md](file:///d:/desarrollos/ABDSynths/ABDOmegaEditor/docs/archive/seguimiento/CHAT_LOG.md) - Bitácora de chat e histórico de cambios aplicados en sesiones anteriores.
+- **Seguimiento activo**: `CHANGELOG.md` en la raíz (`../CHANGELOG.md`), `ROADMAP.md` en [`docs/planning-and-roadmaps/`](file:///d:/desarrollos/ABDSynths/ABDOmegaEditor/docs/planning-and-roadmaps/), y `progress.md` / `CHAT_LOG.md` en [`docs/seguimiento/`](file:///d:/desarrollos/ABDSynths/ABDOmegaEditor/docs/seguimiento/).
 - **ADRs Implementados** ([`docs/archive/implemented-adrs/`](file:///d:/desarrollos/ABDSynths/ABDOmegaEditor/docs/archive/implemented-adrs/)): Registros de diseño arquitectónico desde la fase de inicio hasta la consolidación del historial (ADR-009 a ADR-042, fases 5 a 10 y UCA POCs 1 a 4).
 - **Planes Implementados** ([`docs/archive/implemented-plans/`](file:///d:/desarrollos/ABDSynths/ABDOmegaEditor/docs/archive/implemented-plans/)): Checklists, análisis y estrategias de desarrollo completadas.
   - [roadmap_detailed.md](file:///d:/desarrollos/ABDSynths/ABDOmegaEditor/docs/archive/implemented-plans/roadmap_detailed.md) - Historial detallado del roadmap (Fases 6 a 10.1).

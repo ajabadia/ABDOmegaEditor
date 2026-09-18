@@ -233,7 +233,7 @@ function Check-And-Pull-Models {
 }
 
 # --- Validar que el plan existe ---
-$planPath = Join-Path $PWD "LLM_DOCUMENTATION_PLAN.md"
+$planPath = Join-Path $PWD "docs\planning-and-roadmaps\LLM_DOCUMENTATION_PLAN.md"
 if (-not (Test-Path $planPath)) {
     Write-Host "[ERROR] No se encuentra LLM_DOCUMENTATION_PLAN.md" -ForegroundColor Red
     Write-Host "Ejecuta el script desde la raiz del proyecto." -ForegroundColor Yellow
