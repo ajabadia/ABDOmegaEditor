@@ -26,6 +26,10 @@ import type {
 import type { IEventBus } from '@/omega-ui-core/di/EventBus';
 import { emitEvent } from './globalEventBus';
 import { reconciliationService as legacyReconciliationService } from './reconciliationService';
+import { createLogger } from './logger';
+import { simulatedTelemetry } from './simulation/telemetry';
+
+const logger = createLogger('WASM-BRIDGE');
 
 export class WasmRuntime {
   private rpc: OmegaRPCBridge;
@@ -73,7 +77,7 @@ export class WasmRuntime {
 
     // Industrial Validation: Ensure we are using Hierarchical Path Addressing (HPA)
     if (!id.includes('/')) {
-      console.warn(`[WASM-BRIDGE] Received non-hierarchical ID: ${id}. HPA is required for Era 7.2.3.`);
+      logger.warn(`Received non-hierarchical ID: ${id}. HPA is required for Era 7.2.3.`);
     }
 
     // Phase 20.8: Buffer delta instead of immediate transmission
@@ -200,19 +204,19 @@ export class WasmRuntime {
     const rootNode = manifest.nodes?.[0];
 
     if (!rootNode) {
-      console.error('WASM-BRIDGE: Cannot deploy manifest without root OmegaNode.');
+      logger.error('Cannot deploy manifest without root OmegaNode.');
       emitEvent(this.eventBus, 'wasm:deploy', { status: 'ERR_NO_ROOT' });
       return { success: false, hash: 'ERR_NO_ROOT' };
     }
 
-    console.log(`OMEGA HIL: ${mode} Deploying UCA Tree for '${manifest.id}'...`);
+    logger.info(`${mode} Deploying UCA Tree for '${manifest.id}'...`);
 
     // Pre-deployment binding verification (P11) — no RPC needed
     const verification = contract ? this.verifyBindings(rootNode, contract) : undefined;
     
     if (verification && verification.orphanBinds > 0) {
-      console.warn(
-        `WASM-BRIDGE: ${verification.orphanBinds} orphan bind(s) detected. ` +
+      logger.warn(
+        `${verification.orphanBinds} orphan bind(s) detected. ` +
         `Deploying with ${verification.resolvedBinds}/${verification.totalBinds} valid bindings.`
       );
     }
@@ -244,7 +248,7 @@ export class WasmRuntime {
       emitEvent(this.eventBus, 'wasm:deploy', { status: 'SUCCESS' });
       return { success: true, hash, materialization: instance, verification };
     } catch (err) {
-      console.error('WASM-BRIDGE: Deployment failed:', err);
+      logger.error('Deployment failed:', err);
       emitEvent(this.eventBus, 'wasm:deploy', { status: 'DEPLOY_FAIL' });
       return { success: false, hash: 'ERR_DEPLOY_FAIL' };
     }
@@ -271,7 +275,7 @@ export class WasmRuntime {
     const walk = (node: OmegaNode) => {
       // Circular reference detection — skip if already visited
       if (visited.has(node.id)) {
-        console.warn(`[WASM-BRIDGE] Circular reference detected: node '${node.id}' already visited. Skipping.`);
+        logger.warn(`Circular reference detected: node '${node.id}' already visited. Skipping.`);
         return;
       }
       visited.add(node.id);
@@ -402,7 +406,7 @@ export class WasmRuntime {
    */
   enableMockMode() {
     this.isMock = true;
-    console.warn('WASM-BRIDGE: Mock mode enabled. DSP execution is simulated.');
+    logger.warn('Mock mode enabled. DSP execution is simulated.');
   }
 
   /**
@@ -427,14 +431,14 @@ export class WasmRuntime {
     try {
       // In Industrial RPC (Phase 20.3), the binary is often sent separately or bundled.
       // Here we simulate the ACK from the engine for the binary stream.
-      console.log(`WASM-BRIDGE: Uploading binary payload (${buffer.byteLength} bytes)...`);
+      logger.info(`Uploading binary payload (${buffer.byteLength} bytes)...`);
       
       // In a real scenario, this would use a dedicated RPC message:
       // await this.rpc.sendBinary(buffer);
       
       return true;
     } catch (err) {
-      console.error('WASM-BRIDGE: Binary load failed:', err);
+      logger.error('Binary load failed:', err);
       return false;
     }
   }
@@ -447,9 +451,15 @@ export class WasmRuntime {
    * getTelemetry
    * Real-time signal polling for HUD rendering.
    */
-  getTelemetry(_nodeId: string): number {
-    if (this.isMock) return Math.random(); // Simulation mode
-    return 0; // Runtime value placeholder
+  getTelemetry(nodeId: string): number {
+    if (this.isMock) {
+      // Determinista: si el parámetro tiene un valor simulado (setParameter),
+      // se devuelve; si no, curva reproducible (misma entrada → mismo resultado).
+      const stored = this.mockValues[nodeId];
+      if (stored !== undefined) return stored;
+      return simulatedTelemetry(nodeId, Date.now());
+    }
+    return 0; // El host real alimenta los valores vía RPC
   }
 }
 

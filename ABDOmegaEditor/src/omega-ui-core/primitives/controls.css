@@ -10,7 +10,7 @@
 .knob-container {
     background: var(--omega-color-override, var(--primitive-bg)) !important;
     border: var(--omega-border-width, 1px) solid var(--omega-weak, var(--primitive-border)) !important;
-    filter: brightness(var(--omega-intensity, 1.0)) var(--primitive-shadow) !important;
+    filter: brightness(var(--omega-intensity, 1.0)) var(--primitive-shadow-filter) !important;
     display: flex;
     align-items: center;
     justify-content: center;

@@ -10,21 +10,43 @@
  * @lastUpdated 2026-06-17T22:32:48.252Z
  */
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import type { OmegaNode } from '@/types/manifest';
 
 import { CellRenderer } from '@/omega-ui-core/renderers/CellRenderer';
+import { InteractionManager } from '@/omega-ui-core/interaction/InteractionManager';
+import { collectBindingsFromTree } from '@/omega-ui-core/types/panelRenderer';
 
 interface CellPreviewProps {
   item: OmegaNode;
   skin?: string;
   resolveAsset?: (id: string | undefined) => string | undefined;
+  /** Callback opcional al girar un control en el preview (bind → valor). */
+  onPreviewValueChange?: ((target: string, value: number) => void) | undefined;
 }
 
-export default function CellPreview({ item, skin = 'industrial', resolveAsset }: CellPreviewProps) {
+export default function CellPreview({ item, skin = 'industrial', resolveAsset, onPreviewValueChange }: CellPreviewProps) {
   const [isCollapsed, setIsCollapsed] = React.useState(false);
+  const previewRef = useRef<HTMLDivElement>(null);
+
+  // Panel contract: enlaza la celda HTML del preview a InteractionManager para que
+  // los controles (knob/slider/stepper/select) respondan al drag/click sin re-render.
+  useEffect(() => {
+    const container = previewRef.current;
+    if (!container) return;
+    const bindings = collectBindingsFromTree(item, undefined);
+    if (bindings.length === 0) return;
+
+    const manager = new InteractionManager(
+      { sendParamChange: ({ target, value }) => onPreviewValueChange?.(target, value) },
+      bindings,
+    );
+    manager.bind(container);
+    return () => manager.dispose();
+    // isCollapsed: al colapsar/expandir el preview el DOM se remonta → re-enlazar.
+  }, [item, isCollapsed, onPreviewValueChange]);
 
   return (
     <div className="relative group">
@@ -53,6 +75,7 @@ export default function CellPreview({ item, skin = 'industrial', resolveAsset }:
             {/* RENDERER BRIDGE — COMPACT SCALE */}
             <div className="relative scale-[1.2] flex items-center justify-center transition-transform duration-500 group-hover/canvas:scale-[1.3]">
                <div 
+                  ref={previewRef}
                   dangerouslySetInnerHTML={{ 
                     __html: CellRenderer.renderCellHTML(item, {
                       skin,

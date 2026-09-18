@@ -59,18 +59,17 @@ describe('DockIconStrip — active state', () => {
   it('should highlight buttons when window is active and not collapsed', () => {
     const windowStates = { ...defaultProps.windowStates, window_layers: true };
     render(<DockIconStrip {...defaultProps} windowStates={windowStates} isCollapsed={false} />);
-    const buttons = screen.getAllByRole('button');
-    // The Layers button (first) should have active classes
-    expect(buttons[0].className).toContain('bg-primary/20');
+    // The Layers button should have active classes
+    expect(screen.getByTitle('Layers').className).toContain('bg-primary/20');
   });
 
   it('should not highlight buttons when isCollapsed is true', () => {
     const windowStates = { ...defaultProps.windowStates, window_layers: true };
     render(<DockIconStrip {...defaultProps} windowStates={windowStates} isCollapsed={true} />);
-    const buttons = screen.getAllByRole('button');
     // Even though window_layers is true, collapsed overrides it
-    expect(buttons[0].className).not.toContain('bg-primary/20');
-    expect(buttons[0].className).toContain('wb-text-muted');
+    const layersButton = screen.getByTitle('Layers');
+    expect(layersButton.className).not.toContain('bg-primary/20');
+    expect(layersButton.className).toContain('wb-text-muted');
   });
 
   it('should not highlight buttons when window is not active', () => {
@@ -88,15 +87,14 @@ describe('DockIconStrip — click handler', () => {
   it('should call onToggleWindow with the correct window id', () => {
     const onToggleWindow = jest.fn();
     render(<DockIconStrip {...defaultProps} onToggleWindow={onToggleWindow} />);
-    const buttons = screen.getAllByRole('button');
 
-    fireEvent.click(buttons[0]); // Layers
+    fireEvent.click(screen.getByTitle('Layers'));
     expect(onToggleWindow).toHaveBeenCalledWith('window_layers');
 
-    fireEvent.click(buttons[3]); // Blueprint Library
+    fireEvent.click(screen.getByTitle('Blueprint Library'));
     expect(onToggleWindow).toHaveBeenCalledWith('window_blueprints');
 
-    fireEvent.click(buttons[7]); // Terminal Logs
+    fireEvent.click(screen.getByTitle('Terminal Logs'));
     expect(onToggleWindow).toHaveBeenCalledWith('window_logs');
   });
 });

@@ -23,6 +23,7 @@ import type {
 } from '../types/manifest';
 import { manifestToTree as legacyMigrator } from './converters/manifestToTree';
 import { treeToManifest as legacySerializer } from './converters/treeToManifest';
+import { flatToTree as flatToTreeConverter } from './converters/flatToTree';
 import { resolvePath, normalizeModulationTarget } from './utils/pathResolver';
 
 /**
@@ -308,4 +309,6 @@ export function omegaTreeToManifest(tree: OmegaNode): Partial<OMEGA_Manifest> {
 
 export { legacyMigrator as _rawManifestToTree };
 export { legacySerializer as _rawTreeToManifest };
+export { flatToTreeConverter as flatToTree };
+export type { RuntimeFlatItem, RuntimeFlatContainer, RuntimeFlatManifest } from './converters/flatToTree';
 export { congealSnapshot } from './treeUtils';

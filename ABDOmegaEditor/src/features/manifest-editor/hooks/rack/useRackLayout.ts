@@ -12,18 +12,26 @@
 
 import { useMemo } from 'react';
 import type { OMEGA_Manifest, ManifestEntity, OmegaNode } from '@/omega-ui-core/types/manifest';
+import { resolvePanelGeometry } from '@/omega-ui-core/uca/panelGeometry';
 import { adaptNodeToManifestEntity, calculateWorldPosition } from '../entities/ucaInspectorAdapter';
+
+/** Escala de presentación del viewport del editor (no es geometría de hardware). */
+const RACK_VIEWPORT_SCALE = 1.5;
 
 /**
  * OMEGA ERA 7.2.3 - RACK LAYOUT ENGINE
  * Derived exclusively from the Canonical UCA Tree.
  */
 export function useRackLayout(manifest: OMEGA_Manifest) {
-  const hp = manifest?.metadata?.rack?.hp || 12;
-  const isCompact = manifest?.metadata?.rack?.height_mode === 'compact';
-  
-  const width = useMemo(() => hp * 15 * 1.5, [hp]);
-  const height = useMemo(() => (manifest.ui?.dimensions?.height || (isCompact ? 140 : 420)) * 1.5, [manifest.ui, isCompact]);
+  // Geometría canónica: metadata.rack {hp, units, height_mode} → px. Sin literales
+  // hardcodeados (antes hp*15*1.5 / 140 / 420) — panel contract via panelGeometry.
+  const geometry = useMemo(() => resolvePanelGeometry(manifest, {
+    forceUpper: manifest?.metadata?.rack?.height_mode === 'compact',
+  }), [manifest]);
+
+  const width = useMemo(() => geometry.widthPx * RACK_VIEWPORT_SCALE, [geometry]);
+  // `ui.dimensions.height` declarada prevalece; si no, unidades canónicas (1U=144, 3U=432).
+  const height = useMemo(() => (manifest.ui?.dimensions?.height || geometry.heightPx) * RACK_VIEWPORT_SCALE, [manifest.ui, geometry]);
  
   // 1. FLATTEN CANONICAL TREE (Sovereign Source)
   const allElements = useMemo(() => {

@@ -14,6 +14,10 @@ import type { OmegaContract } from '@/omega-ui-core/types/contract';
 import { ucaPathResolver } from '@/omega-ui-core/utils/ucaPathResolver';
 import { getService } from '@/services/globalEventBus';
 import { SERVICE_TOKENS } from '@/omega-ui-core/di';
+import { captureManifestUiState } from '@/omega-ui-core/uca/treeUtils';
+import { createLogger } from '@/services/logger';
+
+const logger = createLogger('BRIDGE');
 
 /**
  * OMEGA Simulation Bridge (Phase 9.1 - Live Loop)
@@ -73,7 +77,7 @@ export const useSimulationBridge = (
       
       // Status maintenance is handled by the RPC Bridge callback
     } catch (err) {
-      console.warn(`[BRIDGE] Failed to resolve HPA for node ${id}. Falling back to ID.`, err);
+      logger.warn(`Failed to resolve HPA for node ${id}. Falling back to ID.`, err);
       wasmRuntime.setParameter(id, value);
     }
   }, [isReady, wasmRuntime]);
@@ -86,7 +90,7 @@ export const useSimulationBridge = (
 
     syncInProgressRef.current = true;
     try {
-      console.log(`[BRIDGE] Executing Structural Sync: ${reason}`);
+      logger.info(`Executing Structural Sync: ${reason}`);
       
       // 1. Coordination with Orchestrator (RISK-002 Fix)
       await flushPendingHash(activeId);
@@ -101,12 +105,12 @@ export const useSimulationBridge = (
         setLastSuccessfulSyncAt(Date.now());
         setPendingStructuralSync(false);
         setLastError(null);
-        console.log(`[BRIDGE] Sync Success: ${result.hash}`);
+        logger.info(`Sync Success: ${result.hash}`);
       } else {
         throw new Error('Deployment failed at runtime');
       }
     } catch (err: unknown) {
-      console.error('[BRIDGE] Sync failed:', err);
+      logger.error('Sync failed:', err);
       setLastError(err instanceof Error ? err.message : 'Unknown sync error');
       setStatus('error');
     } finally {
@@ -138,35 +142,34 @@ export const useSimulationBridge = (
    * Workstream 6: Error Recovery
    */
   const forceResync = useCallback(async () => {
-    console.log('[BRIDGE] Manual recovery triggered.');
+    logger.info('Manual recovery triggered.');
     await performStructuralSync('Manual Recovery');
   }, [performStructuralSync]);
 
   const forceReconciliation = useCallback(async () => {
     if (!isReady) return;
-    console.log('[BRIDGE] Starting state reconciliation...');
+    logger.info('Starting state reconciliation...');
     
     try {
       // 1. Fetch current engine state
       const engineState = await wasmRuntime.reconcileState();
       
-      // 2. Simple comparison with what we expect (mocking UI state as manifest-based for now)
-      // In a full implementation, we'd pull the actual UI component values.
-      const uiState: Record<string, number> = {}; 
-      // ... logic to populate uiState from manifest nodes ...
+      // 2. Estado UI = estado de authoring actual del manifiesto (bind → default del rango).
+      // Antes esto era un objeto vacío → la reconciliación siempre reportaba "in sync".
+      const uiState = captureManifestUiState(manifestRef.current);
 
       const divergences = reconciliationService.detectDivergence(uiState, engineState);
       
       if (divergences.length > 0) {
-        console.log(`[BRIDGE] Detected ${divergences.length} divergences. Resolving...`);
+        logger.info(`Detected ${divergences.length} divergences. Resolving...`);
         divergences.forEach(path => {
           reconciliationService.resolveConflict(path, uiState[path], engineState[path]);
         });
       } else {
-        console.log('[BRIDGE] UI and Engine are in sync.');
+        logger.debug('UI and Engine are in sync.');
       }
     } catch (err) {
-      console.error('[BRIDGE] Reconciliation failed:', err);
+      logger.error('Reconciliation failed:', err);
     }
   }, [isReady, reconciliationService, wasmRuntime]);
 

@@ -30,16 +30,18 @@ export class CellRenderer {
     const { runtimeValue, steps, isSelected, resolveAsset, manifest } = options;
     const compType = node.cellRef || node.kind || 'knob';
 
+    const nodeId = node.id || '';
+
     // 1. RACK BRANCH
     if (compType === 'rack') {
-      return renderRackHTML(node, options);
+      return renderRackHTML(node, options, nodeId);
     }
 
     // 2. ARCHITECTURAL BRANCH
     const isArchitectural = compType === 'container' || compType === 'group' || compType === 'face';
     if (isArchitectural) {
       return `
-        <div class="architectural-cell" style="width: 100%; height: 100%; position: relative;">
+        <div class="architectural-cell" data-node-id="${nodeId}" style="width: 100%; height: 100%; position: relative;">
           ${renderContainerHTML(node, options)}
         </div>
       `.trim();
@@ -100,7 +102,7 @@ export class CellRenderer {
     const containerHeight = resolvedStyle.height !== undefined ? resolvedStyle.height : (compRadius * 2 * 1.5);
 
     return `
-      <div class="control-cell variant-${variant}" style="--comp-radius: ${compRadius}px;">
+      <div class="control-cell variant-${variant}" data-node-id="${nodeId}" style="--comp-radius: ${compRadius}px;">
         ${renderAttachmentStackHTML('top', attachments, stackOptions)}
         ${renderAttachmentStackHTML('bottom', attachments, stackOptions)}
         ${renderAttachmentStackHTML('left', attachments, stackOptions)}

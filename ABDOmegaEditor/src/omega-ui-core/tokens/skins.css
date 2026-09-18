@@ -30,6 +30,7 @@
     --primitive-bg: var(--omega-surface);
     --primitive-border: 1px solid var(--omega-weak);
     --primitive-shadow: var(--omega-comp-shadow-x, 0) var(--omega-comp-shadow-y, 0) var(--omega-blur, 4px) var(--omega-shadow-color, rgba(0,0,0,0.5));
+    --primitive-shadow-filter: drop-shadow(var(--omega-comp-shadow-x, 0) var(--omega-comp-shadow-y, 0) var(--omega-blur, 4px) var(--omega-shadow-color, rgba(0,0,0,0.5)));
 }
 
 /* SKIN: CARBON (Tactical Texture) */

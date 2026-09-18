@@ -15,7 +15,7 @@ import { ColorResolver } from '../utils/ColorResolver';
 /**
  * Renders the main module frame (chassis) with canonical screw positioning.
  */
-export function renderRackHTML(node: OmegaNode, options: CellOptions): string {
+export function renderRackHTML(node: OmegaNode, options: CellOptions, nodeId: string = ''): string {
   const { manifest, resolveAsset, activeTab = 'MAIN' } = options;
   const style = node.style || {};
   const variant = style.variant || 'default';
@@ -149,7 +149,7 @@ export function renderRackHTML(node: OmegaNode, options: CellOptions): string {
   };
 
   return `
-      <div class="industrial-rack-chassis"
+      <div class="industrial-rack-chassis" data-node-id="${nodeId}"
         style="position: absolute; inset: 0; background-color: ${bgColor}; ${bgStyles} border-radius: ${rounding}px; border: ${borderWidth}px solid rgba(255,255,255,0.05); overflow: hidden;">
         ${screwFragment ? positions.map((p, i) => renderScrew(p, i)).join('') : ''}
       </div>

@@ -22,6 +22,12 @@ import { persistenceService as legacyPersistenceService } from '../persistenceSe
 import { BlueprintResolver } from '@/omega-ui-core/utils/blueprintResolver';
 import { BlueprintValidator } from '@/omega-ui-core/utils/blueprintValidator';
 import type { OMEGA_Manifest } from '@/omega-ui-core/types/manifest';
+import { createLogger } from '../logger';
+
+const logger = createLogger('OMEGA RPC');
+
+/** Versión del protocolo RPC que este cliente habla (handshake bridge.hello). */
+const PROTOCOL_VERSION = 1;
 
 /**
  * OmegaRPCBridge - Era 7.2.3
@@ -43,6 +49,13 @@ export class OmegaRPCBridge {
   private heartbeatInterval: ReturnType<typeof setTimeout> | null = null;
   private readonly HEARTBEAT_TIMEOUT = 3000; // 3 seconds threshold
   private _wasEverConnected = false;
+  
+  // Reconnection with exponential backoff (2s → 4s → 8s → … capped at 30s)
+  private readonly RECONNECT_BASE_MS = 2000;
+  private readonly RECONNECT_MAX_MS = 30000;
+  private readonly RECONNECT_FACTOR = 2;
+  private reconnectAttempts = 0;
+  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   protected eventBus: IEventBus | undefined;
   protected persistenceSvc: typeof legacyPersistenceService;
 
@@ -58,16 +71,22 @@ export class OmegaRPCBridge {
   public connect(onStatusChange?: (status: SyncStatus) => void) {
     this.onStatusChange = onStatusChange;
     this.updateStatus('syncing');
+    // Cancel any scheduled reconnect before a fresh attempt
+    this.clearReconnectTimer();
 
     try {
       this.ws = new WebSocket(this.url);
       
       this.ws.onopen = () => {
         this._wasEverConnected = true;
+        this.reconnectAttempts = 0;
         this.updateStatus('in-sync');
         this.lastHeartbeatAt = Date.now();
         this.startHeartbeatMonitor();
-        console.log(`[OMEGA RPC] Connected. Session: ${this.sessionId}`);
+        logger.info(`Connected. Session: ${this.sessionId}`);
+        // Handshake con versión de protocolo: el host responde VERSION_MISMATCH
+        // si no es compatible.
+        this.send('bridge.hello', { protocol: PROTOCOL_VERSION, client: 'omega-editor' });
       };
 
       this.ws.onmessage = (event) => this.handleMessage(event);
@@ -76,7 +95,7 @@ export class OmegaRPCBridge {
         this.stopHeartbeatMonitor();
         this.updateStatus('disconnected');
         if (this._wasEverConnected) {
-          setTimeout(() => this.connect(onStatusChange), 5000);
+          this.scheduleReconnect(onStatusChange);
         }
       };
 
@@ -89,7 +108,7 @@ export class OmegaRPCBridge {
           return;
         }
         
-        console.warn('[OMEGA RPC] Connection Error:', err);
+        logger.warn('Connection Error:', err);
         this.updateStatus('error');
       };
     } catch {
@@ -100,6 +119,7 @@ export class OmegaRPCBridge {
 
   public disconnect() {
     this.stopHeartbeatMonitor();
+    this.clearReconnectTimer();
     if (this.ws) {
       this.ws.onclose = null;
       this.ws.onerror = null;
@@ -108,6 +128,27 @@ export class OmegaRPCBridge {
       this.ws = null;
     }
     this.updateStatus('disconnected');
+  }
+
+  /**
+   * scheduleReconnect — Reintento con backoff exponencial: 2s, 4s, 8s, 16s…
+   * hasta un tope de 30s. El intento se resetea al reconectar con éxito.
+   */
+  private scheduleReconnect(onStatusChange?: (status: SyncStatus) => void): void {
+    const attempt = this.reconnectAttempts++;
+    const delay = Math.min(
+      this.RECONNECT_BASE_MS * Math.pow(this.RECONNECT_FACTOR, attempt),
+      this.RECONNECT_MAX_MS,
+    );
+    logger.info(`Connection lost. Reconnecting in ${delay}ms (attempt ${attempt + 1}).`);
+    this.reconnectTimer = setTimeout(() => this.connect(onStatusChange), delay);
+  }
+
+  private clearReconnectTimer(): void {
+    if (this.reconnectTimer !== null) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
   }
 
   /**
@@ -252,19 +293,22 @@ export class OmegaRPCBridge {
       }
 
       if (response.error) {
-        console.error(`[OMEGA RPC] Engine Error [${response.error.code}]: ${response.error.message}`);
+        logger.error(`Engine Error [${response.error.code}]: ${response.error.message}`);
         if (response.error.code === RPCErrors.OUT_OF_SEQUENCE) {
+          this.updateStatus('degraded');
+        } else if (response.error.code === RPCErrors.VERSION_MISMATCH) {
+          logger.warn(`Protocol version mismatch with engine (client v${PROTOCOL_VERSION}).`);
           this.updateStatus('degraded');
         }
       }
     } catch {
-      console.error('[OMEGA RPC] Failed to parse message');
+      logger.error('Failed to parse message');
     }
   }
 
   private flushDeltaBuffer() {
     if (this.deltaBuffer.length === 0) return;
-    console.log(`[OMEGA RPC] Flushing ${this.deltaBuffer.length} buffered deltas.`);
+    logger.debug(`Flushing ${this.deltaBuffer.length} buffered deltas.`);
     
     while (this.deltaBuffer.length > 0) {
       const patch = this.deltaBuffer.shift();
@@ -278,7 +322,7 @@ export class OmegaRPCBridge {
       const elapsed = Date.now() - this.lastHeartbeatAt;
       if (elapsed > this.HEARTBEAT_TIMEOUT && this.status === 'in-sync') {
         this.updateStatus('degraded');
-        console.warn('[OMEGA RPC] Engine health DEGRADED (Heartbeat timeout)');
+        logger.warn('Engine health DEGRADED (Heartbeat timeout)');
       }
     }, 1000);
   }

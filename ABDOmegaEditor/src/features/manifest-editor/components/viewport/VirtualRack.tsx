@@ -28,6 +28,7 @@ import { useRackStartupAssistant } from '@/features/manifest-editor/hooks/rack/u
 import { useRackGhostPreview } from '@/features/manifest-editor/hooks/rack/useRackGhostPreview';
 import { useDesignTokens } from '@/omega-ui-core/hooks/useDesignTokens';
 import { CellRenderer } from '@/omega-ui-core/renderers/CellRenderer';
+import { resolveRenderOptions } from '@/omega-ui-core/uca/panelGeometry';
 import { InjectionPreviewOverlay } from './InjectionPreviewOverlay';
 import { GhostPreviewOverlay } from './GhostPreviewOverlay';
 import BindingOverlay from '../rack/BindingOverlay';
@@ -212,7 +213,6 @@ export default function VirtualRack({
   onSelectAll,
 }: VirtualRackProps) {
   const inputSignalService = getService(SERVICE_TOKENS.INPUT_SIGNAL_SERVICE);
-  const skin = manifest.ui?.skin || 'industrial';
   const { allVars } = useDesignTokens(manifest);
   const { rackRef, handleRackMouseMove, handleRackGhostClick } = useRackGhostPreview({
     isGhostVisible,
@@ -284,15 +284,20 @@ export default function VirtualRack({
     },
   }), [manifest.ui]);
 
-  const rackHTML = useMemo(() => CellRenderer.renderCellHTML(rackNode, {
-    skin,
+  // Panel contract: opciones de render con defaults canónicos (skin/zoom/steps/
+  // activeTab desde el manifiesto o el plano activo del editor).
+  const renderOptions = useMemo(() => resolveRenderOptions(manifest, {
     zoom: 1.0,
     runtimeValue: 0,
-    steps: 100,
+    activeTab: activePlane,
+  }), [manifest, activePlane]);
+
+  const rackHTML = useMemo(() => CellRenderer.renderCellHTML(rackNode, {
+    ...renderOptions,
     manifest,
     resolveAsset,
     isLiveMode,
-  }), [rackNode, skin, manifest, resolveAsset, isLiveMode]);
+  }), [rackNode, renderOptions, manifest, resolveAsset, isLiveMode]);
 
   return (
     <div 

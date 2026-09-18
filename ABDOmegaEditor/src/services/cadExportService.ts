@@ -13,6 +13,7 @@
  * Generates technical industrial blueprints (SVG) from manifests.
  */
 import type { OMEGA_Manifest } from '../types/manifest';
+import { resolvePanelGeometry, RACK_HP_WIDTH_PX } from '../omega-ui-core/uca/panelGeometry';
 
 export interface CADOptions {
   skin: string;
@@ -22,14 +23,20 @@ export interface CADOptions {
   resolveAsset?: (id: string) => string | undefined; // Base64 or URL
 }
 
-const PIXELS_TO_MM = 0.33866; // 1 HP = 5.08mm = 15px
+/** Escala de presentación del blueprint (mismo factor que el viewport del editor). */
+const VIEWPORT_SCALE = 1.5;
+/** 1 HP = 5.08mm = RACK_HP_WIDTH_PX px canónicos → mm por px (antes literal 0.33866). */
+const PIXELS_TO_MM = 5.08 / RACK_HP_WIDTH_PX;
 
 export class CADExportService {
   static generateSVGBlueprint(manifest: OMEGA_Manifest, options: CADOptions): string {
     const { skin, drillLayer, silkscreenLayer, dimensions, resolveAsset } = options;
-    const hp = manifest.metadata?.rack?.hp || 12;
-    const rackWidthPx = hp * 15 * 1.5;
-    const rackHeightPx = (manifest.ui?.dimensions?.height || (manifest.metadata?.rack?.height_mode === 'compact' ? 140 : 420)) * 1.5;
+    // Geometría canónica del módulo (metadata.rack → px) en vez de heurísticas hardcodeadas.
+    const geometry = resolvePanelGeometry(manifest, {
+      forceUpper: manifest.metadata?.rack?.height_mode === 'compact',
+    });
+    const rackWidthPx = geometry.widthPx * VIEWPORT_SCALE;
+    const rackHeightPx = (manifest.ui?.dimensions?.height || geometry.heightPx) * VIEWPORT_SCALE;
     const margin = 100; // Larger margin for annotations
 
     const containers = manifest.ui?.layout?.containers || [];

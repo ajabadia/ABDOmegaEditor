@@ -14,7 +14,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import type { OmegaNode, OMEGA_Manifest, CellTemplate } from '../../types/manifest';
 import type { ComponentNode, ComponentType } from '../../types/rack';
-import { renderComponentNode } from '../primitives';
+import { renderComponentNode } from '../primitives/index';
 import { useUCADrag } from '../hooks/useUCADrag';
 import { UCADebugHUD } from './UCADebugHUD';
 import { CADOverlay } from './CADOverlay';

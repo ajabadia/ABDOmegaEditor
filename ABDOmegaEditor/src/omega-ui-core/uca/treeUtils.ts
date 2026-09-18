@@ -8,7 +8,65 @@
  * @lastUpdated 2026-06-15T16:54:20.140Z
  */
 
-import type { OmegaNode, ModuleTemplate, OverridePolicy } from '../types/manifest';
+import type { OmegaNode, ModuleTemplate, OverridePolicy, OMEGA_Manifest } from '../types/manifest';
+
+/**
+ * dedupeChildren
+ * Removes duplicate children by id, keeping the LAST occurrence.
+ * Used by manifestToTree/flatToTree: children seeded from existingTree keep
+ * editor-only nodes, while fresh nodes (pushed afterwards, carrying the
+ * preserved edit state) replace stale copies with the same id — no duplicates,
+ * no wiped edits.
+ */
+export function dedupeChildren(node: OmegaNode): void {
+  const children = node.children;
+  if (!children || children.length <= 1) return;
+  const seen = new Set<string>();
+  const out: OmegaNode[] = [];
+  for (let i = children.length - 1; i >= 0; i--) {
+    const child = children[i];
+    if (child === undefined || seen.has(child.id)) continue;
+    seen.add(child.id);
+    out.unshift(child);
+  }
+  node.children = out;
+}
+
+/**
+ * captureManifestUiState — Proyecta el estado de authoring del manifiesto como
+ * `{ bind: valor }` para la reconciliación UI↔engine. Recorre el árbol canónico
+ * (o las entidades planas si no hay árbol) y usa el default del rango de cada
+ * celda con bind; sin bind no participa. Es la fuente honesta de "estado UI"
+ * (antes la reconciliación comparaba contra un objeto vacío → siempre in-sync).
+ */
+export function captureManifestUiState(manifest: OMEGA_Manifest | undefined): Record<string, number> {
+  const out: Record<string, number> = {};
+  if (!manifest) return out;
+
+  const defaultValue = (node: OmegaNode): number => {
+    const range = node.meta?.range as { default?: number } | undefined;
+    return range && typeof range.default === 'number' && Number.isFinite(range.default)
+      ? range.default
+      : 0.5;
+  };
+
+  const visit = (node: OmegaNode): void => {
+    if ((node.kind === 'cell' || node.kind === 'port') && node.bind) {
+      out[node.bind] = defaultValue(node);
+    }
+    (node.children || []).forEach(visit);
+  };
+
+  if (manifest.ui?.tree) {
+    visit(manifest.ui.tree);
+  } else {
+    // Fallback a entidades planas si el árbol no está hidratado.
+    for (const e of [...(manifest.ui?.controls || []), ...(manifest.ui?.jacks || [])]) {
+      if (e.bind) out[e.bind] = 0.5;
+    }
+  }
+  return out;
+}
 
 /**
  * reorderChildren

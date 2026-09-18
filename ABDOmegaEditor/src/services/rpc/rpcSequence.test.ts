@@ -71,7 +71,7 @@ describe('OmegaRPCBridge — Sequence Tracking', () => {
     jest.useRealTimers();
   });
 
-  it('should send snapshot sync with seq 1', () => {
+  it('should send snapshot sync after the hello handshake (seq 2)', () => {
     const snapshot: SnapshotParams = {
       manifestVersion: '7.2.3',
       documentId: 'primary',
@@ -91,7 +91,8 @@ describe('OmegaRPCBridge — Sequence Tracking', () => {
     const sentMsg = JSON.parse(ws.lastSentMessage!);
 
     expect(sentMsg.method).toBe('bridge.syncSnapshot');
-    expect(sentMsg.seq).toBe(1);
+    // bridge.hello (handshake de protocolo) consume la seq 1 al conectar.
+    expect(sentMsg.seq).toBe(2);
   });
 
   it('should track incremental delta sequence numbers', async () => {
@@ -120,8 +121,9 @@ describe('OmegaRPCBridge — Sequence Tracking', () => {
     bridge.applyDelta(patch2);
     const msg2 = JSON.parse(ws.lastSentMessage!);
 
-    expect(msg1.seq).toBe(2);
-    expect(msg2.seq).toBe(3);
+    // seq 1 = hello, seq 2 = syncSnapshot, seq 3/4 = deltas.
+    expect(msg1.seq).toBe(3);
+    expect(msg2.seq).toBe(4);
   });
 
   it('should generate a unique session identifier', () => {

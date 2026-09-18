@@ -1,111 +1,35 @@
 /**
  * @purpose Convierte un arreglo plano de manifest en un árbol OmegaNode recursivo para la renderización en el editor de manifest OMEGA.
  * @purpose_en Converts a flat manifest array into a recursive OmegaNode tree for rendering in the OMEGA manifest editor.
- * @refactorable true (contains too many state variables and UI parts)
+ * @refactorable false
  * @classification Helper Utility
- * @complexity Medium
- * @fingerprint exports:1,imports:1,sig:7r2fhv
- * @lastUpdated 2026-06-15T16:16:17.105Z
+ * @complexity Low
+ * @fingerprint exports:1,imports:2,sig:7r2fhv
+ * @lastUpdated 2026-08-02T00:00:00.000Z
  */
 
-import type { OMEGA_Manifest, OmegaNode } from '../../types/manifest';
+import type { OmegaNode } from '../../types/manifest';
+import type { OMEGA_Manifest } from '../../types/manifest';
+import { flatToTree } from './flatToTree';
+import type { RuntimeFlatManifest } from './flatToTree';
 
 /**
  * manifestToTree
- * Hydrates a recursive OmegaNode tree from flat manifest arrays.
+ * Hydrates a recursive OmegaNode tree from the flat canonical manifest arrays.
+ *
+ * Delegates to flatToTree: the canonical ACEMM shape (`ui.layout.containers` +
+ * `ui.controls` + `ui.jacks`) is a subset of the runtime schema that flatToTree
+ * normalizes, so both converters share the same semantics:
+ * - jacks (role:'io' | type:*jack* | presentation.component:'port') → cellRef:'port'
+ * - controls → cellRef from the VISUAL component (component-first), then type
+ * - containers propagate their variant into node.style.variant
+ * - when existingTree is supplied, any node with a matching id keeps its prior
+ *   layout.pos / layout.size / zIndex / style / meta — editor edits are never
+ *   wiped on manifest load, and editor-only nodes survive.
+ * - children are deduped by id (fresh nodes win) — no duplicates on re-conversion.
  */
 export function manifestToTree(manifest: OMEGA_Manifest, existingTree?: OmegaNode): OmegaNode {
-  const ui = manifest.ui;
-  const containers = ui?.layout?.containers || [];
-  const controls = ui?.controls || [];
-  const jacks = ui?.jacks || [];
-
-  // Try to recover MAIN_FACE from existing tree if available (Phase 10.1C)
-  const existingMainFace = existingTree?.children?.find(c => c.id === 'MAIN_FACE');
-
-  // 1. Create the Root Rack
-  const root: OmegaNode = {
-    id: manifest.id || 'anonymous_rack',
-    kind: 'rack',
-    role: 'root',
-      layout: {
-        pos: existingTree?.layout?.pos || { x: 0, y: 0 },
-        size: existingTree?.layout?.size || ui?.dimensions
-      },
-    children: []
-  };
-
-  // 2. Create the Primary Face (MAIN)
-  const mainFace: OmegaNode = {
-    id: 'MAIN_FACE',
-    kind: 'face',
-    role: 'presentation',
-    layout: {
-      pos: existingMainFace?.layout?.pos || { x: 0, y: 0 },
-      size: existingMainFace?.layout?.size || ui?.dimensions
-    },
-    children: []
-  };
-  root.children?.push(mainFace);
-
-  // 3. Map Containers
-  const containerMap = new Map<string, OmegaNode>();
-  containers.forEach(c => {
-    const node: OmegaNode = {
-      id: c.id,
-      kind: 'container',
-      role: 'infrastructure',
-      layout: {
-        pos: c.pos,
-        size: (typeof c.size.width === 'number') 
-          ? { width: c.size.width, height: c.size.height }
-          : (typeof c.size.w === 'number' && typeof c.size.h === 'number')
-            ? { width: c.size.w, height: c.size.h }
-            : undefined, 
-        zIndex: c.zIndex
-      },
-      style: {
-        color: c.color || undefined,
-        indicatorColor: c.indicatorColor || undefined,
-        rounding: c.rounding || undefined,
-        borderWidth: c.borderWidth || undefined
-      },
-      children: []
-    };
-    containerMap.set(c.id, node);
-    mainFace.children?.push(node);
-  });
-
-  // 4. Map Entities (Controls & Jacks)
-  const allEntities = [...controls, ...jacks];
-  allEntities.forEach(entity => {
-    const node: OmegaNode = {
-      id: entity.id,
-      kind: 'cell',
-      role: entity.role || 'control',
-      bind: entity.bind,
-      layout: {
-        pos: entity.pos,
-        size: entity.presentation?.size ? {
-          width: entity.presentation.size.width,
-          height: entity.presentation.size.height
-        } : undefined,
-        zIndex: entity.presentation?.style?.zIndex
-      },
-      style: entity.presentation?.style,
-      cellRef: entity.type as string
-    };
-
-    const containerId = entity.presentation?.container;
-    const targetParent = containerId ? containerMap.get(containerId) : mainFace;
-    
-    if (targetParent) {
-      targetParent.children = targetParent.children || [];
-      targetParent.children.push(node);
-    } else {
-      mainFace.children?.push(node);
-    }
-  });
-
-  return root;
+  // El schema canónico es un subconjunto del runtime schema que flatToTree
+  // normaliza; el cast refleja que RuntimeFlatManifest es más laxo por diseño.
+  return flatToTree(manifest as unknown as Partial<RuntimeFlatManifest>, existingTree);
 }

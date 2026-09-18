@@ -23,6 +23,34 @@ export type { DesignTokens } from './constants/design-tokens';
 /* ─── Hooks ─── */
 export { useDesignTokens } from './hooks/useDesignTokens';
 
+/* ─── Panel Contract (render + interacción + geometría) ─── */
+export { collectBindingsFromTree, PANEL_SELECTORS } from './types/panelRenderer';
+export type {
+  PanelGeometry,
+  PanelBinding,
+  PanelBindingKind,
+  PanelBindingRange,
+  RenderPanelOptions,
+  ResolvedRenderOptions,
+  PanelRenderResult,
+  SetParamPayload,
+  PanelTransport,
+  PanelEvent,
+  PanelEventType,
+  RackUnit,
+} from './types/panelRenderer';
+
+export {
+  RACK_HP_WIDTH_PX,
+  resolvePanelGeometry,
+  resolveRenderOptions,
+} from './uca/panelGeometry';
+
+export { InteractionManager, KNOB_SENSITIVITY_PX } from './interaction/InteractionManager';
+
+export { flatToTree } from './uca/converters/flatToTree';
+export type { RuntimeFlatItem, RuntimeFlatContainer, RuntimeFlatManifest } from './uca/converters/flatToTree';
+
 /* ─── Types (re-export most used) ─── */
 export type {
   OMEGA_Manifest,

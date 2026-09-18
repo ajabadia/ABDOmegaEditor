@@ -1,3 +1,10 @@
+# Workspace pnpm de la suite ABDSynths (paquetes compartidos zero-copy).
+#
+# NOTA: ABDBankManager NO es miembro del workspace porque es él mismo un
+# workspace pnpm interno (packages/{core,contracts,adapters,ui}) y pnpm no
+# soporta workspaces anidados. Sus paquetes internos se consumen por otros
+# proyectos cuando se publiquen (o vía file:/link:), y su core C++ se integra
+# por CMake (add_subdirectory / FetchContent, tag v0.3.0-lib).
 packages:
   - ABDSharedAssets
   - ABDSharedCode/MidiKeyboard

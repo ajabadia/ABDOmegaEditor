@@ -15,7 +15,7 @@
     opacity: var(--omega-opacity, 0.3);
     position: relative;
     overflow: hidden;
-    filter: var(--primitive-shadow) !important;
+    filter: var(--primitive-shadow-filter) !important;
 }
 
 .led-glass-overlay {
