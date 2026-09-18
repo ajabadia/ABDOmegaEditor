@@ -2,7 +2,8 @@
 #
 # ROL DE ESTE REPO:
 #  - Historia de ABDOmegaEditor (deprecado; sucesor: ABDOmegaUnified).
-#    Rama de archivo en GitHub: ajabadia/ABDOmegaEditor → workspace-history
+#    El working tree se archivó en _Deprecados/ y la historia completa
+#    vive en GitHub: ajabadia/ABDOmegaEditor → rama workspace-history.
 #  - Raíz del pnpm workspace (package.json, pnpm-workspace.yaml, pnpm-lock.yaml).
 #
 # Los proyectos con carpeta propia tienen SU PROPIO repo en GitHub
@@ -18,10 +19,11 @@
 *.zip
 node_modules/
 ABDOmegaEditor___222/
-ABDEEP-1/
-ABDEEP-2/
-ABDMIDIKeyb_old_backup/
-synthClones/
+
+# --- Carpetas de archivo fuera de git (excluidas del backup en GitHub) ---
+_Deprecados/
+_RESOURCES/
+_backups/
 
 # --- Proyectos con repo propio en GitHub ---
 ABDAudioLab/
@@ -31,8 +33,6 @@ ABDEep/
 ABDJUNiO601/
 ABDMS2000/
 ABDNeural/
-ABDOmega/
-ABDOmega plugins/
 ABDOmegaUnified/
 ABDPro008/
 ABDScope/
@@ -41,8 +41,6 @@ ABDSharedCode/
 ABDSynthsWeb/
 
 # --- Material de referencia / utilidades sueltas ---
-IA A TOPE/
-RESOURCES/
 scripts/
 handoff.md
 HANDOFF_MODEL_REGISTRY_FILTER.md

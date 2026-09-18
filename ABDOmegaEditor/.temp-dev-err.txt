@@ -1,5 +1,0 @@
-Persisting failed: Unable to write SST file 00000195.sst
-
-Caused by:
-    El sistema no puede encontrar la ruta especificada. (os error 3)
-Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
