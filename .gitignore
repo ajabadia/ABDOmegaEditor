@@ -1,7 +1,49 @@
+# Workspace raíz de la suite ABDSynths (pnpm workspace).
+#
+# ROL DE ESTE REPO:
+#  - Historia de ABDOmegaEditor (deprecado; sucesor: ABDOmegaUnified).
+#    Rama de archivo en GitHub: ajabadia/ABDOmegaEditor → workspace-history
+#  - Raíz del pnpm workspace (package.json, pnpm-workspace.yaml, pnpm-lock.yaml).
+#
+# Los proyectos con carpeta propia tienen SU PROPIO repo en GitHub
+# (github.com/ajabadia/<Proyecto>) y NO se trackean aquí.
+
+# --- Secretos / historiales de herramienta ---
 .aider*
 .env*
+.antigravityignore
+
+# --- Artefactos / backups ---
 *.rar
 *.zip
+node_modules/
+ABDOmegaEditor___222/
+ABDEEP-1/
+ABDEEP-2/
+ABDMIDIKeyb_old_backup/
+synthClones/
 
-# ABDOmegaUnified es repo propio (github.com/ajabadia/ABDOmegaUnified)
+# --- Proyectos con repo propio en GitHub ---
+ABDAudioLab/
+ABDBankManager/
+ABDCZ101/
+ABDEep/
+ABDJUNiO601/
+ABDMS2000/
+ABDNeural/
+ABDOmega/
+ABDOmega plugins/
 ABDOmegaUnified/
+ABDPro008/
+ABDScope/
+ABDSharedAssets/
+ABDSharedCode/
+ABDSynthsWeb/
+
+# --- Material de referencia / utilidades sueltas ---
+IA A TOPE/
+RESOURCES/
+scripts/
+handoff.md
+HANDOFF_MODEL_REGISTRY_FILTER.md
+start_watchdog.bat
