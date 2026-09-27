@@ -40,6 +40,21 @@ ABDSharedAssets/
 ABDSharedCode/
 ABDSynthsWeb/
 
+# --- Scratch de sesiones (nunca producto) ---
+# Parches y sondas de una sesion de agente, y lo que las herramientas dejan
+# al escribir en la raiz. Los proyectos con repo propio viven en carpetas
+# (ABDNeural/, ABDCZ101/...) y ya ignoran lo suyo; aqui solo la raiz.
+/_*.py
+/_*.mjs
+/_*.sh
+/_*.md5
+/_*.part.txt
+/__pycache__/
+/_specific_example/
+/.freebuff/
+/.agents/
+/build-reference/
+
 # --- Material de referencia / utilidades sueltas ---
 scripts/
 handoff.md
