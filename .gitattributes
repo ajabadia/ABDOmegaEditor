@@ -1,0 +1,24 @@
+# Una sola regla, y por que este fichero existe en la raiz del workspace.
+#
+# Este repositorio versiona nueve ficheros y todos son de texto: un
+# `.gitignore`, un README, tres ficheros de configuracion del workspace y los
+# cuatro guards de `tools/`. Con `core.autocrlf=true` en la maquina, un checkout
+# aqui pone CRLF en el arbol de trabajo mientras el blob esta en LF.
+#
+# Y eso no se ve: `git diff` normaliza antes de comparar y sale vacio, asi que el
+# fichero se va ensuciando en disco sin que ninguna puerta se entere. Es el caso
+# "CRLF solo en el disco" de `tools/auditar_eol.mjs`, que es el que obliga a
+# mirar los bytes en vez de preguntarle a git.
+#
+# `text=auto` y no `text`: con `auto` decide git por el contenido, de modo que un
+# binario que alguien meta en el futuro se queda como esta en vez de quedar
+# normalizado. `auto` decide por bytes, no por extension, asi que no hay que ir
+# anadiendo una linea por cada tipo nuevo.
+#
+# LO QUE ESTA REGLA NO HACE, Y CONCRETAMENTE. No llega a los repos hermanos:
+# cada uno es un repositorio con su propio arbol y su propio `.gitattributes`, y
+# las reglas de atributos se leen de dentro del repo, no de los directorios que
+# hay por encima. De los quince repos de la suite, cuatro declaran reglas `eol`
+# y once no declaran ninguna; esto deja de ser cierto solo para estos nueve
+# ficheros, y el resto sigue como estaba.
+* text=auto eol=lf
