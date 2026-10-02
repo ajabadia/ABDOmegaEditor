@@ -737,20 +737,26 @@ describe('la suite real', () => {
     // suelo se ajusta y la primera dio verguenza. Medido:
     //
     //   clon limpio de las ramas por defecto       667
-    //   runner, run 37023946682                    674
-    //   runner, run 37012783300 (unas horas antes) 1447
+    //   runner sobre workspace-history              680
+    //   runner sobre main                          1470
     //   maquina de desarrollo                     1051
     //
-    // Los dos numeros del runner son la MISMA suite y el MISMO paso de clon,
-    // byte a byte, y entre ellos se lleve mas de la mitad. La razon es que lo
-    // que este suelo mide no es el guard sino el estado de los catorce repos
-    // hermanos, que empuja gente distinta varias veces al dia. Un suelo
-    // absoluto aqui no es una propiedad del codigo: es una fotografia.
+    // La primera vez que se calibro se tomo el 1447 de un run como si fuera la
+    // medida buena, y era el numero de otro sitio. La raiz de la suite es uno
+    // de los quince repos que se auditan, y su `.gitattributes` es una sola
+    // regla que alcanza a todo lo que hay encima: `* text=auto eol=lf`. En
+    // `main` la raiz es la aplicacion entera, 803 ficheros y los 803
+    // auditados; en `workspace-history` son trece. Los catorce hermanos aportan
+    // 667 en los dos casos, y la diferencia entera la hacia la rama que estaba
+    // desplegada. El suelo no dependia de la suite, que es lo que parece, sino
+    // de que rama se habia checkoutado.
     //
-    // Asi que quinientos, por debajo de la medida mas pobre que se ha visto
-    // (667) y con margen para que la suite se mueva. Y si algun dia esto se
-    // vuelve a rozar, la respuesta no es bajar el suelo otra vez: es mirar si
-    // un repo ha dejado de declarar reglas, que es lo unico que lo justificaria.
+    // Asi que quinientos, por debajo de la medida mas pobre de las cuatro, con
+    // margen para que la suite se mueva. La leccion que si se sostiene es que
+    // una medida sola no es un suelo: 900 salia bien en `main` y rompia en
+    // `workspace-history`, y solo se ve con los dos runs medidos a la vez. Y si
+    // un dia esto vuelve a rozar, lo que hay que mirar es si un repo ha dejado
+    // de declarar reglas, que es lo unico que lo justificaria.
     const auditados = auditaSuite().reduce((a, r) => a + r.auditados, 0);
 
     assert.ok(auditados > 500, 'solo ha auditado ' + auditados + ' ficheros');
@@ -758,18 +764,17 @@ describe('la suite real', () => {
 
   it('y de mas de diez mil ficheros trackeados en la suite', () => {
     // El suelo es el MENOR de los entornos, no el mayor. En la maquina de
-    // desarrollo se ven 16716 ficheros y en el runner 11511: la maquina tiene
-    // historia y ramas que el clon `--depth 1` no baja. Un suelo de quince mil
-    // seria mas exigente que el runner, y un suelo que el runner no puede
-    // cumplir no comprueba nada: en CI el test falla siempre y nadie lo lee
-    // como un suelo, sino como ruido.
+    // desarrollo se ven 16716 ficheros, en el runner sobre `workspace-history`
+    // 11517 y sobre `main` 12307: la maquina tiene historia y ramas que el clon
+    // `--depth 1` no baja. Un suelo de quince mil seria mas exigente que el
+    // runner, y un suelo que el runner no puede cumplir no comprueba nada: en
+    // CI el test falla siempre y nadie lo lee como un suelo, sino como ruido.
     //
-    // Diez mil, y no once, por el mismo motivo que el de arriba: entre los dos
-    // runs del runner se perdieron 726 ficheros sin que nadie tocara el guard,
-    // y la cifra depende mucho de un solo repo (ABDJUNiO601 aporta 763
-    // ficheros en el clon del runner y 6007 en la maquina, que tiene ramas que
-    // el `--depth 1` no baja). Un suelo con un cuatro por ciento de margen
-    // sobre la medida es un suelo que rompe solo.
+    // Diez mil, y no once, por el mismo motivo que el de arriba: la cifra
+    // depende de que rama esta desplegada (803 ficheros de raiz en `main` contra
+    // trece en `workspace-history`) y de cuantos ficheros trackea cada hermano,
+    // que es un numero que cambia con cada push. Un suelo con un cuatro por
+    // ciento de margen sobre la medida es un suelo que rompe solo.
     const ficheros = auditaSuite().reduce((a, r) => a + r.ficheros, 0);
 
     assert.ok(ficheros > 10000, 'solo ha visto ' + ficheros + ' ficheros trackeados');
@@ -781,10 +786,11 @@ describe('la suite real', () => {
 
   it('y mas de cien ficheros con `text` sin `eol`, que se juzgan por el indice', () => {
     // El suelo de la ultima puerta. Si `declaraText` se rompiera y volviera a
-    // exigir un `text` declarado que `check-attr` no devuelve, estos 123
+    // exigir un `text` declarado que `check-attr` no devuelve, estos 125
     // ficheros volverian a la casilla de "nada que juzgar" y el numero de
-    // `auditados` bajaria de 1.010 a 887 sin que nada se pusiera rojo. Este
-    // test es lo que lo delata.
+    // `auditados` bajaria de 680 a 555, que sigue por encima del suelo de
+    // quinientos: o sea que el suelo de `auditados` NO lo delata, y este test
+    // si. Por eso existe aparte y no como un detalle del otro.
     const soloIndice = auditaSuite().reduce((a, r) => a + (r.textSinEol || 0), 0);
 
     assert.ok(soloIndice > 100, 'solo ha visto ' + soloIndice + ' ficheros con text sin eol');
