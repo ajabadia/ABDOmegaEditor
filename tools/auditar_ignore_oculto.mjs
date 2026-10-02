@@ -488,11 +488,31 @@ export function auditaSuite (raiz = raizDeSuite(), opciones = {}) {
   return reposDeSuite(raiz).map((repo) => auditaRepo(repo, opciones));
 }
 
+/**
+ * Lo que pide la linea de comandos, y nada mas.
+ *
+ * `--caja-sensible` es lo unico que hay: medir con la semantica de Linux desde
+ * cualquier maquina, para que el numero que imprime el guard signifique lo mismo
+ * en todas partes. Es un no-op en un runner de Linux, que es donde corre hoy, y
+ * es lo que hace que el numero siga siendo comparable con la linea base cuando
+ * alguien corre el guard en un Windows.
+ *
+ * Se lee aqui y no dentro de `auditaSuite` porque `process.argv` dentro de una
+ * libreria es un disparo lateral: un `import` no deberia cambiar lo que hace un
+ * `auditaSuite()`.
+ *
+ * @param {string[]} args argumentos de la linea de comandos, sin el node.
+ * @returns {{cajaSensible: boolean}}
+ */
+export function opcionesDeConsola (args = process.argv.slice(2)) {
+  return { cajaSensible: args.includes('--caja-sensible') };
+}
+
 // El `main` va debajo del `if` para que importar este fichero en el test no
 // ejecute la auditoria entera por el casual de que el test quiera sus datos.
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {
-    const porRepo = auditaSuite();
+    const porRepo = auditaSuite(undefined, opcionesDeConsola());
 
     // La reimpresion de la linea base va PRIMERO y sale antes: si lo que se
     // quiere es pegarla en el fuente, no hace falta que salga delante el informe
