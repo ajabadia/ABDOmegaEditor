@@ -26,14 +26,36 @@ de la historia de **ABDOmegaEditor** (deprecado, sucesor: **ABDOmegaUnified**).
 
 2. **Archivo de ABDOmegaEditor** — el editor fue deprecado en favor de
    ABDOmegaUnified. Su working tree vive en `_Deprecados/ABDOmegaEditor/` y su
-   historia completa está preservada en
-   [ajabadia/ABDOmegaEditor](https://github.com/ajabadia/ABDOmegaEditor):
+   historia preservada en
+   [ajabadia/ABDOmegaEditor](https://github.com/ajabadia/ABDOmegaEditor).
 
-   | Rama | Contenido |
-   |---|---|
-   | `main` | Historia standalone del editor (congelada en 2026-06-18) |
-   | `master` | Historia standalone alternativa |
-   | `workspace-history` | Historia del editor tal y como vivía en este workspace (incluye los últimos commits de la era deprecada, hasta 2026-09-18) |
+## Ramas de este repo
+
+El remoto `ajabadia/ABDOmegaEditor` contiene **tres historias distintas**, cada
+una con su propia raíz. La rama local de este workspace es `workspace-history`
+y hace upstream a `origin/workspace-history`.
+
+| Rama (local y remota) | Raíz | Commits | Contenido |
+|---|---|---|---|
+| `workspace-history` **(la de este repo)** | `212c0ec` | 60 | Historia del workspace: el editor mientras vivía aquí, y desde `92c6c96` el workspace pnpm tal y como está hoy. **Rama activa.** |
+| `master` | `212c0ec` | 23 | Historia del editor standalone. Se bifurca de `workspace-history` en `6852b1d` y termina en `90b8e48` (2026-06-18). **Congelada.** |
+| `main` (default en GitHub) | `e88cb04` | 15 | OMEGA Manifest Editor, historia standalone **sin ancestro común** con las otras dos. **Congelada.** |
+
+Notas:
+
+- `master` y `workspace-history` comparten raíz y las primeras 23 confirmaciones;
+  se separaron en `6852b1d`. `main` es una raíz totalmente aparte (`e88cb04`,
+  "Initial commit: Standalone OMEGA Manifest Editor").
+- La rama local se llama `workspace-history` (antes `master`, nombre que en el
+  remoto designaba otra historia y hacía que `git status` contara commits de más).
+- La `master` remota fue reescrita por fuerza el 2026-09-18:
+  `ba96a67 → 90b8e48`. Ese `ba96a67` **no era historia del editor**: era el
+  commit raíz de `@abdsynths/midi-keyb` (el repo
+  [ajabadia/ABDMIDIKeyb](https://github.com/ajabadia/ABDMIDIKeyb)), empujado por
+  error a esta rama. Sigue íntegro como `master` de su propio repo, así que el
+  force-push no perdió trabajo.
+- La rama por defecto del repo en GitHub es `main`, que **no** es la rama del
+  workspace. Al abrir el repo hay que ir a `workspace-history`.
 
 ## Mapa de repos de la suite
 
@@ -52,7 +74,7 @@ de la historia de **ABDOmegaEditor** (deprecado, sucesor: **ABDOmegaUnified**).
 | ABDSharedAssets | [ajabadia/ABDSharedAssets](https://github.com/ajabadia/ABDSharedAssets) | Assets/contratos compartidos (junctions) |
 | ABDSharedCode | [ajabadia/ABDSharedCode](https://github.com/ajabadia/ABDSharedCode) | SynthCore (`abd::synth`), MidiKeyboard, WebView2Bridge… |
 | ABDSynthsWeb | [ajabadia/ABDSynthWeb](https://github.com/ajabadia/ABDSynthWeb) | Web pública |
-| ABDMIDIKeyb (archivado) | [ajabadia/ABDMIDIKeyb](https://github.com/ajabadia/ABDMIDIKeyb) | Teclado web standalone; el código vivo está en `ABDSharedCode/MidiKeyboard` |
+| ABDMIDIKeyb (archivado) | [ajabadia/ABDMIDIKeyb](https://github.com/ajabadia/ABDMIDIKeyb) | Teclado web standalone (`@abdsynths/midi-keyb`); el código vivo está en `ABDSharedCode/MidiKeyboard` |
 
 > **ABDSuite** (`github.com/ajabadia/ABDSuite`) no pertenece a esta suite:
 > es el monorepo SaaS multi-tenant (Turborepo) de la otra familia de proyectos ABD.
@@ -72,5 +94,7 @@ Sin copia en GitHub — respaldo manual (disco externo) bajo tu responsabilidad:
 ```bash
 pnpm install                     # instalar deps de todos los paquetes del workspace
 pnpm -r <script>                 # ejecutar un script en todos los paquetes
-git push origin master:workspace-history   # sincronizar la rama de archivo del editor
+git push                         # la rama local ya hace upstream a origin/workspace-history
+node tools/auditar_ignore_oculto.mjs   # ningún fichero trackeado puede estar tapado por .gitignore
+node tools/auditar_eol.mjs             # ningún fichero trackeado puede incumplir la regla de EOL
 ```
