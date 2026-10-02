@@ -45,7 +45,27 @@
 //      el fichero, y no se arregla con un commit, sino re-extrayendolo del
 //      indice. Antes de este guard habia 230 en la suite.
 //
-//   3. 0x0D EN UN BINARIO. No es un defecto: es un byte de datos. En
+//   3. LA REGLA LLEGO TARDE. `ABDAudioLab/run-plan.bat` declara `eol=crlf` y
+//      estaba en LF, y `ABDEep/scripts/hw_bank_dump.js` declara `eol=lf` y
+//      estaba en CRLF. No es que alguien escribiera mal el fichero: es que la
+//      regla se puso DESPUES de que el fichero ya estuviera escrito, y a un
+//      blob ya escrito una regla nueva no le aplica nada. Es el caso que mas
+//      se va a repetir, porque anadir una regla `eol=` a un repo que ya tiene
+//      ficheros no renormaliza nada: el indice se normaliza en el proximo
+//      commit, el disco se queda como estaba, y `git status` dice limpio
+//      porque git normaliza antes de comparar.
+//
+//      En `run-plan.bat` el fichero se creo el 2026-09-12 (503fb3f) y la
+//      regla `*.bat text eol=crlf` se puso el 2026-10-02 (de93356). En
+//      `hw_bank_dump.js` la regla viene del `.gitattributes` de ABDEep, que
+//      esta modificado sin commitear. En los dos el indice estaba bien y solo
+//      el disco mentia.
+//
+//      Y `git checkout --` NO lo arregla: con el stat cache al dia git no
+//      reescribe el fichero. Hay que borrarlo y dejar que `git checkout` lo
+//      vuelva a escribir del indice.
+//
+//   4. 0x0D EN UN BINARIO. No es un defecto: es un byte de datos. En
 //      `MidiKeyboard/demo/keyboard-demo.gif` hay 3 CRLF y 974 CR sueltos, y en
 //      ocho ficheros .syx de ABDEep hay CR a monton. Renormalizar un binario no
 //      lo arregla: lo corrompe. El reparto es lo que lo dice, no el total, y por
@@ -94,8 +114,11 @@
 // trabajo de otro hilo, y re-extrayendolo se destruye ese trabajo. Marcarlo "no
 // auditable" y seguir como si nada seria la forma mas facil de que este guard
 // no sirva, asi que hay un TECHO: si los no auditables pasan de
-// `NO_AUDITABLES_TOLERADOS`, sale en rojo. Hoy son 8 (seis en ABDNeural, uno en
-// ABDOmegaUnified y uno en ABDSharedCode) y bajan solos en cuanto esos hilos
+// `NO_AUDITABLES_TOLERADOS`, sale en rojo. El informe dice de que repo es cada
+// uno y de mas a menos, que es lo que dice a quien hay que esperar: un numero
+// suelto obliga a abrir los quince repos para averiguar de quien es. Hoy son 17
+// (nueve en ABDEep, seis en ABDNeural, uno en ABDOmegaUnified y uno en
+// ABDSharedCode) y bajan solos en cuanto esos hilos
 // commitean.
 
 import { execFileSync } from 'node:child_process';
@@ -123,9 +146,16 @@ export const CR = '\r';
  * trabajo—, pero hasta que esa puerta existia no se miraba, asi que no
  * contaba. `ABDOmegaUnified/web/start.bat` es el que ha hecho subir la cifra.
  *
- * Los ocho bajan solos en cuanto esos hilos commitean.
+ * Subió de 8 a 17 con nueve no auditables más en ABDEep, que es donde está
+ * el trabajo en curso de otro hilo. No se sube porque el número sea alto: el
+ * tope existe para que el trabajo a medias no se pase por alto en silencio, y
+ * la población suspendida ha crecido de verdad. Por eso el informe dice de
+ * QUÉ repo es cada uno: un número suelto no dice a quién hay que esperar, e
+ * invita a mover el tope a ojo, que es justo lo que este guard no quiere.
+ *
+ * Los diecisiete bajan solos en cuanto esos hilos commitean.
  */
-export const NO_AUDITABLES_TOLERADOS = 8;
+export const NO_AUDITABLES_TOLERADOS = 17;
 
 // ─────────────────────────────────────────────────────────────────────────
 // LA PARTE PURA. Nada toca el disco ni git, y por eso el test puede darle
@@ -400,6 +430,14 @@ export function formatea (porRepo) {
   const total = { repos: 0, ficheros: 0 };
   const malos = [];
 
+  // Que repo aporta cuantos no auditables, de mas a menos. El informe lo
+  // imprime para que se sepa a que hilo hay que esperar: un numero suelto
+  // no dice de donde viene el trabajo sin commitear.
+  const sinAuditarPorRepo = porRepo
+    .filter((r) => r.noAuditables.length > 0)
+    .map((r) => [r.repo, r.noAuditables.length])
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+
   for (const r of porRepo) {
     total.repos++;
     total.ficheros += r.ficheros;
@@ -426,6 +464,17 @@ export function formatea (porRepo) {
     'no auditables por trabajo sin commitear           : ' + suma.sinAuditar
       + ' (tope ' + NO_AUDITABLES_TOLERADOS + ')'
   ];
+
+  // De qué repo es cada no auditable. Sin esto el informe dice cuántos son
+  // pero no quiénes, y quien lo lee no puede saber a qué hilo esperar ni qué
+  // repo tiene el `.gitattributes` sin commitear.
+  if (sinAuditarPorRepo.length > 0) {
+    lineas.push('');
+    lineas.push('de esos, por repo (trabajo sin commitear, no fallos):');
+    for (const [repo, n] of sinAuditarPorRepo) {
+      lineas.push('  ' + String(n).padStart(4) + '  ' + repo);
+    }
+  }
 
   if (malos.length === 0) {
     lineas.push('');

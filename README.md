@@ -96,7 +96,7 @@ pnpm install                          # instalar deps de todos los paquetes del 
 pnpm -r <script>                      # ejecutar un script en todos los paquetes
 git push                              # la rama local ya hace upstream a origin/workspace-history
 node --test tools/auditar_ignore_oculto.test.mjs       # 33 tests
-node --test tools/auditar_eol.test.mjs                 # 55 tests
+node --test tools/auditar_eol.test.mjs                 # 57 tests
 node --test tools/auditar_justificacion_crlf.test.mjs  # 28 tests
 
 node tools/auditar_ignore_oculto.mjs        # que ningun fichero trackeado este tapado por .gitignore

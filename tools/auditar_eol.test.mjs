@@ -454,6 +454,39 @@ describe('el informe dice lo que ha mirado', () => {
 
     assert.match(texto, new RegExp('no auditables.*: 2 \\(tope ' + NO_AUDITABLES_TOLERADOS + '\\)'));
   });
+
+  it('el informe dice de que repo es cada no auditable, que es para eso que sirve', () => {
+    // El numero solo dice cuantos son. Quien lee el informe tiene que poder
+    // saber a que hilo esperar sin abrir los 17 repos, y eso solo se puede si
+    // el informe nombra el repo de cada uno.
+    const texto = formatea([
+      { repo: 'ABDEep', ficheros: 10, auditados: 2, conEolCrlf: 0, sinPolitica: 8,
+        binariosConCr: 0, incumplimientos: [], noAuditables: ['a.cpp', 'b.cpp', 'c.cpp'] },
+      { repo: 'ABDNeural', ficheros: 10, auditados: 2, conEolCrlf: 0, sinPolitica: 8,
+        binariosConCr: 0, incumplimientos: [], noAuditables: ['d.cpp'] },
+      { repo: 'Limpio', ficheros: 10, auditados: 2, conEolCrlf: 0, sinPolitica: 8,
+        binariosConCr: 0, incumplimientos: [], noAuditables: [] }
+    ]);
+
+    assert.match(texto, /de esos, por repo/);
+    assert.match(texto, /ABDEep/);
+    assert.match(texto, /ABDNeural/);
+    // El repo que no aporta ninguno no se nombra:=listarlo seria ruido.
+    assert.doesNotMatch(texto, /Limpio/);
+  });
+
+  it('el desglose va de mas a menos no auditables, que es como se lee un reparto', () => {
+    const texto = formatea([
+      { repo: 'Poco', ficheros: 10, auditados: 2, conEolCrlf: 0, sinPolitica: 8,
+        binariosConCr: 0, incumplimientos: [], noAuditables: ['a.cpp'] },
+      { repo: 'Mucho', ficheros: 10, auditados: 2, conEolCrlf: 0, sinPolitica: 8,
+        binariosConCr: 0, incumplimientos: [],
+        noAuditables: ['b.cpp', 'c.cpp', 'd.cpp', 'e.cpp'] }
+    ]);
+
+    assert.ok(texto.indexOf('Mucho') < texto.indexOf('Poco'),
+      'el repo con mas no auditables tiene que salir antes');
+  });
 });
 
 // ─────────────────────────────────────────────────────────────────────────
