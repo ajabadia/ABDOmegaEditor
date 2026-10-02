@@ -187,6 +187,12 @@ jobs:
       - name: Auditar el tamano de la suite (que no se haya encogido)
         run: node tools/auditar_tamano.mjs
 
+      # Ademas de la rama desplegada, este guard mira TODAS las ramas de cada repo.
+      # No es por afan de mirar mas: ABDJUNiO601 tiene 3.951 ficheros trackeados y
+      # tapados en `feature/fidelity-certified` y NINGUNO en `main`, porque el
+      # `.gitignore` que los tapa es el de la rama. Sin esto, el runner media 0 y
+      # la maquina 3.951, y el techo de la linea base era un numero que ningun
+      # entorno habia medido nunca. Cuesta unos quince segundos mas.
       - name: Auditar .gitignore (ficheros trackeados tapados)
         run: node tools/auditar_ignore_oculto.mjs --caja-sensible
 

@@ -37,7 +37,9 @@ import { join } from 'node:path';
 import {
   raizDeSuite, descubreRepos, reposDeSuite, auditaRepo, auditaSuite,
   camposDeCheckIgnore, tapaLosTrackeados, formatea,
-  DEUDA_CONOCIDA, comparaConLineaBase, empeoran, formateaDesviaciones, opcionesDeConsola
+  DEUDA_CONOCIDA, comparaConLineaBase, empeoran, formateaDesviaciones, opcionesDeConsola,
+  auditaArbol, auditaRamas, auditaRamasDeSuite, peorCasoPorRepo,
+  comparaRamasConLineaBase, formateaRamas
 } from './auditar_ignore_oculto.mjs';
 
 /** El separador de `check-ignore -z`, escrito explicitamente. */
@@ -668,5 +670,513 @@ describe('la suite real, que es a quien este guard tiene que vigilar', () => {
       .map(([repo, d]) => repo + ': ' + d + ' de ' + DIFERENCIA_DE_CAJA[repo]);
 
     assert.deepEqual(pases, [], 'diferencias de caja por encima de las conocidas: ' + pases.join(', '));
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────
+// LAS RAMAS QUE NO SON LA QUE ESTA DESPLEGADA
+//
+// El caso que este bloque persigue esta medido y es grande: ABDJUNiO601 tiene
+// 3.951 ficheros tapados en `origin/feature/fidelity-certified` y NINGUNO en
+// `main`, porque el `.gitignore` que los tapa es el de la rama y en `main` hay
+// otras reglas. El guard de la rama desplegada no es que este mal: es que estaba
+// mirando el arbol equivocado y dando un numero que no era el de la suite.
+//
+// Y por el camino aparece un repo que no estaba en la linea base: ABDOmega, que en
+// `main` no tiene nada tapado y en `origin/master` tiene cuatro. Eso es una deuda
+// REAL que no se veia, y por si sola justifica el trabajo.
+//
+// ─────────────────────────────────────────────────────────────────────────
+
+/**
+ * Un repo con la rama limpia desplegada y una rama sucia subida al remoto.
+ *
+ * Es la situacion del runner: el clon se queda en la rama por defecto, que es la
+ * que no tiene nada, y la deuda esta en una rama que nadie ha comprobado. Montar
+ * esto cuesta mas que los fixtures de un solo arbol porque el caso lo es: sin un
+ * remoto al que subir la rama, `auditaRamas` no tiene nada que mirar salvo el
+ * `refs/heads`, que el runner nunca tiene.
+ *
+ * El `core.ignorecase` va FIJADO en el repo de mentira, y el clon tambien, porque
+ * la respuesta a "que regla tapa que" depende de la maquina y el test tiene que
+ * dar lo mismo en un Windows y en un Linux. El `autocrlf=false` va en el `add` y
+ * no solo en el commit, por lo mismo que en los fixtures de ramas del guard de EOL:
+ * con el `autocrlf=true` de la maquina, el `\r\n` se normaliza al añadir y el
+ * defecto que el test quiere ver desaparece solo.
+ */
+function repoConRamaSucia (patron = '/build/', nombreTapado = 'build/x.txt') {
+  const dir = temporal('ramas-');
+  const sub = join(dir, 'repo');
+  const remoto = join(dir, 'remoto.git');
+
+  mkdirSync(sub);
+  mkdirSync(remoto);
+
+  const g = (args, opciones) => git(sub, ['-c', 'core.autocrlf=false', ...args], opciones);
+
+  g(['init', '-q', '--initial-branch=main', '.']);
+  g(['config', 'core.ignorecase', 'false']);
+  execFileSync('git', ['init', '-q', '--bare', remoto], { stdio: 'ignore' });
+  g(['remote', 'add', 'origen', remoto]);
+
+  // La rama por defecto: limpia. Sin `.gitignore` y sin ficheros tapados.
+  writeFileSync(join(sub, 'base.txt'), 'hola\n');
+  g(['add', '-A']);
+  g(['commit', '-qm', 'raiz limpia']);
+  g(['push', '-q', '-u', 'origen', 'main']);
+
+  // La rama sucia: la regla `/build/` entra DESPUES del commit del repositorio
+  // limpio, y el fichero se mete con `add -f` porque con la regla puesta el `add`
+  // normal no lo dejaria entrar. Es exactamente el caso "la regla llego tarde",
+  // que es el que el guard busca.
+  g(['checkout', '-q', '-b', 'sucia']);
+  writeFileSync(join(sub, 'base.txt'), 'hola\n');
+  writeFileSync(join(sub, '.gitignore'), patron + '\n');
+  g(['add', '-A']);
+  mkdirSync(join(sub, 'build'), { recursive: true });
+  writeFileSync(join(sub, nombreTapado), 'tapo\n');
+  g(['add', '-f', nombreTapado]);
+  g(['commit', '-qm', 'regla que tapa lo ya trackeado']);
+  g(['push', '-q', '-u', 'origen', 'sucia']);
+
+  // Y se vuelve a la limpia, que es como esta el runner.
+  g(['checkout', '-q', 'main']);
+
+  return { sub, remoto };
+}
+
+describe('el metodo del repo de mentira, que es donde esta el riesgo', () => {
+  it('pregunta lo mismo por un arbol que por el arbol de trabajo', () => {
+    // EL TEST QUE SOSTIENE TODO. `auditaArbol` monta otro repo con las reglas de
+    // la rama para que sea git el que case, y si eso no da exactamente lo mismo
+    // que `auditaRepo` sobre el arbol de trabajo, todo lo que sale de ahi es un
+    // numero inventado con paso deauditado.
+    //
+    // Aqui se compara la rama DESPLEGADA contra si misma, que es el caso en el que
+    // las dos respuestas tienen que coincidir sin que haya ninguna excuse: las
+    // reglas son las mismas, los ficheros son los mismos y el unico camino
+    // distinto es el repo donde se han montado.
+    const { sub } = repoConRamaSucia();
+    const desplegada = auditaRepo(sub, { cajaSensible: true });
+    const porArbol = auditaArbol(sub, 'origen/main', { cajaSensible: true });
+
+    assert.equal(porArbol.ficheros, desplegada.trackeados,
+      'el numero de ficheros del arbol no es el del indice: se estan contando cosas distintas');
+    assert.deepEqual(porArbol.tapados.map((t) => t.ruta + ' <- ' + t.regla),
+      desplegada.tapados.map((t) => t.ruta + ' <- ' + t.regla));
+    assert.deepEqual(porArbol.tapados, [], 'el fixture deberia tener la rama limpia limpia');
+  });
+
+  it('y encuentra en la rama sucia lo que la rama limpia no tiene', () => {
+    const { sub } = repoConRamaSucia();
+
+    assert.deepEqual(auditaRepo(sub, { cajaSensible: true }).tapados, [],
+      'la rama desplegada deberia estar limpia');
+    assert.equal(auditaArbol(sub, 'origen/sucia', { cajaSensible: true }).tapados.length, 1);
+  });
+
+  it('y las reglas con barra final casan sin que haya nada en el disco', () => {
+    // Lo que hace posible el metodo y lo que se midio: `/build/` es una regla que
+    // solo aplica a directorios, y el repo de mentira no tiene ni un directorio.
+    // Medido en la suite entera: con y sin esqueleto de directorios salen los
+    // mismos 3.951 de `feature/fidelity-certified`. Si esto dejara de pasar, el
+    // repo de mentira empezaria a responder cosas que un checkout de verdad no.
+    const { sub } = repoConRamaSucia('/build/');
+
+    assert.equal(auditaArbol(sub, 'origen/sucia', { cajaSensible: true }).tapados.length, 1);
+  });
+
+  it('y un repo sin ninguna rama mas no inventa ramas', () => {
+    const { sub } = repoConRamaSucia();
+
+    const ramas = auditaRamas(sub, { cajaSensible: true }).filter((r) => r.rama === 'origen/sucia');
+
+    assert.equal(ramas.length, 1);
+    assert.equal(ramas[0].auditoria.tapados.length, 1);
+  });
+
+  it('y la rama desplegada no se audita dos veces', () => {
+    // `auditaRamas` se salta la rama que esta comprobada porque `auditaRepo` ya la
+    // ha mirado, y volver a mirarla daria el mismo numero por el doble de trabajo.
+    const { sub } = repoConRamaSucia();
+    const ramas = auditaRamas(sub, { cajaSensible: true }).map((r) => r.rama);
+
+    assert.deepEqual(ramas.includes('origen/main'), false, 'la desplegada no deberia salir');
+    assert.deepEqual(ramas, ['origen/sucia']);
+  });
+
+  it('y un temporal que se queda a medias no deja el repo de mentira por el suelo', () => {
+    // El temporal se borra en un `finally`. Un repo de mentira que sobrevive a un
+    // fallo no rompe nada, pero se va acumulando en el disco del runner uno por
+    // rama y por push, y un runner lleno de basura es un runner lento.
+    const { sub } = repoConRamaSucia();
+
+    try {
+      auditaArbol(sub, 'origen/rama-que-no-existe', { cajaSensible: true });
+      assert.fail('una rama que no existe deberia fallar');
+    } catch (e) {
+      assert.match(e.message, /rama-que-no-existe/, e.message);
+    }
+
+    assert.deepEqual(auditaArbol(sub, 'origen/sucia', { cajaSensible: true }).tapados.length, 1,
+      'despues del fallo, el metodo sigue funcionando');
+  });
+});
+
+describe('el peor caso, que tiene que incluir la rama desplegada', () => {
+  it('es el maximo entre la desplegada y las demas ramas', () => {
+    const desplegada = [{ repo: 'A', tapados: new Array(5).fill({ ruta: 'x' }) }];
+    const ramas = [{ repo: 'A', rama: 'origen/sucia', auditoria: { ficheros: 3, tapados: [{}] } }];
+
+    const peor = peorCasoPorRepo(ramas, desplegada);
+
+    assert.equal(peor.length, 1);
+    assert.equal(peor[0].tapados, 5);
+    assert.equal(peor[0].deRama, false, 'el peor caso venia de la desplegada');
+  });
+
+  it('y si una rama tiene mas que la desplegada, gana la rama', () => {
+    const desplegada = [{ repo: 'A', tapados: [{}] }];
+    const ramas = [{ repo: 'A', rama: 'origen/sucia', auditoria: { ficheros: 9, tapados: new Array(9).fill({}) } }];
+
+    const peor = peorCasoPorRepo(ramas, desplegada);
+
+    assert.equal(peor[0].tapados, 9);
+    assert.equal(peor[0].deRama, true);
+    assert.equal(peor[0].rama, 'origen/sucia');
+  });
+
+  it('y sale ordenado de mas tapados a menos', () => {
+    const ramas = [
+      { repo: 'A', rama: 'r1', auditoria: { ficheros: 1, tapados: [{}] } },
+      { repo: 'B', rama: 'r2', auditoria: { ficheros: 9, tapados: new Array(9).fill({}) } }
+    ];
+
+    assert.deepEqual(peorCasoPorRepo(ramas, []).map((p) => p.repo), ['B', 'A']);
+  });
+});
+
+describe('el techo por repo, que es lo que hace que el veredicto tenga sentido', () => {
+  it('una rama que sube el techo de su repo sale en rojo, con el nombre de la rama', () => {
+    const ramas = [{ repo: 'A', rama: 'origen/sucia', auditoria: { ficheros: 6, tapados: new Array(6).fill({}) } }];
+
+    const rojas = empeoran(comparaRamasConLineaBase(ramas, { A: 5 }));
+
+    assert.deepEqual(rojas, [{ repo: 'A', antes: 5, ahora: 6, tipo: 'empeora', rama: 'origen/sucia' }]);
+  });
+
+  it('un repo con deuda que no estaba en el techo sale en rojo', () => {
+    const ramas = [{ repo: 'Nuevo', rama: 'origen/main', auditoria: { ficheros: 2, tapados: [{}, {}] } }];
+
+    const rojas = empeoran(comparaRamasConLineaBase(ramas, {}));
+
+    assert.deepEqual(rojas, [{ repo: 'Nuevo', antes: 0, ahora: 2, tipo: 'nuevo', rama: 'origen/main' }]);
+  });
+
+  it('y con menos no es un fallo: es un repo arreglado', () => {
+    const ramas = [{ repo: 'A', rama: 'origen/x', auditoria: { ficheros: 1, tapados: [{}] } }];
+
+    assert.deepEqual(empeoran(comparaRamasConLineaBase(ramas, { A: 9 })), []);
+    assert.equal(comparaRamasConLineaBase(ramas, { A: 9 })[0].tipo, 'mejora');
+  });
+
+  it('y el techo se mide contra el peor caso, no contra una rama cualquiera', () => {
+    // La trampa en la que se cae si el veredicto solo mira las ramas no
+    // desplegadas: ABDJUNiO601 esta al techo con 3.951 en la rama que tiene la
+    // maquina desplegada, y sus otras ramas tienen 81 y 38. Sin traer la
+    // desplegada, el guard anunciaria "puedes bajar la linea base a 81" al lado de
+    // los 3.951 que estan a tres clicks de distancia.
+    const desplegada = [{ repo: 'A', tapados: new Array(3951).fill({}) }];
+    const ramas = [{ repo: 'A', rama: 'origen/x', auditoria: { ficheros: 81, tapados: new Array(81).fill({}) } }];
+
+    const desviaciones = comparaRamasConLineaBase(ramas, { A: 3951 }, desplegada);
+
+    assert.deepEqual(desviaciones, [],
+      'con 3951 en la desplegada, 81 en la otra rama NO es una mejora de la linea base');
+
+    // Y si el techo estuviera mal puesto —porque alguien lo midio solo sobre las
+    // ramas no desplegadas— sale en rojo diciendo la verdad: el techo decia 81 y lo
+    // que hay son 3.951.
+    const conTechoMalo = empeoran(comparaRamasConLineaBase(ramas, { A: 81 }, desplegada));
+
+    assert.deepEqual(conTechoMalo.map((d) => [d.antes, d.ahora, d.tipo]),
+      [[81, 3951, 'empeora']]);
+  });
+
+  it('y la raiz no se juzga, porque su nombre es el de la carpeta', () => {
+    // En la maquina la carpeta es `ABDSynths` y en el runner es el nombre del
+    // repo. Una entrada de techo nombrada por la raiz no puede funcionar en los
+    // dos sitios, asi que la raiz no entra en el veredicto: sale en el informe de
+    // ramas, que es donde un dato que no puede juzgar debe estar.
+    const raiz = join(temporal('raiz-'), 'carpeta-que-se-llame-como-se-llame');
+    const ramas = [{ repo: 'carpeta-que-se-llame-como-se-llame', rama: 'origen/master',
+      auditoria: { ficheros: 4, tapados: new Array(4).fill({}) } }];
+
+    assert.deepEqual(comparaRamasConLineaBase(ramas, {}, [], raiz), []);
+    assert.deepEqual(comparaRamasConLineaBase(ramas, {}, []).map((d) => d.tipo), ['nuevo'],
+      'y sin saber cual es la raiz, si se juzga: por eso hay que pasarle la raiz');
+  });
+});
+
+describe('el informe de las ramas', () => {
+  it('el desglose por regla es de la rama, no del repo', () => {
+    // Si el desglose fuera comun a las ramas del repo, una linea diria un numero
+    // que no es de ninguna de las dos y habria que volver a la rama a saber cual.
+    const ramas = [
+      { repo: 'A', rama: 'origen/una', auditoria: { ficheros: 10, tapados: [{ ruta: 'a', regla: '.gitignore:2 web/' }, { ruta: 'b', regla: '.gitignore:2 web/' }] } },
+      { repo: 'A', rama: 'origen/dos', auditoria: { ficheros: 5, tapados: [{ ruta: 'c', regla: '.gitignore:9 tmp/' }] } }
+    ];
+
+    const texto = formateaRamas(ramas).join('\n');
+
+    assert.match(texto, /origen\/una/);
+    assert.match(texto, /origen\/dos/);
+    // El `2 web/` tiene que salir pegado a `una` y el `1 tmp/` a `dos`, y no
+    // mezclados: se comprueba contando que hay dos lineas de regla y que cada
+    // rama tiene la suya.
+    const lineasDeRegla = texto.split('\n').filter((l) => /^ {9}\s*\d+\s+\.gitignore/.test(l));
+
+    assert.equal(lineasDeRegla.length, 2, texto);
+    assert.match(texto, /2  \.gitignore:2 web\//);
+    assert.match(texto, /1  \.gitignore:9 tmp\//);
+  });
+
+  it('y solo detalla las ramas con deuda, pero cuenta todas', () => {
+    const ramas = [
+      { repo: 'A', rama: 'origen/con-deuda', auditoria: { ficheros: 4, tapados: [{}, {}] } },
+      { repo: 'A', rama: 'origen/sin-deuda', auditoria: { ficheros: 4, tapados: [] } },
+      { repo: 'B', rama: 'origen/vacia', auditoria: { ficheros: 0, tapados: [] } }
+    ];
+
+    const texto = formateaRamas(ramas).join('\n');
+
+    assert.match(texto, /ramas auditadas ademas de la que esta deployada : 2/);
+    assert.match(texto, /con ficheros tapados {17}: 1/);
+    assert.equal(texto.includes('origen/sin-deuda'), false);
+    assert.equal(texto.includes('origen/vacia'), false,
+      'una rama sin ficheros no es una rama limpia: no hay nada que decir de ella');
+  });
+
+  it('y una rama sin ficheros sale con su cuenta de ficheros al lado', () => {
+    // El numero de ficheros es la mitad del aviso: 3.951 de 6.008 es una regla
+    // que tapa casi todo el repo, y 3.951 de 40.000 es un olvido.
+    const ramas = [{ repo: 'A', rama: 'origen/x', auditoria: { ficheros: 6008, tapados: [{}] } }];
+
+    assert.match(formateaRamas(ramas).join('\n'), /6008 ficheros en la rama/);
+  });
+});
+
+/**
+ * La medicion de las ramas de la suite real, UNA vez por semantica de caja.
+ *
+ * Auditar las ramas cuesta unos quince segundos porque son quince repos por
+ * quince `git init` de mentira, y la seccion de abajo la pide nueve veces. Sin
+ * esto el fichero tarda mas de dos minutos en comprobar lo mismo nueve veces, que
+ * es el tiempo que hace que un test lento deje de mirarse cuando algo se rompe.
+ *
+ * Se memoiza en vez de calcularse al importar el fichero para que un test que no
+ * toca la suite real no la pague.
+ */
+let cacheDeRamas = null;
+
+function ramasDeLaSuite (cajaSensible) {
+  if (cacheDeRamas === null) {
+    cacheDeRamas = {
+      conLinux: auditaRamasDeSuite(raizDeSuite(), { cajaSensible: true }),
+      conLaMaquina: auditaRamasDeSuite(raizDeSuite())
+    };
+  }
+
+  return cajaSensible ? cacheDeRamas.conLinux : cacheDeRamas.conLaMaquina;
+}
+
+/**
+ * La rama desplegada de todos los repos, con la misma lectura de caja que las
+ * ramas a las que se va a comparar.
+ *
+ * Mezclar las dos lecturas daria un peor caso de dos medidas distintas: con las
+ * ramas medidas en Linux y la desplegada en Windows, ABDCZ101 dira 120 y 314 en el
+ * mismo numero. El guard de la linea de comandos pasa el mismo flag a las dos, y
+ * esto tambien.
+ */
+let cacheDeSuite = null;
+
+function suiteDesplegada (cajaSensible) {
+  if (cacheDeSuite === null) cacheDeSuite = {};
+
+  const clave = cajaSensible ? 'linux' : 'maquina';
+
+  if (cacheDeSuite[clave] === undefined) {
+    cacheDeSuite[clave] = auditaSuite(undefined, cajaSensible ? { cajaSensible: true } : {});
+  }
+
+  return cacheDeSuite[clave];
+}
+
+/** El nombre de la carpeta de la raiz, que es el del repo en el runner. */
+function nombreDeLaRaiz () {
+  // La clase de caracteres lleva los DOS separadores: en una ruta de Windows solo
+  // hay barra invertida, y con una clase que solo tiene la barra normal esta
+  // funcion devuelve la ruta entera y no el nombre de la carpeta. Luego el filtro
+  // de la raiz no excluye a la raiz y el test dice que la raiz no tiene techo.
+  return raizDeSuite().replace(/[\\/]+$/, '').split(/[\\/]/).pop();
+}
+
+describe('la suite real, ahora con las ramas de verdad', () => {
+  it('ninguna rama ha superado el techo de su repo', () => {
+    // EL TEST DEL ENCARGO, y el que puede poner el guard en rojo el primer dia en
+    // que se ejecuta. El techo es por repo y es el PEOR caso de todas sus ramas,
+    // con la desplegada dentro: sin traerla, el veredicto seria sobre un
+    // subconjunto de los arboles y el numero que se compara con el techo no seria
+    // el numero de la suite.
+    const porRama = ramasDeLaSuite(true);
+
+    const rojas = empeoran(comparaRamasConLineaBase(porRama, undefined, suiteDesplegada(true), raizDeSuite()));
+
+    assert.deepEqual(rojas.map((d) => d.repo + (d.rama ? ' @ ' + d.rama : '')
+      + ': ' + d.tipo + ' (' + d.antes + ' -> ' + d.ahora + ')'), []);
+  });
+
+  it('y la rama que traia 3.951 sigue siendo la que las tiene', () => {
+    // El numero grande del encargo, comprobado contra el techo. No se comprueba
+    // el 3.951 exacto —que depende de la maquina, porque la maquina tiene mas
+    // ramas y distinta rama desplegada— sino que la PEOR rama de ABDJUNiO601 esta
+    // al menos tan alta como el techo, que es lo que significa "el techo es el
+    // peor caso y no un numero de otra cosa".
+    const peor = peorCasoPorRepo(ramasDeLaSuite(true), suiteDesplegada(true));
+
+    const deJuni = peor.find((p) => p.repo === 'ABDJUNiO601');
+
+    assert.ok(deJuni, 'no se ha encontrado ABDJUNiO601 entre los repos');
+    assert.ok(deJuni.tapados >= DEUDA_CONOCIDA.ABDJUNiO601,
+      'la peor rama de ABDJUNiO601 tiene ' + deJuni.tapados
+      + ' y el techo es ' + DEUDA_CONOCIDA.ABDJUNiO601);
+  });
+
+  it('y ABDOmega esta en el techo, que antes no estaba porque no se miraba', () => {
+    // El repo que aparecio al mirar las ramas y que no aparecia antes. Vive en
+    // `_Deprecados/`, su rama desplegada no tiene nada tapado, y en `origin/master`
+    // tiene cuatro. El techo no estaba mal puesto: estaba bien puesto para la
+    // pregunta que se hacia, y la pregunta era incompleta.
+    assert.ok('ABDOmega' in DEUDA_CONOCIDA,
+      'ABDOmega deberia estar en DEUDA_CONOCIDA: su deuda solo se ve en ramas');
+
+    const peor = peorCasoPorRepo(ramasDeLaSuite(true), suiteDesplegada(true));
+    const deOmega = peor.find((p) => p.repo === 'ABDOmega');
+
+    assert.ok(deOmega, 'no se ha encontrado ABDOmega entre los repos');
+    assert.equal(deOmega.tapados, DEUDA_CONOCIDA.ABDOmega,
+      'el techo de ABDOmega tiene que ser su peor rama, no otra cosa');
+  });
+
+  it('y el techo no se puede vaciar de repos sin que nadie se entere', () => {
+    // El techo y la verdad en el mismo sitio, como en la linea base de la rama
+    // desplegada. Lo que se comprueba es lo mismo que alli: que ningun repo con
+    // deuda en alguna rama se quede fuera del techo.
+    const conDeuda = peorCasoPorRepo(ramasDeLaSuite(true))
+      .filter((p) => p.tapados > 0)
+      .map((p) => p.repo);
+
+    const sinTecho = conDeuda.filter((repo) => !(repo in DEUDA_CONOCIDA) && repo !== nombreDeLaRaiz());
+
+    assert.deepEqual(sinTecho, [], 'repos con deuda en alguna rama y sin techo: ' + sinTecho.join(', '));
+  });
+
+  it('y la raiz sale en el informe de las ramas aunque no se juzgue', () => {
+    // Lo que no puede juzgar tiene que estar a la vista. La raiz tiene cuatro
+    // ficheros tapados en `origin/master` en la maquina, y no se puede meter en el
+    // techo porque en el runner la carpeta se llama de otra manera; quitarlo del
+    // informe seria esconderlo.
+    const texto = formateaRamas(ramasDeLaSuite(true)).join('\n');
+
+    // Si la raiz no tiene deuda en ninguna rama, no sale y el test no dice nada:
+    // se comprueba que el texto es coherente, no que aparezca siempre.
+    const raizEnElTexto = texto.includes(' ' + nombreDeLaRaiz() + ' @ ');
+
+    assert.equal(raizEnElTexto, texto.includes(nombreDeLaRaiz() + ' @'),
+      'si la raiz se nombra, se nombra una vez y con su rama');
+  });
+
+  it('y la caja: la lectura de Linux tambien para las ramas', () => {
+    // El mismo interruptor que en la rama desplegada, aplicado a las ramas. El
+    // techo es UN numero por repo, y si dos maquinas miden dos cosas distintas no
+    // se puede ni comparar ni bajar.
+    //
+    // Y hay DOS repos donde la caja importa, y ninguno es hipotesis:
+    //
+    //   ABDCZ101: `*.syx` tapa en Windows 194 ficheros `.SYX` que en Linux no ve.
+    //   ABDOmega: el `.gitignore` es `/*` seguido de una negacion con otra caja,
+    //             de modo que en Windows la negacion anula la regla y no tapa
+    //             nada, y en Linux se quedan cuatro ficheros de `SCRIPTS/`.
+    //
+    // El techo de los dos guarda el numero de la lectura de Linux, que es la que
+    // decide en CI. Los otros trece repos dan lo mismo en las dos lecturas, y eso
+    // es lo que se comprueba: la lista de los que se mueven tiene que ser
+    // exactamente esta, porque un repo nuevo que dependa de la caja sale con un
+    // techo que no es comparable entre maquinas.
+    const peorConLinux = Object.fromEntries(
+      peorCasoPorRepo(ramasDeLaSuite(true), suiteDesplegada(true)).map((p) => [p.repo, p.tapados]));
+    const peorConLaMaquina = Object.fromEntries(
+      peorCasoPorRepo(ramasDeLaSuite(false), suiteDesplegada(false)).map((p) => [p.repo, p.tapados]));
+
+    const distintos = Object.keys(peorConLinux)
+      .filter((repo) => peorConLinux[repo] !== peorConLaMaquina[repo]);
+
+    assert.deepEqual(distintos.sort(), ['ABDCZ101', 'ABDOmega'],
+      'la caja solo deberia mover el numero de ABDCZ101 y ABDOmega; si aparece otro repo, '
+      + 'su techo no es comparable entre maquinas y hay que mirarlo');
+
+    assert.equal(peorConLinux.ABDOmega, DEUDA_CONOCIDA.ABDOmega,
+      'y el techo de ABDOmega tiene que ser el numero de la lectura de Linux, que es la de CI');
+  });
+});
+
+describe('los dientes del techo por repo, con las ramas de verdad', () => {
+  it('bajar el techo de ABDOmega a la mitad lo pone en rojo con el nombre de la rama', () => {
+    // El diente que importa: si alguien baja el techo a la mitad "porque la rama
+    // buena tiene menos", sale en rojo diciendo CUAL rama tiene mas, que es el
+    // dato que hace falta para arreglarlo.
+    const porRama = ramasDeLaSuite(true);
+    const conTechoBajado = Object.assign({}, DEUDA_CONOCIDA, { ABDOmega: 1 });
+
+    const rojas = empeoran(comparaRamasConLineaBase(porRama, conTechoBajado, suiteDesplegada(true), raizDeSuite()));
+
+    // Dos ramas de ABDOmega empatan a cuatro y cual de las dos sale primero no es
+    // un contrato: lo que importa es que salga el repo y una rama, no una rama
+    // concreta. Fijar `origin/master` haria que el test se rompiera el dia que
+    // esa rama se borrara, y seria el test el que estuviera mal.
+    assert.deepEqual(rojas.map((d) => d.repo), ['ABDOmega']);
+    assert.equal(rojas[0].ahora, DEUDA_CONOCIDA.ABDOmega,
+      'y que salga la deuda REAL de la rama, no la del techo inventado');
+  });
+
+  it('y vaciar el techo del todo saca a todos los que tienen deuda', () => {
+    const porRama = ramasDeLaSuite(true);
+    const sinTecho = comparaRamasConLineaBase(porRama, {}, suiteDesplegada(true), raizDeSuite());
+
+    const conDeuda = peorCasoPorRepo(porRama, suiteDesplegada(true))
+      .filter((p) => p.tapados > 0 && p.repo !== nombreDeLaRaiz()).length;
+
+    assert.equal(empeoran(sinTecho).length, conDeuda,
+      'todo repo con deuda sale en rojo si el techo esta vacio');
+  });
+
+  it('y sin traer la rama desplegada, el veredicto diria una mejora que no es', () => {
+    // El fallo de diseño que casi se cuela: si el techo se midiera solo sobre las
+    // ramas no desplegadas, en la maquina ABDJUNiO601 "bajaria" a 81 mientras que
+    // los 3.951 estan en la rama que tiene delante de los ojos.
+    const porRama = ramasDeLaSuite(true);
+    const soloLasNoDesplegadas = comparaRamasConLineaBase(porRama, DEUDA_CONOCIDA, [], raizDeSuite());
+    const conTodo = comparaRamasConLineaBase(porRama, DEUDA_CONOCIDA, suiteDesplegada(true), raizDeSuite());
+
+    const junioSin = soloLasNoDesplegadas.find((d) => d.repo === 'ABDJUNiO601');
+    const junioCon = conTodo.find((d) => d.repo === 'ABDJUNiO601');
+
+    if (junioSin !== undefined && junioSin.tipo === 'mejora') {
+      assert.notEqual(junioCon !== undefined && junioCon.tipo, 'mejora',
+        'si solo con las ramas no desplegadas hay una mejora, con la desplegada no puede haberla');
+      assert.equal(junioCon, undefined,
+        'con la desplegada de por medio, ABDJUNiO601 esta exactamente en su techo: ni sube ni baja');
+    }
   });
 });

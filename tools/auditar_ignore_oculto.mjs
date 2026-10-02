@@ -4,14 +4,22 @@
 //   node tools/auditar_ignore_oculto.mjs
 //
 // Salida:
-//   0  ningun repo ha superado los ficheros tapados que ya tenia (linea base)
+//   0  ningun repo ha superado los ficheros tapados que ya tenia (linea base),
+//      ni en la rama que esta desplegada ni en ninguna de las demas
 //   1  un repo tiene MAS ficheros trackeados tapados de los que tenia, o tiene
 //      tapados y no estaba en la linea base
 //   2  no se pudo ni siquiera leer uno de los repos (que es otro problema)
 //
-// La linea base esta al final del fichero, con el detalle de que regla tapa
-// cada bloque. `node tools/auditar_ignore_oculto.mjs --linea-base` reimprime el
-// numero actual de cada repo para rehacerla a mano.
+// La linea base esta mas abajo, con el detalle de que regla tapa cada bloque.
+// `node tools/auditar_ignore_oculto.mjs --linea-base` reimprime el numero actual
+// de cada repo para rehacerla a mano.
+//
+// MIRA DOS COSAS, Y SOLO UNA ES LA QUE DICE EL NOMBRE DEL GUARD. La primera es la
+// rama que esta desplegada, que es lo que hacia `auditaRepo` y lo que hacia el
+// guard desde el principio. La segunda son TODAS las demas ramas del repo, que no
+// se miraban y donde esta el 3.951 que hay en ABDJUNiO601. El techo es uno solo
+// por repo y es el PEOR caso entre las dos, y la seccion de las ramas, mas abajo,
+// explica como se le pregunta a git por un arbol que nadie ha comprobado.
 //
 // ─────────────────────────────────────────────────────────────────────────
 // EL PROBLEMA, ENUNCIADO PARA NO DEJAR PASAR NADA
@@ -80,7 +88,9 @@
 // esperando a CI.
 
 import { execFileSync } from 'node:child_process';
-import { existsSync, readdirSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync,
+  rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -255,7 +265,14 @@ export const DEUDA_CONOCIDA = Object.freeze({
   ABDBankManager: 107,
   ABDCZ101: 314,
   ABDJUNiO601: 3951,
-  ABDMS2000: 42
+  ABDMS2000: 42,
+  // Esta no estaba antes, y no por un cambio en el repo: estaba porque NO SE
+  // MIRABA. ABDOmega vive en `_Deprecados/` y su rama desplegada no tiene nada
+  // tapado, asi que su numero era 0 y de verdad lo era. En `origin/master` y en
+  // `origin/feature/aseptic-rack-stabilization` tiene 4, y todos de la misma
+  // regla `/*` de la linea 2, que se come el repo entero. El 4 es el peor caso
+  // de todas sus ramas, que es lo que compara `comparaRamasConLineaBase`.
+  ABDOmega: 4
 });
 
 /**
@@ -301,22 +318,32 @@ export function empeoran (desviaciones) {
 }
 
 /** Las desviaciones contadas, para que el runner no tenga que saber contarlas. */
-export function formateaDesviaciones (desviaciones) {
+export function formateaDesviaciones (desviaciones, ambito = 'en la rama desplegada') {
   if (desviaciones.length === 0) {
-    return 'linea base respetada: ningun repo tiene mas ficheros tapados de los que habia.';
+    return 'linea base respetada: ningun repo tiene mas ficheros tapados de los que habia ('
+      + ambito + ').';
   }
 
-  return desviaciones
-    .map((d) => {
-      const flecha = d.tipo === 'mejora'
-        ? 'ha BAJADO de ' + d.antes + ' a ' + d.ahora + ' (puedes bajar la linea base)'
-        : (d.tipo === 'nuevo'
+  return 'linea base (' + ambito + '):'
+    + '\n'
+    + desviaciones
+      .map((d) => {
+        const flecha = d.tipo === 'mejora'
+          ? 'ha BAJADO de ' + d.antes + ' a ' + d.ahora + ' (puedes bajar la linea base)'
+          : (d.tipo === 'nuevo'
             ? 'APARECE CON ' + d.ahora + ' y no estaba en la linea base'
             : 'ha SUBIDO de ' + d.antes + ' a ' + d.ahora + ' (+' + (d.ahora - d.antes) + ')');
 
-      return '  ' + d.repo + ': ' + flecha;
-    })
-    .join('\\n');
+        // Cuando la desviacion viene de una rama, el nombre de la rama es la
+        // mitad del aviso: un repo que sube no se puede arreglar sin saber que
+        // rama lo ha subido, y hay quince ramas por repo. Si el peor caso ha
+        // salido de la rama DESPLEGADA no se pone nombre, porque el informe de
+        // arriba ya ha dicho cuantos tiene y el nombre no anade nada.
+        const donde = d.rama === undefined ? '' : ' @ ' + d.rama;
+
+        return '  ' + d.repo + donde + ': ' + flecha;
+      })
+      .join('\n');
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -508,6 +535,343 @@ export function opcionesDeConsola (args = process.argv.slice(2)) {
   return { cajaSensible: args.includes('--caja-sensible') };
 }
 
+// ─────────────────────────────────────────────────────────────────────────
+// LAS RAMAS QUE NO SON LA QUE ESTA DESPLEGADA, Y POR QUE AQUI SI IMPORTA
+//
+// El guard de EOL ya mira las ramas, y cuando se hizo, la conclusion fue que no
+// pasaba nada: cero incumplimientos en veintisiete ramas. Con el guard de
+// `.gitignore` la conclusion es la contraria, y muy distinta:
+//
+//   ABDJUNiO601 @ origin/feature/fidelity-certified   3.951 tapados
+//   ABDJUNiO601 @ origin/fix/webui-final-complete         81
+//   ABDJUNiO601 @ origin/fix/webui-source-only           38
+//   ABDJUNiO601 @ origin/feature/juno-vcf-upgrade        37
+//   ABDOmega    @ origin/feature/aseptic-rack-...         4
+//   ABDOmega    @ origin/master                           4
+//   ABDOmega    @ origin/feat/oscilloscope-...            2
+//
+// De esos 3.951, la rama `main` no tiene NINGUNO. El `.gitignore` que los tapa es
+// el de la rama, y en `main` ese fichero tiene otras reglas. O sea que el guard
+// estaba mirando la rama equivocada sin que se notara, que es la forma mas
+// comoda de tener un punto ciego.
+//
+// Y el caso de ABDOmega es el que mas duele, porque no es el mismo repo grande
+// con mucho de todo: son cuatro ficheros, y no estaban en la linea base porque
+// en ninguna rama desplegada hay deuda ninguna de ABDOmega. El numero de la
+// linea base era 0 y de verdad lo era, para la rama que se miraba.
+//
+// ─────────────────────────────────────────────────────────────────────────
+// COMO SE PREGUNTA A GIT POR UN ARBOL QUE NADIE HA COMPROBADO
+//
+// `check-ignore` NO tiene forma de leer las reglas de ignore de un arbol: las lee
+// del arbol de trabajo, que es el de la rama desplegada. Sin `--source`, que es lo
+// que hizo falta en el guard de EOL con `check-attr`, aqui no hay atajo.
+//
+// Reimplementar el matcher de `.gitignore` en JavaScript es justo lo que no hay
+// que hacer: gitignore tiene negaciones, patrones anclados, `**`, reglas que solo
+// aplican a directorios y la regla de que no se puede reincluir un fichero si su
+// directorio padre esta excluido. Una reimplementacion parcial no da un numero
+// distinto, da un numero RARO, y un guard que a veces se equivoca no vigila.
+//
+// Lo que se hace es dejar que sea GIT el que casa, y darle un sitio donde las
+// reglas de la rama existan de verdad:
+//
+//   1. un repo de mentira, vacio, en un temporal;
+//   2. dentro, los `.gitignore` de la rama, en sus rutas, sacados del ARBOL con
+//      `git show <rama>:<ruta>` y no del disco;
+//   3. la lista de ficheros de la rama por `--stdin`, como hace `auditaRepo`;
+//   4. el mismo `check-ignore --no-index -v -z` y el mismo `camposDeCheckIgnore`
+//      y el mismo `tapaLosTrackeados` que la rama desplegada.
+//
+// Que el resultado sea el de verdad esta medido, no supuesto: para
+// `feature/fidelity-certified` este metodo devuelve 3.951 con el mismo desglose de
+// reglas que el guard ve en la maquina con esa rama desplegada. Es el mismo numero
+// por el mismo camino, que es lo unico que hace comparables las dos columnas.
+//
+// LO QUE NO HACE FALTA, Y SE MIDIO. Lo obvio seria montar tambien el esqueleto de
+// directorios del arbol, para que `/CMake/` supiera que `CMake` es un directorio.
+// Medido con y sin: los dos dan 3.951 con el mismo desglose, porque git no mira el
+// disco para decidir si un patron con barra final casa, sino el patron. De ahi que
+// no se monten, que son cuatrocientos y cincuenta directorios por rama y nada
+// mas.
+//
+// LO QUE SI SE COPIA, Y POR QUE. El `.git/info/exclude` del repo de verdad, porque
+// si uno escribiera ahi una regla, el repo de mentira no la veria y el numero
+// saldria mas bajo que el real. Hoy ningun repo de la suite tiene nada ahi, asi que
+// esto no cambia ningun numero; se hace para que el dia que alguien lo escriba, el
+// guard no se quedecon la respuesta equivocada en silencio.
+export function auditaArbol (repo, rama, opciones = {}) {
+  const rutas = git(repo, ['ls-tree', '-r', '--full-tree', '--name-only', '-z', rama])
+    .split('\0')
+    // `ls-tree -r` sale con los arboles como `ruta/` si no se pide `-r`; con `-r`
+    // tambien los cuelga al final, y no son ficheros.
+    .filter((r) => r !== '' && !r.endsWith('/'));
+
+  // Las reglas de la rama, y solo ellas: se busca por nombre de fichero, no por
+  // prefijo, para que un `docs/.gitignore` cuente igual que el de la raiz.
+  const rutasDeReglas = git(repo, ['ls-tree', '-r', '--name-only', rama])
+    .split('\n')
+    .filter((f) => f !== '' && f.split('/').pop() === '.gitignore');
+
+  const temporal = mkdtempSync(join(tmpdir(), 'ignore-arbol-'));
+
+  try {
+    execFileSync('git', ['init', '-q', '.'], { cwd: temporal, stdio: 'ignore' });
+
+    // La caja se fija en el repo de mentira por la misma razon que se fija en los
+    // fixtures de los tests: la respuesta tiene que ser la misma en un Windows y
+    // en un Linux, y `core.ignorecase` decide la respuesta.
+    execFileSync('git', ['config', 'core.ignorecase',
+      opciones.cajaSensible === true ? 'false' : 'true'],
+    { cwd: temporal, stdio: 'ignore' });
+
+    for (const regla of rutasDeReglas) {
+      const destino = join(temporal, regla);
+
+      mkdirSync(dirname(destino), { recursive: true });
+      writeFileSync(destino, git(repo, ['show', rama + ':' + regla]));
+    }
+
+    const excludeDeVerdad = join(repo, '.git', 'info', 'exclude');
+    if (existsSync(excludeDeVerdad)) {
+      copyFileSync(excludeDeVerdad, join(temporal, '.git', 'info', 'exclude'));
+    }
+
+    let crudos = '';
+
+    try {
+      crudos = execFileSync('git', ['check-ignore', '--no-index', '-v', '-z', '--stdin'], {
+        cwd: temporal,
+        input: rutas.join('\0') + '\0',
+        encoding: 'utf8',
+        maxBuffer: 64 * 1024 * 1024
+      });
+    } catch (e) {
+      // El mismo 1 que no es un error, por el mismo motivo que en `auditaRepo`.
+      if (e.status !== 1) {
+        const stderr = (e.stderr || '').toString().trim();
+
+        throw new Error('git check-ignore fallo en ' + repo + ' @ ' + rama + ' con codigo '
+          + (e.status === undefined ? 'sin codigo (ni se llego a ejecutar)' : e.status)
+          + ': ' + (stderr === '' ? (e.message || String(e)) : stderr.split('\n')[0]));
+      }
+    }
+
+    return {
+      rama,
+      ficheros: rutas.length,
+      tapados: tapaLosTrackeados(rutas, camposDeCheckIgnore(crudos))
+    };
+  } finally {
+    rmSync(temporal, { recursive: true, force: true });
+  }
+}
+
+/**
+ * Todas las ramas de un repo, menos la que ya se ha auditado.
+ *
+ * La que se salta es la que esta comprobada: `auditaRepo` ya ha mirado su indice
+ * y su disco, y volver a mirar el mismo commit montando otro repo daria el mismo
+ * numero y costaria lo mismo. Se compara por COMMIT y no por nombre, porque el
+ * nombre de la rama desplegada depende de como se clono.
+ *
+ * @param {string} repo
+ * @param {{cajaSensible?: boolean}} opciones
+ * @returns {{repo: string, rama: string, sha: string, auditoria: object}[]}
+ */
+export function auditaRamas (repo, opciones = {}) {
+  const nombre = repo.split(/[\\/]/).filter((p) => p !== '').pop() || repo;
+  const head = git(repo, ['rev-parse', 'HEAD']).trim();
+  const vistos = new Set([head]);
+
+  const ramas = git(repo, ['for-each-ref', '--format=%(refname:short) %(objectname)', 'refs/remotes'])
+    .split('\n')
+    .filter((l) => l.trim() !== '')
+    .map((l) => {
+      const [r, sha] = l.split(' ');
+
+      return { rama: r, sha };
+    })
+    // `origin` a secas es el symref de la rama por defecto, no una rama, y
+    // `origin/HEAD` suele ser el mismo symref duplicado. Los dos se cuelan si no
+    // se quitan, y los dos apuntan al commit que ya se audito como desplegado.
+    .filter((r) => r.rama !== 'origin' && !r.rama.endsWith('/HEAD'))
+    // Y las que apuntan al mismo commit que otra ya auditada: `ABDOmega` tiene
+    // `origin/master` y una rama de trabajo con el mismo commit, y auditar las dos
+    // es medir lo mismo dos veces.
+    .filter((r) => !vistos.has(r.sha) && vistos.add(r.sha));
+
+  return ramas.map((r) => ({
+    repo: nombre,
+    rama: r.rama,
+    sha: r.sha,
+    auditoria: auditaArbol(repo, r.rama, opciones)
+  }));
+}
+
+/**
+ * Todas las ramas de todos los repos de la suite, en una lista PLANA.
+ *
+ * Plana y no `{repo: [...]}` porque la pregunta que hay que responder es "que
+ * rama rompe que", y una lista plana se puede ordenar por gravedad sin aplanar
+ * nada primero.
+ *
+ * @param {string} raiz
+ * @param {{cajaSensible?: boolean}} opciones
+ * @returns {{repo: string, rama: string, sha: string, auditoria: object}[]}
+ */
+export function auditaRamasDeSuite (raiz = raizDeSuite(), opciones = {}) {
+  if (raiz === null) {
+    throw new Error('no encuentro la raiz de la suite: no hay ningun ABDSharedAssets por encima '
+      + 'de ' + aqui);
+  }
+
+  const porRama = [];
+
+  for (const repo of reposDeSuite(raiz)) porRama.push(...auditaRamas(repo, opciones));
+
+  return porRama;
+}
+
+/**
+ * El peor caso de cada repo: el numero mas alto de tapados de entre todas sus
+ * ramas Y el de la rama que esta desplegada.
+ *
+ * El techo es POR REPO y no por rama a proposito. Con techo por rama, borrar una
+ * rama habria que pedirle a alguien que editase la linea base, y con techo por
+ * rama una rama con menos deuda que su hermana sigue haciendo numero por su
+ * cuenta. Lo que hay que vigilar es el PEOR caso de cada repo: mientras ese numero
+ * no suba, nada ha empeorado, y da igual que la rama que lo produce se renombre o
+ * se borre.
+ *
+ * Y LA RAMA DESPLEGADA CUENTA, aunque no venga en `porRama`. `auditaRamas` se salta
+ * a proposito la rama que esta comprobada, porque `auditaRepo` ya la ha mirado, y
+ * si no se_trajera aqui el veredicto seria sobre un subconjunto: con la peor
+ * ramadeployada en el runner (81 en `fix/webui-final-complete`) y la de la maquina
+ * con 3.951, un veredicto que solo mirase las ramas no desplegadas anunciaria
+ * "puedes bajar la linea base a 81" en el sitio donde los 3.951 estan a tres
+ * clicks. Menos de las ramas solo es mas que ninguna de ellas si se trae la
+ * desplegada.
+ *
+ * @param {{repo: string, rama: string, auditoria: object}[]} porRama
+ * @param {{repo: string, tapados: {ruta: string}[]}[]} porRepo la rama desplegada.
+ * @returns {{repo: string, rama: string, tapados: number, deRama: boolean}[]}
+ */
+export function peorCasoPorRepo (porRama, porRepo = []) {
+  const peores = new Map();
+
+  const anotar = (repo, rama, tapados, deRama) => {
+    const actual = peores.get(repo);
+
+    if (actual === undefined || tapados > actual.tapados) {
+      peores.set(repo, { repo, rama, tapados, deRama });
+    }
+  };
+
+  for (const d of porRepo) anotar(d.repo, null, d.tapados.length, false);
+  for (const r of porRama) anotar(r.repo, r.rama, r.auditoria.tapados.length, true);
+
+  return [...peores.values()]
+    .sort((a, b) => b.tapados - a.tapados || (a.repo < b.repo ? -1 : 1));
+}
+
+/**
+ * Las ramas contra la linea base, que es un techo y no un suelo.
+ *
+ * `comparaConLineaBase` hace esta misma pregunta para la rama desplegada. Aqui se
+ * pregunta para el PEOR caso de cada repo, ramas y desplegada juntas, y con el
+ * mismo trichotomy: `nuevo` si el repo tiene deuda en algun arbol y no estaba en
+ * la linea base, `empeora` si el peor caso tiene mas de lo que decia, `mejora` si
+ * tiene menos.
+ *
+ * LA RAIZ SE QUEDA FUERA DEL VEREDICTO, y por el mismo motivo que la deja fuera
+ * el guard de tamano: el repositorio raiz se nombra como se llame la carpeta donde
+ * esta, que en la maquina es `ABDSynths` y en el runner es el nombre del repo. Una
+ * entrada de la linea base nombrada por la raiz no puede funcionar en los dos
+ * sitios a la vez. El informe de las ramas SI la nombra y SI muestra sus numeros,
+ * que es donde un dato que no puede juzgar debe estar: a la vista y sin veredicto.
+ *
+ * @param {{repo: string, rama: string, auditoria: object}[]} porRama
+ * @param {Record<string, number>} base
+ * @param {{repo: string, tapados: {ruta: string}[]}[]} porRepo la rama desplegada.
+ * @param {string} raiz la carpeta de la raiz, para no juzgarla por su nombre.
+ * @returns {{repo: string, antes: number, ahora: number, tipo: string, rama: (string|null)}[]}
+ */
+export function comparaRamasConLineaBase (porRama, base = DEUDA_CONOCIDA, porRepo = [],
+  raiz = null) {
+  const salida = [];
+  const nombreDeLaRaiz = raiz === null
+    ? null
+    : (raiz.replace(/[\\/]+$/, '').split(/[\\/]/).pop() || raiz);
+
+  for (const p of peorCasoPorRepo(porRama, porRepo)) {
+    if (nombreDeLaRaiz !== null && p.repo === nombreDeLaRaiz) continue;
+
+    const antes = base[p.repo];
+
+    if (antes === undefined) {
+      if (p.tapados > 0) {
+        salida.push({ repo: p.repo, antes: 0, ahora: p.tapados, tipo: 'nuevo', rama: p.rama });
+      }
+      continue;
+    }
+
+    if (p.tapados > antes) {
+      salida.push({ repo: p.repo, antes, ahora: p.tapados, tipo: 'empeora', rama: p.rama });
+    } else if (p.tapados < antes) {
+      salida.push({ repo: p.repo, antes, ahora: p.tapados, tipo: 'mejora', rama: p.rama });
+    }
+  }
+
+  return salida;
+}
+
+/**
+ * El informe de las ramas.
+ *
+ * De veintisiete ramas, el resumen y el detalle solo de las que tienen deuda. Un
+ * informe con una linea por rama es un informe que nadie lee, y el detalle entero
+ * de tres mil novecientos cincuenta ficheros en el caso de que lo haya no cabe ni
+ * en una pantalla.
+ *
+ * El desglose por regla es POR RAMA y no por repo, porque el numero de la rama es
+ * justo lo que se esta mirando: si una rama tiene 113 de `WebUI/` y su hermana 38,
+ * mezclar los dos en un desglose comun deja un numero que no es de ninguna y
+ * hace falta volver a la rama para saber cual.
+ *
+ * @param {{repo: string, rama: string, auditoria: object}[]} porRama
+ * @returns {string[]}
+ */
+export function formateaRamas (porRama) {
+  const conFicheros = porRama.filter((r) => r.auditoria.ficheros > 0);
+  const conDeuda = conFicheros.filter((r) => r.auditoria.tapados.length > 0)
+    .sort((a, b) => b.auditoria.tapados.length - a.auditoria.tapados.length);
+
+  const lineas = [
+    'ramas auditadas ademas de la que esta deployada : ' + conFicheros.length,
+    '  de ellas, con ficheros tapados                 : ' + conDeuda.length
+  ];
+
+  for (const r of conDeuda) {
+    const porRegla = new Map();
+
+    for (const t of r.auditoria.tapados) {
+      porRegla.set(t.regla, (porRegla.get(t.regla) || 0) + 1);
+    }
+
+    lineas.push('');
+    lineas.push('  ' + String(r.auditoria.tapados.length).padStart(5) + '  '
+      + r.repo + ' @ ' + r.rama
+      + '   (' + r.auditoria.ficheros + ' ficheros en la rama)');
+
+    for (const [regla, n] of [...porRegla.entries()].sort((a, b) => b[1] - a[1])) {
+      lineas.push('         ' + String(n).padStart(5) + '  ' + regla);
+    }
+  }
+
+  return lineas;
+}
+
 // El `main` va debajo del `if` para que importar este fichero en el test no
 // ejecute la auditoria entera por el casual de que el test quiera sus datos.
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
@@ -542,7 +906,28 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     console.error('');
     console.error(formateaDesviaciones(desviaciones));
 
-    if (empeoran(desviaciones).length > 0) {
+    // Y ahora las ramas que no son la que esta desplegada. Va aparte y no como un
+    // extra del de arriba porque mide otra cosa: `auditaRepo` mira el indice y el
+    // disco de LO QUE ESTA COMPROBADO, y esto mira arboles que nadie ha comprobado.
+    // Se audita UNA vez y se imprime lo mismo que se juzga, porque un informe que
+    // dice una cosa y el veredicto decide sobre otra es peor que no tener informe.
+    const raiz = raizDeSuite();
+    const porRama = auditaRamasDeSuite(raiz, opcionesDeConsola());
+
+    console.log('');
+    console.log(formateaRamas(porRama).join('\n'));
+
+    // El veredicto de las ramas es sobre la PEOR rama de cada repo, no sobre la que
+    // esta desplegada. Con solo la desplegada, ABDJUNiO601 daba 0 en el runner y
+    // 3.951 en la maquina: el mismo repo, verde en un sitio y con casi cuatro mil
+    // ficheros tapados en el otro, porque se estaba mirando una rama distinta.
+    const desviacionesDeRamas = comparaRamasConLineaBase(porRama, undefined, porRepo, raiz);
+
+    console.error('');
+    console.error(formateaDesviaciones(desviacionesDeRamas,
+      'en la peor rama de cada repo'));
+
+    if (empeoran(desviaciones).length > 0 || empeoran(desviacionesDeRamas).length > 0) {
       console.error('');
       console.error('ignore_oculto: el guard esta en rojo por lo de arriba, no por la deuda de antes.');
       process.exit(1);
