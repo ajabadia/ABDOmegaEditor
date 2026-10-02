@@ -158,6 +158,48 @@ export const CR = '\r';
 export const NO_AUDITABLES_TOLERADOS = 17;
 
 // ─────────────────────────────────────────────────────────────────────────
+// LAS REGLAS QUE NO ESTAN EN NINGUN COMMIT, QUE ES PEOR QUE LO PARECIDO
+//
+// Todo lo de arriba trata de ficheros con trabajo a medias. Esto es otra cosa y
+// es mas grave: un `.gitattributes` entero que git esta APLICANDO y que no esta
+// en el indice. O sea, el guard no se esta ejecutando con las reglas de ningun
+// commit, sino con las de un fichero que vive solo en el disco de una maquina.
+//
+// El caso medido es ABDNeural, que tiene un `.gitattributes` de 36 reglas sin
+// trackear. En la maquina de desarrollo el guard le abide 356 ficheros con regla
+// eol declarada; en un clon, en el runner, no existe el fichero y no abide
+// ninguno. Los dos veredictos son correctos y no se parecen en nada, y el que
+// dice el runner es el que vale para todo el mundo.
+//
+// El segundo caso es el otro sentido de lo mismo y tambien esta medido: ABDEep
+// tiene el `.gitattributes` trackeado pero con 19 lineas sin commitear —el arreglo
+// del shebang con CRLF—, y el guard se esta aplicando esas 19 lineas. Ahi el
+// fichero si existe en un clon, pero con menos reglas.
+//
+// No sale en rojo por esto solo: es trabajo de otro hilo, y el trabajo a medias
+// no se suspende ni se juzga, se nombra. Lo que hay es un TECHO por repo, como
+// el de los no auditables, y lo que tiene que impedir es que esto se extienda a
+// mas repos en silencio. Los numeros bajan solos en cuanto esos hilos
+// commitean, y cuando bajan hay que bajar el techo.
+// ─────────────────────────────────────────────────────────────────────────
+
+/**
+ * Cuantos `.gitattributes` sin commitear se toleran, POR REPO.
+ *
+ * Un numero por repo y no un total, porque lo que hay que vigilar no es cuanto
+ * sino DONDE: que un repo conocido lo tenga es una cosa pendiente y con nombre,
+ * y que lo tenga un repo nuevo es la puerta cerrandose.
+ *
+ * Los dos de hoy son trabajo en curso de otro hilo y no se tocan desde aqui:
+ *
+ *   ABDNeural  `.gitattributes` sin trackear, 36 reglas. Commitearlo o borrarlo
+ *              lo deja en cero.
+ *   ABDEep     `.gitattributes` trackeado pero cambiado, 19 lineas anadidas.
+ *              Commitear lo deja en cero.
+ */
+export const REGLAS_SIN_COMMITEAR_TOLERADAS = { ABDEep: 1, ABDNeural: 1 };
+
+// ─────────────────────────────────────────────────────────────────────────
 // LA PARTE PURA. Nada toca el disco ni git, y por eso el test puede darle
 // ficheros inventados y comprobar cada rama sin montar un repositorio.
 // ─────────────────────────────────────────────────────────────────────────
@@ -438,6 +480,11 @@ export function formatea (porRepo) {
     .map((r) => [r.repo, r.noAuditables.length])
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
 
+  // Y lo mismo con las reglas que no estan en ningun commit, que es distinto y
+  // peor: no es trabajo a medias sobre un fichero, es que el guard se esta
+  // aplicando unas reglas que un clon no va a tener nunca.
+  const reglasPorRepo = porRepo.filter((r) => (r.reglasSinCommitear || []).length > 0);
+
   for (const r of porRepo) {
     total.repos++;
     total.ficheros += r.ficheros;
@@ -462,8 +509,27 @@ export function formatea (porRepo) {
     'ficheros SIN regla eol ni text (nada que juzgar)  : ' + suma.sinPolitica,
     'binarios con 0x0D (informativo, NO es fallo)     : ' + suma.binariosConCr,
     'no auditables por trabajo sin commitear           : ' + suma.sinAuditar
-      + ' (tope ' + NO_AUDITABLES_TOLERADOS + ')'
+      + ' (tope ' + NO_AUDITABLES_TOLERADOS + ')',
+    'repos con reglas eol SIN commitear               : ' + reglasPorRepo.length
+      + ' (repos: ' + Object.keys(REGLAS_SIN_COMMITEAR_TOLERADAS).join(', ') + ')'
   ];
+
+  // Quien tiene reglas sin commitear, y por que. Va antes que nada porque es lo
+  // que cambia el resultado del guard entero: con un `.gitattributes` sin
+  // trackear, los numeros de arriba son de una maquina y no de la suite.
+  if (reglasPorRepo.length > 0) {
+    lineas.push('');
+    lineas.push('reglas que git APLICA y no estan en ningun commit (el veredicto de');
+    lineas.push('este guard depende de ellas, y un clon no las tiene):');
+    for (const r of reglasPorRepo) {
+      const tolerado = REGLAS_SIN_COMMITEAR_TOLERADAS[r.repo] || 0;
+
+      for (const g of r.reglasSinCommitear) {
+        lineas.push('  ' + r.repo + '/' + g.ruta + '  <- ' + g.porQue
+          + ' (tope de ' + r.repo + ': ' + tolerado + ')');
+      }
+    }
+  }
 
   // De qué repo es cada no auditable. Sin esto el informe dice cuántos son
   // pero no quiénes, y quien lo lee no puede saber a qué hilo esperar ni qué
@@ -604,10 +670,25 @@ export function auditaRepo (repo) {
   const entradas = camposDeLsFiles(git(repo, ['ls-files', '-s', '-z']));
   const rutas = entradas.map((e) => e.ruta);
 
+  // Las reglas que git aplica y no estan en ningun commit. Se averigua ANTES del
+  // `if` de los repos vacios porque es justo en un repo sin nada trackeado donde
+  // un `.gitattributes` sin trackear se cuela sin que nada mas lo delate.
+  const sinTrackear = gitOpcional(repo, ['ls-files', '-o', '-z', '--exclude-standard'])
+    .split('\0').filter((s) => s !== '');
+  const sucios = new Set(
+    gitOpcional(repo, ['diff', '--name-only', '-z']).split('\0').filter((s) => s !== '')
+  );
+  const reglasSinCommitear = reglasSinCommitearDe({
+    enIndice: rutas,
+    sinTrackear,
+    sucios: [...sucios]
+  });
+
   if (rutas.length === 0) {
     return {
       repo: nombre, ficheros: 0, auditados: 0, conEolCrlf: 0, textSinEol: 0,
-      sinPolitica: 0, binariosConCr: 0, incumplimientos: [], noAuditables: []
+      sinPolitica: 0, binariosConCr: 0, incumplimientos: [], noAuditables: [],
+      reglasSinCommitear
     };
   }
 
@@ -629,11 +710,6 @@ export function auditaRepo (repo) {
   );
   const conCrDeTexto = new Set(
     gitOpcional(repo, ['grep', '--cached', '-I', '-l', '-z', '-e', CR, '--', '.'])
-      .split('\0').filter((s) => s !== '')
-  );
-
-  const sucios = new Set(
-    gitOpcional(repo, ['diff', '--name-only', '-z'])
       .split('\0').filter((s) => s !== '')
   );
 
@@ -677,8 +753,59 @@ export function auditaRepo (repo) {
   return {
     repo: nombre,
     ficheros: rutas.length,
+    reglasSinCommitear,
     ...reparto
   };
+}
+
+/**
+ * Las reglas de `.gitattributes` que git esta aplicando y NO estan en el indice.
+ *
+ * Es una funcion pura a proposito, porque lo que decide es una puerta y una
+ * puerta que solo se puede probar contra el disco no se puede probar. Los tres
+ * hechos llegan ya calculados desde `auditaRepo`; aqui solo se decide que hacer
+ * ellos.
+ *
+ * Los tres casos, y los tres son distinto:
+ *
+ *   sin trackear     el fichero existe en el disco y git no lo versiona. Git lo
+ *                    aplica igual, porque los atributos se leen del arbol de
+ *                    trabajo. Es el caso de ABDNeural.
+ *   sin commitear    esta trackeado pero el disco no coincide con el indice, asi
+ *                    que las reglas que se aplican son las del trabajo de alguien.
+ *   limpio           esta trackeado y el disco coincide: esto NO sale.
+ *
+ * Y el caso de que no haya ninguno: tampoco sale, y no es lo mismo que el
+ * anterior. Un repo sin `.gitattributes` no declara reglas y no hay nada que
+ * commitear; un repo con el fichero commiteado y limpio tampoco tiene nada que
+ * denunciar.
+ *
+ * EL FILTRADO DE QUE ES UN `.gitattributes` ESTA AQUI DENTRO y no en el que
+ * llama. Es la razon de que el contrato sea tres listas de rutas de cualquier
+ * repo entero: si el filtro viviera fuera, un llamante que pase `rutas` sin
+ * filtrar haria que este guard colgara la culpa de un `.gitattributes`
+ * cambiado a cualquier fichero cambiado de la suite. Adentro no hay forma de
+ * equivocarse.
+ *
+ * @param {{enIndice?: string[], sinTrackear?: string[], sucios?: string[]}} hechos
+ * @returns {{ruta: string, porQue: string}[]} vacia si todo esta commiteado.
+ */
+export function reglasSinCommitearDe (hechos = {}) {
+  const indice = new Set((hechos.enIndice || []).filter(esGitattributes));
+  const sucio = new Set(hechos.sucios || []);
+  const sinTrackear = (hechos.sinTrackear || []).filter(esGitattributes);
+
+  return [
+    ...sinTrackear.map((ruta) => ({ ruta, porQue: 'no esta trackeado' })),
+    ...[...indice]
+      .filter((ruta) => sucio.has(ruta))
+      .map((ruta) => ({ ruta, porQue: 'cambiado sin commitear' }))
+  ];
+}
+
+/** Si una ruta es un `.gitattributes`, de la raiz o de donde sea. */
+function esGitattributes (ruta) {
+  return ruta === '.gitattributes' || ruta.endsWith('/.gitattributes');
 }
 
 /**
@@ -768,7 +895,24 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     const demasiados = porRepo.reduce((a, r) => a + r.incumplimientos.length, 0);
     const sinAuditar = porRepo.reduce((a, r) => a + r.noAuditables.length, 0);
 
-    if (demasiados > 0 || sinAuditar > NO_AUDITABLES_TOLERADOS) {
+    // El techo de las reglas sin commitear es POR REPO y no un total, porque lo
+    // que hay que vigilar no es cuanto sino DONDE. Un repo conocido con lo que ya
+    // se sabe son unas lineas del informe y no el motivo de un rojo; un repo
+    // nuevo que se cuela en esto si lo es, porque es la puerta cerrandose sobre
+    // lo unico que hacia que la suite se midiera igual en todas partes.
+    const reglasQuePasan = porRepo
+      .filter((r) => (r.reglasSinCommitear || []).length > (REGLAS_SIN_COMMITEAR_TOLERADAS[r.repo] || 0));
+
+    if (reglasQuePasan.length > 0) {
+      console.error('');
+      console.error('auditar_eol: reglas eol sin commitear por encima del techo: '
+        + reglasQuePasan.map((r) => r.repo + ': ' + r.reglasSinCommitear.length + ' de '
+          + (REGLAS_SIN_COMMITEAR_TOLERADAS[r.repo] || 0)).join(', ') + '.');
+      console.error('  El guard se acaba de aplicar esas reglas y un clon no las tiene,');
+      console.error('  asi que el numero de auditados de arriba no es el de la suite.');
+    }
+
+    if (demasiados > 0 || sinAuditar > NO_AUDITABLES_TOLERADOS || reglasQuePasan.length > 0) {
       console.error('');
       console.error('auditar_eol: ' + demasiados + ' incumplimiento(s), ' + sinAuditar
         + ' no auditable(s) de un tope de ' + NO_AUDITABLES_TOLERADOS + '.');

@@ -24,7 +24,7 @@ import { join } from 'node:path';
 import {
   auditaSuite, auditaFicheros, auditaRepo, camposDeLsFiles, declaraText,
   esBinario, formatea, incumple, juzgaDisco, tablaDeCheckAttr, CR,
-  NO_AUDITABLES_TOLERADOS
+  NO_AUDITABLES_TOLERADOS, reglasSinCommitearDe, REGLAS_SIN_COMMITEAR_TOLERADAS
 } from './auditar_eol.mjs';
 
 const temporales = [];
@@ -475,6 +475,38 @@ describe('el informe dice lo que ha mirado', () => {
     assert.doesNotMatch(texto, /Limpio/);
   });
 
+  it('las reglas sin commitear salen con su repo, su motivo y su techo', () => {
+    // Con datos inventados, que es donde se puede comprobar las dos mitades: que
+    // el bloque aparece cuando hay algo que decir, y que el techo de ese repo va
+    // impreso al lado para que se sepa cuanto le queda antes de romperse.
+    const texto = formatea([
+      { repo: 'ABDNeural', ficheros: 10, auditados: 2, conEolCrlf: 0, sinPolitica: 8,
+        binariosConCr: 0, incumplimientos: [], noAuditables: [],
+        reglasSinCommitear: [{ ruta: '.gitattributes', porQue: 'no esta trackeado' }] },
+      { repo: 'Limpio', ficheros: 10, auditados: 2, conEolCrlf: 0, sinPolitica: 8,
+        binariosConCr: 0, incumplimientos: [], noAuditables: [], reglasSinCommitear: [] }
+    ]);
+
+    assert.match(texto, /reglas que git APLICA y no estan en ningun commit/);
+    assert.match(texto, /ABDNeural\/\.gitattributes\s+<- no esta trackeado/);
+    assert.match(texto, /tope de ABDNeural: 1/);
+    // El repo que no tiene ninguna tampoco se nombra, por lo mismo que antes.
+    assert.doesNotMatch(texto, /Limpio/);
+  });
+
+  it('y si no hay ninguna, el bloque NO sale, porque un aviso vacio es ruido', () => {
+    // El otro estado, que es el que vera el runner mientras ABDNeural y ABDEep
+    // tengan a medias sus ficheros. Un bloque que se imprime siempre Habituala a
+    // leerse sin leer, y ese es el modo de fallo de todos los avisos.
+    const texto = formatea([
+      { repo: 'ABDEep', ficheros: 10, auditados: 2, conEolCrlf: 0, sinPolitica: 8,
+        binariosConCr: 0, incumplimientos: [], noAuditables: [], reglasSinCommitear: [] }
+    ]);
+
+    assert.doesNotMatch(texto, /reglas que git APLICA/);
+    assert.match(texto, /repos con reglas eol SIN commitear\s+: 0/);
+  });
+
   it('el desglose va de mas a menos no auditables, que es como se lee un reparto', () => {
     const texto = formatea([
       { repo: 'Poco', ficheros: 10, auditados: 2, conEolCrlf: 0, sinPolitica: 8,
@@ -490,10 +522,114 @@ describe('el informe dice lo que ha mirado', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────
+// LAS REGLAS QUE NO ESTAN EN NINGUN COMMIT
+// ─────────────────────────────────────────────────────────────────────────
+
+describe('que reglas esta aplicando git que no estan en ningun commit', () => {
+  it('un `.gitattributes` sin trackear sale, y sale dicho SIN TRACKEAR', () => {
+    // El caso de ABDNeural, que es el que motivo la puerta: el fichero esta en
+    // el disco, git lo aplica, y no hay ningun commit que lo contenga.
+    assert.deepEqual(
+      reglasSinCommitearDe({ sinTrackear: ['.gitattributes'] }),
+      [{ ruta: '.gitattributes', porQue: 'no esta trackeado' }]
+    );
+  });
+
+  it('un `.gitattributes` trackeado y cambiado sale por OTRO motivo', () => {
+    // El caso de ABDEep, que es el otro sentido: el fichero existe en cualquier
+    // clon, pero con menos reglas de las que se estan aplicando aqui.
+    assert.deepEqual(
+      reglasSinCommitearDe({ enIndice: ['.gitattributes'], sucios: ['.gitattributes'] }),
+      [{ ruta: '.gitattributes', porQue: 'cambiado sin commitear' }]
+    );
+  });
+
+  it('trackeado y sin cambios NO sale, porque ahi las reglas si estan en un commit', () => {
+    assert.deepEqual(
+      reglasSinCommitearDe({ enIndice: ['.gitattributes'], sucios: [] }),
+      []
+    );
+  });
+
+  it('un repo sin `.gitattributes` tampoco sale, y no es lo mismo que el de antes', () => {
+    // Los dos casos que NO son un hallazgo: no declarar reglas no es tenerlas
+    // sin commitear. Si esto saliera, la puerta seria un aviso perpetuo sobre
+    // quince repos, que es como se acostumbra una puerta a que la dejen de
+    // mirar.
+    assert.deepEqual(reglasSinCommitearDe(), []);
+    assert.deepEqual(reglasSinCommitearDe({ enIndice: ['README.md'], sucios: ['README.md'] }), []);
+  });
+
+  it('muele en los dos repos que hay, por los dos motivos', () => {
+    // Los dos a la vez, que es como se los va a encontrar: uno por cada
+    // sentido. Si esto no ve a los dos, la puerta no esta mirando lo que dice
+    // mirar.
+    const salida = reglasSinCommitearDe({
+      enIndice: ['src/a.cpp', '.gitattributes'],
+      sinTrackear: ['.gitattributes'],
+      sucios: ['.gitattributes']
+    });
+
+    assert.deepEqual(salida, [
+      { ruta: '.gitattributes', porQue: 'no esta trackeado' },
+      { ruta: '.gitattributes', porQue: 'cambiado sin commitear' }
+    ]);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────
 // REPOS DE MENTIRA: LO QUE NO SE PUEDE INVENTAR
 // ─────────────────────────────────────────────────────────────────────────
 
 describe('el guard sobre un repo de verdad', () => {
+  it('un `.gitattributes` sin trackear lo delata, y explica por que importa', () => {
+    // El repo de ABDNeural entero, en pequeno: el fichero esta en el disco, git
+    // lo APLICA, y no hay ningun commit que lo tenga. El guard no falla —no es
+    // una regla rota— pero tiene que decirlo, porque los numeros que acaba de
+    // imprimir son de esta maquina y no de la suite.
+    const repo = repoDeMentira({
+      ficheros: { 'a.txt': 'x\n', 'b.txt': 'y\n' },
+      gitattributesDespues: '*.txt text eol=lf\n'
+    });
+
+    const resultado = auditaRepo(repo);
+
+    assert.deepEqual(resultado.reglasSinCommitear,
+      [{ ruta: '.gitattributes', porQue: 'no esta trackeado' }]);
+
+    // Y no es decorativo: el numero de auditados depende de ese fichero, que es
+    // justo el problema. Sin las reglas, estos dos ficheros no tienen nada que
+    // juzgar; con ellas, son dos auditados que un clon no contaria.
+    assert.equal(resultado.auditados, 2);
+
+    writeFileSync(join(repo, '.gitattributes'), '');
+
+    assert.equal(auditaRepo(repo).auditados, 0);
+  });
+
+  it('un `.gitattributes` commiteado NO lo delata, que es lo normal', () => {
+    const repo = repoDeMentira({ gitattributes: '*.txt text eol=lf\n', ficheros: { 'a.txt': 'x\n' } });
+    const resultado = auditaRepo(repo);
+
+    assert.deepEqual(resultado.reglasSinCommitear, []);
+    assert.equal(resultado.auditados, 1);
+  });
+
+  it('un `.gitattributes` trackeado y despues cambiado, sale como cambiado', () => {
+    // El otro sentido, el de ABDEep: el fichero esta en el clon, pero con menos
+    // reglas de las que se aplican aqui.
+    const repo = repoDeMentira({ ficheros: { 'a.txt': 'x\n' } });
+
+    writeFileSync(join(repo, '.gitattributes'), '*.txt text eol=lf\n');
+    git(repo, ['add', '.gitattributes']);
+    assert.deepEqual(auditaRepo(repo).reglasSinCommitear, [],
+      'trackeado y sin cambios ya esta en el indice, y por tanto en un commit');
+
+    writeFileSync(join(repo, '.gitattributes'), '*.txt text eol=lf\n*.md text eol=lf\n');
+
+    assert.deepEqual(auditaRepo(repo).reglasSinCommitear,
+      [{ ruta: '.gitattributes', porQue: 'cambiado sin commitear' }]);
+  });
   it('un repo sin `.gitattributes` no tiene nada que auditar, y eso NO es estar limpio', () => {
     const repo = repoDeMentira({ ficheros: { 'a.txt': 'uno\r\n' } });
     const r = auditaRepo(repo);
@@ -794,5 +930,67 @@ describe('la suite real', () => {
     const soloIndice = auditaSuite().reduce((a, r) => a + (r.textSinEol || 0), 0);
 
     assert.ok(soloIndice > 100, 'solo ha visto ' + soloIndice + ' ficheros con text sin eol');
+  });
+
+  it('y ningun repo aplica reglas que no estan en ningun commit, mas alla del techo', () => {
+    // El techo es POR REPO. Lo que hay que vigilar no es cuanto sino donde: que
+    // un repo conocido lo tenga es una cosa pendiente y con nombre, y que lo
+    // tenga un repo nuevo es la puerta cerrandose sobre lo unico que hacia que
+    // la suite se midiera igual en todas partes. Por eso el techo es un mapa y
+    // no un total, y por eso el informe nombra el repositorio.
+    const conReglas = auditaSuite().filter((r) => (r.reglasSinCommitear || []).length > 0);
+
+    const pases = conReglas
+      .filter((r) => r.reglasSinCommitear.length > (REGLAS_SIN_COMMITEAR_TOLERADAS[r.repo] || 0))
+      .map((r) => r.repo + ': ' + r.reglasSinCommitear.length + ' de '
+        + (REGLAS_SIN_COMMITEAR_TOLERADAS[r.repo] || 0));
+
+    assert.deepEqual(pases, [], 'repos con reglas sin commitear por encima del techo: ' + pases.join(', '));
+  });
+
+  it('y ningun repo con reglas sin commitear queda sin nombrar', () => {
+    // La otra mitad de la misma idea, y aqui solo en un sentido. El techo es una
+    // COTA, no una igualdad: puede quedarse una entrada de mas cuando el hilo
+    // commitea y todavia nadie la ha borrado, y eso no es un defecto. Lo que no
+    // puede es que un repo tenga reglas sin commitear y no este en el mapa,
+    // porque ese repo pasaria con techo cero y ademas no tendria nombre.
+    //
+    // Con un clon limpio esto no mira nada, y es lo que tiene que pasar: en el
+    // runner no hay trabajo a medias y la lista de repos con reglas sin
+    // commitear es vacia de verdad.
+    const conReglas = auditaSuite().filter((r) => (r.reglasSinCommitear || []).length > 0);
+
+    const sinNombre = conReglas
+      .filter((r) => !(r.repo in REGLAS_SIN_COMMITEAR_TOLERADAS))
+      .map((r) => r.repo + ' (' + r.reglasSinCommitear.length + ')');
+
+    assert.deepEqual(sinNombre, [],
+      'repos con reglas sin commitear que no estan en REGLAS_SIN_COMMITEAR_TOLERADAS: '
+      + sinNombre.join(', '));
+  });
+
+  it('y el informe nombra cada regla sin commitear que haya, con su repo y su motivo', () => {
+    // Condicional a proposito: el informe imprime el bloque cuando hay algo que
+    // decir y no lo imprime cuando no hay nada. Fijar que el bloque esta SIEMPRE
+    // seria un test que obliga a la suite a estar sucia, que es al reves de lo
+    // que se quiere.
+    const porRepo = auditaSuite();
+    const conReglas = porRepo.filter((r) => (r.reglasSinCommitear || []).length > 0);
+
+    if (conReglas.length === 0) {
+      assert.doesNotMatch(formatea(porRepo), /reglas que git APLICA/);
+      return;
+    }
+
+    const texto = formatea(porRepo);
+
+    assert.match(texto, /reglas que git APLICA y no estan en ningun commit/);
+
+    for (const r of conReglas) {
+      for (const g of r.reglasSinCommitear) {
+        assert.match(texto, new RegExp(r.repo + '/' + g.ruta.replace(/\./g, '\\.')
+          .replace(/\//g, '\\/') + '\\s+<- ' + g.porQue));
+      }
+    }
   });
 });
