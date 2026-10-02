@@ -1,7 +1,8 @@
 // Audita los repos de la suite ABDSynths contando una sola cosa: ficheros
 // TRACKEADOS con una regla `eol` declarada que NO la cumplen. Las dos reglas se
 // juzgan, cada una por su lado: a un `eol=lf` le sobra el CRLF, y a un
-// `eol=crlf` le sobra el LF.
+// `eol=crlf` le sobra el LF. Y con una tercera poblacion, mas pequeña y sin
+// regla `eol` pero con `text` declarado, que solo se juzga por el indice.
 //
 //   node tools/auditar_eol.mjs
 //
@@ -51,6 +52,40 @@
 //      eso el guard cuenta estos ficheros y los informa SIN contarlos como
 //      fallo, para que quede escrito que se miraron y se descartaron a proposito.
 //
+// ─────────────────────────────────────────────────────────────────────────
+// `text` SIN `eol`: EL INDICE SI, EL DISCO NO
+//
+// Quedaban 15.807 ficheros sin regla `eol`, y casi todos no tienen nada que
+// mirar: 15.489 no declaran ni `text` ni `eol`, asi que no hay politica que
+// puedan incumplir. Pero 309 de ellos si declaran `text` (casi todos
+// `text=auto`), y esos tienen una politica parcial que el guard estaba dejando
+// pasar entera.
+//
+// Con `text` declarado el indice guarda SIEMPRE la forma normalizada, con
+// independence de lo que diga `core.autocrlf`: medido, un `.txt` con
+// `* text=auto` commiteado con CRLF sale con el blob en LF. O sea que un CRLF en
+// el blob de un `text=auto` es exactamente el mismo defecto que en un `eol=lf`,
+// y sale por el mismo lado.
+//
+// El disco, en cambio, NO se puede juzgar, y no por prudencia sino por una
+// medicion: con `* text=auto` y sin `eol`, lo que decide el fin de linea del
+// checkout es `core.autocrlf`, que no vive en el repositorio sino en la
+// maquina de cada uno. En esta maquina vale `true` en los quince repos —esta
+// configurado en el gitconfig de sistema de Git for Windows—, asi que el
+// checkout pone CRLF y un CRLF en disco es lo CORRECTO. Juzgarlo seria repetir
+// el error de la primera version del guard, que ponia en rojo diecisiete
+// ficheros .bat que estaban bien.
+//
+// Asi que bajo `text` sin `eol` se juzga el indice y no el disco, y el informe
+// lo dice con esas palabras para que no se lea como un forgotten. Es menos
+// cobertura que la de un `eol=lf` declarado, y es la maxima que se puede
+// tener sin inventar una politica que el repo no ha declarado.
+//
+// Hoy de esos 309 quedan 123 realmente juzgables: nueve son `text=unset`
+// declarado, que es la macro `binary` de `.gitattributes`, y 186 los declara
+// binarios git porque tienen un byte nulo (su 0x0D es un dato, no un defecto).
+// Los 123 estan limpios: ninguno tiene CRLF en el blob. Lo que cambia con esto
+// no es el numero de fallos, es que 123 ficheros dejan de ser un agujero.
 // ─────────────────────────────────────────────────────────────────────────
 // LO QUE NO SE PUEDE AUDITAR, Y POR QUE NO SE PASA POR ALTO
 //
@@ -175,15 +210,63 @@ export function esBinario (f) {
 export function incumple (f) {
   const x = f || {};
 
-  // Sin regla declarada no hay nada que incumplir, y con ella las dos
-  // direcciones se juzgan al reves: `eol=lf` quiere que no haya CRLF, `eol=crlf`
-  // quiere que no haya LF. La regla que no sea ninguna de las dos, no se juzga.
-  if (x.eol !== 'lf' && x.eol !== 'crlf') return null;
   if (esBinario(x)) return null;
-  if ((x.crlfBlob || 0) > 0) return 'blob';
+
+  // El indice se juzga siempre que haya una politica de normalizacion, tenga
+  // `eol` o no: con `text` —o con `eol`, que lo implica— git guarda SIEMPRE la
+  // forma normalizada, asi que un CRLF en el blob sobra siempre. Es el mismo
+  // motivo por el que el `eol=crlf` tambien se juzga por el blob.
+  if ((x.crlfBlob || 0) > 0 && declaraText(x)) return 'blob';
+
+  // El disco, en cambio, solo se juzga si hay `eol` QUE DICHA QUE FIN DE LINEA
+  // QUEREMOS. Sin `eol`, lo que decide el checkout es `core.autocrlf`, que
+  // vive en la maquina de cada uno y no en el repositorio; con el `true` que
+  // tiene esta, el CRLF en disco es lo correcto y juzgarlo seria senalar como
+  // fallo lo que la politica de la maquina manda.
+  if (!juzgaDisco(x)) return null;
   if (x.sucio) return null;
 
   return incumpleEnDisco(x) ? 'disco' : null;
+}
+
+/**
+ * Si hay una politica declarada que diga que fin de linea quiere el disco.
+ *
+ * Solo `eol=lf` y `eol=crlf` la declaran. Un `text=auto` sin `eol` NO: ahi
+ * manda `core.autocrlf`, que no es una politica del repositorio sino de la
+ * maquina de cada uno.
+ *
+ * @param {{eol?: string}} f
+ * @returns {boolean}
+ */
+export function juzgaDisco (f) {
+  const e = f && f.eol;
+
+  return e === 'lf' || e === 'crlf';
+}
+
+/**
+ * Si el fichero tiene alguna politica que diga que el indice va normalizado.
+ *
+ * Cuenta `text` declarado, y cuenta tambien `eol` declarado aunque `text` salga
+ * `unspecified`, porque `eol` IMPLICA `text` aunque `check-attr` no lo diga:
+ * medido, un `.txt` con `*.txt eol=lf` y sin atributo `text` commitado con CRLF
+ * sale del `git add` con el blob en LF, y el propio git avisa por stderr "CRLF
+ * will be replaced by LF". O sea que la normalizacion del indice ocurre igual,
+ * y un `text: unspecified` al lado de un `eol: lf` NO significa que el
+ * repositorio no normalice.
+ *
+ * Fijarse solo en `text` seria un fallo en la direccion cara: dejaria de
+ * juzgar el blob de todos los `eol=lf` de la suite, que es justo la poblacion
+ * que este guard existe para vigilar.
+ *
+ * @param {{text?: string, eol?: string}} f
+ * @returns {boolean}
+ */
+export function declaraText (f) {
+  const x = f || {};
+
+  return x.text === 'set' || x.text === 'auto' || juzgaDisco(x);
 }
 
 /**
@@ -237,8 +320,8 @@ export function incumpleEnDisco (f) {
  * hace falta saber para leer el resto del reparto.
  *
  * @param {object[]} ficheros
- * @returns {{auditados: number, conEolCrlf: number, sinPolitica: number,
- *            binariosConCr: number,
+ * @returns {{auditados: number, conEolCrlf: number, textSinEol: number,
+ *            sinPolitica: number, binariosConCr: number,
  *            incumplimientos: {ruta: string, donde: string, crlf: number,
  *                               que: string}[],
  *            noAuditables: string[]}}
@@ -247,6 +330,7 @@ export function auditaFicheros (ficheros) {
   const out = {
     auditados: 0,
     conEolCrlf: 0,
+    textSinEol: 0,
     sinPolitica: 0,
     binariosConCr: 0,
     incumplimientos: [],
@@ -260,8 +344,23 @@ export function auditaFicheros (ficheros) {
 
     if (f.eol === 'crlf') out.conEolCrlf++;
 
-    if (f.eol !== 'lf' && f.eol !== 'crlf') {
-      out.sinPolitica++;
+    // `text` sin `eol` no es lo mismo que nada: hay politica para el indice y
+    // ninguna para el disco. Se cuenta en su propia casilla porque es la unica
+    // forma de que el informe pueda decir cuantos se han mirado solo a medias, y
+    // porque si se mezclaran con `sinPolitica` el numero de `auditados` no
+    // distinguiria "juzgado por el indice" de "juzgado por los dos lados".
+    if (!juzgaDisco(f)) {
+      if (declaraText(f) && !esBinario(f)) {
+        out.textSinEol++;
+        out.auditados++;
+        if ((f.crlfBlob || 0) > 0) {
+          out.incumplimientos.push({
+            ruta: f.ruta, donde: 'blob', crlf: f.crlfBlob, que: 'CRLF'
+          });
+        }
+      } else {
+        out.sinPolitica++;
+      }
       continue;
     }
 
@@ -295,7 +394,8 @@ export function auditaFicheros (ficheros) {
 /** Un informe legible por persona, una linea por repo y luego los resumenes. */
 export function formatea (porRepo) {
   const suma = {
-    auditados: 0, conEolCrlf: 0, sinPolitica: 0, binariosConCr: 0, sinAuditar: 0
+    auditados: 0, conEolCrlf: 0, textSinEol: 0, sinPolitica: 0,
+    binariosConCr: 0, sinAuditar: 0
   };
   const total = { repos: 0, ficheros: 0 };
   const malos = [];
@@ -305,6 +405,7 @@ export function formatea (porRepo) {
     total.ficheros += r.ficheros;
     suma.auditados += r.auditados;
     suma.conEolCrlf += r.conEolCrlf;
+    suma.textSinEol += r.textSinEol || 0;
     suma.sinPolitica += r.sinPolitica;
     suma.binariosConCr += r.binariosConCr;
     suma.sinAuditar += r.noAuditables.length;
@@ -315,13 +416,14 @@ export function formatea (porRepo) {
   }
 
   const lineas = [
-    'repos revisados                              : ' + total.repos,
-    'ficheros trackeados                          : ' + total.ficheros,
-    'ficheros con regla eol=lf (los auditados)    : ' + suma.auditados,
-    'ficheros con regla eol=crlf (juzgados al reves): ' + suma.conEolCrlf,
-    'ficheros SIN regla eol (nada que juzgar)     : ' + suma.sinPolitica,
-    'binarios con 0x0D (informativo, NO es fallo) : ' + suma.binariosConCr,
-    'no auditables por trabajo sin commitear      : ' + suma.sinAuditar
+    'repos revisados                                   : ' + total.repos,
+    'ficheros trackeados                               : ' + total.ficheros,
+    'ficheros con regla eol declarada (auditados)      : ' + suma.auditados,
+    '  de ellos, con regla eol=crlf (juzgados al reves) : ' + suma.conEolCrlf,
+    '  de ellos, con text y SIN eol (solo el indice)   : ' + suma.textSinEol,
+    'ficheros SIN regla eol ni text (nada que juzgar)  : ' + suma.sinPolitica,
+    'binarios con 0x0D (informativo, NO es fallo)     : ' + suma.binariosConCr,
+    'no auditables por trabajo sin commitear           : ' + suma.sinAuditar
       + ' (tope ' + NO_AUDITABLES_TOLERADOS + ')'
   ];
 
@@ -447,7 +549,6 @@ export function tablaDeCheckAttr (salida) {
  * 16.679 de la suite uno a uno seria lento y no aportaria nada: si no hay CR en
  * el blob, el numero de CRLF es cero y ya esta. Por eso el grupo de candidatos
  * sale de git y no de aqui.
- * y no de aqui.
  */
 export function auditaRepo (repo) {
   const nombre = basename(repo.replace(/[\\/]+$/, '')) || repo;
@@ -456,8 +557,8 @@ export function auditaRepo (repo) {
 
   if (rutas.length === 0) {
     return {
-      repo: nombre, ficheros: 0, auditados: 0, conEolCrlf: 0, sinPolitica: 0,
-      binariosConCr: 0, incumplimientos: [], noAuditables: []
+      repo: nombre, ficheros: 0, auditados: 0, conEolCrlf: 0, textSinEol: 0,
+      sinPolitica: 0, binariosConCr: 0, incumplimientos: [], noAuditables: []
     };
   }
 
@@ -502,8 +603,12 @@ export function auditaRepo (repo) {
     const crlfBlob = conCr.has(ruta) && !binario
       ? crlfDeBuffer(gitBuffer(repo, ['cat-file', 'blob', hashPorRuta.get(ruta)]))
       : 0;
-    const conRegla = attr.eol === 'lf' || attr.eol === 'crlf';
-    const disco = conRegla ? saltosDeDisco(join(repo, ruta)) : { crlf: 0, total: 0 };
+    // El disco solo se LEE si hay `eol` declarado. Sin el, el fin de linea del
+    // checkout lo decide `core.autocrlf`, que es de la maquina, y mirar el disco
+    // seria trabajo tirado para obtener un numero que el guard luego no juzga.
+    const disco = juzgaDisco({ eol: attr.eol })
+      ? saltosDeDisco(join(repo, ruta))
+      : { crlf: 0, total: 0 };
 
     return {
       ruta,

@@ -22,8 +22,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import {
-  auditaSuite, auditaFicheros, auditaRepo, camposDeLsFiles, esBinario,
-  formatea, incumple, tablaDeCheckAttr, CR, NO_AUDITABLES_TOLERADOS
+  auditaSuite, auditaFicheros, auditaRepo, camposDeLsFiles, declaraText,
+  esBinario, formatea, incumple, juzgaDisco, tablaDeCheckAttr, CR,
+  NO_AUDITABLES_TOLERADOS
 } from './auditar_eol.mjs';
 
 const temporales = [];
@@ -204,6 +205,62 @@ describe('donde incumple un fichero, y donde no incumple nada', () => {
     assert.equal(incumple({ eol: 'lf', crlfBlob: 0, crlfDisco: 0 }), null);
     assert.equal(incumple(), null);
   });
+
+  // ───────────────────────────────────────────────────────────────────────
+  // `text` SIN `eol`: LA POLITICA PARCIAL
+  //
+  // Con `text` declarado, el indice guarda siempre la forma normalizada, y eso
+  // se puede juzgar. El disco NO, porque sin `eol` lo que decide el checkout es
+  // `core.autocrlf`, que es de la maquina. Estos tests separan las dos cosas.
+  // ───────────────────────────────────────────────────────────────────────
+
+  it('un `text=auto` sin `eol` con CRLF en el BLOB incumple', () => {
+    // Es el mismo defecto que en un `eol=lf`, por el mismo motivo: con `text`
+    // activo el indice guarda la forma normalizada y un CRLF ahi sobra.
+    assert.equal(incumple({ text: 'auto', eol: 'unspecified', crlfBlob: 12 }), 'blob');
+    assert.equal(incumple({ text: 'set', eol: 'unspecified', crlfBlob: 1 }), 'blob');
+  });
+
+  it('un `text=auto` sin `eol` con CRLF en el DISCO NO incumple, porque el disco no se juzga', () => {
+    // La asimetria que hace que este guard siga siendo usable en Windows. Con
+    // `core.autocrlf=true` —que es el valor de esta maquina en los quince
+    // repos— el checkout pone CRLF, y ese CRLF es lo que la politica de la
+    // maquina manda. Juzgarlo seria el error de la primera version del guard,
+    // que ponia en rojo ficheros que estaban bien.
+    assert.equal(
+      incumple({ text: 'auto', eol: 'unspecified', crlfBlob: 0, crlfDisco: 460, saltosDisco: 460 }),
+      null
+    );
+  });
+
+  it('sin `text` ni `eol` no hay nada que juzgar, aunque el blob tenga CRLF', () => {
+    // El caso de los 15.489 ficheros que no declaran nada. Sin politica no hay
+    // incumplimiento, y contarlos como fallidos seria inventar una regla.
+    assert.equal(incumple({ text: 'unspecified', eol: 'unspecified', crlfBlob: 30 }), null);
+    assert.equal(incumple({ crlfBlob: 30 }), null);
+  });
+
+  it('`eol` declarado cuenta como politica aunque `text` salga unspecified', () => {
+    // Medido: con `*.txt eol=lf` y SIN atributo `text`, `check-attr` devuelve
+    // `text: unspecified` y `eol: lf`, pero el `git add` normaliza igual y el
+    // propio git avisa "CRLF will be replaced by LF". O sea que `eol` implica
+    // `text`. Fijarse solo en `text` dejaria de vigilar el blob de TODOS los
+    // `eol=lf` de la suite, que es justo lo que este guard existe para mirar.
+    assert.equal(declaraText({ eol: 'lf', text: 'unspecified' }), true);
+    assert.equal(declaraText({ eol: 'crlf', text: 'unspecified' }), true);
+    assert.equal(declaraText({ text: 'auto', eol: 'unspecified' }), true);
+    assert.equal(declaraText({ text: 'unspecified', eol: 'unspecified' }), false);
+    assert.equal(declaraText({}), false);
+
+    assert.equal(incumple({ eol: 'lf', text: 'unspecified', crlfBlob: 8 }), 'blob');
+  });
+
+  it('solo `eol=lf` y `eol=crlf` gobiernan el disco', () => {
+    assert.equal(juzgaDisco({ eol: 'lf' }), true);
+    assert.equal(juzgaDisco({ eol: 'crlf' }), true);
+    assert.equal(juzgaDisco({ eol: 'unspecified', text: 'auto' }), false);
+    assert.equal(juzgaDisco({}), false);
+  });
 });
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -216,7 +273,10 @@ describe('el reparto de un conjunto de ficheros', () => {
     { ruta: 'sucio.cpp', eol: 'lf', crlfBlob: 0, crlfDisco: 40, saltosDisco: 40, sucio: true },
     { ruta: 'blob.md', eol: 'lf', crlfBlob: 8, crlfDisco: 0, saltosDisco: 0 },
     { ruta: 'disco.md', eol: 'lf', crlfBlob: 0, crlfDisco: 3, saltosDisco: 3 },
-    { ruta: 'leeme.txt', eol: 'unspecified', crlfDisco: 40, saltosDisco: 40 },
+    { ruta: 'leeme.txt', eol: 'unspecified', text: 'unspecified', crlfDisco: 40, saltosDisco: 40 },
+    { ruta: 'contrato.json', eol: 'unspecified', text: 'auto', crlfBlob: 0, crlfDisco: 90, saltosDisco: 90 },
+    { ruta: 'contratoCrlf.json', eol: 'unspecified', text: 'auto', crlfBlob: 6, crlfDisco: 0, saltosDisco: 0 },
+    { ruta: 'icono.svg', eol: 'unspecified', text: 'auto', crlfBlob: 3 },
     { ruta: 'build.bat', eol: 'crlf', crlfBlob: 0, crlfDisco: 460, saltosDisco: 460 },
     { ruta: 'batEnLf.bat', eol: 'crlf', crlfBlob: 0, crlfDisco: 0, saltosDisco: 7 },
     { ruta: 'batSucio.bat', eol: 'crlf', crlfBlob: 0, crlfDisco: 0, saltosDisco: 12, sucio: true },
@@ -226,9 +286,23 @@ describe('el reparto de un conjunto de ficheros', () => {
   it('separa lo limpiado de lo que no tiene regla, que no es lo mismo', () => {
     const r = auditaFicheros(ficheros);
 
-    assert.equal(r.auditados, 7);
+    // Los tres ficheros con `text=auto` sin `eol` son auditados, no "sin
+    // politica": tienen politica para el indice aunque no la tengan para el
+    // disco. Si se contaran como `sinPolitica`, el guard podria ponerse verde
+    // sin haber mirado 123 ficheros reales.
+    assert.equal(r.auditados, 10);
     assert.equal(r.sinPolitica, 2);
     assert.equal(r.conEolCrlf, 3);
+    assert.equal(r.textSinEol, 3);
+  });
+
+  it('un `text=auto` con CRLF en el blob sale como incumplimiento del indice', () => {
+    const delIndice = auditaFicheros(ficheros).incumplimientos
+      .filter((i) => i.ruta === 'icono.svg');
+
+    assert.equal(delIndice.length, 1);
+    assert.equal(delIndice[0].donde, 'blob');
+    assert.equal(delIndice[0].crlf, 3);
   });
 
   it('los que incumplen se nombran, con su numero y con QUE se contaron', () => {
@@ -240,6 +314,8 @@ describe('el reparto de un conjunto de ficheros', () => {
     assert.deepEqual(r.incumplimientos, [
       { ruta: 'blob.md', donde: 'blob', crlf: 8, que: 'CRLF' },
       { ruta: 'disco.md', donde: 'disco', crlf: 3, que: 'CRLF' },
+      { ruta: 'contratoCrlf.json', donde: 'blob', crlf: 6, que: 'CRLF' },
+      { ruta: 'icono.svg', donde: 'blob', crlf: 3, que: 'CRLF' },
       { ruta: 'batEnLf.bat', donde: 'disco', crlf: 7, que: 'saltos en LF' }
     ]);
   });
@@ -268,7 +344,7 @@ describe('el reparto de un conjunto de ficheros', () => {
     const r = auditaFicheros([]);
 
     assert.deepEqual(r, {
-      auditados: 0, conEolCrlf: 0, sinPolitica: 0, binariosConCr: 0,
+      auditados: 0, conEolCrlf: 0, textSinEol: 0, sinPolitica: 0, binariosConCr: 0,
       incumplimientos: [], noAuditables: []
     });
     assert.deepEqual(auditaFicheros(), auditaFicheros([]));
@@ -332,13 +408,17 @@ describe('los parseos de la salida de git', () => {
 describe('el informe dice lo que ha mirado', () => {
   it('dice cuantos ha auditados y cuantos no tienen regla, para que no pueda mentir', () => {
     const texto = formatea([
-      { repo: 'A', ficheros: 100, auditados: 10, conEolCrlf: 2, sinPolitica: 88,
-        binariosConCr: 4, incumplimientos: [], noAuditables: [] }
+      { repo: 'A', ficheros: 100, auditados: 10, conEolCrlf: 2, textSinEol: 3,
+        sinPolitica: 85, binariosConCr: 4, incumplimientos: [], noAuditables: [] }
     ]);
 
-    assert.match(texto, /auditados\)\s+: 10/);
-    assert.match(texto, /SIN regla eol \(nada que juzgar\)\s+: 88/);
+    assert.match(texto, /regla eol declarada \(auditados\)\s+: 10/);
+    assert.match(texto, /SIN regla eol ni text \(nada que juzgar\)\s+: 85/);
     assert.match(texto, /binarios con 0x0D \(informativo, NO es fallo\)\s+: 4/);
+    // La casilla que separa "juzgado por el indice" de "juzgado por los dos
+    // lados". Si no estuviera, los 3 ficheros con `text` sin `eol` estarian
+    // camuflados entre los 85 que no tienen nada que mirar.
+    assert.match(texto, /text y SIN eol \(solo el indice\)\s+: 3/);
   });
 
   it('y cuando hay incumplimientos, dice donde esta y QUE se conto', () => {
@@ -628,5 +708,16 @@ describe('la suite real', () => {
 
   it('y mira al menos diez repos', () => {
     assert.ok(auditaSuite().length >= 10);
+  });
+
+  it('y mas de cien ficheros con `text` sin `eol`, que se juzgan por el indice', () => {
+    // El suelo de la ultima puerta. Si `declaraText` se rompiera y volviera a
+    // exigir un `text` declarado que `check-attr` no devuelve, estos 123
+    // ficheros volverian a la casilla de "nada que juzgar" y el numero de
+    // `auditados` bajaria de 1.010 a 887 sin que nada se pusiera rojo. Este
+    // test es lo que lo delata.
+    const soloIndice = auditaSuite().reduce((a, r) => a + (r.textSinEol || 0), 0);
+
+    assert.ok(soloIndice > 100, 'solo ha visto ' + soloIndice + ' ficheros con text sin eol');
   });
 });
