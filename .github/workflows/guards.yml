@@ -134,8 +134,19 @@ jobs:
       # mas: los `.gitattributes` de los repos hermanos NO heredan de este, cada
       # uno tiene el suyo, y es el que gobierna. Anadir reglas aqui para "fijar"
       # el comportamiento de los hermanos no tendria efecto ninguno.
+      # `--caja-sensible` mide con la semantica de Linux aunque el guard se este
+      # ejecutando en una maquina con el sistema de ficheros que no distingue caja.
+      # En ESTE runner es un no-op, porque aqui `core.ignorecase` ya es `false` y no
+      # hay nada que forzar. Lo que compra es que el numero que sale signifique lo
+      # mismo en todas partes: la linea base es un unico numero por repo, y si dos
+      # maquinas lo miden distinto no se puede comparar ni se puede bajar.
+      #
+      # Y no es teoria, ya ha pasado: ABDCZ101 tiene la regla `*.syx` y 194
+      # ficheros `.SYX`, de modo que en Windows son 314 tapados y en Linux 120. Sin
+      # este flag, un Windows da 314 y este runner da 120, y el guard lo anuncia
+      # como una mejora que no es.
       - name: Auditar .gitignore (ficheros trackeados tapados)
-        run: node tools/auditar_ignore_oculto.mjs
+        run: node tools/auditar_ignore_oculto.mjs --caja-sensible
 
       - name: Auditar EOL (nadie incumple la regla que declara)
         run: node tools/auditar_eol.mjs

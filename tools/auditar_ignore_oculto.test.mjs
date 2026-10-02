@@ -30,14 +30,14 @@
 import { describe, it, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import {
   raizDeSuite, descubreRepos, reposDeSuite, auditaRepo, auditaSuite,
   camposDeCheckIgnore, tapaLosTrackeados, formatea,
-  DEUDA_CONOCIDA, comparaConLineaBase, empeoran, formateaDesviaciones
+  DEUDA_CONOCIDA, comparaConLineaBase, empeoran, formateaDesviaciones, opcionesDeConsola
 } from './auditar_ignore_oculto.mjs';
 
 /** El separador de `check-ignore -z`, escrito explicitamente. */
@@ -449,6 +449,34 @@ describe('la caja: un repo, dos lecturas, y el interruptor para elegir', () => {
 
     assert.deepEqual(auditaRepo(repo).tapados.map((t) => t.ruta),
       auditaRepo(repo, { cajaSensible: false }).tapados.map((t) => t.ruta));
+  });
+
+  it('la linea de comandos pide la caja sensible, y sin flag no la pide', () => {
+    // Sin esto el flag podria existir y no hacer nada, que es la forma mas
+    // comfortable de tener una puerta que no cierra nada.
+    assert.deepEqual(opcionesDeConsola([]), { cajaSensible: false });
+    assert.deepEqual(opcionesDeConsola(['--caja-sensible']), { cajaSensible: true });
+
+    // Y con lo otro que acepta la consola, que convive con el.
+    assert.deepEqual(opcionesDeConsola(['--linea-base', '--caja-sensible']),
+      { cajaSensible: true });
+  });
+
+  it('y el paso de CI le pasa el flag, que si no el interruptor no llega a existir', () => {
+    // El test que ata las dos mitades. El interruptor sin el flag en el workflow
+    // es codigo muerto; el flag sin el interruptor es un argumento que nadie
+    // escucha. Lo que hace falta son los dos, asi que se comprueban los dos.
+    const workflow = join(raizDeSuite(), '.github', 'workflows', 'guards.yml');
+
+    assert.ok(existsSync(workflow), 'no se encuentra el workflow de los guards');
+
+    const linea = readFileSync(workflow, 'utf8')
+      .split('\n')
+      .find((l) => l.includes('run: node tools/auditar_ignore_oculto.mjs'));
+
+    assert.ok(linea, 'el workflow no ejecuta el guard de .gitignore');
+    assert.match(linea, /--caja-sensible/,
+      'el paso de CI no pasa --caja-sensible, asi que en una maquina con caja mediria distinto');
   });
 });
 
