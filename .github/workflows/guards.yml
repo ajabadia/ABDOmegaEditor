@@ -154,6 +154,39 @@ jobs:
       # ficheros `.SYX`, de modo que en Windows son 314 tapados y en Linux 120. Sin
       # este flag, un Windows da 314 y este runner da 120, y el guard lo anuncia
       # como una mejora que no es.
+      # ESTE PASO VA PRIMERO DE LOS TRES GUARDS, Y POR QUE.
+      #
+      # Los otros tres preguntan por el CONTENIDO de la suite: si un fichero
+      # incumple la regla que declara, si una regla de ignore tapa trabajo ya
+      # trackeado, si una regla de eol explica su CR. Los tres son verdes con una
+      # suite a la que le han desaparecido tres repos, porque ninguno de los tres
+      # mira cuantos hay. Este es el que mira cuantos hay.
+      #
+      # No es una hipotesis. Los repos de aqui son clones, y un clon puede fallar,
+      # un repo se puede renombrar, y un `.gitignore` de la raiz puede dejar de
+      # descubrir un hermano sin que nadie se entere. Todo eso baja el numero de
+      # ficheros, y una suite que encoge en silencio se audita mas rapido y mejor:
+      # es la direccion en la que este trabajo es mas peligroso.
+      #
+      # Va antes que los otros por una razon muy concreta: un guard de contenido
+      # sobre una suite encogida no avisa de nada, porque lo que encuentra en una
+      # suite a la que le falta un repo es un subconjunto de lo que habia. Ponerlo
+      # primero convierte "el guard ha pasado" en una afirmacion sobre la suite
+      # entera y no sobre el trozo que se ha podido bajar.
+      #
+      # Y va DESPUES del paso de clon, que es donde se sabe que estan los quince
+      # repos. Antes de ese paso solo existe la raiz, que en esta rama son trece
+      # ficheros, y el suelo global lo pondria en rojo siempre.
+      #
+      # Los suelos son el MENOR de los dos entornos, medido con este mismo codigo:
+      # 15 repos y 11.513 ficheros en el clon de las ramas por defecto, y 15 y
+      # 16.773 en la maquina de desarrollo, que trabaja en ramas de desarrollo y
+      # por eso ve mas. Un suelo medido solo aqui haria fallar a este runner en
+      # cada push, que es el error que ya se cometio una vez con el suelo de
+      # ficheros auditados del guard de EOL.
+      - name: Auditar el tamano de la suite (que no se haya encogido)
+        run: node tools/auditar_tamano.mjs
+
       - name: Auditar .gitignore (ficheros trackeados tapados)
         run: node tools/auditar_ignore_oculto.mjs --caja-sensible
 
@@ -172,11 +205,15 @@ jobs:
       # el runner esa suite solo existe despues del clon. Adelante fallarian
       # por el motivo equivocado.
       #
-      # Un solo paso para los tres ficheros: `node --test` sale con codigo
+      # Un solo paso para los cuatro ficheros: `node --test` sale con codigo
       # distinto de cero si alguno falla, que es lo que pone el paso en rojo.
-      - name: Tests de los tres guards
+      #
+      # El de tamano va el primero por el mismo motivo que su guard: su bloque
+      # de suite real necesita la suite clonada, y el resto tambien.
+      - name: Tests de los guards
         run: |
           node --test \
+            tools/auditar_tamano.test.mjs \
             tools/auditar_ignore_oculto.test.mjs \
             tools/auditar_eol.test.mjs \
             tools/auditar_justificacion_crlf.test.mjs
