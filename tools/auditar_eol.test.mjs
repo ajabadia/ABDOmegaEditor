@@ -19,14 +19,16 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 
 import {
   auditaSuite, auditaFicheros, auditaRepo, camposDeLsFiles, declaraText,
   esBinario, formatea, incumple, juzgaDisco, tablaDeCheckAttr, CR,
   NO_AUDITABLES_TOLERADOS, reglasSinCommitearDe, REGLAS_SIN_COMMITEAR_TOLERADAS,
   auditaArbol, auditaRamas, auditaRamasDeSuite, formateaRamas, ramasDeRepo,
-  sinPrefijoDeRef
+  sinPrefijoDeRef,
+  auditaSombras, auditaSombrasDeSuite, anidadosDe, anidadoQueManda, sombrasDe,
+  sombrasQuePasan, formateaSombras, SOMBRAS_TOLERADAS
 } from './auditar_eol.mjs';
 
 const temporales = [];
@@ -491,7 +493,12 @@ describe('el informe dice lo que ha mirado', () => {
 
     assert.match(texto, /reglas que git APLICA y no estan en ningun commit/);
     assert.match(texto, /ABDNeural\/\.gitattributes\s+<- no esta trackeado/);
-    assert.match(texto, /tope de ABDNeural: 1/);
+    // El techo sale del mapa, no de un numero escrito aqui: el dato que importa
+    // es que el informe diga CUAL es el techo de ese repo, porque asi se sabe si
+    // lo que ha aparecido se lo come o lo pasa. Fijar el valor seria atar el test
+    // a un estado transitorio de la suite.
+    assert.match(texto, new RegExp('tope de ABDNeural: '
+      + (REGLAS_SIN_COMMITEAR_TOLERADAS.ABDNeural || 0)));
     // El repo que no tiene ninguna tampoco se nombra, por lo mismo que antes.
     assert.doesNotMatch(texto, /Limpio/);
   });
@@ -1224,5 +1231,327 @@ describe('la suite real', () => {
           .replace(/\//g, '\\/') + '\\s+<- ' + g.porQue));
       }
     }
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────
+// EL `.gitattributes` DE MAS CERCA, QUE ANULA EL DE LA RAIZ
+//
+// ─────────────────────────────────────────────────────────────────────────
+// LO QUE SE BUSCA, Y POR QUE NO BASTA CONTAR LOS "SIN POLITICA"
+//
+// El caso es real y el codigo que lo caza no es el que parece. `check-attr` ya
+// resuelve la precedencia, asi que un fichero al que le roban la regla sale con
+// `eol` sin especificar y llevaba desde el primer dia contado en la casilla de
+// "sin politica". Contar esa casilla da CERO en toda la suite, y cero es verdad y
+// no dice nada.
+//
+// Los dos `.gitattributes` anidados que hay son de arboles de terceros y dicen
+// `* text=auto`, que parece que deberia apagar la raiz. No lo apaga, porque los
+// atributos se fusionan POR ATRIBUTO y no entre ficheros: el anidado no menciona
+// `eol`, asi que el `eol=lf` de la raiz sigue mandando para ese atributo. Es lo
+// que fijan los dos primeros tests de abajo con repos de verdad.
+//
+// Y el otro sentido tambien se mide, porque tambien es real: esos mismos dos
+// anidados le ANADEN `text=auto` a 79 ficheros que la raiz no regulaba. Eso es
+// cobertura nueva, y una puerta que pusiera en rojo una mejora acabaria apagada.
+
+describe('los `.gitattributes` anidados, que se fusionan por atributo y no por fichero', () => {
+  it('un anidado que no menciona `eol` deja el `eol` de la raiz', () => {
+    // LA PRIMERA REGLA DEL FORMATO, y la que hace que contar los "sin politica" no
+    // diga nada. Con la raiz a `* text=auto eol=lf` y un `sub/.gitattributes` a
+    // `* text=auto`, el fichero de `sub/` sigue con `eol=lf`: el atributo que el
+    // anidado menciona lo gana, y el que no menciona se sigue buscando hacia
+    // arriba.
+    const repo = repoDeMentira({
+      gitattributes: '* text=auto eol=lf\n',
+      ficheros: { 'b.cpp': 'x\n', 'sub/a.cpp': 'x\n', 'sub/.gitattributes': '* text=auto\n' }
+    });
+
+    assert.deepEqual(auditaSombras(repo).sombras, [],
+      'un anidado que solo declara `text` no le quita el `eol` a nadie');
+  });
+
+  it('y uno que menciona `eol` para quitarlo se lo quita, y eso si es una sombra', () => {
+    // El caso del encargo, medido con git y no supuesto: `* !eol` en el anidado
+    // hace que `check-attr` deje de mirar hacia arriba para ESE atributo, y el
+    // `eol=lf` de la raiz no vuelve a mandar. El fichero pasa a no tener politica
+    // de fin de linea, el guard lo cuenta como sin politica y no lo juzga, y no
+    // hay ningun paso que se ponga rojo por eso.
+    const repo = repoDeMentira({
+      gitattributes: '* text=auto eol=lf\n',
+      ficheros: { 'b.cpp': 'x\n', 'sub/a.cpp': 'x\n', 'sub/.gitattributes': '* !eol\n' }
+    });
+
+    const r = auditaSombras(repo);
+
+    // El propio `sub/.gitattributes` tambien pierde el `eol`, porque `*` casa
+    // con el fichero de reglas y esta DENTRO de `sub/`. No se le hace una
+    // excepcion: la regla se esta aplicando a si misma, que es cierto y es lo
+    // que hace git. Filtarlo "porque no tiene sentido" seria una exception
+    // hecha para que el numero saliera mas redondo, y ese numero es el que hay
+    // que mirar cuando bajen los `auditados`.
+    assert.deepEqual(r.sombras.map((s) => [s.ruta, s.atributo, s.sinEl, s.conEl, s.culpable]), [
+      ['sub/.gitattributes', 'eol', 'lf', 'unspecified', 'sub/.gitattributes'],
+      ['sub/a.cpp', 'eol', 'lf', 'unspecified', 'sub/.gitattributes']
+    ]);
+    assert.deepEqual(r.cambia, { 'sub/.gitattributes': 2 });
+    assert.deepEqual(r.amplian, [],
+      'y no anade nada: `text` lo sigue declarando la raiz para esos ficheros');
+  });
+
+  it('y el techo lo vuelve rojo nombrando el fichero exacto que hay que mirar', () => {
+    // El dato que hace falta cuando el numero de `auditados` baje sin motivo es
+    // QUE `.gitattributes` tapa la politica, no cuantos repos estan raros.
+    const repo = repoDeMentira({
+      gitattributes: '* text=auto eol=lf\n',
+      ficheros: {
+        'b.cpp': 'x\n',
+        'sub/a.cpp': 'x\n',
+        'sub/c.cpp': 'x\n',
+        'sub/.gitattributes': '* !eol\n'
+      }
+    });
+
+    const rojos = sombrasQuePasan([auditaSombras(repo)]);
+
+    assert.deepEqual(rojos, [{
+      repo: basename(repo.replace(/[\\/]+$/, '')),
+      anidado: 'sub/.gitattributes',
+      ahora: 3,
+      tolerado: 0
+    }]);
+  });
+
+  it('y declararlo en SOMBRAS_TOLERADAS lo deja en verde, con su nombre', () => {
+    const repo = repoDeMentira({
+      gitattributes: '* text=auto eol=lf\n',
+      ficheros: { 'sub/a.cpp': 'x\n', 'sub/.gitattributes': '* !eol\n' }
+    });
+    const nombre = basename(repo.replace(/[\\/]+$/, ''));
+    const medido = auditaSombras(repo);
+    // El techo declarado es 1 y el medido es 2 porque el propio fichero de reglas
+    // tambien pierde el `eol`, que es lo que se acaba de fijar arriba. Aqui el
+    // techo va holgado a proposito: lo que se comprueba es que declararlo quita
+    // el rojo, no que el numero coincida.
+    const base = { [nombre + '/sub/.gitattributes']: 2 };
+
+    assert.deepEqual(sombrasQuePasan([medido], base), [],
+      'un anidado declarado y que no crece mas no es un problema');
+    assert.deepEqual(sombrasQuePasan([medido], { [nombre + '/sub/.gitattributes']: 0 }).map((r) => r.ahora),
+      [2], 'y con el techo a cero sigue en rojo: es lo que no se declara todavia');
+  });
+
+  it('un repo sin anidados no monta nada y no encuentra nada', () => {
+    // Trece de los quince repos de la suite son esto, y el caso normal tiene que
+    // ser barato: un temporal por repo para encontrar que no hay nada que medir
+    // es trabajo por el motivo equivocado.
+    const repo = repoDeMentira({
+      gitattributes: '* text=auto eol=lf\n',
+      ficheros: { 'a.cpp': 'x\n' }
+    });
+
+    const r = auditaSombras(repo);
+
+    assert.deepEqual(r, {
+      repo: basename(repo.replace(/[\\/]+$/, '')),
+      anidados: [], sombras: [], amplian: [], cambia: {}, anade: {}
+    });
+  });
+
+  it('y un anidado sin `.gitattributes` en la raiz no puede tapar nada', () => {
+    // Al reves de lo que se busca: si no hay raiz, los anidados son lo unico que
+    // hay. No hay a quien robarle politica, asi que no se pueden llamar sombra de
+    // nada, aunque el numero de ficheros sea enorme.
+    const repo = repoDeMentira({
+      ficheros: { 'a.cpp': 'x\n', 'sub/b.cpp': 'x\n', 'sub/.gitattributes': '* !eol\n' }
+    });
+
+    const r = auditaSombras(repo);
+
+    assert.deepEqual(r.anidados, ['sub/.gitattributes'], 'el anidado se ve igual');
+    assert.deepEqual(r.sombras, []);
+    assert.deepEqual(r.cambia, {});
+  });
+});
+
+describe('el reparto, que es lo que decide de donde viene cada cambio', () => {
+  it('el culpable es el `.gitattributes` mas cercano por directorio, no el primero', () => {
+    // Con dos anidados, el de `a/b/` gana para lo que hay debajo: por eso se
+    // cuentan los directorios de la ruta hacia arriba en vez de buscar por
+    // subcadena, que haria que `docs/x/.gitattributes` saliera como culpable de
+    // un fichero de `otros/docs/x/`.
+    const anidados = ['a/.gitattributes', 'a/b/.gitattributes', 'a/b/c/.gitattributes'];
+
+    assert.equal(anidadoQueManda('a/b/c/d.cpp', anidados), 'a/b/c/.gitattributes');
+    assert.equal(anidadoQueManda('a/b/d.cpp', anidados), 'a/b/.gitattributes');
+    assert.equal(anidadoQueManda('a/d.cpp', anidados), 'a/.gitattributes');
+    assert.equal(anidadoQueManda('z/d.cpp', anidados), null);
+    assert.equal(anidadoQueManda('.gitattributes', anidados), null,
+      'el fichero de la raiz no esta debajo de ningun anidado');
+  });
+
+  it('solo cuenta los anidados, y el de la raiz nunca lo es', () => {
+    assert.deepEqual(anidadosDe(['.gitattributes', 'a/b.txt', 'docs/x/.gitattributes', 'x/.gitattributes']),
+      ['docs/x/.gitattributes', 'x/.gitattributes']);
+    assert.deepEqual(anidadosDe(['.gitattributes']), []);
+    assert.deepEqual(anidadosDe([]), []);
+  });
+
+  it('quita y anade son listas distintas, y el sentido importa', () => {
+    // La primera version de esto comparaba las dos tablas y reportaba todo lo que
+    // fuera distinto. Media ochenta ficheros, y el numero era el equivocado en el
+    // sentido equivocado: los anidados de la suite ANADEN `text=auto` a ficheros
+    // que la raiz no regulaba, que es cobertura nueva.
+    const { sombras, amplian } = sombrasDe({
+      rutas: ['sin-regla.ts', 'con-regla.cpp', 'quieto.cpp'],
+      anidados: ['sub/.gitattributes'],
+      efectivo: {
+        'sin-regla.ts': { text: 'auto', eol: 'unspecified' },
+        'con-regla.cpp': { text: 'auto', eol: 'unspecified' },
+        'quieto.cpp': { text: 'auto', eol: 'lf' }
+      },
+      soloRaiz: {
+        'sin-regla.ts': { text: 'unspecified', eol: 'unspecified' },
+        'con-regla.cpp': { text: 'auto', eol: 'lf' },
+        'quieto.cpp': { text: 'auto', eol: 'lf' }
+      }
+    });
+
+    assert.deepEqual(sombras.map((s) => [s.ruta, s.atributo]),
+      [['con-regla.cpp', 'eol']], 'solo el que PIERDE politica');
+    assert.deepEqual(amplian.map((s) => [s.ruta, s.atributo]),
+      [['sin-regla.ts', 'text']], 'el que la gana va a la otra lista, y no es un defecto');
+  });
+
+  it('`unset` no es perder politica, es declararla mas fuerte', () => {
+    // `-text` en un arbol de binarios es una decision, no un olvido: el atributo
+    // pasa a valer "falso", que es mas fuerte que "sin declarar", no menos.
+    const { sombras, amplian } = sombrasDe({
+      rutas: ['sub/a.bin'],
+      anidados: ['sub/.gitattributes'],
+      efectivo: { 'sub/a.bin': { text: 'unset', eol: 'lf' } },
+      soloRaiz: { 'sub/a.bin': { text: 'auto', eol: 'lf' } }
+    });
+
+    assert.deepEqual(sombras, [], 'declarar mas fuerte no es quedarse sin politica');
+    assert.deepEqual(amplian.map((s) => s.atributo), []);
+  });
+
+  it('y lo que no aparece en ninguna de las dos listas no se cuenta', () => {
+    const todo = sombrasDe({
+      rutas: ['a.cpp', 'sub/b.cpp'],
+      anidados: [],
+      efectivo: { 'a.cpp': { text: 'auto', eol: 'lf' }, 'sub/b.cpp': { text: 'auto', eol: 'lf' } },
+      soloRaiz: { 'a.cpp': { text: 'auto', eol: 'lf' }, 'sub/b.cpp': { text: 'auto', eol: 'lf' } }
+    });
+
+    assert.deepEqual(todo, { sombras: [], amplian: [] });
+  });
+});
+
+describe('el informe de las sombras', () => {
+  it('dice cuantos anidados hay, cuantos tapan y cuantos anaden', () => {
+    // Las dos listas van juntas en el fixture porque el informe las cuenta de
+    // sitios distintos: `anade` es el reparto por `.gitattributes`, que es lo que
+    // se ve en la lista de anidados, y `amplian` son las entradas, que es lo que
+    // se suma. Un fixture con uno de los dos puesto y el otro vacio daria un
+    // informe que en la vida real no se puede dar, que es como se cuelan los
+    // errores de conteo.
+    const texto = formateaSombras([
+      {
+        repo: 'A',
+        anidados: ['x/.gitattributes'],
+        sombras: [],
+        amplian: [{}, {}, {}],
+        cambia: {},
+        anade: { 'x/.gitattributes': 3 }
+      },
+      { repo: 'B', anidados: [], sombras: [], amplian: [], cambia: {}, anade: {} }
+    ]).join('\n');
+
+    assert.match(texto, /\.gitattributes en subdirectorios\s+: 1/);
+    assert.match(texto, /de ellos, dejando ficheros SIN politica\s+: 0/);
+    assert.match(texto, /ficheros a los que un anidado les ANADE politica : 3/);
+    assert.match(texto, /A\/x\/\.gitattributes {3}0 \/ 3/);
+  });
+
+  it('y el detalle sale solo cuando hay algo que detallar', () => {
+    const conDefecto = formateaSombras([{
+      repo: 'A',
+      anidados: ['sub/.gitattributes'],
+      sombras: [{ ruta: 'sub/a.cpp', atributo: 'eol', sinEl: 'lf', conEl: 'unspecified', culpable: 'sub/.gitattributes' }],
+      amplian: [],
+      cambia: { 'sub/.gitattributes': 1 },
+      anade: {}
+    }]).join('\n');
+
+    assert.match(conDefecto, /FICHEROS QUE SE QUEDAN SIN POLITICA/);
+    assert.match(conDefecto, /sub\/a\.cpp {2}eol: lf -> unspecified {2}<- sub\/\.gitattributes/);
+
+    const sinDefecto = formateaSombras([{
+      repo: 'A',
+      anidados: ['sub/.gitattributes'],
+      sombras: [],
+      amplian: [{ ruta: 'sub/b.ts', atributo: 'text', sinEl: 'unspecified', conEl: 'auto', culpable: 'sub/.gitattributes' }],
+      cambia: {},
+      anade: { 'sub/.gitattributes': 1 }
+    }]).join('\n');
+
+    assert.equal(sinDefecto.includes('SE QUEDAN SIN POLITICA'), false,
+      'anadir politica no es un defecto y no se detalla como si lo fuera');
+  });
+});
+
+describe('la suite real, que es a quien este guard tiene que vigilar', () => {
+  it('ningun `.gitattributes` anulado le quita la politica a un fichero', () => {
+    // EL TEST DEL ENCARGO. En la maquina y en el runner, porque los dos leen el
+    // `.gitattributes` de la raiz del DISCO, que es lo que el guard se aplica.
+    const medido = auditaSombrasDeSuite();
+
+    assert.deepEqual(sombrasQuePasan(medido).map((s) => s.repo + '/' + s.anidado + ': ' + s.ahora),
+      [], 'ningun anidado deja ficheros sin politica sin estar declarado');
+  });
+
+  it('y toda entrada de SOMBRAS_TOLERADAS corresponde a algo que existe hoy', () => {
+    // El otro sentido del ratchet, el que no se puede saltarse editando el mapa:
+    // una entrada que no corresponde a nada medido es una puerta tapada a mano.
+    // Hoy la lista esta vacia y esto no falla, asi que el test vale por lo que
+    // hara el dia que alguien anada la primera: si el `.gitattributes` se borra
+    // o se arregla, esta entrada sobra y hay que quitarla.
+    const medido = auditaSombrasDeSuite();
+    const existen = new Set(medido.flatMap((r) => r.anidados.map((a) => r.repo + '/' + a)));
+    const sobran = Object.keys(SOMBRAS_TOLERADAS).filter((clave) => !existen.has(clave));
+
+    assert.deepEqual(sobran, [],
+      'entradas de SOMBRAS_TOLERADAS que no corresponden a ningun anidado existente: '
+      + sobran.join(', '));
+  });
+
+  it('y los dos anidados que hay son inertes: anaden cobertura, no la quitan', () => {
+    // El dato medido, y es la afirmacion que hace este guard. Los dos anidados de
+    // la suite estan en `docs/` de ABDAudioLab y de ABDEep, los dos de arboles de
+    // terceros, y los dos dicen `* text=auto`.
+    const medido = auditaSombrasDeSuite();
+    const conAnidados = medido.filter((r) => r.anidados.length > 0);
+
+    assert.deepEqual(conAnidados.map((r) => r.repo).sort(), ['ABDAudioLab', 'ABDEep']);
+    for (const r of conAnidados) {
+      assert.deepEqual(r.cambia, {}, r.repo + ' tiene un anidado que quita politica');
+      assert.ok(Object.keys(r.anade).length > 0,
+        r.repo + ': un anidado que no cambia nada en ningun sentido no es lo que se midio');
+    }
+  });
+
+  it('y el informe dice cuantos ficheros anaden, que es el numero que se ha medido', () => {
+    const texto = formateaSombras(auditaSombrasDeSuite()).join('\n');
+    const numeros = texto.match(/ANADE politica : (\d+)/);
+
+    assert.ok(numeros, texto);
+    // Setenta y nueve en la maquina. El numero exacto depende de la rama
+    // desplegada de cada repo, asi que lo que se comprueba es que es un numero
+    // grande y no cero: cero significaria que el metodo de comparacion no esta
+    // comparando nada, que es el modo de fallo silencioso de este guard.
+    assert.ok(Number(numeros[1]) > 50, 'solo ' + numeros[1] + ' ficheros con politica anadida');
   });
 });
