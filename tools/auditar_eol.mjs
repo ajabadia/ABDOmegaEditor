@@ -1,5 +1,7 @@
 // Audita los repos de la suite ABDSynths contando una sola cosa: ficheros
-// TRACKEADOS con una regla `eol=lf` declarada que NO la cumplen.
+// TRACKEADOS con una regla `eol` declarada que NO la cumplen. Las dos reglas se
+// juzgan, cada una por su lado: a un `eol=lf` le sobra el CRLF, y a un
+// `eol=crlf` le sobra el LF.
 //
 //   node tools/auditar_eol.mjs
 //
@@ -52,13 +54,14 @@
 // ─────────────────────────────────────────────────────────────────────────
 // LO QUE NO SE PUEDE AUDITAR, Y POR QUE NO SE PASA POR ALTO
 //
-// Un fichero con trabajo sin commitear cuyo disco trae CRLF no se puede juzgar:
-// no se sabe si el CRLF es del committed o del trabajo de otro hilo, y
-// re-extrayendolo se destruye ese trabajo. Marcarlo "no auditable" y seguir
-// como si nada seria la forma mas facil de que este guard no sirva, asi que hay
-// un TECHO: si los no auditables pasan de `NO_AUDITABLES_TOLERADOS`, sale en
-// rojo. Hoy son 7 (seis en ABDNeural y uno en ABDSharedCode) y bajan solos en
-// cuanto esos hilos commitean.
+// Un fichero con trabajo sin commitear cuyo disco no cumple la regla que declara
+// no se puede juzgar: no se sabe si el CRLF —o el LF— es del committed o del
+// trabajo de otro hilo, y re-extrayendolo se destruye ese trabajo. Marcarlo "no
+// auditable" y seguir como si nada seria la forma mas facil de que este guard
+// no sirva, asi que hay un TECHO: si los no auditables pasan de
+// `NO_AUDITABLES_TOLERADOS`, sale en rojo. Hoy son 8 (seis en ABDNeural, uno en
+// ABDOmegaUnified y uno en ABDSharedCode) y bajan solos en cuanto esos hilos
+// commitean.
 
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
@@ -76,8 +79,18 @@ export const CR = '\r';
  * No es una lista de nombres, es un numero: asi no hay que tocar el
  * guard cada vez que un hilo commitea, y a la vez no vale como excusa para
  * dejar sin mirar media suite.
+ *
+ * Subio de 7 a 8 al abrirse la puerta de `eol=crlf`, y el motivo NO es que
+ * ahora se pase mas por alto: es que hay una poblacion que antes no se podia
+ * suspender. Un `.bat` con `eol=crlf` y trabajo sin commitear se suspender por
+ * el mismo motivo que un `.cpp` con `eol=lf` —el LF del disco puede ser del
+ * committed o del trabajo de otro hilo, y re-extrayendo se destruye ese
+ * trabajo—, pero hasta que esa puerta existia no se miraba, asi que no
+ * contaba. `ABDOmegaUnified/web/start.bat` es el que ha hecho subir la cifra.
+ *
+ * Los ocho bajan solos en cuanto esos hilos commitean.
  */
-export const NO_AUDITABLES_TOLERADOS = 7;
+export const NO_AUDITABLES_TOLERADOS = 8;
 
 // ─────────────────────────────────────────────────────────────────────────
 // LA PARTE PURA. Nada toca el disco ni git, y por eso el test puede darle
@@ -119,29 +132,96 @@ export function esBinario (f) {
  *    repositorio, y el trabajo del otro hilo esta en el disco, no ahi.
  *  - El disco solo se juzga si no hay trabajo pendiente, por lo de arriba.
  *
- * Y el salto que parece el mas tonto es el que mas trabajo ha dado: aqui solo se
- * juzga la regla `eol=lf`. Un fichero con `eol=crlf` tiene CRLF en disco POR
- * DECLARACION, y una primera version de este guard lo contaba como
- * incumplimiento y ponia en rojo diecisiete ficheros .bat de ABDNeural y
- * ABDOmegaUnified que estan perfectamente bien. La regla contraria —un
- * `eol=crlf` que se encuentra con LF— no se comprueba: un fichero de una sola
- * linea sin salto final es legal en LF y haria falta distinguirlo de un
- * incumplimiento de verdad, y esa comprobacion va en su propia casilla.
+ * Y el salto que parece el mas tonto es el que mas trabajo ha dado: un fichero
+ * con `eol=crlf` tiene CRLF en disco POR DECLARACION, y una primera version de
+ * este guard lo contaba como incumplimiento y ponia en rojo diecisiete ficheros
+ * .bat de ABDNeural y ABDOmegaUnified que estan perfectamente bien. Por eso
+ * `eol=crlf` se juzga AL REVES: lo que se le pide es CRLF, y lo que sale mal es
+ * encontrarselo con LF.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * LA DIRECCION CONTRARIA, Y EL HUECO QUE HAY EN ELLA
+ *
+ * La regla contraria —un `eol=crlf` que se encuentra con LF— estuvo sin
+ * comprobarse, con el motivo escrito de que "un fichero de una sola linea sin
+ * salto final es legal en LF". El motivo era cierto pero la conclusion estaba
+ * mal: no hace falta distinguirlo mirando el fichero, basta con distinguir si
+ * tiene ALGUN salto de linea. Un `.bat` de una linea sin salto final tiene
+ * cero saltos y no se puede juzgar en ninguna direccion —eso es verdad—. Uno
+ * con siete saltos y cero CRLF los tiene todos en LF, y eso es un
+ * incumplimiento tan real como el del blob, solo que invisible: `git status`
+ * sale vacio, porque git normaliza antes de comparar.
+ *
+ * Con esa distincion, la puerta es simetrica a la de `eol=lf`:
+ *
+ *   - el indice guarda SIEMPRE la forma normalizada, con `text` activo. Asi que
+ *     un `eol=crlf` cuyo blob trae CRLF incumple, exactamente igual que un
+ *     `eol=lf` que lo trae. Es alcanzable por el mismo camino que el defecto
+ *     historico de `MidiKeyboard/README.md`: commitear el fichero SIN la regla
+ *     puesta y escribir la regla despues.
+ *   - el disco recibe lo que dice la regla. Un `eol=crlf` con saltos que no son
+ *     CRLF incumple, y se arregla re-extrayendo del indice, no con un commit.
+ *
+ * Con la puerta puesta, la suite tiene 25 ficheros con `eol=crlf`: seis .bat de
+ * ABDNeural y diecinueve de ABDOmegaUnified, todos con el indice en LF (bien) y
+ * cuatro con el disco en LF (mal, y son fixtures de regresion de un scanner de
+ * parentesis que el propio scanner excluye a proposito).
  *
  * @param {{eol?: string, text?: string, gitLoVeBinario?: boolean,
- *          crlfBlob?: number, crlfDisco?: number, sucio?: boolean}} f
+ *          crlfBlob?: number, crlfDisco?: number, saltosDisco?: number,
+ *          sucio?: boolean}} f
  * @returns {'blob'|'disco'|null}
  */
 export function incumple (f) {
   const x = f || {};
 
-  if (x.eol !== 'lf') return null;
+  // Sin regla declarada no hay nada que incumplir, y con ella las dos
+  // direcciones se juzgan al reves: `eol=lf` quiere que no haya CRLF, `eol=crlf`
+  // quiere que no haya LF. La regla que no sea ninguna de las dos, no se juzga.
+  if (x.eol !== 'lf' && x.eol !== 'crlf') return null;
   if (esBinario(x)) return null;
   if ((x.crlfBlob || 0) > 0) return 'blob';
   if (x.sucio) return null;
-  if ((x.crlfDisco || 0) > 0) return 'disco';
 
-  return null;
+  return incumpleEnDisco(x) ? 'disco' : null;
+}
+
+/**
+ * Si el DISCO incumple la regla que el fichero declara, sin mirar el indice.
+ *
+ * Se separa de `incumple` porque la sentencia del disco es la unica que se
+ * suspender por trabajo sin commitear, y porque la necesita por separado el
+ * reparto, que marca el fichero como "no auditable" en vez de como fallo.
+ *
+ * La aritmetica es una suma de dos cantidades que no son la misma cosa, y esa
+ * distincion es todo el contenido de la funcion:
+ *
+ *   `crlfDisco`   cuantos de los saltos del disco son CRLF.
+ *   `saltosDisco` cuantos saltos tiene el disco en total, sean los que sean.
+ *
+ * Con `eol=lf` se incumple con que uno solo sea CRLF: basta `crlfDisco > 0`, y
+ * da igual cuantos haya. Con `eol=crlf` el requisito es el inverso —que TODOS
+ * sean CRLF—, asi que un fichero con siete saltos y cero CRLF incumple, y eso
+ * se mide como `crlfDisco < saltosDisco`.
+ *
+ * Y el caso que justificaba dejar la puerta cerrada: el fichero de una sola
+ * linea sin salto final tiene cero saltos, y con `saltosDisco === 0` la
+ * comparacion sale igual en las dos direcciones. No se juzga, que es
+ * exactamente lo que hay que hacer con el, y no por prudencia sino porque no
+ * hay nada que mirar.
+ *
+ * @param {{eol?: string, crlfDisco?: number, saltosDisco?: number}} f
+ * @returns {boolean}
+ */
+export function incumpleEnDisco (f) {
+  const x = f || {};
+  const crlf = x.crlfDisco || 0;
+  const saltos = x.saltosDisco || 0;
+
+  if (x.eol === 'lf') return crlf > 0;
+  if (x.eol === 'crlf') return crlf < saltos;
+
+  return false;
 }
 
 /**
@@ -151,10 +231,16 @@ export function incumple (f) {
  * guard no puede juzgar, y no pueden parecerse a los que ha comprobado. Por eso
  * van en una casilla aparte y no se funden con `auditados`.
  *
+ * `conEolCrlf` ya no es una casilla de "no juzgado": desde que la puerta de
+ * `eol=crlf` existe, esos ficheros se auditan como los otros, y el contador
+ * queda como el numero de ficheros cuya regla va al reves, que es el dato que
+ * hace falta saber para leer el resto del reparto.
+ *
  * @param {object[]} ficheros
  * @returns {{auditados: number, conEolCrlf: number, sinPolitica: number,
  *            binariosConCr: number,
- *            incumplimientos: {ruta: string, donde: string, crlf: number}[],
+ *            incumplimientos: {ruta: string, donde: string, crlf: number,
+ *                               que: string}[],
  *            noAuditables: string[]}}
  */
 export function auditaFicheros (ficheros) {
@@ -172,12 +258,9 @@ export function auditaFicheros (ficheros) {
     // incumplimiento: es la casilla que deja escrito que se miro y se descarto.
     if (esBinario(f) && f.tieneCrBlob) out.binariosConCr++;
 
-    if (f.eol === 'crlf') {
-      out.conEolCrlf++;
-      continue;
-    }
+    if (f.eol === 'crlf') out.conEolCrlf++;
 
-    if (f.eol !== 'lf') {
+    if (f.eol !== 'lf' && f.eol !== 'crlf') {
       out.sinPolitica++;
       continue;
     }
@@ -186,12 +269,22 @@ export function auditaFicheros (ficheros) {
 
     const donde = incumple(f);
     if (donde) {
+      // Que se cuenta, y de que cosa, depende de donde se haya encontrado el
+      // fallo. En el indice se cuenta CRLF bajo cualquier regla, porque el
+      // indice guarda siempre la forma normalizada y un CRLF ahi sobra siempre.
+      // En el disco se cuenta lo que sobra de la regla DECLARADA: con `eol=lf`
+      // sobran los CRLF, y con `eol=crlf` sobran los saltos en LF, que son los
+      // que no son CRLF. Por eso el numero y el nombre van juntos: el numero
+      // es la cuenta de lo que el informe llama por su nombre.
+      const lfDeSobra = (f.saltosDisco || 0) - (f.crlfDisco || 0);
+
       out.incumplimientos.push({
         ruta: f.ruta,
         donde,
-        crlf: donde === 'blob' ? f.crlfBlob : f.crlfDisco
+        crlf: donde === 'blob' ? f.crlfBlob : (f.eol === 'lf' ? f.crlfDisco : lfDeSobra),
+        que: (donde === 'blob' || f.eol === 'lf') ? 'CRLF' : 'saltos en LF'
       });
-    } else if (f.sucio && (f.crlfDisco || 0) > 0) {
+    } else if (f.sucio && incumpleEnDisco(f)) {
       out.noAuditables.push(f.ruta);
     }
   }
@@ -225,7 +318,7 @@ export function formatea (porRepo) {
     'repos revisados                              : ' + total.repos,
     'ficheros trackeados                          : ' + total.ficheros,
     'ficheros con regla eol=lf (los auditados)    : ' + suma.auditados,
-    'ficheros con regla eol=crlf (no juzgados)    : ' + suma.conEolCrlf,
+    'ficheros con regla eol=crlf (juzgados al reves): ' + suma.conEolCrlf,
     'ficheros SIN regla eol (nada que juzgar)     : ' + suma.sinPolitica,
     'binarios con 0x0D (informativo, NO es fallo) : ' + suma.binariosConCr,
     'no auditables por trabajo sin commitear      : ' + suma.sinAuditar
@@ -234,14 +327,19 @@ export function formatea (porRepo) {
 
   if (malos.length === 0) {
     lineas.push('');
-    lineas.push('ningun fichero incumple la regla eol=lf que declara.');
+    lineas.push('ningun fichero incumple la regla eol que declara.');
     return lineas.join('\n');
   }
 
   lineas.push('');
-  lineas.push('INCUMPLEN SU REGLA eol=lf:');
+  lineas.push('INCUMPLEN LA REGLA eol QUE DECLARAN:');
   for (const m of malos) {
-    lineas.push('  ' + m.repo + '/' + m.ruta + '  <- ' + m.crlf + ' CRLF en ' +
+    // El numero que se imprime no es siempre CRLF: en un `eol=crlf` juzgado
+    // por el disco, lo que hay de mas son los saltos en LF. Decir "8 CRLF"
+    // ahi seria mentira, y el que lea el informe tomaria la magnitud por la
+    // cuenta de CRLF que todavia no hay.
+    lineas.push('  ' + m.repo + '/' + m.ruta + '  <- ' + m.crlf + ' ' +
+      (m.que + ' en ') +
       (m.donde === 'blob' ? 'el BLOB (sobrevive a un clon)'
         : 'el DISCO (git no lo ve, se arregla re-extrayendo)'));
   }
@@ -405,6 +503,7 @@ export function auditaRepo (repo) {
       ? crlfDeBuffer(gitBuffer(repo, ['cat-file', 'blob', hashPorRuta.get(ruta)]))
       : 0;
     const conRegla = attr.eol === 'lf' || attr.eol === 'crlf';
+    const disco = conRegla ? saltosDeDisco(join(repo, ruta)) : { crlf: 0, total: 0 };
 
     return {
       ruta,
@@ -413,7 +512,8 @@ export function auditaRepo (repo) {
       gitLoVeBinario,
       tieneCrBlob: conCr.has(ruta),
       crlfBlob,
-      crlfDisco: conRegla ? crlfDeDisco(join(repo, ruta)) : 0,
+      crlfDisco: disco.crlf,
+      saltosDisco: disco.total,
       sucio: sucios.has(ruta)
     };
   });
@@ -460,25 +560,40 @@ function crlfDeBuffer (datos) {
 }
 
 /**
- * Cuantos CRLF tiene un fichero del disco, leyendo bytes y no texto.
+ * Cuantos CRLF y cuantos saltos de linea tiene un fichero del disco, en bytes.
+ *
+ * Se devuelven las DOS cantidades y no solo los CRLF porque la puerta de
+ * `eol=crlf` necesita el total: se incumple cuando hay saltos que no son CRLF,
+ * y para saberlo hay que poder comparar las dos cifras. Devolver solo `crlf`
+ * haria que un fichero con siete saltos y cero CRLF y un fichero sin saltos
+ * fueran indistinguibles, que es justo el caso que esta puerta tiene que
+ * separar.
  *
  * Con `readFileSync(fichero, 'utf8')` un `\\r\\n` no se distingue de un `\\n`
  * seguido de un `\\r` al final de la linea, y en un fichero que tiene CRLF y LF
  * mezclados el numero sale mal. Aqui se lee en binario a proposito.
+ *
+ * @returns {{crlf: number, total: number}}
  */
-function crlfDeDisco (fichero) {
+export function saltosDeDisco (fichero) {
   let datos;
 
   try {
     datos = readFileSync(fichero);
   } catch (e) {
     // Un fichero que no esta en disco (borrado, o en un submodule) no se puede
-    // mirar, y no es un fallo del guard: cuenta como cero CR en disco y el blob
+    // mirar, y no es un fallo del guard: cuenta como cero saltos y el blob
     // sigue juzgandose.
-    return 0;
+    return { crlf: 0, total: 0 };
   }
 
-  return crlfDeBuffer(datos);
+  let total = 0;
+
+  for (let i = 0; i < datos.length; i++) {
+    if (datos[i] === 10) total++;
+  }
+
+  return { crlf: crlfDeBuffer(datos), total };
 }
 
 /** El informe de la suite entera. */
