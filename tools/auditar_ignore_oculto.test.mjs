@@ -12,6 +12,14 @@
 // comando OBVIO no lo encuentra. Si un test de estos fallara, el diagnostico
 // tiene que seguir siendo "¿el guard anda?" y no "adivina".
 //
+// LA CAJA, EN MEDIO. `check-ignore` compara rutas con `core.ignorecase` de la
+// maquina, que en Windows es `true` y en Linux `false`. Con el mismo repo y las
+// mismas reglas, las dos lecturas no coinciden, y la que duele es la de Linux:
+// una negacion con mayusculas es mas estrecha ahi, asi que un fichero
+// `Readme.md` con `*.md` y `!README.md` esta limpio en la maquina y tapado en el
+// runner. La seccion de la caja mide las dos lecturas en el mismo sitio, que es
+// lo que faltaba para que eso se pudiera ver sin esperar a CI.
+//
 // AL FINAL, LA LINEA BASE. La suite arrastra 4.431 ficheros trackeados que su
 // `.gitignore` tapa, todos de siempre y en repos en los que no se ha tocado nada.
 // Por eso el test del final no exige cero: exige que ese numero no SUBA, y lo
@@ -86,6 +94,34 @@ function repoConTapado (patron = '*.log', nombreTocado = 'viejo.log') {
   writeFileSync(join(sub, nombreTocado), 'tocado\n');
   git(sub, ['add', '-A']);
   git(sub, ['add', '-f', nombreTocado]);
+  git(sub, ['commit', '-qm', 'inicio']);
+
+  return sub;
+}
+
+/**
+ * Un repositorio de mentira con `core.ignorecase` FIJADO a proposito.
+ *
+ * Sin este `config` el test dependeria de donde corra, que es justo lo que se
+ * quiere evitar: en Windows `*.syx` tapa `1SOUNDS.SYX` y en Linux no, asi que el
+ * mismo test daria dos respuestas distintas en la maquina de desarrollo y en el
+ * runner. Con la clave puesta en el repo, la maquina decide lo que le toque y lo
+ * unico que decide el test es si el interruptor del guard hace lo que dice.
+ *
+ * `git add -f` por lo de siempre: el fichero tiene que ESTAR trackeado, que es
+ * la mitad del problema que se busca.
+ */
+function repoConCaja (patron, nombreTocado, ignorecase) {
+  const dir = temporal('caja-');
+  const sub = join(dir, 'repo');
+
+  mkdirSync(sub);
+  git(sub, ['init', '-q', '.']);
+  git(sub, ['config', 'core.ignorecase', String(ignorecase)]);
+  writeFileSync(join(sub, '.gitignore'), patron + '\n');
+  writeFileSync(join(sub, 'visible.txt'), 'hola\n');
+  writeFileSync(join(sub, nombreTocado), 'tocado\n');
+  git(sub, ['add', '-A', '-f']);
   git(sub, ['commit', '-qm', 'inicio']);
 
   return sub;
@@ -361,6 +397,62 @@ describe('el guard sobre un repo de verdad', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────
+// LA CAJA. El mismo repo, las mismas reglas y dos respuestas distintas, segun
+// `core.ignorecase` de la maquina. Todo lo que hay aqui es para poder medir las
+// dos en el mismo sitio, que es lo que hacia que un problema de caja solo se
+// viera cuando el runner se quejaba.
+// ─────────────────────────────────────────────────────────────────────────
+
+describe('la caja: un repo, dos lecturas, y el interruptor para elegir', () => {
+  it('una negacion con mayusculas la ve Windows limpia y la ve Linux tapada', () => {
+    // El sentido que duele, porque es el que no se ve hasta que CI lo dice. La
+    // negacion `!README.md` es MAS ANCHA en Windows: alcanza tambien a
+    // `Readme.md`. En Linux es mas estrecha, y el unico patron que alcanza a
+    // `Readme.md` es `*.md`. O sea: en la maquina el repo parece limpio y en el
+    // runner es trabajo escondido.
+    const repo = repoConCaja('*.md\n!README.md', 'Readme.md', true);
+
+    assert.deepEqual(auditaRepo(repo).tapados, [],
+      'con la semantica de Windows la negacion alcanza a Readme.md');
+
+    const comoLinux = auditaRepo(repo, { cajaSensible: true });
+
+    assert.deepEqual(comoLinux.tapados.map((t) => t.ruta), ['Readme.md']);
+    assert.equal(comoLinux.tapados[0].regla, '.gitignore:1 *.md');
+  });
+
+  it('y al reves: una regla en minusculas que en Windows tapa mas cosas que en Linux', () => {
+    // El caso de ABDCZ101, en pequeno: la regla `*.syx` alcanza a `1SOUNDS.SYX`
+    // en Windows y no lo alcanza en Linux. Aqui el repo sale con deuda en la
+    // lectura de la maquina y limpio en la de Linux, que es al reves del anterior.
+    const repo = repoConCaja('*.syx', '1SOUNDS.SYX', true);
+
+    assert.deepEqual(auditaRepo(repo).tapados.map((t) => t.ruta), ['1SOUNDS.SYX']);
+    assert.deepEqual(auditaRepo(repo, { cajaSensible: true }).tapados, []);
+  });
+
+  it('el interruptor no cambia NADA cuando la caja no interviene', () => {
+    // Sin este test, `cajaSensible` podria estar metiendo una bandera que
+    // check-ignore ignora en cualquier repo, y los dos tests de arriba pasarian
+    // por la regla en minusculas en vez de por el interruptor.
+    const repo = repoConCaja('*.log', 'viejo.log', false);
+
+    assert.equal(auditaRepo(repo, { cajaSensible: true }).tapados.length, 1);
+    assert.deepEqual(auditaRepo(repo, { cajaSensible: true }).tapados,
+      auditaRepo(repo).tapados);
+  });
+
+  it('sin el interruptor el guard se comporta EXACTAMENTE como antes', () => {
+    // La garantia de que esto no ha roto el camino por defecto: un repo con caja
+    // irrelevante tiene que dar el mismo numero de tapados con y sin la opcion.
+    const repo = repoConCaja('*.log\n*.txt', 'viejo.log', false);
+
+    assert.deepEqual(auditaRepo(repo).tapados.map((t) => t.ruta),
+      auditaRepo(repo, { cajaSensible: false }).tapados.map((t) => t.ruta));
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────
 // LA LINEA BASE. Un guard que exige cero tapados seria un guard en rojo desde
 // el primer dia, porque la suite arrastra deuda de siempre; uno que solo informa
 // no seria un guard. Este es el punto medio: la linea base es un TECHO, y solo
@@ -491,5 +583,62 @@ describe('la suite real, que es a quien este guard tiene que vigilar', () => {
     // fallara en todos los repos, el total seria 0 y todos los tests de arriba
     // seguirian en verde.
     assert.ok(total > 1000, 'solo se han visto ' + total + ' ficheros trackeados');
+  });
+
+  it('y aguanta tambien la lectura de Linux, que es la que hace el runner', () => {
+    // La puerta que hace falta para que un problema de caja no se vea solo en CI.
+    // El guard decide con la semantica de la maquina, asi que en una maquina
+    // con Windows una negacion demasiado estrecha pasa por limpia y el runner
+    // la encuentra tarde. Con esta segunda lectura, la misma pregunta se hace en
+    // local con la respuesta del runner.
+    const porRepo = auditaSuite(undefined, { cajaSensible: true });
+
+    const sinLineaBase = porRepo.filter((r) => r.tapados.length > 0 && !(r.repo in DEUDA_CONOCIDA));
+
+    assert.deepEqual(sinLineaBase.map((r) => r.repo), [],
+      'repos con deuda en Linux que no estan en DEUDA_CONOCIDA: '
+      + sinLineaBase.map((r) => r.repo).join(', '));
+
+    const pases = porRepo
+      .filter((r) => DEUDA_CONOCIDA[r.repo] !== undefined
+        && r.tapados.length > DEUDA_CONOCIDA[r.repo])
+      .map((r) => r.repo + ': ' + r.tapados.length + ' de ' + DEUDA_CONOCIDA[r.repo]);
+
+    assert.deepEqual(pases, [],
+      'repos que en Linux pasan de la linea base: ' + pases.join(', '));
+  });
+
+  it('la caja solo cambia la respuesta donde ya sabemos, y en ningun sitio mas', () => {
+    // El ratchet de la caja. Una diferencia entre las dos lecturas significa que
+    // el `.gitignore` de ese repo decide con la caja, y eso tiene una consecuencia
+    // concreta y mala: el numero que ve el runner no es comparable con el numero
+    // que ve la maquina, asi que la linea base se puede "bajar" a un valor que
+    // en local es mas alto. Es lo que ha pasado con ABDCZ101, que tiene la regla
+    // `*.syx` y 194 ficheros `.SYX`: en Windows son 314 tapados y en Linux 120, y
+    // el runner lleva dias anunciando "ha BAJADO de 314 a 120 (puedes bajar la
+    // linea base)" sin que nada se haya arreglado.
+    //
+    // Lo que se permite es BAJAR: arreglar el `.gitignore` de ABDCZ101 lo deja
+    // en cero y el test sigue en verde. Lo que no puede pasar es que OTRO repo
+    // empiece a depender de la caja sin que se note.
+    const DIFERENCIA_DE_CAJA = { ABDCZ101: 194 };
+
+    const porDefecto = new Map(auditaSuite().map((r) => [r.repo, r.tapados.length]));
+    const diferencias = auditaSuite(undefined, { cajaSensible: true })
+      .map((r) => [r.repo, Math.abs(porDefecto.get(r.repo) - r.tapados.length)])
+      .filter(([, d]) => d > 0);
+
+    const nuevas = diferencias.filter(([repo, d]) => !(repo in DIFERENCIA_DE_CAJA));
+
+    assert.deepEqual(nuevas.map(([r, d]) => r + ': ' + d), [],
+      'repos cuya deuda depende de la caja y no estan en DIFERENCIA_DE_CAJA: '
+      + nuevas.map(([r, d]) => r + ': ' + d).join(', '));
+
+    // Y el techo: la diferencia de un repo conocido solo puede BAJAR.
+    const pases = diferencias
+      .filter(([repo, d]) => d > DIFERENCIA_DE_CAJA[repo])
+      .map(([repo, d]) => repo + ': ' + d + ' de ' + DIFERENCIA_DE_CAJA[repo]);
+
+    assert.deepEqual(pases, [], 'diferencias de caja por encima de las conocidas: ' + pases.join(', '));
   });
 });
