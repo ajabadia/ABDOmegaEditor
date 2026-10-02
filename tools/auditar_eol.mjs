@@ -122,7 +122,8 @@
 // commitean.
 
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { basename, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -190,14 +191,20 @@ export const NO_AUDITABLES_TOLERADOS = 17;
  * sino DONDE: que un repo conocido lo tenga es una cosa pendiente y con nombre,
  * y que lo tenga un repo nuevo es la puerta cerrandose.
  *
- * Los dos de hoy son trabajo en curso de otro hilo y no se tocan desde aqui:
+ * Hoy esta VACIO, y vacio es el estado al que se llega, no un estado provisional.
+ * Los dos que hubo son trabajo ya terminado y razonado, y se commitearon:
  *
- *   ABDNeural  `.gitattributes` sin trackear, 36 reglas. Commitearlo o borrarlo
- *              lo deja en cero.
- *   ABDEep     `.gitattributes` trackeado pero cambiado, 19 lineas anadidas.
- *              Commitear lo deja en cero.
+ *   ABDNeural  `2fc7234`  `.gitattributes` sin trackear, 36 reglas que ya se
+ *              estaban aplicando en la maquina y en ningun commit.
+ *   ABDEep     `879daa0`  una regla mas (`scripts/*.js text eol=lf`) sobre un
+ *              fichero ya trackeado.
+ *
+ * Bajarlo a cero solo cuando de verdad lo estan es lo que le da sentido al
+ * numero: mientras queda algo tolerado, un `.gitattributes` a medias sale en el
+ * informe como una nota al pie y nadie lo lee. Y bajarlo de una vez, a
+ * proposito, es lo que hace que el siguiente se note.
  */
-export const REGLAS_SIN_COMMITEAR_TOLERADAS = { ABDEep: 1, ABDNeural: 1 };
+export const REGLAS_SIN_COMMITEAR_TOLERADAS = {};
 
 // ─────────────────────────────────────────────────────────────────────────
 // LA PARTE PURA. Nada toca el disco ni git, y por eso el test puede darle
@@ -511,7 +518,9 @@ export function formatea (porRepo) {
     'no auditables por trabajo sin commitear           : ' + suma.sinAuditar
       + ' (tope ' + NO_AUDITABLES_TOLERADOS + ')',
     'repos con reglas eol SIN commitear               : ' + reglasPorRepo.length
-      + ' (repos: ' + Object.keys(REGLAS_SIN_COMMITEAR_TOLERADAS).join(', ') + ')'
+      + (Object.keys(REGLAS_SIN_COMMITEAR_TOLERADAS).length > 0
+        ? ' (con techo: ' + Object.keys(REGLAS_SIN_COMMITEAR_TOLERADAS).join(', ') + ')'
+        : ' (techo cero: ningun repo las tolera)')
   ];
 
   // Quien tiene reglas sin commitear, y por que. Va antes que nada porque es lo
@@ -806,6 +815,316 @@ export function reglasSinCommitearDe (hechos = {}) {
 /** Si una ruta es un `.gitattributes`, de la raiz o de donde sea. */
 function esGitattributes (ruta) {
   return ruta === '.gitattributes' || ruta.endsWith('/.gitattributes');
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// EL `.gitattributes` DE MAS CERCA, QUE ANULA EL DE LA RAIZ Y NO SE AVISA
+// ─────────────────────────────────────────────────────────────────────────
+// QUE ES ESTE HUECO
+//
+// Todo lo que este guard ha mirado hasta ahora presupone una cosa que no es
+// cierta: que hay UNA politica. `check-attr` ya resuelve la precedencia y devuelve
+// la respuesta correcta, asi que un fichero al que un `.gitattributes` de
+// subdirectorio le roba la regla aparece con `text` y `eol` sin especificar, y
+// desde el primer dia ha estado contado en la casilla de "sin politica" junto a los
+// binarios y a los ficheros que el repositorio no regula. Eso es verdad y es
+// tambien el final del aviso: la casilla dice cuantos hay y no dice POR QUE.
+//
+// Y la razon importa mas de lo que parece. El numero de `auditados` es lo que
+// mide el alcance real del guard: si cae, el guard mira menos, y cae sin que
+// ningun paso se ponga rojo. Anadir `docs/algo/.gitattributes` con `* -text`
+// deja de mirar los cientos de ficheros de debajo, y el informe seguira diciendo
+// las mismas lineas de antes con menos ficheros dentro.
+//
+// ─────────────────────────────────────────────────────────────────────────
+// LA TRAMPA DE MEDIRLO: POR QUE CONTAR LOS "SIN POLITICA" DA CERO Y NO DICE NADA
+//
+// Los dos `.gitattributes` anidados que hay en la suite —uno en `docs/` de
+// ABDAudioLab y otro en `docs/` de ABDEep, los dos de arboles de terceros— dicen
+// exactamente esto:
+//
+//     # Auto detect text files and perform LF normalization
+//     * text=auto
+//
+// y parece que deberian apagar la raiz. No lo hacen, y el motivo es la primera
+// regla del formato: LOS ATRIBUTOS NO SE FUSIONAN ENTRE FICHEROS, SE FUSIONAN
+// ENTRE ATRIBUTOS. Gana el `.gitattributes` mas cercano que MENCIONE el atributo,
+// y como el anidado no menciona `eol`, el `eol=lf` de la raiz sigue mandando.
+//
+// Asi que la pregunta que tiene respuesta no es "cuantos no tienen politica" sino
+// "cuantos tienen una politica DISTINTA de la que les daria solo el
+// `.gitattributes` de la raiz". Y esa se mide comparando el `check-attr` de
+// verdad —que ya sabe resolver la precedencia— contra el mismo `check-attr` en un
+// repo de mentira que solo tiene el `.gitattributes` de la raiz.
+//
+// ─────────────────────────────────────────────────────────────────────────
+// Y LA SEGUNDA TRAMPA, QUE ES LA QUE CASO HACE MAL ESTE CODIGO
+//
+// La primera version de `sombrasDe` comparaba las dos tablas y reportaba todo lo
+// que fuera distinto. Medido: ochenta ficheros. Y el numero era el equivocado en
+// el sentido equivocado, porque los dos anidados hacen lo contrario de tapar: le
+// ANADEN `text=auto` a ficheros que la raiz no regulaba, porque la raiz declara
+// sus reglas por extension y no tiene nada para un `.ts` de un arbol de terceros.
+// Eso es cobertura nueva. Juzgarlo como si fuera un defecto obligaria a tapar una
+// mejora, y una puerta que obliga a tapar las mejoras es una puerta que alguien
+// apaga.
+//
+// El peligro es de una sola direccion y por eso `sombrasDe` devuelve dos listas:
+// lo que el anidado QUITA y lo que ANADE. Solo lo primero cuenta.
+
+/** Los `.gitattributes` que NO estan en la raiz del repo. */
+export function anidadosDe (rutas) {
+  return (rutas || []).filter((r) => esGitattributes(r) && r.includes('/'));
+}
+
+/**
+ * El `.gitattributes` anidado que manda sobre un fichero, o `null`.
+ *
+ * El MAS CERCANO por directorio, que es como funciona la precedencia: si hay uno
+ * en `a/` y otro en `a/b/`, el de `a/b/` gana para lo que hay debajo. Se cuentan
+ * los directorios de la ruta hacia arriba en vez de buscar por subcadena, porque
+ * buscar por subcadena haria que `docs/x/.gitattributes` saliera como culpable de
+ * un fichero de `otros/docs/x/`.
+ */
+export function anidadoQueManda (ruta, anidados) {
+  const partes = String(ruta).split('/');
+  partes.pop();
+
+  for (let i = partes.length; i > 0; i--) {
+    const candidato = partes.slice(0, i).join('/') + '/.gitattributes';
+
+    if ((anidados || []).includes(candidato)) return candidato;
+  }
+
+  return null;
+}
+
+/**
+ * Los ficheros a los que el anidado les QUITA politica, y los que les anade.
+ *
+ * Se comparan los DOS atributos por separado y no "la politica" como un todo,
+ * porque la fusion es por atributo: un anidado con `* -text` quita el `text` y
+ * deja el `eol` como estaba, y eso ya deja de juzgar el indice de esos ficheros
+ * sin tocar ni un byte del disco.
+ *
+ * QUITA es `conEl === 'unspecified'` cuando la raiz si declaraba. `unspecified` y
+ * no `unset` a proposito: `unset` significa "este atributo es falso", que es una
+ * declaracion MAS fuerte, no una ausencia, y un `-text` deliberado en un arbol de
+ * binarios no es un olvido.
+ *
+ * @param {{rutas?: string[], anidados?: string[],
+ *          efectivo?: Record<string, object>, soloRaiz?: Record<string, object>}} datos
+ * @returns {{sombras: object[], amplian: object[]}}
+ */
+export function sombrasDe (datos = {}) {
+  const { rutas = [], anidados = [], efectivo = {}, soloRaiz = {} } = datos;
+  const sombras = [];
+  const amplian = [];
+
+  for (const ruta of rutas) {
+    const a = Object.assign({ text: 'unspecified', eol: 'unspecified' }, efectivo[ruta]);
+    const b = Object.assign({ text: 'unspecified', eol: 'unspecified' }, soloRaiz[ruta]);
+
+    for (const atributo of ['text', 'eol']) {
+      const conEl = a[atributo];
+      const sinEl = b[atributo];
+      if (conEl === sinEl) continue;
+
+      const entrada = { ruta, culpable: anidadoQueManda(ruta, anidados), atributo, conEl, sinEl };
+
+      if (sinEl !== 'unspecified' && conEl === 'unspecified') sombras.push(entrada);
+      else if (sinEl === 'unspecified') amplian.push(entrada);
+    }
+  }
+
+  return { sombras, amplian };
+}
+
+/**
+ * Los `.gitattributes` anidados que se toleran, por repo y por ruta.
+ *
+ * La unidad es el FICHERO y no el repo, porque lo que hay que vigilar es QUE
+ * FICHERO tapa la politica: es el dato que hace falta cuando el numero de
+ * `auditados` baje sin motivo. Un anidado de un arbol de terceros es legitimo y
+ * hasta razonable; lo que no puede pasar es que se cuele uno sin que nadie lo mire.
+ *
+ * ESTA VACIA, y esa es la afirmacion que hace el guard, no una falta de datos: en
+ * los catorce repos, con todas sus ramas, no hay ni un solo fichero que un
+ * anidado deje sin politica. Los dos anidados que existen estan medidos y son
+ * inertes. Anadirlos aqui seria verdad de hoy y puerta muerta de manana; lo que
+ * se vigila es que aparezca uno NUEVO.
+ */
+export const SOMBRAS_TOLERADAS = {};
+
+/** Los anidados que quitan politica y no estan tolerados. */
+export function sombrasQuePasan (porRepo, base = SOMBRAS_TOLERADAS) {
+  const salida = [];
+
+  for (const r of porRepo) {
+    for (const anidado of Object.keys(r.cambia || {})) {
+      const tolerado = base[r.repo + '/' + anidado] || 0;
+
+      if (r.cambia[anidado] > tolerado) {
+        salida.push({ repo: r.repo, anidado, ahora: r.cambia[anidado], tolerado });
+      }
+    }
+  }
+
+  return salida;
+}
+
+/**
+ * Los atributos que daria SOLO el `.gitattributes` de la raiz, sin los anidados.
+ *
+ * Se monta un repo de mentira con un unico fichero —el de la raiz— y se le
+ * pregunta lo mismo. Es el mismo truco que usa el guard de ignore para preguntar
+ * por las reglas de una rama, y por el mismo motivo: que sea GIT el que resuelva
+ * la precedencia y no una cuenta de este codigo. Aqui solo se le quita a git la
+ * mitad de la informacion, que es exactamente la que se quiere aislar.
+ *
+ * El `.gitattributes` se lee del DISCO y no de `HEAD`, como en todas las demas
+ * preguntas de este guard: el guard se esta aplicando las reglas del arbol de
+ * trabajo, y medir contra el indice compararia dos maquinas distintas. Si ese
+ * fichero esta cambiado sin commitear, lo dice otra puerta de este mismo guard.
+ *
+ * El `core.ignorecase` se copia tal cual lo diga el repo de verdad, y si no esta
+ * puesto no se pone: el temporal esta en la MISMA maquina, asi que su defecto es
+ * el mismo, y en la maquina en la que importa no se pone nunca.
+ *
+ * @param {string} repo
+ * @param {string} raizGitattributes
+ * @param {string[]} rutas
+ * @returns {Record<string, object>}
+ */
+export function tablaSoloConLaRaiz (repo, raizGitattributes, rutas) {
+  const temporal = mkdtempSync(join(tmpdir(), 'solo-raiz-'));
+
+  try {
+    execFileSync('git', ['init', '-q', '.'], { cwd: temporal, stdio: 'ignore' });
+
+    const ignorecase = gitOpcional(repo, ['config', '--get', 'core.ignorecase']).trim();
+    if (ignorecase === 'true' || ignorecase === 'false') {
+      execFileSync('git', ['config', 'core.ignorecase', ignorecase], { cwd: temporal, stdio: 'ignore' });
+    }
+
+    writeFileSync(join(temporal, '.gitattributes'), readFileSync(join(repo, raizGitattributes)));
+
+    return tablaDeCheckAttr(git(temporal,
+      ['check-attr', '-z', 'text', 'eol', '--stdin'],
+      { input: (rutas.join('\0') + '\0') }
+    ));
+  } finally {
+    rmSync(temporal, { recursive: true, force: true });
+  }
+}
+
+/**
+ * Un repo medido en busca de `.gitattributes` que le roben la politica a la raiz.
+ *
+ * @param {string} repo ruta absoluta del repositorio.
+ * @returns {{repo: string, anidados: string[], sombras: object[], amplian: object[],
+ *            cambia: Record<string, number>, anade: Record<string, number>}}
+ */
+export function auditaSombras (repo) {
+  const nombre = basename(repo.replace(/[\\/]+$/, '')) || repo;
+  const rutas = git(repo, ['ls-files', '-z']).split('\0').filter((r) => r !== '');
+  const anidados = anidadosDe(rutas);
+  const vacio = { repo: nombre, anidados, sombras: [], amplian: [], cambia: {}, anade: {} };
+
+  // El caso normal de esta suite: trece de los quince repos no tienen ni un
+  // `.gitattributes` en un subdirectorio, y montar un temporal por repo para
+  // encontrar que no hay nada que medir es trabajo por el motivo equivocado.
+  if (anidados.length === 0) return { ...vacio, anidados: [] };
+
+  const raizGitattributes = rutas.find((r) => r === '.gitattributes');
+
+  // Un repo con anidados y SIN `.gitattributes` en la raiz no tiene nada que
+  // sombrear: al reves, los anidados son lo unico que hay, y no se les puede
+  // llamar sombra de nada.
+  if (raizGitattributes === undefined) return vacio;
+
+  const efectivo = tablaDeCheckAttr(git(repo,
+    ['check-attr', '-z', 'text', 'eol', '--stdin'],
+    { input: (rutas.join('\0') + '\0') }
+  ));
+  const soloRaiz = tablaSoloConLaRaiz(repo, raizGitattributes, rutas);
+  const { sombras, amplian } = sombrasDe({ rutas, anidados, efectivo, soloRaiz });
+
+  // El reparto es POR ANIDADO y no por repo, porque el dato que hace falta es
+  // "que fichero tapa la politica": si uno aparece con cuarenta ficheros debajo y
+  // otro con uno, lo que hay que mirar es el de cuarenta.
+  return {
+    repo: nombre,
+    anidados,
+    sombras,
+    amplian,
+    cambia: repartePorAnidado(sombras),
+    anade: repartePorAnidado(amplian)
+  };
+}
+
+/** Cuenta cuantas entradas cuelgan de cada `.gitattributes`. */
+function repartePorAnidado (entradas) {
+  const porAnidado = {};
+
+  for (const e of entradas) {
+    if (e.culpable === null) continue;
+
+    porAnidado[e.culpable] = (porAnidado[e.culpable] || 0) + 1;
+  }
+
+  return porAnidado;
+}
+
+/** Todos los repos de la suite, mirados en busca de reglas que tapen a la raiz. */
+export function auditaSombrasDeSuite (raiz = raizDeSuite()) {
+  if (raiz === null) throw new Error('no encuentro la raiz de la suite');
+
+  return reposDeSuite(raiz).map((repo) => auditaSombras(repo));
+}
+
+/** El informe de las sombras, que va pegado al de la suite. */
+export function formateaSombras (porRepo) {
+  const conAnidados = porRepo.filter((r) => r.anidados.length > 0);
+  const conSombras = porRepo.filter((r) => r.sombras.length > 0);
+
+  const lineas = [
+    '.gitattributes en subdirectorios                : ' + conAnidados.length,
+    '  de ellos, dejando ficheros SIN politica        : ' + conSombras.length,
+    'ficheros que un anidado les QUITA politica       : '
+      + porRepo.reduce((a, r) => a + r.sombras.length, 0),
+    'ficheros a los que un anidado les ANADE politica : '
+      + porRepo.reduce((a, r) => a + r.amplian.length, 0)
+  ];
+
+  // Los anidados que existen aunque no tapen nada. Se imprimen porque "no hay
+  // ningun `.gitattributes` anidado" y "hay dos y los dos son inertes" son
+  // afirmaciones distintas, y la segunda es la que se ha medido.
+  if (conAnidados.length > 0) {
+    lineas.push('');
+    lineas.push('.gitattributes anidados (quita / anade ficheros con politica):');
+    for (const r of conAnidados) {
+      for (const a of r.anidados) {
+        lineas.push('  ' + r.repo + '/' + a
+          + '   ' + (r.cambia[a] || 0) + ' / ' + (r.anade[a] || 0));
+      }
+    }
+  }
+
+  // Y el detalle de lo que quita, que es lo unico que hay que mirar cuando hay.
+  for (const r of porRepo) {
+    if (r.sombras.length === 0) continue;
+
+    lineas.push('');
+    lineas.push('FICHEROS QUE SE QUEDAN SIN POLITICA POR UN .gitattributes MAS CERCANO, en '
+      + r.repo + ':');
+    for (const s of r.sombras) {
+      lineas.push('  ' + s.ruta + '  ' + s.atributo + ': ' + s.sinEl + ' -> ' + s.conEl
+        + '  <- ' + s.culpable);
+    }
+  }
+
+  return lineas;
 }
 
 /**
@@ -1166,6 +1485,29 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
 
     const ramasMalas = porRama.filter((r) => r.auditoria.incumplimientos.length > 0);
 
+    // Y el caso inverso de la puerta de las reglas sin commitear: un
+    // `.gitattributes` MAS CERCANO que le roba la politica a la raiz. No es un
+    // incumplimiento y por eso no va en `incumplimientos`: un fichero al que le
+    // roban la regla sale bien julgado, sencillamente no se le juzga. Sin esto,
+    // el numero de `auditados` puede bajar sin que ningun paso se ponga rojo.
+    const sombras = auditaSombrasDeSuite();
+
+    console.log('');
+    console.log(formateaSombras(sombras).join('\n'));
+
+    const sombrasQueSeCuelan = sombrasQuePasan(sombras);
+
+    if (sombrasQueSeCuelan.length > 0) {
+      console.error('');
+      console.error('auditar_eol: .gitattributes anidados que le QUITAN politica a la raiz:');
+      console.error('  ' + sombrasQueSeCuelan.map((s) => s.repo + '/' + s.anidado + ': '
+        + s.ahora + ' ficheros de un tope de ' + s.tolerado).join(', ') + '.');
+      console.error('  Cada uno de esos ficheros ha dejado de mirar lo que declaraba la');
+      console.error('  raiz, y el numero de auditados de arriba baja sin que se note.');
+      console.error('  Si es a proposito, anadelo a SOMBRAS_TOLERADAS con un comentario que');
+      console.error('  diga por que: es una regla deliberada, no un olvido.');
+    }
+
     const demasiados = porRepo.reduce((a, r) => a + r.incumplimientos.length, 0);
     const sinAuditar = porRepo.reduce((a, r) => a + r.noAuditables.length, 0);
 
@@ -1187,7 +1529,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     }
 
     if (demasiados > 0 || sinAuditar > NO_AUDITABLES_TOLERADOS || ramasMalas.length > 0
-        || reglasQuePasan.length > 0) {
+        || reglasQuePasan.length > 0 || sombrasQueSeCuelan.length > 0) {
       console.error('');
       console.error('auditar_eol: ' + demasiados + ' incumplimiento(s), ' + sinAuditar
         + ' no auditable(s) de un tope de ' + NO_AUDITABLES_TOLERADOS + '.');
