@@ -72,6 +72,15 @@ Para asegurar la máxima calidad del código y el cumplimiento estricto de las l
     ```
     Este comando ejecuta la limpieza de caché, validación de tipos estricta (`tsc`), linteo estricto (`eslint`), verificación de manifiestos críticos y generación de reportes detallados en `docs/`.
 
+Además, los guards de la suite (`auditar_ignore_oculto`, `auditar_eol` y
+`auditar_justificacion_crlf`) se ejecutan en cada push, en Linux, desde el
+workflow `Guards de la suite`. Corre en Linux y no en la maquina de desarrollo
+a proposito: con `core.ignorecase` activo, que es lo que hay en Windows, el
+emparejamiento de `.gitignore` no distingue de caja. Una regla como
+`!/scripts/` exime ahi un directorio que se llame `SCRIPTS/`, y en Linux no
+exime nada. Un guard que pasa en local puede estar rojo en CI, y eso no es un
+fallo del guard.
+
 ---
 
 © 2026 / **OMEGA Labs** / Global Digital Matrix
