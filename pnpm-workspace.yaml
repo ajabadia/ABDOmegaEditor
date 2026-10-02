@@ -5,9 +5,40 @@
 # soporta workspaces anidados. Sus paquetes internos se consumen por otros
 # proyectos cuando se publiquen (o vía file:/link:), y su core C++ se integra
 # por CMake (add_subdirectory / FetchContent, tag v0.3.0-lib).
+#
+# La version de pnpm va fijada aqui (packageManager en package.json) y no en el
+# campo `pnpm` de ese mismo fichero, porque pnpm >= 11 ya no lee ese campo entero.
+# 12.8.1 es la que se ha medido; ABDBankManager sigue en 10.25.0 porque es otro
+# repo y no miembro.
 packages:
   - ABDSharedAssets
   - ABDSharedCode/MidiKeyboard
   - ABDMS2000
   - ABDCZ101
   - ABDEep
+
+# allowBuilds, Y POR QUE NO onlyBuiltDependencies. pnpm >= 11 dejo de leer
+# `onlyBuiltDependencies`, ni aqui ni en el campo `pnpm` de package.json (que ya
+# no se lee entero). Con la clave vieja el install termina el trabajo y sale con 1:
+# ERR_PNPM_IGNORED_BUILDS, que es el peor resultado posible porque un install que
+# parece hecho y no lo esta. La lista de aprobaciones vive en este fichero y es
+# una tabla de booleanos: aprobado = true, denegado = false (que NO es lo mismo
+# que no mencionarlo: mencionarlo deja constancia de que se ha revisado).
+#
+#   esbuild   -> true: su postinstall deja el binario en su sitio, y sin el
+#               vite/vitest de la raiz no funcionan.
+#   puppeteer -> false: lo trae ABDSharedCode/MidiKeyboard como devDependency y
+#               solo lo usa `MidiKeyboard/demo/capture.mjs`, que graba el gif de
+#               la demo. NINGUN test lo necesita. Su postinstall descarga ~150 MB
+#               de Chromium. Para cuando haga falta, y solo entonces:
+#               `PUPPETEER_SKIP_DOWNLOAD=0 pnpm rebuild puppeteer`.
+#   core-js   -> false: llega por jspdf -> canvg. Su postinstall solo imprime el
+#               cartel de opencollective y no toca nada del paquete.
+#   midi      -> false: devDependency de ABDEep, y no lo importa ni el codigo ni
+#               los tests. Ademas no tiene script de instalacion (el binario
+#               nativo llega precompilado), asi que no hay nada que aprobar.
+allowBuilds:
+  core-js: false
+  esbuild: true
+  midi: false
+  puppeteer: false
