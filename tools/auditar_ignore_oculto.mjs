@@ -55,6 +55,30 @@
 // hacia `git check-ignore -z` no da error: da una lista VACIA, que es otra forma
 // de verde falso. Con `-z` hay que pipear `git ls-files -z`.
 
+// ─────────────────────────────────────────────────────────────────────────
+// LA CAJA, QUE HACE QUE ESTE GUARD DIGA UNA COSA U OTRA SEGUN DONDE CORRA
+//
+// `check-ignore` no compara rutas: las compara con `core.ignorecase` de la
+// maquina, que en Windows es `true` y en Linux es `false`. La misma suite, con el
+// mismo `.gitignore` y los mismos ficheros, da dos respuestas distintas, y no es
+// una teoria: en ABDCZ101 la regla `*.syx` tapa 194 ficheros como
+// `1SOUNDS.SYX` en Windows y no tapa ninguno en Linux. El guard ve 314 tapados
+// en la maquina y 120 en el runner, y el informe del runner lo cuenta como una
+// MEJORA — "ABDCZ101: ha BAJADO de 314 a 120" —, que es exactamente lo que no
+// es. Una bajada que solo la ha hecho el sistema de ficheros.
+//
+// El otro sentido duele mas, porque es el que no se ve hasta que CI lo dice. Una
+// negacion con mayusculas es MAS ESTRECHA en Linux que en Windows: con `*.md` y
+// `!README.md`, el fichero `Readme.md` esta visible en Windows, porque la
+// negacion lo alcanza, y esta TAPADO en Linux, porque el unico patron que lo
+// alcanza es `*.md`. En la maquina parece limpio y en el runner es deuda.
+//
+// Por eso `auditaRepo` y `auditaSuite` aceptan `cajaSensible: true`, que pasa
+// `-c core.ignorecase=false` y devuelve la respuesta que daria Linux. No cambia
+// lo que el guard decide por defecto, que es lo que hace el runner: lo que
+// permite es plantear en local la pregunta que hasta ahora solo se podia hacer
+// esperando a CI.
+
 import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -398,18 +422,28 @@ function git (repo, args, opciones = {}) {
  * Los dos comandos van con `-z` y pipeados entre si, por lo dicho arriba: sin
  * `-z` en los dos lados, la lista sale vacia y el guard pasa sin mirar.
  *
+ * `cajaSensible` fuerza `core.ignorecase=false`, que es lo que hace el runner de
+ * Linux, para poder correr la misma auditoria con la respuesta que daria alla.
+ * Ver la seccion de LA CAJA, mas abajo, para por que esto no es un detalle.
+ *
  * @param {string} repo ruta absoluta del repositorio.
+ * @param {{cajaSensible?: boolean}} opciones
  * @returns {{repo: string, trackeados: number, tapados: {ruta: string, regla: string}[]}}
  */
-export function auditaRepo (repo) {
+export function auditaRepo (repo, opciones = {}) {
   const nombre = repo.split(/[\\/]/).filter((p) => p !== '').pop() || repo;
-  const listados = git(repo, ['ls-files', '-z']);
+  // Los DOS comandos reciben la misma cosa. No basta con `check-ignore`: si los
+  // dos lados no hablan de la misma lista de rutas, la interseccion que hace
+  // `tapaLosTrackeados` mezcla dos mundos y el resultado no es ni el de la
+  // maquina ni el de Linux, sino uno que no existe.
+  const antes = opciones.cajaSensible === true ? ['-c', 'core.ignorecase=false'] : [];
+  const listados = git(repo, [...antes, 'ls-files', '-z']);
   const trackeados = listados.split('\0').filter((t) => t !== '');
 
   let crudos = '';
 
   try {
-    crudos = git(repo, ['check-ignore', '--no-index', '-v', '-z', '--stdin'],
+    crudos = git(repo, [...antes, 'check-ignore', '--no-index', '-v', '-z', '--stdin'],
       { input: listados });
   } catch (e) {
     // `git check-ignore` sale con 0 si encuentra alguno y con 1 si no encuentra
@@ -439,14 +473,19 @@ export function auditaRepo (repo) {
   };
 }
 
-/** El informe completo de la suite. */
-export function auditaSuite (raiz = raizDeSuite()) {
+/**
+ * El informe completo de la suite.
+ *
+ * @param {string} raiz
+ * @param {{cajaSensible?: boolean}} opciones se pasa entero a `auditaRepo`.
+ */
+export function auditaSuite (raiz = raizDeSuite(), opciones = {}) {
   if (raiz === null) {
     throw new Error('no encuentro la raiz de la suite: no hay ningun ABDSharedAssets por encima '
       + 'de ' + aqui);
   }
 
-  return reposDeSuite(raiz).map((repo) => auditaRepo(repo));
+  return reposDeSuite(raiz).map((repo) => auditaRepo(repo, opciones));
 }
 
 // El `main` va debajo del `if` para que importar este fichero en el test no
