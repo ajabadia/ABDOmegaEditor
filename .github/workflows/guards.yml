@@ -68,6 +68,19 @@ jobs:
 
           clonar() {
             local destino="$1" url="$2"
+
+            # Si el destino ya existe NO se intenta clonar y se avisa, en vez de
+            # dejar que `git clone` falle con un mensaje que no dice cual de las
+            # lineas del script fue. Paso por un repo clonado dos veces con dos
+            # nombres de destino distintos: el segundo `git clone` falla con
+            # "destination path already exists", que es un error de git y no una
+            # explicacion de lo que pasa. Aqui se dice el destino y la url.
+            if [ -e "$destino" ]; then
+              echo "  YA EXISTE  $destino  — no se clona (¿linea duplicada?)"
+              fallos=$((fallos + 1))
+              return
+            fi
+
             if git clone --depth 1 --quiet "$url" "$destino" 2>&1; then
               echo "  ok  $destino"
             else
@@ -88,7 +101,6 @@ jobs:
           clonar ABDScope           https://github.com/ajabadia/ABDScope.git
           clonar ABDSharedAssets    https://github.com/ajabadia/ABDSharedAssets.git
           clonar ABDSharedCode      https://github.com/ajabadia/ABDSharedCode.git
-          clonar ABDSynthsWeb/abd-ia_synths   https://github.com/ajabadia/ABDSynthWeb.git
           # Estos tres viven en subdirectorios en la maquina de desarrollo, y
           # por eso no salen si se clonan en la raiz. OJO con el nombre del
           # DIRECTORIO, que no es el del repo: el repo se llama `ABDSynthWeb` y
