@@ -92,9 +92,14 @@ Sin copia en GitHub — respaldo manual (disco externo) bajo tu responsabilidad:
 ## Comandos habituales
 
 ```bash
-pnpm install                     # instalar deps de todos los paquetes del workspace
-pnpm -r <script>                 # ejecutar un script en todos los paquetes
-git push                         # la rama local ya hace upstream a origin/workspace-history
-node tools/auditar_ignore_oculto.mjs   # ningún fichero trackeado puede estar tapado por .gitignore
-node tools/auditar_eol.mjs             # ningún fichero trackeado puede incumplir la regla de EOL
+pnpm install                          # instalar deps de todos los paquetes del workspace
+pnpm -r <script>                      # ejecutar un script en todos los paquetes
+git push                              # la rama local ya hace upstream a origin/workspace-history
+node --test tools/auditar_ignore_oculto.test.mjs       # 33 tests
+node --test tools/auditar_eol.test.mjs                 # 55 tests
+node --test tools/auditar_justificacion_crlf.test.mjs  # 28 tests
+
+node tools/auditar_ignore_oculto.mjs        # que ningun fichero trackeado este tapado por .gitignore
+node tools/auditar_eol.mjs                  # que ningun fichero incumpla la regla eol que declara
+node tools/auditar_justificacion_crlf.mjs   # que ninguna regla eol=crlf entre sin su porque
 ```
