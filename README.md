@@ -103,3 +103,13 @@ node tools/auditar_ignore_oculto.mjs        # que ningun fichero trackeado este 
 node tools/auditar_eol.mjs                  # que ningun fichero incumpla la regla eol que declara
 node tools/auditar_justificacion_crlf.mjs   # que ninguna regla eol=crlf entre sin su porque
 ```
+
+Los tres se ejecutan tambien en cada push, en
+[.github/workflows/guards.yml](.github/workflows/guards.yml), que corre en
+Linux. No es un duplicado por si acaso: hay diferencias que en Windows no se
+ven. La maquina de desarrollo tiene `core.ignorecase=true`, asi que el
+emparejamiento de `.gitignore` no distingue de caja y una regla como
+`!/scripts/` exime un directorio que se llame `SCRIPTS/`. En Linux esa regla
+no exime nada y el guard lo ve. Por eso las reglas de exencion que dependen
+de la caja llevan corchetes, y por eso un guard que pasa en local puede estar
+rojo en CI.
