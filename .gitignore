@@ -44,3 +44,35 @@ next-env.d.ts
 /exports/
 
 .vercel
+
+# ─────────────────────────────────────────────────────────────────────────
+# Repos hermanos de la suite ABDSynths.
+#
+# El workflow de guards (`.github/workflows/guards.yml`) clona la suite aqui
+# para poder medirla, y son repos CON repo propio en GitHub. Sin esto,
+# cada clon los deja como untracked dentro de este repo, que es el repo
+# del editor deprecado.
+#
+# Este `.gitignore` es el del editor (Next.js) y es la unica diferencia que
+# hace falta anadir: el resto de reglas de la raiz viven en la rama
+# `workspace-history`, que es donde esta la raiz del workspace.
+#
+# Los repos anidados NO van aqui: `_Deprecados/` y `_specific_example/` los
+# clonea el workflow a su ruta de verdad, y `_Deprecados/` no esta
+# trackeado en la rama del editor.
+ABDAudioLab/
+ABDBankManager/
+ABDCZ101/
+ABDEep/
+ABDJUNiO601/
+ABDMS2000/
+ABDNeural/
+ABDOmegaUnified/
+ABDPro008/
+ABDScope/
+ABDSharedAssets/
+ABDSharedCode/
+ABDSynthsWeb/
+_Deprecados/
+_RESOURCES/
+_backups/
