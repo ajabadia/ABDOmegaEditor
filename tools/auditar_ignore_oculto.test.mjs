@@ -1102,29 +1102,41 @@ describe('la suite real, ahora con las ramas de verdad', () => {
     // techo es UN numero por repo, y si dos maquinas miden dos cosas distintas no
     // se puede ni comparar ni bajar.
     //
-    // Y hay DOS repos donde la caja importa, y ninguno es hipotesis:
+    // Y hay dos repos donde la caja importa, y por motivos DISTINTOS, que es lo que
+    // hace que la lista no se pueda fijar entera:
     //
-    //   ABDCZ101: `*.syx` tapa en Windows 194 ficheros `.SYX` que en Linux no ve.
-    //   ABDOmega: el `.gitignore` es `/*` seguido de una negacion con otra caja,
-    //             de modo que en Windows la negacion anula la regla y no tapa
-    //             nada, y en Linux se quedan cuatro ficheros de `SCRIPTS/`.
+    //   ABDOmega: viene de las RAMAS. El repo de mentira fija `core.ignorecase` a
+    //     proposito, asi que el numero se mueve en cualquier maquina. Su
+    //     `.gitignore` es `/*` seguido de una negacion con otra caja: en Windows la
+    //     negacion anula la regla y no tapa nada, y en Linux quedan cuatro ficheros
+    //     de `SCRIPTS/`.
     //
-    // El techo de los dos guarda el numero de la lectura de Linux, que es la que
-    // decide en CI. Los otros trece repos dan lo mismo en las dos lecturas, y eso
-    // es lo que se comprueba: la lista de los que se mueven tiene que ser
-    // exactamente esta, porque un repo nuevo que dependa de la caja sale con un
-    // techo que no es comparable entre maquinas.
+    //   ABDCZ101: viene de la rama DESPLEGADA. `*.syx` tapa 194 ficheros `.SYX`
+    //     que Linux no ve. Pero solo se mueve si la maquina que corre el test tiene
+    //     un sistema de ficheros que no distingue caja: en el runner las dos
+    //     lecturas dan 120 y no hay diferencia. ABDCZ101 ademas no tiene ninguna
+    //     rama mas, asi que su parte de ramas no existe en ninguno de los dos
+    //     entornos.
+    //
+    // Por eso lo que se comprueba no es la lista exacta sino sus dos bordes: ABDOmega
+    // esta SIEMPRE — porque su numero sale de un `core.ignorecase` fijado a mano — y
+    // nadie mas puede aparecer. Un repo nuevo que dependa de la caja sale con un
+    // techo que no es comparable entre maquinas, y eso hay que verlo.
     const peorConLinux = Object.fromEntries(
       peorCasoPorRepo(ramasDeLaSuite(true), suiteDesplegada(true)).map((p) => [p.repo, p.tapados]));
     const peorConLaMaquina = Object.fromEntries(
       peorCasoPorRepo(ramasDeLaSuite(false), suiteDesplegada(false)).map((p) => [p.repo, p.tapados]));
 
     const distintos = Object.keys(peorConLinux)
-      .filter((repo) => peorConLinux[repo] !== peorConLaMaquina[repo]);
+      .filter((repo) => peorConLinux[repo] !== peorConLaMaquina[repo])
+      .sort();
 
-    assert.deepEqual(distintos.sort(), ['ABDCZ101', 'ABDOmega'],
-      'la caja solo deberia mover el numero de ABDCZ101 y ABDOmega; si aparece otro repo, '
-      + 'su techo no es comparable entre maquinas y hay que mirarlo');
+    assert.ok(distintos.includes('ABDOmega'),
+      'ABDOmega deberia moverse con la caja en cualquier maquina: su numero sale de las ramas, '
+      + 'donde `core.ignorecase` esta fijado a proposito');
+    assert.deepEqual(distintos.filter((r) => !['ABDCZ101', 'ABDOmega'].includes(r)), [],
+      'ningun repo mas puede depender de la caja: su techo no seria comparable entre maquinas. '
+      + 'Se mueven estos: ' + distintos.join(', '));
 
     assert.equal(peorConLinux.ABDOmega, DEUDA_CONOCIDA.ABDOmega,
       'y el techo de ABDOmega tiene que ser el numero de la lectura de Linux, que es la de CI');
