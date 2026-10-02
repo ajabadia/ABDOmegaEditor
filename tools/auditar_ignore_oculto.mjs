@@ -809,17 +809,23 @@ export function comparaRamasConLineaBase (porRama, base = DEUDA_CONOCIDA, porRep
 
     const antes = base[p.repo];
 
+    // `rama` se pone SOLO si el peor caso ha salido de una rama. Cuando ha salido
+    // de la desplegada se omite el campo entero, y no se deja en `null`, porque
+    // `formateaDesviaciones` lo usa para decidir si pone `@ <rama>` y un `null` se
+    // imprimiria tal cual: el log de CI acababa con `ABDCZ101 @ null`.
+    const donde = p.rama === null ? {} : { rama: p.rama };
+
     if (antes === undefined) {
       if (p.tapados > 0) {
-        salida.push({ repo: p.repo, antes: 0, ahora: p.tapados, tipo: 'nuevo', rama: p.rama });
+        salida.push({ repo: p.repo, antes: 0, ahora: p.tapados, tipo: 'nuevo', ...donde });
       }
       continue;
     }
 
     if (p.tapados > antes) {
-      salida.push({ repo: p.repo, antes, ahora: p.tapados, tipo: 'empeora', rama: p.rama });
+      salida.push({ repo: p.repo, antes, ahora: p.tapados, tipo: 'empeora', ...donde });
     } else if (p.tapados < antes) {
-      salida.push({ repo: p.repo, antes, ahora: p.tapados, tipo: 'mejora', rama: p.rama });
+      salida.push({ repo: p.repo, antes, ahora: p.tapados, tipo: 'mejora', ...donde });
     }
   }
 
