@@ -24,7 +24,9 @@ import { join } from 'node:path';
 import {
   auditaSuite, auditaFicheros, auditaRepo, camposDeLsFiles, declaraText,
   esBinario, formatea, incumple, juzgaDisco, tablaDeCheckAttr, CR,
-  NO_AUDITABLES_TOLERADOS, reglasSinCommitearDe, REGLAS_SIN_COMMITEAR_TOLERADAS
+  NO_AUDITABLES_TOLERADOS, reglasSinCommitearDe, REGLAS_SIN_COMMITEAR_TOLERADAS,
+  auditaArbol, auditaRamas, auditaRamasDeSuite, formateaRamas, ramasDeRepo,
+  sinPrefijoDeRef
 } from './auditar_eol.mjs';
 
 const temporales = [];
@@ -521,6 +523,81 @@ describe('el informe dice lo que ha mirado', () => {
   });
 });
 
+/**
+ * Un repo con una rama extra, para lo que el clon de una sola rama no trae.
+ *
+ * Monta la rama en un clon de verdad y no con `update-ref` porque lo que hay que
+ * probar es justo lo que cambia: una rama tiene un ARBOL y un COMMIT, y son las
+ * dos cosas las que `--source` y el filtro por commit necesitan. Un ref al aire
+ * pasaria el filtro y no tendria arbol, que es un test que pasa por el motivo
+ * equivocado.
+ */
+function repoConRama (nombreRama, ficheros, reglaEnLaRama) {
+  // Un fichero base, porque un repo sin nada no tiene commit y no se puede clonar.
+  const repo = repoDeMentira({ ficheros: { 'base.txt': 'base' + String.fromCharCode(10) } });
+
+  // El clon va a un temporal NUEVO cada vez y no a un hermano con nombre fijo: un
+  // nombre fijo en el directorio temporal de la maquina es una colision esperando
+  // a que dos tests lo pidan a la vez.
+  const destino = join(temporal('clon-'), 'repo');
+
+  // El clon va con `autocrlf=false` por lo mismo que va en el workflow: el
+  // `core.autocrlf=true` del gitconfig de esta maquina pondria CRLF en el arbol
+  // de trabajo, y el `add` de la rama se llevaria ese CRLF al indice y crearia
+  // incumplimientos que no existen. El runner no tiene ese `autocrlf`, asi que
+  // sin esto el fixture fabricaria en local lo que en CI no occurre.
+  git(repo, ['-c', 'core.autocrlf=false', 'clone', '--quiet', '--no-single-branch',
+    'file:///' + repo.replace(/\\/g, '/'), destino]);
+
+  const inicial = git(destino, ['rev-parse', '--abbrev-ref', 'HEAD']).trim();
+
+  git(destino, ['checkout', '-q', '-b', nombreRama]);
+
+  for (const f of ficheros) {
+    mkdirSync(join(destino, f.ruta, '..'), { recursive: true });
+    writeFileSync(join(destino, f.ruta), f.contenido);
+  }
+
+  // Los ficheros se commitean SIN la regla, con `core.autocrlf=false`, para poder
+  // dejar CRLF en el indice. Con la regla puesta, `git add` normaliza siempre y
+  // el incumplimiento se borra uno solo: es el caso "la regla llego tarde" que el
+  // propio guard documenta, aqui usado como forma de fabricar el defecto.
+  // El `false` va en EL ADD, no solo en el commit: con el `core.autocrlf=true`
+  // que tiene esta maquina, `git add` normaliza al meter el blob y el CRLF se
+  // pierde antes de que exista ningun commit. En el runner no hay ese
+  // `autocrlf`, asi que sin esto el mismo test fabricaria el defecto en la
+  // maquina y no en CI.
+  git(destino, ['-c', 'core.autocrlf=false', 'add', '-A']);
+  git(destino, ['-c', 'core.autocrlf=false', 'commit', '-qm', 'los ficheros']);
+
+  // Y la regla se escribe DESPUES, en la rama y no en el repo de origen: si
+  // viviera en el origen, estaria en el arbol deployado tambien y el test no
+  // probaria que `check-attr` usa `--source`.
+  if (reglaEnLaRama !== undefined) {
+    writeFileSync(join(destino, '.gitattributes'), reglaEnLaRama);
+    git(destino, ['add', '.gitattributes']);
+    git(destino, ['commit', '-qm', 'y ahora la regla']);
+  }
+
+  // Se sube al remoto, porque es la unica forma de que exista el
+  // `refs/remotes/origin/<rama>` que el guard lee. Una rama que solo existe en
+  // local no la ve ni el guard ni el runner, y probarla asi seria probarse a si
+  // mismo.
+  git(destino, ['push', '-q', 'origin', nombreRama]);
+
+  // Y se vuelve a la rama de origen, que es la que queda DESPLEGADA: es la
+  // situacion del runner, la rama por defecto checkoutada y las demas solo como
+  // ref. Al reves, la rama interesante seria HEAD y el guard la saltaria por estar
+  // ya auditada, y el test pasaria sin probar nada.
+  // Con `-f` porque el clon sale del checkout con el `core.autocrlf=true` de la
+  // maquina y al volver a `master` los ficheros del disco son CRLF donde el arbol
+  // espera LF. Sin forzar, el checkout se niega y el test falla por un motivo que
+  // no tiene nada que ver con lo que esta probando.
+  git(destino, ['checkout', '-q', '-f', inicial]);
+
+  return destino;
+}
+
 // ─────────────────────────────────────────────────────────────────────────
 // LAS REGLAS QUE NO ESTAN EN NINGUN COMMIT
 // ─────────────────────────────────────────────────────────────────────────
@@ -580,6 +657,161 @@ describe('que reglas esta aplicando git que no estan en ningun commit', () => {
 // ─────────────────────────────────────────────────────────────────────────
 // REPOS DE MENTIRA: LO QUE NO SE PUEDE INVENTAR
 // ─────────────────────────────────────────────────────────────────────────
+
+describe('las ramas que no son la que esta deployada', () => {
+  /** La auditoria de UNA rama por su nombre, o un error que lo diga. */
+  function rama (repo, nombre) {
+    const todas = auditaRamas(repo);
+    const encontrada = todas.find((r) => r.rama === 'origin/' + nombre);
+
+    assert.ok(encontrada, 'no se ha auditado la rama ' + nombre + '; hay: '
+      + todas.map((r) => r.rama).join(', '));
+
+    return encontrada.auditoria;
+  }
+
+  it('`git grep` con una rama antepone `ref:` a cada ruta, y hay que quitarselo', () => {
+    // El fallo que hacia que esta puerta fuera verde sin mirar: `git grep` con
+    // una rama imprime `origin/main:src/a.cpp`, esa ruta no casa con ninguna del
+    // `ls-tree`, y el resultado es que NINGUN blob tiene CR. O sea, todos los
+    // repos limpios y ninguno mirado.
+    assert.equal(sinPrefijoDeRef('origin/main:src/a.cpp', 'origin/main'), 'src/a.cpp');
+    assert.equal(sinPrefijoDeRef('origin/main:v1.2/file.md', 'origin/main'), 'v1.2/file.md');
+
+    // Y si el prefijo no esta, la ruta se queda como esta: quitar hasta el primer
+    // `:` partiria `v1.2/file.md` en dos y volveria a no casar con nada.
+    assert.equal(sinPrefijoDeRef('src/a.cpp', 'origin/main'), 'src/a.cpp');
+    assert.equal(sinPrefijoDeRef('origin/otra:src/a.cpp', 'origin/main'), 'origin/otra:src/a.cpp');
+  });
+
+  it('la rama que esta comprobada NO se audita dos veces', () => {
+    // El `auditaRepo` de este repo ya ha mirado su indice y su disco. Si aqui se
+    // volviera a mirar el mismo commit con otros medios, el numero saldria igual
+    // y el tiempo seria doble, que es la forma mas tonta de pagar por una puerta.
+    const repo = repoConRama('feature/limpia',
+      [{ ruta: 'sub/a.txt', contenido: 'sin CRLF\n' }]);
+
+    const nombres = auditaRamas(repo).map((r) => r.rama);
+
+    // El clon sale desplegado en `origin/master`, que es la que ya ha mirado
+    // `auditaRepo`. La otra tiene que estar en la lista y la desplegada fuera: si
+    // el filtro fuera "todo lo que no se llama como HEAD" en vez de "todo lo que
+    // no es este commit", esto pasaria y estariamos midiendo otra cosa.
+    assert.equal(nombres.includes('origin/master'), false,
+      'la rama desplegada se audita en auditaRepo, no aqui');
+    assert.equal(nombres.includes('origin/feature/limpia'), true);
+  });
+
+  it('una rama con CRLF bajo `eol=lf` incumple, y el arbol desplegado no lo ve', () => {
+    // Este es EL test. El incumplimiento esta en el indice de una rama que nadie
+    // ha comprobado, asi que `auditaRepo` —que mira el indice y el disco de lo que
+    // esta deployado— no puede verlo. Si este test pasara con el repo entero
+    // limpio, la puerta de las ramas no estaria mirando nada.
+    //
+    // Y la regla va puesta SOLO en la rama. Ahi esta el otro motivo del test:
+    // si `check-attr` no llevara `--source`, responderia con el
+    // `.gitattributes` del arbol deployado, que no declara nada para
+    // `sub/`, y el fichero saldria sin politica.
+    const repo = repoConRama('feature/con-crlf',
+      [{ ruta: 'sub/todo.txt', contenido: 'uno\r\ndos\r\ntres\r\n' }],
+      '*.txt text eol=lf\n');
+
+    const arbol = rama(repo, 'feature/con-crlf');
+
+    assert.deepEqual(arbol.incumplimientos.map((i) => i.ruta + ' ' + i.donde),
+      ['sub/todo.txt blob']);
+
+    // Y el repo que esta deployado sale limpio, porque el fichero de la rama no
+    // existe en su arbol: la diferencia entre las dos respuestas es real.
+    assert.deepEqual(auditaRepo(repo).incumplimientos, []);
+  });
+
+  it('la regla que se aplica es la DE ESA RAMA, no la del arbol deployado', () => {
+    // La otra mitad del `--source`, en la direccion de los numeros: con la regla
+    // puesta en la rama, el fichero cuenta como auditado. Si se usara el
+    // `.gitattributes` del arbol deployado —que no declara nada para `sub/`—
+    // saldrian cero auditados y el test veria un repo que nadie ha medido.
+    const repo = repoConRama('feature/con-reglas',
+      [{ ruta: 'sub/reglas.txt', contenido: 'sin CRLF\n' }],
+      '*.txt text eol=lf\n');
+
+    const arbol = rama(repo, 'feature/con-reglas');
+
+    // Dos, no uno: la regla es `*.txt` y el repo de origen trae un `base.txt` que
+    // tambien cae. Lo que importa es que no sean cero, que es lo que saldria si
+    // `check-attr` preguntara al arbol deployado en vez de al de la rama.
+    assert.equal(arbol.auditados, 2, 'la regla de la rama no ha llegado al auditado');
+    assert.deepEqual(arbol.incumplimientos, []);
+  });
+
+  it('una rama sin ninguna regla sale con cero, y no se la juzga por el disco', () => {
+    // Sin politica declarada no hay nada que pueda incumplir. Y el "CRLF solo en
+    // el disco" no se puede ver en una rama que nadie ha comprobado, porque
+    // todavia no hay disco: sale cuando alguien la comprueba.
+    const repo = repoConRama('feature/sin-reglas',
+      [{ ruta: 'sub/libre.txt', contenido: 'uno\r\ndos\r\n' }]);
+
+    const arbol = rama(repo, 'feature/sin-reglas');
+
+    assert.equal(arbol.auditados, 0);
+    assert.equal(arbol.sinPolitica, 2, 'los dos ficheros se han contado como sin politica');
+    assert.deepEqual(arbol.incumplimientos, []);
+  });
+
+  it('`origin` a secas NO es una rama, que es lo que se cuela sin querer', () => {
+    // Sin este filtro, ABDOmega salia con `origin` y con `origin/main` como dos
+    // ramas: `refs/remotes/origin` es un symref a la rama por defecto, no una
+    // rama. Y `origin/HEAD` es el mismo symref con otro disfraz.
+    const repo = repoConRama('feature/otra',
+      [{ ruta: 'sub/a.txt', contenido: 'sin CRLF\n' }]);
+
+    assert.equal(ramasDeRepo(repo).filter((r) => r.rama === 'origin').length, 0);
+    assert.equal(ramasDeRepo(repo).filter((r) => r.rama.endsWith('/HEAD')).length, 0);
+  });
+
+  it('el informe de las ramas sale en resumen, y con detalle si hay algo roto', () => {
+    const linea = {
+      repo: 'A',
+      rama: 'origin/x',
+      auditoria: { ficheros: 10, auditados: 2, incumplimientos: [] }
+    };
+    const rota = {
+      repo: 'A',
+      rama: 'origin/y',
+      auditoria: {
+        ficheros: 10,
+        auditados: 2,
+        incumplimientos: [{ ruta: 'a.cpp', donde: 'blob', crlf: 4, que: 'CRLF' }]
+      }
+    };
+
+    assert.match(formateaRamas([linea]).join('\n'),
+      /incumplimientos de EOL en alguna rama\s+: 0/);
+    assert.doesNotMatch(formateaRamas([linea]).join('\n'), /origin\/y/);
+
+    const texto = formateaRamas([linea, rota]).join('\n');
+
+    assert.match(texto, /incumplimientos de EOL en alguna rama\s+: 1/);
+    assert.match(texto, /A @ origin\/y\s+->\s+a\.cpp\s+<-\s+4 CRLF en el blob/);
+  });
+
+  it('la suite real: ninguna rama incumple, y se miran todas menos la desplegada', () => {
+    const porRama = auditaRamasDeSuite();
+
+    const malos = porRama
+      .filter((r) => r.auditoria.incumplimientos.length > 0)
+      .map((r) => r.repo + ' @ ' + r.rama + ': '
+        + r.auditoria.incumplimientos.map((i) => i.ruta).join(', '));
+
+    assert.deepEqual(malos, [], 'ramas con incumplimientos de EOL: ' + malos.join('; '));
+
+    // Y que no se haya quedado en mirar un par de ramas de catorce repos, que es
+    // lo que hacia el clon de una sola rama. Medido en el remoto: 27 ramas en
+    // total, de las que se miran todas menos la que esta deployada.
+    assert.ok(porRama.length >= 8,
+      'solo se han mirado ' + porRama.length + ' ramas: el clon sigue trayendose una');
+  });
+});
 
 describe('el guard sobre un repo de verdad', () => {
   it('un `.gitattributes` sin trackear lo delata, y explica por que importa', () => {
