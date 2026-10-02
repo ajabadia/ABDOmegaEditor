@@ -877,6 +877,267 @@ export function saltosDeDisco (fichero) {
   return { crlf: crlfDeBuffer(datos), total };
 }
 
+// ─────────────────────────────────────────────────────────────────────────
+// LAS RAMAS QUE NO SON LA QUE ESTA DEPLOYADA, QUE HASTA AHORA NO SE MIRABAN
+//
+// Un `git clone --depth 1` baja el ARBOL de la rama por defecto y nada mas. Un
+// repo con nueve ramas se auditaba con una de ellas, sin decir cual, y las otras
+// ocho no existian para este guard. No es un detalle de economa: el clon es lo
+// que el workflow hace, y lo que el workflow hace es lo que se comprueba.
+//
+// MEDIDO, Y NO ES LO QUE SE SUPONIA. Las 27 ramas de los catorce repos, una por
+// una, con el mismo criterio del guard: cero incumplimientos de EOL en las 27.
+// De las nueve de ABDJUNiO601, la que se audita tiene 763 ficheros y la mas
+// grande 6.008, y en ninguna hay un CRLF bajo una regla que no lo admita. O sea
+// que la deuda vieja de EOL, en las ramas, hoy no existe. Lo que si cambia entre
+// ramas es el `.gitignore`, y mucho mas, pero esa puerta es otra.
+//
+// Y la HISTORIA no se quita. Los tres guards usan `ls-files`, `grep`, `diff`,
+// `check-attr` y `cat-file`: ninguno de los cinco toca el historial. Un clon sin
+// historia no les quita nada, y quitarlo son 23 a 99 MB por repo. Por eso el
+// workflow pide `--no-single-branch` y deja `--depth 1`: ramas todas, historia
+// ninguna.
+//
+// LO QUE NO SE PUEDE JUZGAR DESDE UNA RAMA. Un arbol de rama no tiene arbol de
+// trabajo, asi que aqui solo se puede mirar el indice. El "CRLF solo en el disco"
+// no existe todavia en una rama que nadie ha comprobado, porque todavia no hay
+// disco: sale cuando alguien la comprueba. No es una limitacion que este codigo
+// pueda salvar, es la definicion de auditar una rama.
+// ─────────────────────────────────────────────────────────────────────────
+
+/**
+ * Las ramas de un repo, con su nombre corto y su commit.
+ *
+ * De `refs/remotes/origin` y no de las ramas locales, por una razon que parece
+ * tonta y no lo es: el runner clona de cero y solo tiene `origin/*`. Si aqui se
+ * miraran las ramas locales, la maquina de desarrollo auditaria ramas que el
+ * runner no puede ver, y los dos numeros dejarian de ser comparables —que es
+ * exactamente el problema que este guard paso tres commits arreglando.
+ *
+ * @param {string} repo ruta absoluta del repositorio.
+ * @returns {{rama: string, sha: string}[]}
+ */
+export function ramasDeRepo (repo) {
+  const salida = gitOpcional(repo, [
+    'for-each-ref', '--format=%(refname) %(objectname)', 'refs/remotes/origin'
+  ]);
+
+  return salida.split('\n')
+    .filter((l) => l !== '')
+    .map((l) => {
+      const [ref, sha] = l.split(' ');
+
+      return { ref, sha };
+    })
+    // El `HEAD` del remoto es un symref a la rama por defecto: no es una rama,
+    // es un puntero, y mirarlo seria auditar dos veces lo mismo. Y el `origin` a
+    // secas TAMBIEN aparece y tambien es un symref, uno menos conocido porque
+    // `for-each-ref` lo lista con nombre de una sola pieza. Sin este filtro,
+    // ABDOmega salia con `origin` y con `origin/main` como dos ramas, que son el
+    // mismo commit, y el recuento de ramas auditadas no cuadraba con el de
+    // `git ls-remote --heads`.
+    .filter((r) => r.ref !== 'refs/remotes/origin' && !r.ref.endsWith('/HEAD'))
+    .map((r) => ({ rama: r.ref.replace('refs/remotes/', ''), sha: r.sha }));
+}
+
+/**
+ * Un arbol, sin arbol de trabajo: lo unico que se puede mirar es el indice.
+ *
+ * No juzga el disco, y no por pereza: un disco de una rama que nadie ha
+ * comprobado no existe. Por eso los tres campos de disco se dejan a undefined y
+ * no a cero: `auditaFicheros` no los juzga porque `incumpleEnDisco` no se llega
+ * a preguntar, y un cero seria un "he mirado el disco y no hay nada" que es
+ * mentira.
+ *
+ * @param {string} repo ruta absoluta del repositorio.
+ * @param {string} rama rama en forma `origin/loquesea`.
+ * @returns {{rama: string, ficheros: number, auditados: number,
+ *            incumplimientos: {ruta: string, donde: string, crlf: number, que: string}[]}}
+ */
+/**
+ * Quita el `<ref>:` que antepone `git grep` cuando se le da una rama.
+ *
+ * Sin esto los nombres salen como `origin/main:src/a.cpp`, no coinciden con
+ * ninguna ruta del `ls-tree`, y el resultado es que NINGUN blob tiene CR: la
+ * puerta de las ramas pasa en verde sin mirar nada. Es el mismo modo de fallo que
+ * el entrecomillado de las rutas con acentos que ya documenta `auditaRepo`, y por
+ * eso tiene su propio test.
+ *
+ * Se quita el prefijo COMPLETO y no lo que va hasta el primer `:` porque una
+ * ruta puede contener dos puntos: `DOCS/CZ 101 - ia.txt` no, pero `v1.2/file.md`
+ * si, y partir por el primer `:` partiria el nombre en dos y volveria a no
+ * casar con nada.
+ *
+ * @param {string} salida una ruta tal como la imprime `git grep <ref>`.
+ * @param {string} rama la referencia que se le paso.
+ * @returns {string} la ruta sin prefijo.
+ */
+export function sinPrefijoDeRef (salida, rama) {
+  const prefijo = rama + ':';
+
+  return salida.startsWith(prefijo) ? salida.slice(prefijo.length) : salida;
+}
+
+export function auditaArbol (repo, rama) {
+  const rutas = git(repo, ['ls-tree', '-r', '--full-tree', '--name-only', '-z', rama])
+    .split('\0')
+    // `ls-tree` lista tambien los arboles si no se pide `-r`; con `-r` salen
+    // como `ruta/` y no son ficheros, asi que se quitan. Sin esto contarian como
+    // ficheros con lo que deles sea.
+    .filter((r) => r !== '' && !r.endsWith('/'));
+
+  if (rutas.length === 0) {
+    return { rama, ficheros: 0, auditados: 0, incumplimientos: [] };
+  }
+
+  // `--source` es lo que permite preguntar por los atributos de un arbol sin
+  // comprobarlo. Sin el, `check-attr` responde con el `.gitattributes` del
+  // directorio de trabajo, que es el de la rama que esta deployada, y la
+  // pregunta seria sobre otro repo.
+  const tabla = tablaDeCheckAttr(git(repo,
+    ['check-attr', '-z', 'text', 'eol', '--source=' + rama, '--stdin'],
+    { input: (rutas.join('\0') + '\0') }
+  ));
+
+  const conCr = new Set();
+  const conCrDeTexto = new Set();
+
+  // EL SALTO QUE HACE QUE ESTO CUESTE LO QUE CUESTA. Una rama que no declara
+  // ninguna regla `eol` ni `text` no puede incumplir ninguna: sin politica no
+  // hay nada que incumplir, que es lo mismo que dice el guard de la rama que si
+  // esta deployada. Y para saberlo solo hace falta lo que ya se ha preguntado, sin
+  // descomprimir un solo blob.
+  //
+  // No es una optimizacion de tiempo: es la diferencia entre auditar 22 ramas y
+  // auditar 6. De las 22 de esta suite, 16 no declaran nada y salen aqui. Los dos
+  // `git grep` de abajo descomprimen el arbol entero, que es lo caro, y para una
+  // rama sin politica su respuesta no se puede convertir en un incumplimiento.
+  //
+  // Y si algun dia un `core.attributesFile` global declarara algo en una maquina,
+  // `auditados` saldría de aqui mayor que cero y las dos ramas seguirian por el
+  // camino largo. La puerta no depende de suponer que no hay nada mas.
+  if (!rutas.some((ruta) => {
+    const attr = tabla[ruta] || {};
+
+    return attr.eol === 'lf' || attr.eol === 'crlf' || attr.text === 'set';
+  })) {
+    return { rama, ficheros: rutas.length, auditados: 0, incumplimientos: [], sinPolitica: rutas.length };
+  }
+
+  for (const s of gitOpcional(repo, ['grep', '-l', '-z', '-e', CR, rama, '--']).split('\0')) {
+    if (s !== '') conCr.add(sinPrefijoDeRef(s, rama));
+  }
+  for (const s of gitOpcional(repo, ['grep', '-l', '-I', '-z', '-e', CR, rama, '--']).split('\0')) {
+    if (s !== '') conCrDeTexto.add(sinPrefijoDeRef(s, rama));
+  }
+
+  const medidos = rutas.map((ruta) => {
+    const attr = tabla[ruta] || {};
+    const gitLoVeBinario = conCr.has(ruta) && !conCrDeTexto.has(ruta);
+
+    return {
+      ruta,
+      text: attr.text,
+      eol: attr.eol,
+      gitLoVeBinario,
+      tieneCrBlob: conCr.has(ruta),
+      // Solo hace falta saber si hay alguno, no cuantos: el juicio del indice
+      // solo mira si el numero es mayor que cero, y leer el blob entero de
+      // cada fichero de cada rama serian cientos de megabytes por nada.
+      crlfBlob: conCr.has(ruta) ? 1 : 0
+    };
+  });
+
+  const reparto = auditaFicheros(medidos);
+
+  return { rama, ficheros: rutas.length, ...reparto };
+}
+
+/**
+ * Todas las ramas de un repo, menos la que ya se ha auditado.
+ *
+ * La que se salta es la que esta comprobada: el `auditaRepo` de este mismo repo
+ * ya ha mirado su indice y su disco, y volver a mirar el mismo commit con
+ * otros medios daria el mismo numero y costaria el doble. Se compara por COMMIT
+ * y no por nombre a proposito: la rama `main` de un clon puede no llamarse
+ * `main` si esta en un clon de otra rama.
+ *
+ * @param {string} repo ruta absoluta del repositorio.
+ * @returns {{rama: string, sha: string, auditoria: object}[]}
+ */
+export function auditaRamas (repo) {
+  const head = gitOpcional(repo, ['rev-parse', 'HEAD']).trim();
+  const vistos = new Set([head]);
+
+  return ramasDeRepo(repo)
+    // Se salta la rama que esta comprobada y las que apuntan al mismo commit que
+    // otra ya auditada. ABDOmega tiene `origin/master` y `origin/feat/...` con el
+    // mismo commit, y auditar las dos es medir lo mismo dos veces.
+    .filter((r) => !vistos.has(r.sha) && vistos.add(r.sha))
+    .map((r) => ({ ...r, auditoria: auditaArbol(repo, r.rama) }));
+}
+
+/**
+ * Todas las ramas de todos los repos de la suite.
+ *
+ * Es una lista PLANA y no un `{repo: [...]}` porque el repositorio va dentro de
+ * cada rama: la pregunta que hace falta responder es "que rama rompe que", no
+ * "que repos tienen ramas que rompen", y una lista plana se puede ordenar por la
+ * gravedad sin aplanar nada.
+ *
+ * @param {string} raiz
+ * @returns {{repo: string, rama: string, auditoria: object}[]}
+ */
+export function auditaRamasDeSuite (raiz = raizDeSuite()) {
+  if (raiz === null) {
+    throw new Error('no encuentro la raiz de la suite');
+  }
+
+  const porRama = [];
+
+  for (const repo of reposDeSuite(raiz)) {
+    const nombre = basename(repo.replace(/[\\/]+$/, '')) || repo;
+
+    for (const r of auditaRamas(repo)) {
+      porRama.push({ repo: nombre, rama: r.rama, auditoria: r.auditoria });
+    }
+  }
+
+  return porRama;
+}
+
+/**
+ * El informe de las ramas, que se lee pegado al de la suite.
+ *
+ * Lo que sale por defecto es solo el RESUMEN: de 27 ramas, una linea con 27
+ * lineas de detalle es ruido, y un informe que obliga a hacer scroll no se lee.
+ * El detalle sale entero cuando hay un incumplimiento, que es el caso en el que
+ * de verdad hace falta saber donde.
+ *
+ * @param {{repo: string, rama: string, auditoria: object}[]} porRama
+ * @returns {string[]}
+ */
+export function formateaRamas (porRama) {
+  const conFicheros = porRama.filter((r) => r.auditoria.ficheros > 0);
+  const conIncidencias = porRama.filter((r) => r.auditoria.incumplimientos.length > 0);
+
+  const lineas = [
+    'ramas auditadas ademas de la que esta deployada : ' + conFicheros.length,
+    '  de ellas, con regla eol declarada           : '
+      + conFicheros.filter((r) => r.auditoria.auditados > 0).length,
+    '  incumplimientos de EOL en alguna rama       : ' + conIncidencias.length
+  ];
+
+  for (const r of conIncidencias) {
+    for (const i of r.auditoria.incumplimientos) {
+      lineas.push('  ' + r.repo + ' @ ' + r.rama + '  ->  ' + i.ruta
+        + '  <- ' + i.crlf + ' ' + i.que + ' en el ' + i.donde);
+    }
+  }
+
+  return lineas;
+}
+
 /** El informe de la suite entera. */
 export function auditaSuite (raiz = raizDeSuite()) {
   if (raiz === null) {
@@ -891,6 +1152,19 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     const porRepo = auditaSuite();
 
     console.log(formatea(porRepo));
+
+    // Y ahora las ramas que no son la que esta deployada. Va aparte y no como un
+    // extra del de arriba porque mide otra cosa: `auditaRepo` mira el indice y el
+    // disco de LO QUE ESTA COMPROBADO, y esto mira arboles que nadie ha
+    // comprobado. Se audita UNA vez y se imprime lo mismo que se juzga, porque un
+    // informe que dice una cosa y el veredicto decide sobre otra es peor que no
+    // tener informe.
+    const porRama = auditaRamasDeSuite();
+
+    console.log('');
+    console.log(formateaRamas(porRama).join('\n'));
+
+    const ramasMalas = porRama.filter((r) => r.auditoria.incumplimientos.length > 0);
 
     const demasiados = porRepo.reduce((a, r) => a + r.incumplimientos.length, 0);
     const sinAuditar = porRepo.reduce((a, r) => a + r.noAuditables.length, 0);
@@ -912,10 +1186,15 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       console.error('  asi que el numero de auditados de arriba no es el de la suite.');
     }
 
-    if (demasiados > 0 || sinAuditar > NO_AUDITABLES_TOLERADOS || reglasQuePasan.length > 0) {
+    if (demasiados > 0 || sinAuditar > NO_AUDITABLES_TOLERADOS || ramasMalas.length > 0
+        || reglasQuePasan.length > 0) {
       console.error('');
       console.error('auditar_eol: ' + demasiados + ' incumplimiento(s), ' + sinAuditar
         + ' no auditable(s) de un tope de ' + NO_AUDITABLES_TOLERADOS + '.');
+      if (ramasMalas.length > 0) {
+        console.error('  y ' + ramasMalas.length + ' rama(s) con incumplimientos: '
+          + ramasMalas.map((r) => r.repo + ' @ ' + r.rama).join(', ') + '.');
+      }
       process.exit(1);
     }
 

@@ -85,7 +85,16 @@ jobs:
               return
             fi
 
-            if git clone --depth 1 --quiet "$url" "$destino" 2>&1; then
+            # `--no-single-branch` es lo que hace que este guard mire mas de una rama.
+            # Sin el, un clon baja el ARBOL de la rama por defecto y nada mas: ABDJUNiO601
+            # tiene nueve ramas y se auditaba una, sin decir cual.
+            #
+            # Y `--depth 1` SE QUITA DE LA LISTA DE LO QUE HAY QUE ARREGLAR, con dato. Un
+            # clon sin historia pesa entre 23 y 99 MB por repo, y los tres guards usan
+            # `ls-files`, `grep`, `diff`, `check-attr` y `cat-file`: ninguno de los cinco
+            # toca el historial, asi que la historia no les quita nada. Ramas todas,
+            # historia ninguna, que es lo que sale mas barato por puerta cerrada.
+            if git clone --depth 1 --no-single-branch --quiet "$url" "$destino" 2>&1; then
               echo "  ok  $destino"
             else
               echo "  FALLO  $destino  ($url)"
