@@ -717,36 +717,62 @@ describe('la suite real', () => {
   it('y los ficheros con `eol=crlf` se juzgan de verdad, no se cuentan y ya', () => {
     // El suelo de la puerta contraria. Sin el, `auditados` podria seguir dando
     // verde con la puerta de `eol=crlf` desconectada de la logica, porque el
-    // numero de `auditados` no contaria los 25 ficheros con esa regla.
+    // numero de `auditados` no contaria los ficheros con esa regla.
+    //
+    // El suelo es quince, y antes era veinte, porque de los veintidos que ve el
+    // runner veinte son de un solo repo (ABDOmegaUnified) y los otros dos de
+    // ABDAudioLab. Un suelo pegado a la medida no es un suelo: es una foto de
+    // como esta la suite hoy, y en cuanto un hilo anade o quita un `.bat` sale
+    // rojo sin que el guard haya dejado de mirar nada.
     const conCrlf = auditaSuite().reduce((a, r) => a + r.conEolCrlf, 0);
 
-    assert.ok(conCrlf >= 20, 'solo ha visto ' + conCrlf + ' ficheros con eol=crlf');
+    assert.ok(conCrlf >= 15, 'solo ha visto ' + conCrlf + ' ficheros con eol=crlf');
   });
 
-  it('y mira de verdad: mas de novecientos ficheros con regla eol declarada', () => {
+  it('y mira de verdad: mas de quinientos ficheros con regla eol declarada', () => {
     // El suelo. Sin el, este guard podria ponerse verde mirando tres repos, y
     // el numero de repos revisados no lo delata porque descubrir no es mirar.
-    // El suelo es 900: por debajo del menor de los dos entornos.
-    // maquina 1051 y runner 1447 (run 37012783300). Ni 500 ni 880 ni 1200
-    // servian: cada uno de esos estaba mal en un entorno o en otro.
+    //
+    // Y aqui hay que contar una historia, porque es la segunda vez que este
+    // suelo se ajusta y la primera dio verguenza. Medido:
+    //
+    //   clon limpio de las ramas por defecto       667
+    //   runner, run 37023946682                    674
+    //   runner, run 37012783300 (unas horas antes) 1447
+    //   maquina de desarrollo                     1051
+    //
+    // Los dos numeros del runner son la MISMA suite y el MISMO paso de clon,
+    // byte a byte, y entre ellos se lleve mas de la mitad. La razon es que lo
+    // que este suelo mide no es el guard sino el estado de los catorce repos
+    // hermanos, que empuja gente distinta varias veces al dia. Un suelo
+    // absoluto aqui no es una propiedad del codigo: es una fotografia.
+    //
+    // Asi que quinientos, por debajo de la medida mas pobre que se ha visto
+    // (667) y con margen para que la suite se mueva. Y si algun dia esto se
+    // vuelve a rozar, la respuesta no es bajar el suelo otra vez: es mirar si
+    // un repo ha dejado de declarar reglas, que es lo unico que lo justificaria.
     const auditados = auditaSuite().reduce((a, r) => a + r.auditados, 0);
 
-    assert.ok(auditados > 900, 'solo ha auditado ' + auditados + ' ficheros');
+    assert.ok(auditados > 500, 'solo ha auditado ' + auditados + ' ficheros');
   });
 
-  it('y de mas de once mil ficheros trackeados en la suite', () => {
-    // El suelo es el MENOR de los dos entornos, no el mayor. En la maquina de
-    // desarrollo se ven 16716 ficheros y en el runner 12237: la maquina tiene
+  it('y de mas de diez mil ficheros trackeados en la suite', () => {
+    // El suelo es el MENOR de los entornos, no el mayor. En la maquina de
+    // desarrollo se ven 16716 ficheros y en el runner 11511: la maquina tiene
     // historia y ramas que el clon `--depth 1` no baja. Un suelo de quince mil
     // seria mas exigente que el runner, y un suelo que el runner no puede
     // cumplir no comprueba nada: en CI el test falla siempre y nadie lo lee
     // como un suelo, sino como ruido.
     //
-    // Once mil, y no doce, porque un suelo tiene que quedar por debajo de lo
-    // que ve el entorno mas pobre. Medido en el runner: 12237 ficheros.
+    // Diez mil, y no once, por el mismo motivo que el de arriba: entre los dos
+    // runs del runner se perdieron 726 ficheros sin que nadie tocara el guard,
+    // y la cifra depende mucho de un solo repo (ABDJUNiO601 aporta 763
+    // ficheros en el clon del runner y 6007 en la maquina, que tiene ramas que
+    // el `--depth 1` no baja). Un suelo con un cuatro por ciento de margen
+    // sobre la medida es un suelo que rompe solo.
     const ficheros = auditaSuite().reduce((a, r) => a + r.ficheros, 0);
 
-    assert.ok(ficheros > 11000, 'solo ha visto ' + ficheros + ' ficheros trackeados');
+    assert.ok(ficheros > 10000, 'solo ha visto ' + ficheros + ' ficheros trackeados');
   });
 
   it('y mira al menos diez repos', () => {
