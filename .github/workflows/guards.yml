@@ -142,3 +142,21 @@ jobs:
 
       - name: Auditar justificacion de eol=crlf
         run: node tools/auditar_justificacion_crlf.mjs
+
+      # Los tests de los guards no se ejecutaban en ningun sitio automatico.
+      # Un guard con los tests rotos sigue dando verde en CI mientras sus
+      # tests no corran, y eso es el peor fallo que puede tener un guard: el
+      # que parece vigilando y no vigila.
+      #
+      # Va despues de clonar porque hay bloques que auditan la suite real, y en
+      # el runner esa suite solo existe despues del clon. Adelante fallarian
+      # por el motivo equivocado.
+      #
+      # Un solo paso para los tres ficheros: `node --test` sale con codigo
+      # distinto de cero si alguno falla, que es lo que pone el paso en rojo.
+      - name: Tests de los tres guards
+        run: |
+          node --test \
+            tools/auditar_ignore_oculto.test.mjs \
+            tools/auditar_eol.test.mjs \
+            tools/auditar_justificacion_crlf.test.mjs

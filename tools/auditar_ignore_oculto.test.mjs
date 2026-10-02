@@ -433,18 +433,42 @@ describe('la suite real, que es a quien este guard tiene que vigilar', () => {
     assert.deepEqual(rojos.map((d) => d.repo + ': ' + d.tipo + ' (' + d.antes + ' -> ' + d.ahora + ')'), []);
   });
 
-  it('y la linea base nombra los repos que tienen deuda, y solo esos', () => {
-    // Mantiene la linea base y la verdad en el mismo sitio. Si alguien arregla un
-    // repo, este test pide bajar su numero; si aparece deuda en uno nuevo, pide
-    // anadirlo. Es la parte incomoda del ratchet, y es a proposito.
-    const conTapados = auditaSuite()
+  it('la linea base nombra todo repo con deuda, y la deuda no pasa de la que dice', () => {
+    // Mantiene la linea base y la verdad en el mismo sitio. Si aparece deuda en
+    // un repo que no esta en la linea base, pide anadirlo; si un repo tiene mas
+    // de lo que dice, lo dice. Es la parte incomoda del ratchet, y es a proposito.
+    //
+    // Lo que NO se comprueba es que los repos de la linea base sigan teniendo
+    // deuda: en la maquina de desarrollo se cumple, pero en CI no puede, porque
+    // cada repo se audita en su rama por defecto y la maquina trabaja en ramas
+    // de desarrollo. ABDJUNiO601 esta en `feature/fidelity-certified` con 3951
+    // ficheros tapados y en `main` no tiene ninguno, asi que la igualdad exacta
+    // que habia aqui era imposible de cumplir en el runner.
+    //
+    // Un repo con menos deuda del que dice no es un defecto: es un repo
+    // arreglado. El guard lo dice en su informe ("puedes bajar la linea base") y
+    // sale verde, que es lo correcto.
+    const porRepo = auditaSuite();
+    const conTapados = porRepo
       .filter((r) => r.tapados.length > 0)
       .map((r) => r.repo)
       .sort();
 
-    assert.deepEqual(conTapados, Object.keys(DEUDA_CONOCIDA).sort(),
-      'la linea base no coincide con lo que hay: corrige DEUDA_CONOCIDA con '
+    // Deuda que no esta en la linea base: un repo que nadie ha mirado nunca.
+    const sinLineaBase = conTapados.filter((repo) => !(repo in DEUDA_CONOCIDA));
+
+    assert.deepEqual(sinLineaBase, [],
+      'repos con deuda que no estan en DEUDA_CONOCIDA: ' + sinLineaBase.join(', ')
+      + '. Corrige DEUDA_CONOCIDA con '
       + '`node tools/auditar_ignore_oculto.mjs --linea-base`');
+
+    // Deuda por encima de la linea base: el ratchet sigue apretando.
+    const pases = porRepo
+      .filter((r) => DEUDA_CONOCIDA[r.repo] !== undefined
+        && r.tapados.length > DEUDA_CONOCIDA[r.repo])
+      .map((r) => r.repo + ': ' + r.tapados.length + ' de ' + DEUDA_CONOCIDA[r.repo]);
+
+    assert.deepEqual(pases, [], 'repos con mas deuda que la linea base: ' + pases.join(', '));
   });
 
   it('los repos del encargo (ABDEep, ABDSharedAssets, ABDSharedCode) siguen limpios', () => {
