@@ -14,9 +14,13 @@ name: Guards de la suite
 
 on:
   push:
-    branches: [workspace-history]
+    # `main` es la rama por defecto del repo y es donde acaba cayendo el
+    # trabajo de la gente. Un guard que solo corre en `workspace-history` no
+    # protege nada de lo que pasa mientras tanto: se puede romper `main` sin
+    # que se entere.
+    branches: [main, workspace-history]
   pull_request:
-    branches: [workspace-history]
+    branches: [main, workspace-history]
   workflow_dispatch:
 
 permissions:
