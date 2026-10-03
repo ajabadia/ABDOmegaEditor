@@ -41,7 +41,7 @@ const aqui = dirname(fileURLToPath(import.meta.url));
  * suite como la que monta este fichero.
  *
  * No todos pueden salir en 0, y el motivo esta al lado porque es el que decide si
- * el arnes sirve: este clon tiene quince repos con un par de ficheros cada uno, y
+ * el arnes sirve: este clon tiene catorce repos con un par de ficheros cada uno, y
  * para `auditar_tamano` eso no es una suite pequena sino una suite ENCOGIDA, que es
  * justo lo que ese guard existe para detectar. Ponerlo en verde habria sido
  * falsear el arnes para que todo cuadrase.
@@ -226,7 +226,7 @@ function construyeSuite () {
 /**
  * LA SUITE BASE, montada una sola vez para todo el fichero.
  *
- * Montar quince repos con git es la parte cara de este arnes, y todos los
+ * Montar catorce repos con git es la parte cara de este arnes, y todos los
  * escenarios que hacen falta salen de la misma suite: el que cambia es lo que se le
  * rompe encima, no la suite. Asi que se monta una vez y se copia.
  *
@@ -477,7 +477,7 @@ describe('un hallazgo de verdad, ejecutado desde el main del guard', () => {
   it('un fichero que baja la linea base NO pone a nadie en rojo', () => {
     // El borde de enfrente, y el mas facil de romper por las prisas: arreglar deuda
     // no puede poner el guard en rojo, o el guard acabaria empujando a que se
-    // arregle. En la suite limpia de arriba los catorce repos tienen menos tapados
+    // arregle. En la suite limpia de arriba los trece repos tienen menos tapados
     // que la linea base real, asi que el informe sale lleno de "ha BAJADO" y aun asi
     // el guard esta en verde. Es el mismo `exit` que la prueba de arriba, y por eso
     // no hace falta montar otra suite para decirlo.
@@ -495,7 +495,7 @@ describe('la puerta del encogimiento, ejecutada desde el main de su guard', () =
   it('una suite minima ES una suite encogida, y sale en rojo diciendo que hacer', () => {
     // El unico guard de la lista cuyo 1 es el comportamiento normal con este clon.
     // Los otros tres miran contenido y aqui no hay nada que mirar; este mira el
-    // denominador, y un denominador de quince repos con un fichero cada uno es
+    // denominador, y un denominador de catorce repos con un fichero cada uno es
     // exactamente lo que la puerta existe para frenar.
     //
     // Y lo que se comprueba no es solo el codigo: un rojo que no dice QUE hacer es

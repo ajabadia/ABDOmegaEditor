@@ -98,9 +98,9 @@ export function puertasDeTamano (informe) {
   const delTotal = puertaDe('TAMAÑO', 'total', informe.total, SUELO_FICHEROS, 'suelo', true);
   const deRepos = puertaDe('TAMAÑO', 'repos', informe.cuantosRepos, SUELO_REPOS, 'suelo', true);
 
-  // Repo a repo es donde esta el dato, y no por el total: con quince repos,
-  // perder sesenta ficheros en uno solo es un 0,4% del total y el total ni se
-  // entera. El suelo global de once mil no dice nada, y la tabla si.
+  // Repo a repo es donde esta el dato, y no por el total: en la suite entera,
+  // quitarle sesenta ficheros a un repo es una fraccion de un por ciento, y el
+  // total ni se entera. El suelo global no lo nota, y la tabla si.
   const porRepo = informe.repos
     .filter((r) => r.esRaiz !== true && FICHEROS_POR_REPO[r.repo] !== undefined)
     .map((r) => puertaDe('TAMAÑO', r.repo, r.ficheros, FICHEROS_POR_REPO[r.repo]));

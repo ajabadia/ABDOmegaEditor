@@ -49,7 +49,7 @@ function medidoSano () {
  * La medicion de la suite real, UNA vez.
  *
  * Siete tests la piden y cada `auditaRepo` tarda casi dos segundos porque son
- * quince repos y quince procesos de git. Sin esto el fichero tarda catorce
+ * trece repos y trece procesos de git. Sin esto el fichero tarda catorce
  * segundos en no comprobar nada, que es el tiempo que hace que nadie lo mire
  * cuando algo se rompe.
  *
@@ -108,13 +108,16 @@ describe('el suelo, con numeros inventados', () => {
     // El primero que hay que mirar es el que mas ha perdido respecto a lo que
     // tenia, que no es el primero de la lista ni el mas grande.
     const entrada = medidoSano();
-    entrada.find((r) => r.repo === 'ABDOmega').ficheros = 3000;   // -177
-    entrada.find((r) => r.repo === 'ABDScope').ficheros = 0;       // -72
-    entrada.find((r) => r.repo === 'ABDNeural').ficheros = 400;    // -4
+
+    // Las perdidas se restan del numero de la tabla, no de un numero escrito
+    // aqui: si un repo cambia de tamano, este test sigue mirando lo mismo.
+    entrada.find((r) => r.repo === 'ABDAudioLab').ficheros = FICHEROS_POR_REPO.ABDAudioLab - 177;
+    entrada.find((r) => r.repo === 'ABDScope').ficheros = 0;
+    entrada.find((r) => r.repo === 'ABDNeural').ficheros = 400;
 
     const encogidos = comparaConSuelo(entrada).encogidos;
 
-    assert.deepEqual(encogidos.map((e) => e.repo), ['ABDOmega', 'ABDScope', 'ABDNeural']);
+    assert.deepEqual(encogidos.map((e) => e.repo), ['ABDAudioLab', 'ABDScope', 'ABDNeural']);
   });
 
   it('un repo que falta sale por su nombre, aunque la cuenta no lo delate', () => {
@@ -171,7 +174,9 @@ describe('el suelo, con numeros inventados', () => {
 
     const informe = comparaConSuelo(entrada);
 
-    assert.equal(informe.total, 11504 + 13);
+    const totalDeLaTabla = Object.values(FICHEROS_POR_REPO).reduce((a, n) => a + n, 0);
+
+    assert.equal(informe.total, totalDeLaTabla + 13);
     assert.deepEqual(informe.encogidos, []);
     assert.equal(falla(informe), false);
   });
@@ -224,8 +229,10 @@ describe('el suelo, con numeros inventados', () => {
     assert.equal(informe.total, 0);
     assert.equal(informe.cuantosRepos, 0);
     assert.equal(falla(informe), true);
-    assert.match(formatea(informe), /por debajo del suelo de 11000/);
-    assert.match(formatea(informe), /por debajo del suelo de 14/);
+    assert.ok(formatea(informe).includes('por debajo del suelo de ' + SUELO_FICHEROS),
+      'el informe dice que suelo de ficheros: ' + formatea(informe));
+    assert.ok(formatea(informe).includes('por debajo del suelo de ' + SUELO_REPOS),
+      'y que suelo de repos: ' + formatea(informe));
   });
 });
 
@@ -310,11 +317,12 @@ describe('la suite real, que es a quien este guard tiene que vigilar', () => {
     // test daria el numero exacto de donde ha venido el problema.
     const { total, cuantosRepos } = REAL;
 
-    // Trece mil en el clon de las ramas por defecto, y mas en la maquina, que
-    // trabaja en ramas de desarrollo. Un margen del 20 por ciento por debajo
-    // cubre las dos sin poder tragarse un repo entero.
-    assert.ok(total > 11000, 'el total se ha hundido: ' + total);
-    assert.ok(cuantosRepos >= 15, 'faltan repos por el camino: ' + cuantosRepos);
+    // Ocho mil en el clon de las ramas por defecto, y mas en la maquina, que
+    // trabaja en ramas de desarrollo. El suelo es el menor de los dos y el
+    // margen se deja en un 4 por ciento, porque un suelo con margen de sobra
+    // no avisa de nada.
+    assert.ok(total > SUELO_FICHEROS, 'el total se ha hundido: ' + total);
+    assert.ok(cuantosRepos > SUELO_REPOS, 'faltan repos por el camino: ' + cuantosRepos);
   });
 
   it('y mira de verdad: el recuento sale de `ls-files`, no de un numero de mentira', () => {

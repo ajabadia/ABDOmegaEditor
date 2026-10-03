@@ -52,8 +52,13 @@
 //
 // Medido en los dos entornos con este mismo codigo, con `git ls-files`:
 //
-//   clon limpio de las ramas por defecto   15 repos, 11.513 ficheros
-//   maquina de desarrollo                  15 repos, 16.773 ficheros
+//   clon limpio de las ramas por defecto   14 repos, 8.336 ficheros
+//   maquina de desarrollo                  14 repos, 13.647 ficheros
+//
+// Los dos bajaron de la ultima vez que se midieron, y los dos por lo mismo: ABDOmega
+// salio de la suite. En la maquina porque estaba deprecado y movido, y en el clon
+// porque el workflow dejo de clonarlo. Un repo que se va es menos repos y menos
+// ficheros, y las dos cifras se vuelven a medir, no se corrigen a ojo.
 //
 // La tabla de abajo es el menor de los dos, repo a repo.
 
@@ -68,20 +73,27 @@ export { REPOS_OBLIGATORIOS };
 /**
  * Cuantos repos tiene que haber, como minimo.
  *
- * Quince medidos en los dos entornos, con suelo en catorce: uno de margen para
+ * Catorce medidos en los dos entornos, con suelo en trece: uno de margen para
  * que anadir un repo no toque nada, y ninguno para que un repo que falta se note
  * en la cuenta y no solo en el total.
  */
-export const SUELO_REPOS = 14;
+export const SUELO_REPOS = 13;
 
 /**
  * Cuantos ficheros trackeados tiene que haber en toda la suite, como minimo.
  *
- * La tabla de abajo ya suma 11.504, o sea que este suelo esta implicado por ella
+ * La tabla de abajo ya suma 8.327, o sea que este suelo esta implicado por ella
  * y es la red de seguridad de las dos cosas: si alguien corrige una cifra de la
  * tabla y se equivoca, el total lo nota igual. Un 4 por ciento de margen sobre la
  * medida mas pobre, y no mas, porque un suelo con margen de sobra no es un suelo.
- */export const SUELO_FICHEROS = 11000;
+ *
+ * BAJO DE 11.000 CUANDO SALIO ABDOmega, Y POR QUE HAY QUE BAJARLO. En el clon del
+ * runner la suite tiene 8.336 ficheros sin el; antes eran 11.513 porque el solo
+ * aportaba 3.177. Un repo deprecado que se sigue clonando no es un coste de disco:
+ * es el techo del otro, y si se quita el repo y no el suelo, el guard se pone rojo
+ * por una suite que ha crecido. La cifra se medio, no se estimo: 8.336 con trece
+ * repos.
+ */export const SUELO_FICHEROS = 8000;
 
 /**
  * Cuantos ficheros tinha cada repo, como minimo.
@@ -96,18 +108,17 @@ export const SUELO_REPOS = 14;
  * clon, que es el mas pobre.
  *
  * ESTA TABLA ES LA QUE APORTA, Y SE SABE CUANDO. Borrando sesenta ficheros de
- * ABDCZ101 en el clon, el total de la suite se queda en 11.453, que sigue por
- * encima del suelo global de 11.000, y el suelo global no dice nada. La tabla si:
- * `ABDCZ101 970 de 1030 (-60)`. Con quince repos, perder sesenta ficheros en uno
- * solo es una perdida de la mitad de un por ciento del total, y una mitad de un
- * por ciento no es el tipo de cosa que se nota mirando un numero grande. Por eso
- * las dos cosas: el total es la red y la tabla es la que nombra.
+ * ABDCZ101 en el clon, el total de la suite se queda en 8.276, que sigue por
+ * encima del suelo global de 8.000, y el suelo global no dice nada. La tabla si:
+ * `ABDCZ101 970 de 1030 (-60)`. Con trece repos, perder sesenta ficheros en uno
+ * solo es una perdida de tres cuartos de un por ciento del total, y tres cuartos
+ * de un por ciento no es el tipo de cosa que se nota mirando un numero grande. Por
+ * eso las dos cosas: el total es la red y la tabla es la que nombra.
  */
 export const FICHEROS_POR_REPO = {
   ABDJUNiO601: 763,
   ABDMS2000: 551,
   ABDNeural: 404,
-  ABDOmega: 3177,
   ABDOmegaUnified: 1837,
   ABDAudioLab: 1052,
   ABDBankManager: 365,
