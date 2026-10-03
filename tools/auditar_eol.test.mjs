@@ -35,6 +35,39 @@ import {
 
 const temporales = [];
 
+/**
+ * Los incumplimientos de una suite, separados por DONDE se han encontrado.
+ *
+ * BLOB es lo commiteado y DISCO es el arbol de trabajo de quien esta trabajando.
+ * La distincion no es academica: es la unica que separa "el repo esta mal" de
+ * "alguien tiene el arbol sucio", y confundirlas hacia que un rojo local
+ * leyese como un guard roto.
+ *
+ * El por que de que el segundo no lo vea git, y que es lo que lo hace confuso:
+ * con `text` declarado, git normaliza el CRLF a LF ANTES de comparar el arbol de
+ * trabajo con el indice, asi que un fichero con 433 CRLF en el disco y el blob
+ * limpio sale `git status` limpio. Solo hay un sitio donde mirar, y es el disco.
+ *
+ * @param {{repo: string, incumplimientos: {ruta: string, donde: string}[]}[]} porRepo
+ * @returns {{blobs: string[], discos: string[], enLosDos: string[]}}
+ */
+function separaPorDonde (porRepo) {
+  const de = (donde) => porRepo.flatMap((r) => r.incumplimientos
+    .filter((i) => i.donde === donde)
+    .map((i) => r.repo + '/' + i.ruta + ' <- ' + i.crlf + ' ' + i.que
+      + (donde === 'blob' ? ' en el BLOB' : ' en el DISCO')));
+
+  const claves = (donde) => new Set(porRepo.flatMap((r) => r.incumplimientos
+    .filter((i) => i.donde === donde)
+    .map((i) => r.repo + '/' + i.ruta)));
+
+  const blobs = de('blob');
+  const discos = de('disco');
+  const delBlob = claves('blob');
+
+  return { blobs, discos, enLosDos: [...claves('disco')].filter((k) => delBlob.has(k)) };
+}
+
 /** Un directorio que se borra al terminar. */
 function temporal (prefijo) {
   const dir = mkdtempSync(join(tmpdir(), prefijo));
@@ -1076,12 +1109,78 @@ describe('el guard sobre un repo de verdad', () => {
 // LA SUITE REAL, CON UN SUELO QUE IMPIDE PONERSE VERDE POR NO MIRAR
 // ─────────────────────────────────────────────────────────────────────────
 
-describe('la suite real', () => {
-  it('ningun fichero incumple la regla eol que declara', () => {
-    const porRepo = auditaSuite();
+describe('separar el rojo real del ruido de disco', () => {
+  const con = (incumplimientos) => [{ repo: 'UnRepo', incumplimientos }];
 
-    assert.deepEqual(porRepo.flatMap((r) => r.incumplimientos
-      .map((i) => r.repo + '/' + i.ruta + ' <- ' + i.crlf + ' ' + i.que + ' en ' + i.donde)), []);
+  it('un incumplimiento de cada sitio sale en su lista y en la del otro no', () => {
+    const { blobs, discos } = separaPorDonde(con([
+      { ruta: 'a.cpp', donde: 'blob', crlf: 4, que: 'CRLF' },
+      { ruta: 'b.js', donde: 'disco', crlf: 433, que: 'CRLF' }
+    ]));
+
+    assert.equal(blobs.length, 1);
+    assert.match(blobs[0], /UnRepo\/a\.cpp <- 4 CRLF en el BLOB/);
+    assert.match(discos[0], /UnRepo\/b\.js <- 433 CRLF en el DISCO/);
+    assert.ok(!discos.some((d) => d.includes('a.cpp')),
+      'el incumplimiento del blob no puede salir como ruido de disco');
+  });
+
+  it('el MISMO fichero en los dos sitios sale en las dos, y ese es el alarmante', () => {
+    // El caso que no puede pasar en silencio: si el rojo del blob y el ruido del
+    // disco son el mismo fichero, quitar el ruido tambien quita el rojo.
+    const { enLosDos } = separaPorDonde(con([
+      { ruta: 'a.cpp', donde: 'blob', crlf: 4, que: 'CRLF' },
+      { ruta: 'a.cpp', donde: 'disco', crlf: 4, que: 'CRLF' }
+    ]));
+
+    assert.deepEqual(enLosDos, ['UnRepo/a.cpp']);
+  });
+
+  it('un donde que no es ni blob ni disco no se cuela en ninguna lista', () => {
+    // Un `donde` nuevo no puede acabar en la lista de ruido por ser el primero
+    // que aparezca: se ignoran los que no se reconocen, y se ve en las tres.
+    const r = separaPorDonde(con([{ ruta: 'raro', donde: 'futuro', crlf: 1, que: '?' }]));
+
+    assert.deepEqual(r.blobs, []);
+    assert.deepEqual(r.discos, []);
+    assert.deepEqual(r.enLosDos, []);
+  });
+
+  it('una suite sin incumplimientos no inventa ninguno', () => {
+    const r = separaPorDonde(con([]));
+
+    assert.deepEqual(r, { blobs: [], discos: [], enLosDos: [] });
+  });
+});
+
+describe('la suite real', () => {
+  it('ningun BLOB incumple la regla eol que declara', () => {
+    // El BLOB es lo commiteado, y lo commiteado es lo mismo en la maquina y en
+    // el runner. Es el unico de los dos que puede poner la puerta en rojo por
+    // algo que este en el repo de verdad.
+    const { blobs } = separaPorDonde(auditaSuite());
+
+    assert.deepEqual(blobs, [],
+      'ficheros COMMITTED que incumplen su propia regla eol: ' + blobs.join('; '));
+  });
+
+  it('el CRLF del DISCO se nombra aparte, para que no se lea como un guard roto', (t) => {
+    // LO QUE HAY AQUI NO ES UN FALLO DEL GUARD: es el arbol de trabajo de
+    // alguien. Y git no lo ve, que es lo que lo hace tan confuso: con `text`
+    // declarado normaliza el CRLF antes de comparar, asi que `git status` sale
+    // LIMPIO con los bytes del disco cambiados. En el runner no existe esto
+    // —el clon es de hace un minuto y el disco es el blob—, y por eso no puede
+    // ser una puerta: solo puede ser un ruido nombrado como tal.
+    const { discos, enLosDos } = separaPorDonde(auditaSuite());
+
+    for (const d of discos) t.diagnostic('  RUIDO DE DISCO, no es un guard roto: ' + d);
+    if (discos.length === 0) t.diagnostic('  esta maquina no tiene ruido de disco');
+
+    // Y lo unico que aqui si seria un fallo: un fichero que incumpla por las dos
+    // partes a la vez. Ahi el ruido tapa al rojo, que es justo lo que este test
+    // separa para que no pueda pasar.
+    assert.deepEqual(enLosDos, [],
+      'ficheros que incumplen por el BLOB y por el DISCO a la vez: ' + enLosDos.join('; '));
   });
 
   it('y los no auditables no pasan del tope', () => {
