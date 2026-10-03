@@ -27,6 +27,7 @@ import {
   NO_AUDITABLES_TOLERADOS, reglasSinCommitearDe, REGLAS_SIN_COMMITEAR_TOLERADAS,
   auditaArbol, auditaRamas, auditaRamasDeSuite, formateaRamas, ramasDeRepo,
   resumenDeRamas, RAMAS_AUDITADAS_MINIMAS, REPOS_CON_RAMAS_MINIMOS,
+  detalleDeRamas, diagnosticoDeRamas, formateaDiagnostico, RAMAS_POR_REPO,
   sinPrefijoDeRef,
   auditaSombras, auditaSombrasDeSuite, anidadosDe, anidadoQueManda, sombrasDe,
   sombrasQuePasan, formateaSombras, SOMBRAS_TOLERADAS
@@ -804,7 +805,7 @@ describe('las ramas que no son la que esta deployada', () => {
   });
 
   it('la suite real: ninguna rama incumple, y se miran todas menos la desplegada', () => {
-    const porRama = auditaRamasDeSuite();
+    const { porRama } = auditaRamasDeSuite();
 
     const malos = porRama
       .filter((r) => r.auditoria.incumplimientos.length > 0)
@@ -1649,7 +1650,7 @@ describe('el suelo de ramas auditadas', () => {
     // Ni la lista de repos ni el numero exacto: lo que se comprueba es que el
     // suelo aguanta en CUALQUIER clon con ramas, que es la unica afirmacion
     // que es cierta en la maquina y en el runner a la vez.
-    const resumen = resumenDeRamas(auditaRamasDeSuite());
+    const resumen = resumenDeRamas(auditaRamasDeSuite().porRama);
 
     assert.deepEqual(resumen.porDebajo, [],
       'el suelo de ramas se ha cruzado en la suite real, y con el numero actual ('
@@ -1658,5 +1659,149 @@ describe('el suelo de ramas auditadas', () => {
       'solo ' + resumen.auditadas + ' ramas: el suelo esta pegado al numero real y no avisaria de nada');
     assert.ok(resumen.repos.length > REPOS_CON_RAMAS_MINIMOS,
       'solo ' + resumen.repos.length + ' repos con ramas: el suelo de repos tambien esta pegado');
+  });
+});
+
+/**
+ * POR QUE han bajado las ramas, que es lo que hace falta para arreglarlas.
+ *
+ * Todos estos tests son de la parte PURA y el `estado` se inventa. Montar un clon
+ * de una sola rama de verdad para cada causa sale, pero aqui no hace falta: lo
+ * que se prueba es que los motivos se distinguen, y la firma de cada uno la da
+ * un numero — cero remotas, una, o mas de una y por debajo de su suelo.
+ */
+describe('el diagnostico de por que han bajado las ramas', () => {
+  /** Los repos dados, con las ramas que se le pidan; el primero es la raiz. */
+  function estadoDe (nombres, remotas = 3) {
+    return nombres.map((repo, i) => ({
+      repo,
+      remotas: typeof remotas === 'function' ? remotas(repo, i) : remotas,
+      extra: 1,
+      esRaiz: i === 0
+    }));
+  }
+
+  it('un estado con cada repo en su suelo no produce ninguna causa', () => {
+    // El estado de un clon completo: la raiz con lo que traiga, cada repo de la
+    // tabla con su numero, y nada mas. Es el unico estado que no dice nada, y
+    // que siga siendo asi es lo que hace que el aviso signifique algo.
+    const hermanos = Object.keys(RAMAS_POR_REPO);
+    const causas = diagnosticoDeRamas(
+      estadoDe(['laCarpeta', ...hermanos], (repo) => RAMAS_POR_REPO[repo] ?? 3), hermanos);
+
+    assert.deepEqual(causas, [], 'un clon completo no produce ninguna causa');
+  });
+
+  it('un repo con una sola rama por debajo de su suelo es un clon de una sola', () => {
+    // El caso que sale en un runner. Lo que lo separa de los otros dos es el
+    // numero: si es exactamente 1, el clon no trae las demas y el arreglo es el
+    // `clone`.
+    const repo = Object.keys(RAMAS_POR_REPO)[0];
+    const causas = diagnosticoDeRamas(estadoDe(['laCarpeta', repo], (r) => (r === 'laCarpeta' ? 3 : 1)),
+      [repo]);
+
+    assert.equal(causas.length, 1);
+    assert.equal(causas[0].codigo, 'UNA_SOLO_RAMA');
+    assert.equal(causas[0].grave, true);
+    assert.deepEqual(causas[0].repos, [repo]);
+    assert.match(causas[0].detalle, new RegExp(repo + ' trae 1 de un minimo de ' + RAMAS_POR_REPO[repo]));
+    assert.match(causas[0].detalle, /--no-single-branch/);
+  });
+
+  it('con mas de una rama por debajo del suelo, lo que se ha perdido son ramas', () => {
+    // Un clon de una sola rama NUNCA llega aqui: tiene 1. Quedarse corto
+    // teniendo mas de una no tiene explicacion que no sea que le han borrado
+    // ramas de verdad, y ese es un commit de quien las borra.
+    const conSuelo = Object.entries(RAMAS_POR_REPO).filter(([, n]) => n > 2);
+
+    assert.ok(conSuelo.length > 0, 'la tabla tiene que tener un repo de mas de dos ramas');
+
+    const [repo, minimo] = conSuelo[0];
+    const causas = diagnosticoDeRamas(
+      estadoDe(['laCarpeta', repo], (r) => (r === 'laCarpeta' ? 3 : minimo - 1)), [repo]);
+
+    assert.equal(causas.length, 1);
+    assert.equal(causas[0].codigo, 'RAMAS_BORRADAS');
+    assert.equal(causas[0].grave, true);
+    assert.match(causas[0].detalle, new RegExp('trae ' + (minimo - 1) + ' de un minimo de ' + minimo));
+  });
+
+  it('cero ramas remotas es su propia causa: eso no es un clon', () => {
+    const repo = Object.keys(RAMAS_POR_REPO)[0];
+    const causas = diagnosticoDeRamas(
+      estadoDe(['laCarpeta', repo], (r) => (r === 'laCarpeta' ? 3 : 0)), [repo]);
+
+    assert.equal(causas.length, 1);
+    assert.equal(causas[0].codigo, 'SIN_REMOTO');
+    assert.equal(causas[0].grave, true);
+  });
+
+  it('un repo que no esta en el clon es un repo que falta, no menos ramas', () => {
+    const causas = diagnosticoDeRamas(estadoDe(['laCarpeta', 'Uno', 'Dos']), ['Uno', 'Dos', 'Tres']);
+
+    assert.equal(causas.length, 1);
+    assert.equal(causas[0].codigo, 'REPOS_FALTANTES');
+    assert.deepEqual(causas[0].repos, ['Tres']);
+    assert.equal(causas[0].grave, true);
+  });
+
+  it('un repo de mas avisa pero no pone el guard en rojo', () => {
+    // Es la direccion buena: la suite ha crecido. Ponerlo rojo obligaria a
+    // tocar el codigo cada vez que aparece un repo, y lo que hay que hacer es
+    // anadirlo a la lista, que es un commit de una linea.
+    const causas = diagnosticoDeRamas(estadoDe(['laCarpeta', 'Uno', 'Nuevo']), ['Uno']);
+
+    assert.equal(causas.length, 1);
+    assert.equal(causas[0].codigo, 'REPOS_NUEVOS');
+    assert.equal(causas[0].grave, false);
+    assert.deepEqual(causas[0].repos, ['Nuevo']);
+  });
+
+  it('la raiz ni se busca ni se acusa: su nombre es la carpeta', () => {
+    // La raiz trae 3 ramas en la maquina y 0 en un clon de prueba. Con suelo
+    // seria verde en un sitio y rojo en otro; sin suelo, tampoco puede
+    // colarse como repo nuevo, que es el otro sitio por el que entraria.
+    assert.deepEqual(diagnosticoDeRamas(estadoDe(['laCarpeta', 'Uno'], 1), ['Uno']), []);
+    assert.ok(!diagnosticoDeRamas(estadoDe(['laCarpeta'], 3), ['Uno'])
+      .some((c) => c.codigo === 'REPOS_NUEVOS'));
+  });
+
+  it('un repo sin suelo en la tabla no se acusa nunca', () => {
+    // Once de los quince traen una rama y no estan en la tabla. Si uno de esos
+    // se accusara, el diagnostico gritaria en cada clon de cada maquina.
+    const sinSuelo = ['ABDCZ101', 'ABDBankManager', 'ABDNeural', 'ABDSharedAssets'];
+
+    assert.ok(sinSuelo.every((r) => RAMAS_POR_REPO[r] === undefined));
+    assert.deepEqual(diagnosticoDeRamas(estadoDe(['laCarpeta', ...sinSuelo], 1), sinSuelo), []);
+  });
+
+  it('cada causa sale con su motivo, sus repos y donde mirar', () => {
+    const repo = Object.keys(RAMAS_POR_REPO)[0];
+    const texto = formateaDiagnostico(diagnosticoDeRamas(
+      estadoDe(['laCarpeta', repo], (r) => (r === 'laCarpeta' ? 3 : 1)), [repo])).join('\n');
+
+    assert.match(texto, /auditar_eol: UNA_SOLO_RAMA/);
+    assert.match(texto, new RegExp('Repos: ' + repo + '\.'));
+    assert.match(texto, /git clone/);
+    assert.match(texto, /--no-single-branch/);
+
+    // El aviso informativo lleva otra marca, para que un rojo y un aviso no se
+    // confundan leyendo el final del guard.
+    const informativo = formateaDiagnostico(
+      diagnosticoDeRamas(estadoDe(['laCarpeta', 'Uno', 'Nuevo']), ['Uno'])).join('\n');
+
+    assert.match(informativo, /auditar_eol: aviso: REPOS_NUEVOS/);
+  });
+
+  it('la suite real no tiene ninguna causa grave', () => {
+    // Ni lista de repos ni numero de ramas: lo que tiene que ser cierto en la
+    // maquina y en el runner a la vez es que un clon completo no dispara nada.
+    // Y al reves: un clon al que le falta un repo dispara dos, una por el que
+    // falta y otra por sus ramas, que es justo lo que hacia invisible la falta.
+    const graves = diagnosticoDeRamas(auditaRamasDeSuite().estado)
+      .filter((c) => c.grave);
+
+    assert.deepEqual(graves.map((c) => c.codigo + ': ' + c.repos.join(',')), [],
+      'un clon completo no puede tener causas graves');
   });
 });
