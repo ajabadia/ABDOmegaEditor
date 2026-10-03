@@ -211,8 +211,13 @@ jobs:
       # el runner esa suite solo existe despues del clon. Adelante fallarian
       # por el motivo equivocado.
       #
-      # Un solo paso para los cuatro ficheros: `node --test` sale con codigo
+      # Un solo paso para los cinco ficheros: `node --test` sale con codigo
       # distinto de cero si alguno falla, que es lo que pone el paso en rojo.
+      #
+      # Y la lista es explicita a proposito: un `tools/*.test.mjs` traeria de mas
+      # cualquier fichero a medio escribir, que es justo cuando el paso no deberia
+      # ponerse rojo. El coste de acordarse de anadir aqui el fichero nuevo es
+      # uno; el de que un test se quede sin correr es que nadie se entere.
       #
       # El de tamano va el primero por el mismo motivo que su guard: su bloque
       # de suite real necesita la suite clonada, y el resto tambien.
@@ -222,4 +227,5 @@ jobs:
             tools/auditar_tamano.test.mjs \
             tools/auditar_ignore_oculto.test.mjs \
             tools/auditar_eol.test.mjs \
-            tools/auditar_justificacion_crlf.test.mjs
+            tools/auditar_justificacion_crlf.test.mjs \
+            tools/margenes.test.mjs
