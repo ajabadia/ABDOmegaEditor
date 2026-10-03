@@ -221,6 +221,11 @@ jobs:
       #
       # El de tamano va el primero por el mismo motivo que su guard: su bloque
       # de suite real necesita la suite clonada, y el resto tambien.
+      #
+      # `guards_main.test.mjs` va el ultimo porque NO necesita la suite clonada: monta
+      # la suya propia, en miniatura y con git de verdad, para ejecutar los guards
+      # como proceso hijo y mirar su codigo de salida. Va el ultimo porque es el
+      # que mas tarda, y si el paso se pone rojo antes no hace falta llegar a el.
       - name: Tests de los guards
         run: |
           node --test \
@@ -228,4 +233,5 @@ jobs:
             tools/auditar_ignore_oculto.test.mjs \
             tools/auditar_eol.test.mjs \
             tools/auditar_justificacion_crlf.test.mjs \
-            tools/margenes.test.mjs
+            tools/margenes.test.mjs \
+            tools/guards_main.test.mjs
