@@ -211,7 +211,7 @@ jobs:
       # el runner esa suite solo existe despues del clon. Adelante fallarian
       # por el motivo equivocado.
       #
-      # Un solo paso para los cinco ficheros: `node --test` sale con codigo
+      # Un solo paso para los seis ficheros: `node --test` sale con codigo
       # distinto de cero si alguno falla, que es lo que pone el paso en rojo.
       #
       # Y la lista es explicita a proposito: un `tools/*.test.mjs` traeria de mas
