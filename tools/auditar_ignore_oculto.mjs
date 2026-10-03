@@ -6,8 +6,9 @@
 // Salida:
 //   0  ningun repo ha superado los ficheros tapados que ya tenia (linea base),
 //      ni en la rama que esta desplegada ni en ninguna de las demas
-//   1  un repo tiene MAS ficheros trackeados tapados de los que tenia, o tiene
-//      tapados y no estaba en la linea base
+//   1  un repo tiene MAS ficheros trackeados tapados de los que tenia, tiene
+//      tapados y no estaba en la linea base, o se han auditado menos ramas de las
+//      que deben
 //   2  no se pudo ni siquiera leer uno de los repos (que es otro problema)
 //
 // La linea base esta mas abajo, con el detalle de que regla tapa cada bloque.
@@ -1005,6 +1006,24 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       console.error('');
       console.error('ignore_oculto: se han auditado menos ramas de las que deben: '
         + resumen.porDebajo.join(', ') + '.');
+      console.error('  Ramas auditadas ademas de la desplegada: ' + resumen.auditadas
+        + ', en ' + resumen.repos.length + ' repo(s).');
+      console.error('  Repos que aportan: ' + resumen.repos.join(', ') + '.');
+    }
+
+    // El suelo va en el `exit` y no solo en el informe, igual que en el guard de
+    // EOL. Aqui solo miraban las causas graves, y asi el suelo podia cruzarse sin
+    // poner a nadie en rojo: la puerta avisaba y se dejaba seguir. Un suelo que
+    // avisa y no para nada es un suelo que el proximo commit borra.
+    //
+    // Y cuando se cruza sin ninguna causa grave, no se puede decir POR QUE, que
+    // es justo lo que hace falta para arreglarlo: se ha perdido cobertura en
+    // varias partes a la vez, o los suelos estan altos.
+    if (causasGravesDeRamas.length === 0 && resumen.porDebajo.length > 0) {
+      console.error('');
+      console.error('ignore_oculto: el suelo de ramas se ha cruzado y ningun repo esta por');
+      console.error('  debajo del suyo, asi que no se sabe por que. Se ha perdido');
+      console.error('  cobertura en varias partes a la vez, o los suelos estan altos.');
     }
 
     if (causas.length > 0) {
@@ -1013,7 +1032,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     }
 
     if (empeoran(desviaciones).length > 0 || empeoran(desviacionesDeRamas).length > 0
-        || causasGravesDeRamas.length > 0) {
+        || resumen.porDebajo.length > 0 || causasGravesDeRamas.length > 0) {
       console.error('');
       console.error('ignore_oculto: el guard esta en rojo por lo de arriba, no por la deuda de antes.');
       process.exit(1);
