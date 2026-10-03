@@ -26,6 +26,7 @@ import {
   esBinario, formatea, incumple, juzgaDisco, tablaDeCheckAttr, CR,
   NO_AUDITABLES_TOLERADOS, reglasSinCommitearDe, REGLAS_SIN_COMMITEAR_TOLERADAS,
   auditaArbol, auditaRamas, auditaRamasDeSuite, formateaRamas, ramasDeRepo,
+  resumenDeRamas, RAMAS_AUDITADAS_MINIMAS, REPOS_CON_RAMAS_MINIMOS,
   sinPrefijoDeRef,
   auditaSombras, auditaSombrasDeSuite, anidadosDe, anidadoQueManda, sombrasDe,
   sombrasQuePasan, formateaSombras, SOMBRAS_TOLERADAS
@@ -1553,5 +1554,109 @@ describe('la suite real, que es a quien este guard tiene que vigilar', () => {
     // grande y no cero: cero significaria que el metodo de comparacion no esta
     // comparando nada, que es el modo de fallo silencioso de este guard.
     assert.ok(Number(numeros[1]) > 50, 'solo ' + numeros[1] + ' ficheros con politica anadida');
+  });
+});
+
+/**
+ * El suelo de ramas, que es la puerta que se cierra sola.
+ *
+ * La unidad de estos tests son los BORDES del suelo, no el numero que sale en la
+ * maquina: el numero de ramas depende de lo que la gente haya subido esta
+ * semana, y un test que fija ese numero es un test que un dia se pone rojo solo.
+ */
+describe('el suelo de ramas auditadas', () => {
+  /** `n` ramas inventadas, repartidas entre los repos dados. */
+  function ramasDe (repos, n) {
+    return Array.from({ length: n }, (_, i) => ({
+      repo: repos[i % repos.length],
+      rama: 'origin/r' + i,
+      auditoria: { ficheros: 10, auditados: 2, incumplimientos: [] }
+    }));
+  }
+
+  it('una rama sin ficheros no cuenta: no se ha auditado nada de ella', () => {
+    // El caso limite de una rama que sale de `for-each-ref` pero que no trae
+    // arbol. Contarla haria subir el numero del informe sin que nadie haya
+    // mirado un byte, que es justo lo que este suelo viene a impedir.
+    const vacia = {
+      repo: 'A',
+      rama: 'origin/vacia',
+      auditoria: { ficheros: 0, auditados: 0, incumplimientos: [] }
+    };
+    const conFicheros = {
+      repo: 'A',
+      rama: 'origin/x',
+      auditoria: { ficheros: 10, auditados: 2, incumplimientos: [] }
+    };
+
+    assert.equal(resumenDeRamas([vacia]).auditadas, 0);
+    assert.equal(resumenDeRamas([vacia, conFicheros]).auditadas, 1);
+  });
+
+  it('justo en el suelo no se queja, y una rama menos si', () => {
+    // El borde de verdad, en los dos suelos a la vez: repos de sobra y ramas
+    // justas. Un suelo que saltase en su propio numero no serviria para nada.
+    const enElSuelo = resumenDeRamas(ramasDe(['A', 'B', 'C', 'D'], RAMAS_AUDITADAS_MINIMAS));
+
+    assert.deepEqual(enElSuelo.porDebajo, []);
+    assert.equal(enElSuelo.repos.length, REPOS_CON_RAMAS_MINIMOS + 1);
+
+    const unaMenos = resumenDeRamas(
+      ramasDe(['A', 'B', 'C', 'D'], RAMAS_AUDITADAS_MINIMAS - 1));
+
+    assert.equal(unaMenos.porDebajo.length, 1);
+    assert.match(unaMenos.porDebajo[0],
+      new RegExp('rama\\(s\\) de un suelo de ' + RAMAS_AUDITADAS_MINIMAS));
+  });
+
+  it('un clon de una sola rama es cero de las dos cosas, y se dice', () => {
+    // El caso que motiva el suelo. `git clone --depth 1` sin `--no-single-branch`
+    // se queda con la rama por defecto, que `auditaRepo` ya ha mirado, asi que
+    // aqui no queda ni una: cero ramas y cero repos, sin un solo incumplimiento.
+    const resumen = resumenDeRamas([]);
+
+    assert.equal(resumen.auditadas, 0);
+    assert.deepEqual(resumen.repos, []);
+    assert.equal(resumen.porDebajo.length, 2);
+    assert.match(resumen.porDebajo.join(' '),
+      new RegExp('0 repo\\(s\\) con ramas de un suelo de ' + REPOS_CON_RAMAS_MINIMOS));
+  });
+
+  it('muchas ramas de un solo repo no cumplen el suelo de repos', () => {
+    // El segundo suelo existe por este caso: trece ramas del mismo repo se
+    // saltarian el primero sin que nada mas se quejara, y lo que se ha perdido
+    // es la cobertura de los otros repos.
+    const resumen = resumenDeRamas(ramasDe(['Unico'], 40));
+
+    assert.ok(resumen.auditadas >= RAMAS_AUDITADAS_MINIMAS);
+    assert.equal(resumen.porDebajo.length, 1);
+    assert.match(resumen.porDebajo[0], /1 repo\(s\) con ramas/);
+  });
+
+  it('el informe enseña el suelo y, cuando se cruza, que se ha cruzado', () => {
+    const bien = formateaRamas(ramasDe(['A', 'B', 'C', 'D'], RAMAS_AUDITADAS_MINIMAS + 2)).join('\n');
+
+    assert.match(bien, /de ellas, en repos distintos\s+: 4/);
+    assert.match(bien, new RegExp('suelo de ramas auditadas +: ' + RAMAS_AUDITADAS_MINIMAS));
+    assert.doesNotMatch(bien, /POR DEBAJO/);
+
+    const mal = formateaRamas(ramasDe(['A'], 1)).join('\n');
+
+    assert.match(mal, /POR DEBAJO/);
+  });
+
+  it('la suite real no esta por debajo, con margen', () => {
+    // Ni la lista de repos ni el numero exacto: lo que se comprueba es que el
+    // suelo aguanta en CUALQUIER clon con ramas, que es la unica afirmacion
+    // que es cierta en la maquina y en el runner a la vez.
+    const resumen = resumenDeRamas(auditaRamasDeSuite());
+
+    assert.deepEqual(resumen.porDebajo, [],
+      'el suelo de ramas se ha cruzado en la suite real, y con el numero actual ('
+        + resumen.auditadas + ' ramas en ' + resumen.repos.length + ' repos) el suelo quizas esta alto');
+    assert.ok(resumen.auditadas > RAMAS_AUDITADAS_MINIMAS,
+      'solo ' + resumen.auditadas + ' ramas: el suelo esta pegado al numero real y no avisaria de nada');
+    assert.ok(resumen.repos.length > REPOS_CON_RAMAS_MINIMOS,
+      'solo ' + resumen.repos.length + ' repos con ramas: el suelo de repos tambien esta pegado');
   });
 });
