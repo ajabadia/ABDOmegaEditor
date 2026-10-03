@@ -58,6 +58,12 @@
 // La tabla de abajo es el menor de los dos, repo a repo.
 
 import { auditaRepo, raizDeSuite, reposDeSuite } from './auditar_ignore_oculto.mjs';
+// La lista de repos que tienen que estar vive con la puerta de las ramas, que es
+// donde ya la usan el guard de EOL y el diagnostico. Aqui se reexporta para que
+// quien la importaba de este fichero siga haciendolo.
+import { REPOS_OBLIGATORIOS } from './puertas_de_ramas.mjs';
+
+export { REPOS_OBLIGATORIOS };
 
 /**
  * Cuantos repos tiene que haber, como minimo.
@@ -75,35 +81,7 @@ export const SUELO_REPOS = 14;
  * y es la red de seguridad de las dos cosas: si alguien corrige una cifra de la
  * tabla y se equivoca, el total lo nota igual. Un 4 por ciento de margen sobre la
  * medida mas pobre, y no mas, porque un suelo con margen de sobra no es un suelo.
- */
-export const SUELO_FICHEROS = 11000;
-
-/**
- * Los repos que tienen que estar, por nombre.
- *
- * La cuenta de repos dice CUANTOS hay; esta lista dice COMO SE LLAMAN, que es lo
- * que hace util el aviso. Sin ella, un repo que se renombra y otro que aparece
- * dejan el numero igual y nadie se entera de nada.
- *
- * Los catorce hermanos de siempre. La raiz no esta aqui y no por olvido: se
- * nombra segun la carpeta, que cambia de un entorno a otro.
- */
-export const REPOS_OBLIGATORIOS = [
-  'ABDOmega',
-  'ABDOmegaUnified',
-  'ABDAudioLab',
-  'ABDCZ101',
-  'ABDEep',
-  'ABDJUNiO601',
-  'ABDMS2000',
-  'ABDNeural',
-  'ABDScope',
-  'ABDSharedAssets',
-  'ABDSharedCode',
-  'ABDBankManager',
-  '_specific_example',
-  'abd-ia_synths'
-];
+ */export const SUELO_FICHEROS = 11000;
 
 /**
  * Cuantos ficheros tinha cada repo, como minimo.

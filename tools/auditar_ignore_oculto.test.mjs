@@ -39,8 +39,16 @@ import {
   camposDeCheckIgnore, tapaLosTrackeados, formatea,
   DEUDA_CONOCIDA, comparaConLineaBase, empeoran, formateaDesviaciones, opcionesDeConsola,
   auditaArbol, auditaRamas, auditaRamasDeSuite, peorCasoPorRepo,
-  comparaRamasConLineaBase, formateaRamas
+  comparaRamasConLineaBase, formateaRamas,
+  estadoDeRamasDeSuite, resumenDeRamasAuditadas
 } from './auditar_ignore_oculto.mjs';
+// La puerta se importa por SU nombre y no por el reexport del guard de EOL: si el
+// test la sacara de ahi, un dia el reexport podria desaparecer y estos tests
+// seguirian en verde sin comprobar nada.
+import {
+  auditableDe, diagnosticoDeRamas, formateaDiagnostico, ramasDeRepo, resumenDeRamas,
+  RAMAS_AUDITADAS_MINIMAS, REPOS_CON_RAMAS_MINIMOS, RAMAS_POR_REPO
+} from './puertas_de_ramas.mjs';
 
 /** El separador de `check-ignore -z`, escrito explicitamente. */
 const NUL = '\u0000';
@@ -1192,3 +1200,165 @@ describe('los dientes del techo por repo, con las ramas de verdad', () => {
     }
   });
 });
+
+describe('la misma puerta de ramas que tiene el guard de EOL', () => {
+  /** Una rama auditada con `n` ficheros y `n` tapados. */
+  function rama (repo, nombre, ficheros = 10) {
+    return { repo, rama: nombre, sha: repo + '/' + nombre, auditoria: { ficheros, tapados: 0 } };
+  }
+
+  it('una rama sin ficheros SI cuenta aqui, y es justo lo que cambia', () => {
+    // El fallo de criterio que hace inutil la puerta: una rama con cero ficheros
+    // no ha dejado nada que tapar, asi que contarla seria medir de mas. Este guard
+    // cuenta TAPADOS, y una rama sin ficheros puede tenerlos.
+    const soloVacias = Array.from({ length: 12 }, (_, i) => rama('Repo' + i, 'main', 0));
+
+    assert.equal(resumenDeRamasAuditadas(soloVacias).auditadas, 12);
+    assert.deepEqual(resumenDeRamasAuditadas(soloVacias).porDebajo, []);
+    // Y el mismo input con la cuenta del otro guard NO llega. Por eso cada guard
+    // pasa la suya, y por eso la cuenta se decide en la puerta y no en cada guard.
+    assert.equal(resumenDeRamas(soloVacias).auditadas, 0);
+  });
+
+  it('cada suelo viene de la puerta comun, y cada uno con su pregunta', () => {
+    // Los dos suelos se comprueban por separado porque se cruzan por separado: un
+    // input con pocas ramas de muchos repos cruza el de ramas y respeta el de
+    // repos, y el contrario. Si los dos se midieran con el mismo numero, uno de
+    // los dos avisos no existiria.
+    const pocasDeMuchos = Array.from({ length: 6 }, (_, i) => rama('Repo' + i, 'main'));
+    const muchasDeUno = Array.from({ length: 20 }, (_, i) => rama('Solo', 'r' + i));
+
+    const porRamas = resumenDeRamasAuditadas(pocasDeMuchos).porDebajo.join(' | ');
+    assert.ok(porRamas.includes('de un suelo de ' + RAMAS_AUDITADAS_MINIMAS),
+      'seis ramas de seis repos cruzan el suelo de ramas: ' + porRamas);
+    assert.equal(porRamas.includes('repo(s)'), false,
+      'seis repos no cruzan el suelo de repos: ' + porRamas);
+
+    const porRepos = resumenDeRamasAuditadas(muchasDeUno).porDebajo.join(' | ');
+    assert.ok(porRepos.includes('de un suelo de ' + REPOS_CON_RAMAS_MINIMOS),
+      'veinte ramas de un repo cruzan el suelo de repos: ' + porRepos);
+    assert.equal(porRepos.includes(RAMAS_AUDITADAS_MINIMAS + ' de un suelo'), false,
+      'veinte ramas no cruzan el suelo de ramas: ' + porRepos);
+  });
+
+  it('en el suelo justo no se queja, y una rama menos si', () => {
+    // El borde que hace de puerta: un suelo que salta justo en el limite es un
+    // suelo que ensena a apagarse el dia que se llega.
+    const enElSuelo = Array.from({ length: RAMAS_AUDITADAS_MINIMAS },
+      (_, i) => rama('Repo' + i, 'main'));
+
+    assert.deepEqual(resumenDeRamasAuditadas(enElSuelo).porDebajo, []);
+    assert.equal(resumenDeRamasAuditadas(enElSuelo.slice(1)).porDebajo.length, 1);
+  });
+
+  it('muchas ramas de un solo repo no cumplen el suelo de repos', () => {
+    const resumen = resumenDeRamasAuditadas(
+      Array.from({ length: 20 }, (_, i) => rama('Solo', 'r' + i)));
+
+    assert.deepEqual(resumen.repos, ['Solo']);
+    assert.ok(resumen.porDebajo.join('|').includes('1 repo(s)'),
+      'un repo con veinte ramas no es tres repos con ramas: ' + resumen.porDebajo.join(' | '));
+  });
+});
+
+describe('el diagnostico de por que han bajado las ramas, aqui tambien', () => {
+  // `ABDMS2000` porque es de los cuatro que tienen suelo en la tabla: un repo que
+  // no esta en ella no tiene suelo, y no se puede acusar a uno.
+  const conSuelo = (repo, remotas) => ({ repo, remotas, extra: remotas, esRaiz: false });
+
+  it('cada causa sale con el nombre de ESTE guard, no con el del de EOL', () => {
+    // El detalle que se pierde al copiar: si el prefijo saliera siempre con
+    // `auditar_eol`, el que lee este rojo iria a mirar el log del otro guard, que
+    // en ese momento estaba en verde.
+    const lineas = formateaDiagnostico(
+      diagnosticoDeRamas([conSuelo('ABDMS2000', 1)], ['ABDMS2000']),
+      'ignore_oculto');
+
+    assert.equal(lineas[0], 'ignore_oculto: UNA_SOLO_RAMA');
+    assert.ok(lineas.every((l) => !l.includes('auditar_eol')),
+      'ninguna linea puede nombrar al otro guard: ' + JSON.stringify(lineas));
+    assert.ok(lineas.some((l) => l.includes('ABDMS2000')),
+      'las causas dicen que repos son: ' + JSON.stringify(lineas));
+    assert.ok(lineas.some((l) => l.includes('clone')),
+      'un clon de una sola rama tiene que decir donde se arregla');
+  });
+
+  it('sin prefijo sigue siendo el guard de EOL, que es quien lo usa asi', () => {
+    const lineas = formateaDiagnostico(
+      diagnosticoDeRamas([conSuelo('ABDMS2000', 0)], ['ABDMS2000']));
+
+    assert.equal(lineas[0], 'auditar_eol: SIN_REMOTO');
+  });
+
+  it('un repo de mas avisa pero no pone el guard en rojo', () => {
+    // El borde que decide si el guard es util: un repo nuevo no es un fallo de
+    // cobertura, es la suite creciendo.
+    const causas = diagnosticoDeRamas(
+      [conSuelo('ABDMS2000', 9), conSuelo('Nuevo', 0)], ['ABDMS2000']);
+
+    assert.deepEqual(causas.map((c) => c.codigo), ['REPOS_NUEVOS']);
+    assert.deepEqual(causas.filter((c) => c.grave), []);
+  });
+});
+
+describe('el estado de ramas que ve la puerta, sobre la suite de verdad', () => {
+  const raiz = raizDeSuite();
+  const estado = estadoDeRamasDeSuite(raiz);
+
+  /** El commit de la rama desplegada de un repo, para comparar con sus remotas. */
+  function gitHeadDe (ruta) {
+    return execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ruta, encoding: 'utf8' }).trim();
+  }
+
+  it('la raiz sale marcada como raiz, y solo ella', () => {
+    // El nombre de la carpeta de arriba es el de la suite, no el de un repo: si se
+    // busca en git y se acusa por nombre, el diagnostico se inventa un repo que
+    // falta y que nadie ha quitado de ningun sitio.
+    assert.ok(estado.length > 0, 'la suite tiene que tener repos');
+    assert.equal(estado.filter((e) => e.esRaiz).length, 1);
+    assert.equal(estado[0].esRaiz, true);
+  });
+
+  it('de cada repo dice cuantas ramas tiene y cuantas ha auditado, y nunca mas', () => {
+    for (const e of estado) {
+      assert.equal(typeof e.remotas, 'number', e.repo + ': remotas');
+      assert.equal(typeof e.extra, 'number', e.repo + ': extra');
+      // El techo de la puerta, comprobado de verdad y no de palabra: si `extra`
+      // llegara a ser mayor que `remotas`, la cuenta estaria mintiendo.
+      assert.ok(e.extra <= e.remotas,
+        e.repo + ': no se pueden haber auditado mas ramas de las que hay (' + e.extra + ' de ' + e.remotas + ')');
+    }
+  });
+
+  it('cero auditadas solo puede pasar con repos que no traen nada mas que la desplegada', () => {
+    // Un repo clonado entero trae la rama desplegada apuntando al mismo commit que
+    // `HEAD`, y esa ya esta comprobada: contarla seria medir lo que no se ha
+    // mirado. Por eso `extra` puede ser cero con ramas remotas de sobra.
+    const rutas = new Map(reposDeSuite(raiz).map((r) => [r.split(/[\\/]/).filter((p) => p !== '').pop() || r, r]));
+
+    for (const e of estado) {
+      if (e.extra > 0 || e.esRaiz) continue;
+
+      const remotas = ramasDeRepo(rutas.get(e.repo));
+      assert.ok(remotas.every((r) => r.sha === gitHeadDe(rutas.get(e.repo))),
+        e.repo + ': dice que no ha auditado nada y tiene ramas por auditar');
+      assert.deepEqual(auditableDe(gitHeadDe(rutas.get(e.repo)), remotas), [],
+        e.repo + ': la regla de la puerta dice que si quedan ramas por auditar');
+    }
+  });
+
+  it('los repos con ramas que la puerta no vigila son los que salen como nuevos', () => {
+    // Ninguno puede estar por debajo de un suelo que no tiene: un repo sin suelo en
+    // la tabla no se acusa. Es el borde que hace que anadir un repo no ponga el
+    // guard en rojo por magia.
+    const sinSuelo = estado.filter((e) => !e.esRaiz && RAMAS_POR_REPO[e.repo] === undefined);
+    const causas = diagnosticoDeRamas(estado);
+    const solos = causas.filter((c) => c.codigo !== 'REPOS_NUEVOS');
+
+    for (const e of sinSuelo) {
+      assert.ok(!solos.some((c) => c.repos.includes(e.repo)),
+        e.repo + ': sin suelo en la tabla no puede salir acusado: ' + JSON.stringify(solos));
+    }
+  });
+});
+

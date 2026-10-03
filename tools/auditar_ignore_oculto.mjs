@@ -88,6 +88,11 @@
 // esperando a CI.
 
 import { execFileSync } from 'node:child_process';
+// La puerta de las ramas. Vive fuera porque la comparten este guard y el de EOL, y
+// porque `auditar_eol` ya importa de aqui: si este importase de ahi, los dos se
+// importarian mutuamente. La cabecera de `puertas_de_ramas.mjs` lo explica entero.
+import { auditableDe, diagnosticoDeRamas, formateaDiagnostico, ramasDeRepo,
+  resumenDeRamas } from './puertas_de_ramas.mjs';
 import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync,
   rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -710,6 +715,60 @@ export function auditaRamas (repo, opciones = {}) {
 }
 
 /**
+ * El recuento de ramas de ESTE guard, que cuenta todas las que ha auditado.
+ *
+ * El de EOL cuenta solo las que tienen ficheros, porque para el suyo una rama sin
+ * ficheros no se ha auditado de nada. Aqui no: el recuento de este guard es de
+ * ficheros tapados, y una rama vacia de ficheros puede tenerlos, asi que toda
+ * rama que ha pasado por `auditaArbol` cuenta. Los SUELOS son los mismos, que es
+ * justo lo que hace comparables los dos numeros.
+ *
+ * @param {{repo: string, rama: string, auditoria: object}[]} porRama
+ */
+export function resumenDeRamasAuditadas (porRama) {
+  return resumenDeRamas(porRama, () => true);
+}
+
+/**
+ * De quantas ramas remotas viene cada repo, para la puerta que mide la cobertura.
+ *
+ * `extra` es cuantas de esas se han auditado como ramas, y `remotas` cuantas
+ * existen. La puerta necesita las dos: con cero ramas auditadas no hay ni un solo
+ * incumplimiento posible y este guard sale en verde sin haber mirado nada, que es
+ * el modo de fallo mas barato que tiene un guard.
+ *
+ * LA CUENTA SALE DE `ramasDeRepo`, LA MISMA QUE USA EL GUARD DE EOL, y no de la
+ * lista que este guard audita arriba. Aqui se listan `refs/remotes` enteros y en
+ * corto, y alli solo `refs/remotes/origin`. Son casi lo mismo y no del todo, y si
+ * cada guard contase con el suyo la puerta seria una puerta y su hermana otra:
+ * dos numeros para la misma pregunta. La de la puerta sale del sitio comun.
+ *
+ * @param {string} raiz
+ * @returns {{repo: string, remotas: number, extra: number, esRaiz: boolean}[]}
+ */
+export function estadoDeRamasDeSuite (raiz = raizDeSuite()) {
+  if (raiz === null) {
+    throw new Error('no encuentro la raiz de la suite: no hay ningun ABDSharedAssets por encima '
+      + 'de ' + aqui);
+  }
+
+  return reposDeSuite(raiz).map((repo, i) => {
+    const nombre = repo.split(/[\\/]/).filter((p) => p !== '').pop() || repo;
+    const head = git(repo, ['rev-parse', 'HEAD']).trim();
+    // Una sola llamada: `ramasDeRepo` habla con git, y la lista de ramas no cambia
+    // entre las dos lineas.
+    const remotas = ramasDeRepo(repo);
+
+    return {
+      repo: nombre,
+      remotas: remotas.length,
+      extra: auditableDe(head, remotas).length,
+      esRaiz: i === 0
+    };
+  });
+}
+
+/**
  * Todas las ramas de todos los repos de la suite, en una lista PLANA.
  *
  * Plana y no `{repo: [...]}` porque la pregunta que hay que responder es "que
@@ -933,7 +992,28 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     console.error(formateaDesviaciones(desviacionesDeRamas,
       'en la peor rama de cada repo'));
 
-    if (empeoran(desviaciones).length > 0 || empeoran(desviacionesDeRamas).length > 0) {
+    // Y la MISMA puerta de ramas que tiene el guard de EOL, con los mismos suelo. Y
+    // no como una copia: si el `clone` del workflow se queda sin
+    // `--no-single-branch`, los dos guards se quedan sin ramas a la vez, y con el
+    // `clone` arreglado los dos vuelven a mirarlas. Una puerta aqui distinta de la
+    // de alla no seria una segunda puerta, seria una puerta que se contradice.
+    const resumen = resumenDeRamasAuditadas(porRama);
+    const causas = diagnosticoDeRamas(estadoDeRamasDeSuite(raiz));
+    const causasGravesDeRamas = causas.filter((c) => c.grave);
+
+    if (resumen.porDebajo.length > 0) {
+      console.error('');
+      console.error('ignore_oculto: se han auditado menos ramas de las que deben: '
+        + resumen.porDebajo.join(', ') + '.');
+    }
+
+    if (causas.length > 0) {
+      console.error('');
+      for (const linea of formateaDiagnostico(causas, 'ignore_oculto')) console.error(linea);
+    }
+
+    if (empeoran(desviaciones).length > 0 || empeoran(desviacionesDeRamas).length > 0
+        || causasGravesDeRamas.length > 0) {
       console.error('');
       console.error('ignore_oculto: el guard esta en rojo por lo de arriba, no por la deuda de antes.');
       process.exit(1);
