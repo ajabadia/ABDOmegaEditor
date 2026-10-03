@@ -35,8 +35,30 @@ import { DEUDA_CONOCIDA } from './auditar_ignore_oculto.mjs';
 
 const aqui = dirname(fileURLToPath(import.meta.url));
 
-/** Los guards que se ejecutan como proceso hijo. */
-const GUARDS = ['auditar_ignore_oculto.mjs', 'auditar_eol.mjs'];
+/**
+ * Los guards que se ejecutan como proceso hijo, y lo que TIENEN que salir en una
+ * suite como la que monta este fichero.
+ *
+ * No todos pueden salir en 0, y el motivo esta al lado porque es el que decide si
+ * el arnes sirve: este clon tiene quince repos con un par de ficheros cada uno, y
+ * para `auditar_tamano` eso no es una suite pequena sino una suite ENCOGIDA, que es
+ * justo lo que ese guard existe para detectar. Ponerlo en verde habria sido
+ * falsear el arnes para que todo cuadrase.
+ *
+ * Y `deRamas` dice si este guard lleva la puerta de las ramas. No lo llevan todos, y
+ * esa columna es la que decide quien se puede mirar en la prueba de la puerta y
+ * quien no: un guard que no cuenta ramas sale en 0 con el clon de una sola rama,
+ * y mirarle a el seria preguntar a quien no lo sabe.
+ *
+ * @typedef {{nombre: string, esperado: number, deRamas: boolean}} Guard
+ * @type {Guard[]}
+ */
+const GUARDS = [
+  { nombre: 'auditar_ignore_oculto.mjs', esperado: 0, deRamas: true },
+  { nombre: 'auditar_eol.mjs', esperado: 0, deRamas: true },
+  { nombre: 'auditar_justificacion_crlf.mjs', esperado: 0, deRamas: false },
+  { nombre: 'auditar_tamano.mjs', esperado: 1, deRamas: false }
+];
 
 const temporales = [];
 
@@ -304,21 +326,25 @@ const CON_MINIMO = Object.keys(RAMAS_POR_REPO);
 const SIN_LINEA_BASE = REPOS_OBLIGATORIOS.find((n) => DEUDA_CONOCIDA[n] === undefined);
 
 describe('un guard de verdad, ejecutado de verdad', () => {
-  it('una suite sin nada raro sale en 0, y los dos guards', () => {
+  it('cada guard sale con el codigo que le toca, y dice por que en el 2', () => {
     // LA PRUEBA QUE HACE FALTA. Todo lo demas de este fichero se apoya en esta: si
     // el `main` de un guard tiene un `exit` que lanza, aqui sale con el 2 y el
     // nombre de la excepcion, y se ve sin montar un laboratorio.
     const raiz = suite('verde');
 
     for (const guard of GUARDS) {
-      const { salida, texto } = corre(raiz, guard);
+      const { salida, texto } = corre(raiz, guard.nombre);
 
-      assert.equal(salida, 0,
-        guard + ' deberia salir en 0 sobre una suite limpia, y salio en ' + salida + ':\n' + texto);
+      assert.equal(salida, guard.esperado,
+        guard.nombre + ' deberia salir en ' + guard.esperado + ' con esta suite, y salio en '
+          + salida + ':\n' + texto);
       assert.equal(texto.includes('no se pudo ni siquiera leer la suite'), false,
-        guard + ' no deberia declarar que no puede ni leer una suite que si puede:\n' + texto);
-      assert.equal(texto.includes('el guard esta en rojo'), false,
-        guard + ' no deberia quejarse de nada en una suite limpia:\n' + texto);
+        guard.nombre + ' no deberia declarar que no puede ni leer una suite que si puede:\n' + texto);
+
+      if (guard.esperado === 0) {
+        assert.equal(texto.includes('el guard esta en rojo'), false,
+          guard.nombre + ' no deberia quejarse de nada en una suite limpia:\n' + texto);
+      }
     }
   });
 
@@ -334,40 +360,44 @@ describe('un guard de verdad, ejecutado de verdad', () => {
     copiaGuards(raiz);
 
     for (const guard of GUARDS) {
-      const { salida, texto } = correr(raiz, guard);
+      const { salida, texto } = correr(raiz, guard.nombre);
 
       // Sin `ABDSharedAssets` por encima, `raizDeSuite()` no encuentra la suite.
       assert.equal(salida, 2,
-        guard + ' sin ancla deberia salir en 2, y salio en ' + salida + '\n' + texto);
+        guard.nombre + ' sin ancla deberia salir en 2, y salio en ' + salida + '\n' + texto);
       assert.ok(texto.includes('no se pudo ni siquiera leer la suite'),
-        guard + ' deberia decir que no ha podido ni leer:\n' + texto);
+        guard.nombre + ' deberia decir que no ha podido ni leer:\n' + texto);
       assert.equal(texto.includes('el guard esta en rojo'), false,
-        guard + ' no ha encontrado un hallazgo: es que no ha podido leer.\n' + texto);
+        guard.nombre + ' no ha encontrado un hallazgo: es que no ha podido leer.\n' + texto);
     }
   });
 });
 
 describe('la puerta de las ramas, ejecutada desde el main del guard', () => {
-  it('un clon de una sola rama pone en rojo a los dos guards, y dice cual es el suelo', () => {
+  it('un clon de una sola rama pone en rojo a quien lleva esa puerta, y dice el suelo', () => {
     // El fallo que la puerta existe para cazar: el clon del runner se queda con
     // `--depth 1`, se pierde media suite, y el guard sale en verde sin haber mirado
     // la mitad de lo que deberia.
     const raiz = suiteDeUnaRama();
 
     for (const guard of GUARDS) {
-      const { salida, texto } = corre(raiz, guard);
+      // El de tamano ya esta en rojo por la suite encogida, que es otra cosa, y el
+      // de CRLF no lleva esta puerta: preguntar a cualquiera de los dos por las
+      // ramas seria mirar dos rojos a la vez, o preguntar a quien no lo sabe.
+      if (!guard.deRamas) continue;
+      const { salida, texto } = corre(raiz, guard.nombre);
 
       assert.equal(salida, 1,
-        guard + ' con los repos de minimo de una sola rama deberia salir en 1, y salio en '
+        guard.nombre + ' con los repos de minimo de una sola rama deberia salir en 1, y salio en '
           + salida + '\n' + texto);
       assert.ok(texto.includes('se han auditado menos ramas de las que deben'),
-        guard + ' deberia decir que faltan ramas:\n' + texto);
+        guard.nombre + ' deberia decir que faltan ramas:\n' + texto);
       assert.ok(/de un suelo de \d+/.test(texto),
-        guard + ' deberia decir cual es el suelo que se ha cruzado:\n' + texto);
+        guard.nombre + ' deberia decir cual es el suelo que se ha cruzado:\n' + texto);
       assert.ok(texto.includes(CON_MINIMO[0]),
-        guard + ' deberia nombrar el repo que se ha quedado corto:\n' + texto);
+        guard.nombre + ' deberia nombrar el repo que se ha quedado corto:\n' + texto);
       assert.ok(texto.includes('UNA_SOLO_RAMA'),
-        guard + ' deberia diagnosticar el clon de una sola rama:\n' + texto);
+        guard.nombre + ' deberia diagnosticar el clon de una sola rama:\n' + texto);
     }
   });
 
@@ -437,14 +467,92 @@ describe('un hallazgo de verdad, ejecutado desde el main del guard', () => {
   });
 });
 
+describe('la puerta del encogimiento, ejecutada desde el main de su guard', () => {
+  it('una suite minima ES una suite encogida, y sale en rojo diciendo que hacer', () => {
+    // El unico guard de la lista cuyo 1 es el comportamiento normal con este clon.
+    // Los otros tres miran contenido y aqui no hay nada que mirar; este mira el
+    // denominador, y un denominador de quince repos con un fichero cada uno es
+    // exactamente lo que la puerta existe para frenar.
+    //
+    // Y lo que se comprueba no es solo el codigo: un rojo que no dice QUE hacer es
+    // un rojo que se ignora. Este dice las dos cosas que se pueden hacer, y estan
+    // en el texto porque escribirlas en el codigo no es lo mismo que leerlas.
+    const raiz = suite('verde');
+    const { salida, texto } = corre(raiz, 'auditar_tamano.mjs');
+
+    assert.equal(salida, 1, 'una suite de quince ficheros no puede pasar el suelo de ficheros:\n' + texto);
+    assert.ok(texto.includes('la suite se ha encogido o le falta un repo'),
+      'el rojo tiene que decir que es un encogimiento, no cualquier cosa:\n' + texto);
+    assert.ok(texto.includes('REPOS_OBLIGATORIOS'),
+      'el rojo tiene que decir donde se arregla un repo que falta:\n' + texto);
+    assert.ok(texto.includes('FICHEROS_POR_REPO'),
+      'el rojo tiene que decir donde se arregla un repo que ha perdido ficheros:\n' + texto);
+  });
+});
+
+describe('la puerta de las reglas sin explicar, ejecutada desde el main de su guard', () => {
+  it('una regla eol=crlf sin explicar pone en rojo, y con la explicacion al lado no', () => {
+    // El contrato entero de este guard en un solo caso: se abre sin que nadie
+    // escriba una frase al lado de la regla, y se cierra en cuanto la frase esta.
+    // Se comprueba de las dos formas sobre la MISMA suite y sin memoizar, porque
+    // lo que importa es el cambio de estado entre una corrida y la otra.
+    const raiz = suite('crlf');
+    const ruta = join(raiz, SIN_LINEA_BASE);
+
+    // Sin justificar: la regla sola en su linea.
+    writeFileSync(join(ruta, '.gitattributes'), '*.bat text eol=crlf\n');
+    git(ruta, ['add', '.gitattributes']);
+    git(ruta, ['commit', '-m', 'una regla sin explicar']);
+
+    const rojo = correr(raiz, 'auditar_justificacion_crlf.mjs');
+
+    assert.equal(rojo.salida, 1,
+      'una regla eol=crlf sin frase al lado tiene que parar el guard:\n' + rojo.texto);
+    assert.ok(rojo.texto.includes('sin explicar'),
+      'el rojo tiene que decir que lo que falta es la explicacion:\n' + rojo.texto);
+
+    // Y con la frase en el bloque de encima, que es donde el guard la busca.
+    writeFileSync(join(ruta, '.gitattributes'),
+      '# cmd.exe se rompe con LF en los bloques for y en los goto.\n'
+      + '*.bat text eol=crlf\n');
+    git(ruta, ['commit', '-am', 'y su explicacion']);
+
+    const verde = correr(raiz, 'auditar_justificacion_crlf.mjs');
+
+    assert.equal(verde.salida, 0,
+      'una regla explicada es una puerta cerrada: no puede seguir poniendo en rojo:\n' + verde.texto);
+    assert.ok(verde.texto.includes('toda regla eol=crlf dice por que'),
+      'y tiene que decir que ya estan todas justificadas, no solo callarse:\n' + verde.texto);
+  });
+});
+
 describe('los guards que se ejecutan aqui son los que hay', () => {
+  /** Los guards del repo: los `auditar_*.mjs` que NO son tests. */
+  function guardsDelRepo () {
+    return readdirSync(aqui)
+      .filter((f) => /^auditar_.*\.mjs$/.test(f) && !f.endsWith('.test.mjs'));
+  }
+
   it('la lista no se queda vieja: lo que se ejecuta existe', () => {
-    // Si alguien anade un guard y no lo mete en `GUARDS`, esta prueba lo dice.
-    const enElRepo = readdirSync(aqui).filter((f) => /^auditar_.*\.mjs$/.test(f));
+    // Si alguien borra un guard y no lo quita de `GUARDS`, esta prueba lo dice.
+    const enElRepo = guardsDelRepo();
 
     for (const guard of GUARDS) {
-      assert.ok(enElRepo.includes(guard),
-        'se ejecuta ' + guard + ' y no esta en tools/: la lista de guards esta vieja');
+      assert.ok(enElRepo.includes(guard.nombre),
+        'se ejecuta ' + guard.nombre + ' y no esta en tools/: la lista de guards esta vieja');
+    }
+  });
+
+  it('y ningun guard del repo se queda fuera, que es la mitad de que la lista sirva', () => {
+    // La prueba anterior va en un sentido: lo que esta en la lista existe. Esta va
+    // en el otro, que es el que duele: un guard nuevo sin anadir a la lista se
+    // queda sin ejecutar en el workflow y nadie se entera hasta que se rompe algo.
+    //
+    // Los `.test.mjs` se quedan fuera a proposito, como en `copiaGuards`: un test no
+    // es un guard, y meterlos aqui haria que esta prueba pidiera ejecutarlos.
+    for (const nombre of guardsDelRepo()) {
+      assert.ok(GUARDS.some((g) => g.nombre === nombre),
+        nombre + ' esta en tools/ y no se ejecuta como proceso hijo: anadelo a GUARDS');
     }
   });
 });
