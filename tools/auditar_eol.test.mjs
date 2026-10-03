@@ -32,6 +32,9 @@ import {
   auditaSombras, auditaSombrasDeSuite, anidadosDe, anidadoQueManda, sombrasDe,
   sombrasQuePasan, formateaSombras, SOMBRAS_TOLERADAS
 } from './auditar_eol.mjs';
+// El suelo de ficheros no vive aqui: vive en la puerta del tamano, que es donde
+// se mide y donde se baja cuando un repo se va de la suite.
+import { SUELO_FICHEROS } from './auditar_tamano.mjs';
 
 const temporales = [];
 
@@ -1238,22 +1241,35 @@ describe('la suite real', () => {
     assert.ok(auditados > 500, 'solo ha auditado ' + auditados + ' ficheros');
   });
 
-  it('y de mas de diez mil ficheros trackeados en la suite', () => {
-    // El suelo es el MENOR de los entornos, no el mayor. En la maquina de
-    // desarrollo se ven 16716 ficheros, en el runner sobre `workspace-history`
-    // 11517 y sobre `main` 12307: la maquina tiene historia y ramas que el clon
-    // `--depth 1` no baja. Un suelo de quince mil seria mas exigente que el
-    // runner, y un suelo que el runner no puede cumplir no comprueba nada: en
-    // CI el test falla siempre y nadie lo lee como un suelo, sino como ruido.
+  it('y de todos los ficheros trackeados que la puerta del tamano exige', () => {
+    // El suelo NO es un numero escrito aqui: es `SUELO_FICHEROS`, el mismo que
+    // usa `auditar_tamano.mjs`. Y no por compartir una constante, que eso seria
+    // repetir una cifra en dos sitios, sino por una razon de fondo: este test y
+    // ese guard estan preguntando lo MISMO —cuantos ficheros ve esta puerta— y
+    // un suelo propio por test es un suelo que se queda viejo sin que nadie lo
+    // note. Cuando se baje la puerta por un repo que se va, este test baja con
+    // ella porque no tiene nada que bajar.
     //
-    // Diez mil, y no once, por el mismo motivo que el de arriba: la cifra
-    // depende de que rama esta desplegada (803 ficheros de raiz en `main` contra
-    // trece en `workspace-history`) y de cuantos ficheros trackea cada hermano,
-    // que es un numero que cambia con cada push. Un suelo con un cuatro por
-    // ciento de margen sobre la medida es un suelo que rompe solo.
+    // Lo que mide, con `auditaSuite`, es el mismo `git ls-files` repo a
+    // repo que usa el guard. Medido con el codigo de los dos, con ABDOmega ya
+    // fuera de la suite: 8.336 ficheros en el clon de las ramas por defecto y
+    // 13.647 en la maquina de desarrollo, que tiene historia y ramas de trabajo
+    // que el clon `--depth 1` no baja.
+    //
+    // Un suelo propio habria sido el problema. Diez mil, el que tenia este test,
+    // pasaba en la maquina y en el runner sobre `main`, y en el clon de las
+    // ramas por defecto se quedaba a 1.664 por debajo: un suelo que el entorno
+    // mas pobre no puede cumplir no comprueba nada, porque en CI el test falla y
+    // nadie lo lee como un suelo sino como ruido que hay que silenciar.
+    //
+    // Y lo de `main` se queda aqui como estaba, sin remedir: en `main` la raiz
+    // del workspace es la aplicacion entera (803 ficheros) en vez de trece, y
+    // esa diferencia la hace la rama, no la suite. Un suelo que dependa de eso
+    // es un suelo que mide la rama.
     const ficheros = auditaSuite().reduce((a, r) => a + r.ficheros, 0);
 
-    assert.ok(ficheros > 10000, 'solo ha visto ' + ficheros + ' ficheros trackeados');
+    assert.ok(ficheros >= SUELO_FICHEROS,
+      'solo ha visto ' + ficheros + ' ficheros trackeados, y la puerta del tamano exige ' + SUELO_FICHEROS);
   });
 
   it('y mira al menos diez repos', () => {

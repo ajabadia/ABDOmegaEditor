@@ -1061,20 +1061,34 @@ describe('la suite real, ahora con las ramas de verdad', () => {
       + ' y el techo es ' + DEUDA_CONOCIDA.ABDJUNiO601);
   });
 
-  it('y ABDOmega esta en el techo, que antes no estaba porque no se miraba', () => {
-    // El repo que aparecio al mirar las ramas y que no aparecia antes. Vive en
-    // `_Deprecados/`, su rama desplegada no tiene nada tapado, y en `origin/master`
-    // tiene cuatro. El techo no estaba mal puesto: estaba bien puesto para la
-    // pregunta que se hacia, y la pregunta era incompleta.
-    assert.ok('ABDOmega' in DEUDA_CONOCIDA,
-      'ABDOmega deberia estar en DEUDA_CONOCIDA: su deuda solo se ve en ramas');
+  it('un repo cuya deuda solo sale en las ramas se juzga por su peor rama', () => {
+    // El caso que sostenia ABDOmega y que se va con el: la rama desplegada limpia,
+    // el techo en cero, y cuatro ficheros tapados en una rama que nadie mira. El
+    // techo no estaba mal puesto: estaba bien puesto para la pregunta incompleta.
+    //
+    // Este repo ya no esta en la suite y ningun otro esta en ese estado, asi que
+    // la pregunta se hace con datos inventados. Lo que se comprueba no depende de
+    // quien este en la suite: que gana el peor caso, y que sale la rama de donde
+    // sale el numero, que es lo que hace falta para poder arreglarlo.
+    const tapados = (n) => Array.from({ length: n }, (_, i) => ({ ruta: 'x' + i }));
+    const porRama = [
+      { repo: 'Repo', rama: 'origin/master', sha: 'a', auditoria: { tapados: tapados(4) } },
+      { repo: 'Repo', rama: 'origin/feature/x', sha: 'b', auditoria: { tapados: tapados(2) } }
+    ];
+    const porRepo = [{ repo: 'Repo', tapados: [] }];
 
-    const peor = peorCasoPorRepo(ramasDeLaSuite(true), suiteDesplegada(true));
-    const deOmega = peor.find((p) => p.repo === 'ABDOmega');
+    const peor = peorCasoPorRepo(porRama, porRepo);
 
-    assert.ok(deOmega, 'no se ha encontrado ABDOmega entre los repos');
-    assert.equal(deOmega.tapados, DEUDA_CONOCIDA.ABDOmega,
-      'el techo de ABDOmega tiene que ser su peor rama, no otra cosa');
+    assert.equal(peor.length, 1);
+    assert.equal(peor[0].tapados, 4, 'gana la rama que mas tapados tiene, no la desplegada');
+    assert.equal(peor[0].rama, 'origin/master', 'y se sabe de que rama salio el numero');
+
+    // Con el techo vacio, el(repo sale en rojo como `nuevo`, que es la unica forma
+    // que tiene de aparecer deuda que nunca se ha mirado.
+    const salida = comparaRamasConLineaBase(porRama, {}, porRepo, null);
+
+    assert.deepEqual(salida.map((d) => [d.repo, d.tipo, d.ahora]), [['Repo', 'nuevo', 4]]);
+    assert.equal(salida[0].rama, 'origin/master', 'el rojo dice de que rama son los cuatro');
   });
 
   it('y el techo no se puede vaciar de repos sin que nadie se entere', () => {
@@ -1113,12 +1127,6 @@ describe('la suite real, ahora con las ramas de verdad', () => {
     // Y hay dos repos donde la caja importa, y por motivos DISTINTOS, que es lo que
     // hace que la lista no se pueda fijar entera:
     //
-    //   ABDOmega: viene de las RAMAS. El repo de mentira fija `core.ignorecase` a
-    //     proposito, asi que el numero se mueve en cualquier maquina. Su
-    //     `.gitignore` es `/*` seguido de una negacion con otra caja: en Windows la
-    //     negacion anula la regla y no tapa nada, y en Linux quedan cuatro ficheros
-    //     de `SCRIPTS/`.
-    //
     //   ABDCZ101: viene de la rama DESPLEGADA. `*.syx` tapa 194 ficheros `.SYX`
     //     que Linux no ve. Pero solo se mueve si la maquina que corre el test tiene
     //     un sistema de ficheros que no distingue caja: en el runner las dos
@@ -1126,10 +1134,11 @@ describe('la suite real, ahora con las ramas de verdad', () => {
     //     rama mas, asi que su parte de ramas no existe en ninguno de los dos
     //     entornos.
     //
-    // Por eso lo que se comprueba no es la lista exacta sino sus dos bordes: ABDOmega
-    // esta SIEMPRE — porque su numero sale de un `core.ignorecase` fijado a mano — y
-    // nadie mas puede aparecer. Un repo nuevo que dependa de la caja sale con un
-    // techo que no es comparable entre maquinas, y eso hay que verlo.
+    // Antes habia un segundo repo que se movia, ABDOmega, y se movia SIEMPRE
+    // porque su numero salia de las ramas con `core.ignorecase` fijado a mano. Se ha
+    // ido de la suite por estar deprecado, asi que la lista es mas corta y el caso
+    // de la caja solo se puede comprobar en una maquina: en el runner no se mueve
+    // nadie. Por eso lo que se comprueba es que no aparezca NADIE nuevo.
     const peorConLinux = Object.fromEntries(
       peorCasoPorRepo(ramasDeLaSuite(true), suiteDesplegada(true)).map((p) => [p.repo, p.tapados]));
     const peorConLaMaquina = Object.fromEntries(
@@ -1139,34 +1148,57 @@ describe('la suite real, ahora con las ramas de verdad', () => {
       .filter((repo) => peorConLinux[repo] !== peorConLaMaquina[repo])
       .sort();
 
-    assert.ok(distintos.includes('ABDOmega'),
-      'ABDOmega deberia moverse con la caja en cualquier maquina: su numero sale de las ramas, '
-      + 'donde `core.ignorecase` esta fijado a proposito');
-    assert.deepEqual(distintos.filter((r) => !['ABDCZ101', 'ABDOmega'].includes(r)), [],
+    assert.deepEqual(distintos.filter((r) => r !== 'ABDCZ101'), [],
       'ningun repo mas puede depender de la caja: su techo no seria comparable entre maquinas. '
       + 'Se mueven estos: ' + distintos.join(', '));
 
-    assert.equal(peorConLinux.ABDOmega, DEUDA_CONOCIDA.ABDOmega,
-      'y el techo de ABDOmega tiene que ser el numero de la lectura de Linux, que es la de CI');
+    // Y lo que tiene que ser verdad en los DOS sitios: ningun techo puede estar por
+    // debajo de lo que ve la lectura de Linux, que es la del runner. Un techo mas
+    // bajo que eso no avisa de nada aqui, pero pone el guard en rojo alla.
+    for (const repo of Object.keys(DEUDA_CONOCIDA)) {
+      if (peorConLinux[repo] === undefined) continue;
+
+      assert.ok(DEUDA_CONOCIDA[repo] >= peorConLinux[repo],
+        repo + ': el techo (' + DEUDA_CONOCIDA[repo] + ') esta por debajo de lo que ve el runner ('
+        + peorConLinux[repo] + '), y ahi el guard se pondria en rojo');
+    }
   });
 });
 
 describe('los dientes del techo por repo, con las ramas de verdad', () => {
-  it('bajar el techo de ABDOmega a la mitad lo pone en rojo con el nombre de la rama', () => {
-    // El diente que importa: si alguien baja el techo a la mitad "porque la rama
-    // buena tiene menos", sale en rojo diciendo CUAL rama tiene mas, que es el
-    // dato que hace falta para arreglarlo.
+  it('bajar el techo de un repo que esta en su techo lo pone en rojo con la rama', () => {
+    // El diente que importa: si alguien baja el techo "porque la rama buena tiene
+    // menos", sale en rojo diciendo CUAL rama tiene mas, que es el dato que hace
+    // falta para arreglarlo.
+    //
+    // El techo se baja sobre un repo que HOY esta justo en el suyo, que es donde
+    // bajar un suelo tiene que morder. Antes se usaba ABDOmega y se ha ido de la
+    // suite, asi que el repo se busca en vez de nombrarse: si las tablas cambian y
+    // ya no hay ninguno en su techo, el test lo dice en vez de dar por bueno un
+    // repo que no cumple.
     const porRama = ramasDeLaSuite(true);
-    const conTechoBajado = Object.assign({}, DEUDA_CONOCIDA, { ABDOmega: 1 });
+    const enElTecho = peorCasoPorRepo(porRama, suiteDesplegada(true))
+      .filter((p) => p.tapados > 0
+        && p.repo !== nombreDeLaRaiz()
+        && p.tapados === DEUDA_CONOCIDA[p.repo]);
 
-    const rojas = empeoran(comparaRamasConLineaBase(porRama, conTechoBajado, suiteDesplegada(true), raizDeSuite()));
+    assert.ok(enElTecho.length > 0,
+      'ningun repo con deuda esta justo en su techo: no hay donde probar que bajarlo pone en rojo. '
+      + 'Con techo: ' + JSON.stringify(peorCasoPorRepo(porRama, suiteDesplegada(true))
+        .filter((p) => p.tapados > 0).map((p) => [p.repo, p.tapados, DEUDA_CONOCIDA[p.repo]])));
 
-    // Dos ramas de ABDOmega empatan a cuatro y cual de las dos sale primero no es
-    // un contrato: lo que importa es que salga el repo y una rama, no una rama
-    // concreta. Fijar `origin/master` haria que el test se rompiera el dia que
-    // esa rama se borrara, y seria el test el que estuviera mal.
-    assert.deepEqual(rojas.map((d) => d.repo), ['ABDOmega']);
-    assert.equal(rojas[0].ahora, DEUDA_CONOCIDA.ABDOmega,
+    const elegido = enElTecho[0];
+    const conTechoBajado = Object.assign({}, DEUDA_CONOCIDA, { [elegido.repo]: 1 });
+    const rojas = empeoran(comparaRamasConLineaBase(
+      porRama, conTechoBajado, suiteDesplegada(true), raizDeSuite()));
+
+    // Bajar un techo pone a todos los que lo sobrepasan en rojo, asi que lo que se
+    // mira es el elegido: que sale, con su repo y con una rama. Fijar QUAL rama
+    // haria que el test se rompiera el dia que esa rama se borrara.
+    const delElegido = rojas.filter((d) => d.repo === elegido.repo);
+
+    assert.ok(delElegido.length > 0, elegido.repo + ': con el techo en 1 deberia salir en rojo');
+    assert.equal(delElegido[0].ahora, elegido.tapados,
       'y que salga la deuda REAL de la rama, no la del techo inventado');
   });
 

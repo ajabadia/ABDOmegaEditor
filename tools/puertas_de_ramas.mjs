@@ -69,11 +69,17 @@ function gitOpcional (repo, args, opciones = {}) {
  * que hace util el aviso. Sin ella, un repo que se renombra y otro que aparece
  * dejan el numero igual y nadie se entera de nada.
  *
- * Los catorce hermanos de siempre. La raiz no esta aqui y no por olvido: se
+ * Los trece hermanos de siempre. La raiz no esta aqui y no por olvido: se
  * nombra segun la carpeta, que cambia de un entorno a otro.
+ *
+ * ABDOmega salio de aqui por lo que dice el propio repo: esta deprecado. Lo que hay
+ * es `ABDOmegaUnified`, que es la fusion de los tres proyectos que eran —la web, el
+ * editor y el player—. Mientras esta siga mirando el viejo, el guard decia "falta
+ * un repo" en una maquina donde el repo no faltaba: estaba deprecado y movido, que
+ * es otra cosa. Y mientras siga en la lista de clones del workflow, el runner se
+ * gasta en auditar 3.177 ficheros que nadie va a mantener.
  */
 export const REPOS_OBLIGATORIOS = [
-  'ABDOmega',
   'ABDOmegaUnified',
   'ABDAudioLab',
   'ABDCZ101',
@@ -150,13 +156,17 @@ export const REPOS_CON_RAMAS_MINIMOS = 3;
  * Cuantas ramas remotas deberia traer cada repo que las tiene.
  *
  * MEDIDO, repo a repo, y el numero es el MENOR de los dos entornos: 2 y 2 en
- * ABDAudioLab, 9 y 9 en ABDJUNiO601, 2 y 2 en ABDMS2000, 5 y 5 en ABDOmega. Los
- * demas repos tienen una sola rama en los dos sitios y no aparecen, porque no hay
- * nada que suelo: la mayoria de la suite tiene una rama y seguira teniendola.
+ * ABDAudioLab, 9 y 9 en ABDJUNiO601, 2 y 2 en ABDMS2000. Los demas repos tienen
+ * una sola rama en los dos sitios y no aparecen, porque no hay nada que suelo: la
+ * mayoria de la suite tiene una rama y seguira teniendola.
  *
  * ABDEep no sale porque aqui tiene 1 y alla 2. Es el unico caso en que los dos
  * entornos no coinciden, y poner un suelo de 1 no diria nada; cuando se le borre
  * la segunda, esta tabla es el sitio donde se anota con un comentario.
+ *
+ * ABDOmega no sale porque ya no sale de la suite: esta deprecado y lo que hay es
+ * ABDOmegaUnified, la fusion de los tres proyectos que eran. Un suelo puesto ahi
+ * seria un suelo que esperaria ramas de un repo que no se audita.
  *
  * LA RAIZ NO ESTA. Se llama segun la carpeta y sus ramas remotas dependen de como
  * se clonara este checkout: en la maquina son 3 y en un clon de prueba son 0. Un
@@ -168,8 +178,7 @@ export const REPOS_CON_RAMAS_MINIMOS = 3;
 export const RAMAS_POR_REPO = {
   ABDAudioLab: 2,
   ABDJUNiO601: 9,
-  ABDMS2000: 2,
-  ABDOmega: 5
+  ABDMS2000: 2
 };
 /**
  * Las ramas que hay que auditar: sin la que ya esta comprobada y sin repetir

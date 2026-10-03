@@ -272,13 +272,15 @@ export const DEUDA_CONOCIDA = Object.freeze({
   ABDCZ101: 314,
   ABDJUNiO601: 3951,
   ABDMS2000: 42,
-  // Esta no estaba antes, y no por un cambio en el repo: estaba porque NO SE
-  // MIRABA. ABDOmega vive en `_Deprecados/` y su rama desplegada no tiene nada
-  // tapado, asi que su numero era 0 y de verdad lo era. En `origin/master` y en
-  // `origin/feature/aseptic-rack-stabilization` tiene 4, y todos de la misma
-  // regla `/*` de la linea 2, que se come el repo entero. El 4 es el peor caso
-  // de todas sus ramas, que es lo que compara `comparaRamasConLineaBase`.
-  ABDOmega: 4
+  // ABDOmega estaba aqui con un 4 que se veia solo en sus ramas, y salio porque el
+  // repo salio de la suite: esta deprecado y lo que se mantiene es
+  // `ABDOmegaUnified`, la fusion de la web, el editor y el player. Un techo de un
+  // repo que no se audita es un numero que no vigila nada.
+  //
+  // La coma del ultimo elemento se queda aunque se fuera: un mapa sin coma final
+  // es valido hasta que alguien anade el siguiente, y entonces el fallo sale en la
+  // linea nueva, que es la linea que nadie estaba mirando.
+  //
 });
 
 /**
@@ -552,19 +554,18 @@ export function opcionesDeConsola (args = process.argv.slice(2)) {
 //   ABDJUNiO601 @ origin/fix/webui-final-complete         81
 //   ABDJUNiO601 @ origin/fix/webui-source-only           38
 //   ABDJUNiO601 @ origin/feature/juno-vcf-upgrade        37
-//   ABDOmega    @ origin/feature/aseptic-rack-...         4
-//   ABDOmega    @ origin/master                           4
-//   ABDOmega    @ origin/feat/oscilloscope-...            2
 //
 // De esos 3.951, la rama `main` no tiene NINGUNO. El `.gitignore` que los tapa es
 // el de la rama, y en `main` ese fichero tiene otras reglas. O sea que el guard
 // estaba mirando la rama equivocada sin que se notara, que es la forma mas
 // comoda de tener un punto ciego.
 //
-// Y el caso de ABDOmega es el que mas duele, porque no es el mismo repo grande
-// con mucho de todo: son cuatro ficheros, y no estaban en la linea base porque
-// en ninguna rama desplegada hay deuda ninguna de ABDOmega. El numero de la
-// linea base era 0 y de verdad lo era, para la rama que se miraba.
+// Y este caso es el que mas duele, porque no es el mismo repo grande con mucho de
+// todo: ABDOmega tenia cuatro ficheros tapados repartidos entre ramas, ninguno en
+// la desplegada, y su linea base era 0 y de verdad lo era para la rama que se
+// miraba. Ese repo ya no esta en la suite, pero el caso que ensenaba sigue aqui:
+// cualquier repo puede tener deuda que solo aparece en una rama, y por eso el
+// techo es el peor caso de todas ellas y no el de la que esta delante de los ojos.
 //
 // ─────────────────────────────────────────────────────────────────────────
 // COMO SE PREGUNTA A GIT POR UN ARBOL QUE NADIE HA COMPROBADO

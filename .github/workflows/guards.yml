@@ -28,7 +28,7 @@ permissions:
 
 jobs:
   guards:
-    name: Los tres guards de la raiz
+    name: Los cuatro guards de la raiz
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -46,12 +46,12 @@ jobs:
       #
       # Un matrix de un job por repo parallelismela, y seria lo natural. Pero
       # los guards no son "uno por repo": el de EOL tiene suelos que son sobre
-      # la SUITE entera (mas de quince mil ficheros, mas de diez repos), asi
+      # la SUITE entera (mas de trece mil ficheros, mas de diez repos), asi
       # que un job que mira un solo repo no puede validar nada. Y el informe
       # que interesa es el agregado: "la suite esta limpia", no "ABDEep esta
       # limpio", que es lo que ya dice el push que lo ha causado.
       #
-      # El coste de clonar los quince en un solo job es de unos treinta
+      # El coste de clonar los trece en un solo job es de unos treinta
       # segundos: con `--depth 1` solo baja el arbol actual, y los guards solo
       # necesitan el indice, que es exactamente lo que da un clon superficial.
       #
@@ -121,8 +121,13 @@ jobs:
           # toca en el arbol es lo que hace que el guard lo encuentre como lo
           # que es, un subrepo, y no lo que es en GitHub.
           clonar ABDSynthsWeb/abd-ia_synths   https://github.com/ajabadia/ABDSynthWeb.git
-          clonar _Deprecados/ABDOmega        https://github.com/ajabadia/ABDOmega.git
           clonar _specific_example           https://github.com/specific-dev/examples.git
+
+          # ABDOmega no se clona, y es a proposito. Esta deprecado: lo que hay es
+          # `ABDOmegaUnified`, la fusion de los tres proyectos que eran. Clonarlo
+          # cuesta 3.177 ficheros que nadie mantiene, y mientras estuviera en la
+          # lista de `REPOS_OBLIGATORIOS` el runner gastaba el tiempo de todos los
+          # guards en algo que ya no se vigila.
 
           if [ "$fallos" -ne 0 ]; then
             echo
@@ -174,13 +179,13 @@ jobs:
       # primero convierte "el guard ha pasado" en una afirmacion sobre la suite
       # entera y no sobre el trozo que se ha podido bajar.
       #
-      # Y va DESPUES del paso de clon, que es donde se sabe que estan los quince
+      # Y va DESPUES del paso de clon, que es donde se sabe que estan los trece
       # repos. Antes de ese paso solo existe la raiz, que en esta rama son trece
       # ficheros, y el suelo global lo pondria en rojo siempre.
       #
       # Los suelos son el MENOR de los dos entornos, medido con este mismo codigo:
-      # 15 repos y 11.513 ficheros en el clon de las ramas por defecto, y 15 y
-      # 16.773 en la maquina de desarrollo, que trabaja en ramas de desarrollo y
+      # 14 repos y 8.336 ficheros en el clon de las ramas por defecto, y 14 y
+      # 13.647 en la maquina de desarrollo, que trabaja en ramas de desarrollo y
       # por eso ve mas. Un suelo medido solo aqui haria fallar a este runner en
       # cada push, que es el error que ya se cometio una vez con el suelo de
       # ficheros auditados del guard de EOL.
