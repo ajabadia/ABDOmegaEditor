@@ -25,7 +25,8 @@
 import { describe, it, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { copyFileSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, cpSync, mkdirSync, mkdtempSync, readdirSync, rmSync,
+  writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -81,6 +82,18 @@ function git (cwd, args) {
 }
 
 /**
+ * Un commit con la identidad puesta EN EL COMANDO.
+ *
+ * La identidad va como `-c` y no como dos `git config` de por medio porque son dos
+ * llamadas menos por repo, y aqui se montan quince. El repo queda igual, con el
+ * mismo autor, que es lo unico que le importa a nadie.
+ */
+function commita (cwd, args) {
+  return git(cwd, ['-c', 'user.email=prueba@abadsynths.local',
+    '-c', 'user.name=prueba', ...args]);
+}
+
+/**
  * Un repo con un commit, y opcionalmente con su remoto.
  *
  * El remoto es lo unico que hace que existan `refs/remotes/origin/*`, y por tanto lo
@@ -105,25 +118,25 @@ function repo (dondePadre, nombre, ramasExtra = 0) {
     git(dondePadre, ['init', '-b', 'main', ruta]);
   }
 
-  git(ruta, ['config', 'user.email', 'prueba@abadsynths.local']);
-  git(ruta, ['config', 'user.name', 'prueba']);
-
   writeFileSync(join(ruta, 'leeme.txt'), 'fichero de ' + nombre + '\n');
   git(ruta, ['add', '.']);
-  git(ruta, ['commit', '-m', 'el primero']);
+  commita(ruta, ['commit', '-m', 'el primero']);
 
   if (!conRemoto) return ruta;
-
-  git(ruta, ['push', 'origin', 'main']);
 
   for (let i = 0; i < ramasExtra; i++) {
     git(ruta, ['checkout', '-b', 'rama' + i]);
     writeFileSync(join(ruta, 'leeme.txt'), 'fichero ' + i + ' de ' + nombre + '\n');
-    git(ruta, ['commit', '-am', 'la rama ' + i]);
-    git(ruta, ['push', 'origin', 'rama' + i]);
+    commita(ruta, ['commit', '-am', 'la rama ' + i]);
   }
 
   git(ruta, ['checkout', 'main']);
+
+  // Un `push --all` en vez de uno por rama. Los refs que quedan en
+  // `refs/remotes/origin` son los mismos, que es lo unico que mira el guard, y son
+  // tres llamadas de git menos por rama. Montar la suite es la parte cara de este
+  // arnes y por eso se recorta aqui.
+  git(ruta, ['push', 'origin', '--all']);
 
   return ruta;
 }
@@ -163,7 +176,7 @@ function copiaGuards (raiz) {
 }
 
 /**
- * Una suite minima con la puerta de ramas en verde.
+ * Monta una suite minima con la puerta de ramas en verde. Se llama UNA vez.
  *
  * Los repos llevan los nombres de `REPOS_OBLIGATORIOS`, y los que la puerta les
  * pone un minimo se les dan JUSTO ese minimo de ramas remotas, ni una mas. El
@@ -172,18 +185,14 @@ function copiaGuards (raiz) {
  * no es el de los guards. Es ademas el reparto mas barato: cada rama de mas es una
  * auditoria entera mas que el guard tiene que hacer.
  *
- * @param {{extra?: number}} opciones `extra` de ramas de mas en el repo mas grande.
  * @returns {string} la raiz de la suite.
  */
-function suiteEnVerde (opciones = {}) {
+function construyeSuite () {
   const base = temporal();
   const raiz = join(base, 'suite');
-  const extra = opciones.extra === undefined ? 0 : opciones.extra;
 
   mkdirSync(raiz);
   git(base, ['init', '-b', 'main', raiz]);
-  git(raiz, ['config', 'user.email', 'prueba@abadsynths.local']);
-  git(raiz, ['config', 'user.name', 'prueba']);
 
   // La raiz tambien es un repo que el guard audita, y le hace `rev-parse HEAD`
   // como a los demas. Sin ningun commit no hay HEAD, y ahi se va por el 2 de "no se
@@ -191,19 +200,22 @@ function suiteEnVerde (opciones = {}) {
   // pueda leer, no una que se rompa por el camino.
   writeFileSync(join(raiz, 'raiz.txt'), 'la raiz de la suite\n');
   git(raiz, ['add', 'raiz.txt']);
-  git(raiz, ['commit', '-m', 'la raiz']);
+  commita(raiz, ['commit', '-m', 'la raiz']);
 
   for (const nombre of REPOS_OBLIGATORIOS) {
     // Solo los repos con minimo necesitan remoto y ramas; el resto pueden quedarse
     // en `main`, que es lo mas barato de montar y no estorba a ninguna puerta.
+    //
+    // De los que si lo tienen, uno va POR ENCIMA de su minimo y los demas van
+    // JUSTO en el. Asi la misma suite mira los dos bordes sin gastar otra: que
+    // estar pegado a la puerta no pone a nadie en rojo, y que sobrar tampoco. Con
+    // todos justos se pierde el segundo, y con todos por encima se pierde el
+    // primero.
     const minimo = RAMAS_POR_REPO[nombre];
-    repo(raiz, nombre, minimo === undefined ? 0 : minimo - 1);
-  }
 
-  if (extra > 0) {
-    // Las ramas de mas van a un repo que ya trae, rehecho desde cero porque no se
-    // pueden anadir ramas a un clon ya montado y porque el remoto se genera con el.
-    rehace(raiz, CON_MINIMO[0], RAMAS_POR_REPO[CON_MINIMO[0]] - 1 + extra);
+    repo(raiz, nombre, minimo === undefined
+      ? 0
+      : minimo + (nombre === CON_MINIMO[0] ? 1 : 0));
   }
 
   copiaGuards(raiz);
@@ -211,25 +223,48 @@ function suiteEnVerde (opciones = {}) {
   return raiz;
 }
 
-/** Borra un repo con su remoto y lo vuelve a montar, para cambiarle las ramas. */
-function rehace (raiz, nombre, ramasExtra) {
-  rmSync(join(raiz, nombre), { recursive: true, force: true });
-  rmSync(join(raiz, nombre + '-origen.git'), { recursive: true, force: true });
-  repo(raiz, nombre, ramasExtra);
+/**
+ * LA SUITE BASE, montada una sola vez para todo el fichero.
+ *
+ * Montar quince repos con git es la parte cara de este arnes, y todos los
+ * escenarios que hacen falta salen de la misma suite: el que cambia es lo que se le
+ * rompe encima, no la suite. Asi que se monta una vez y se copia.
+ *
+ * @returns {string} la raiz de la suite base, que es de solo lectura para los tests.
+ */
+let baseDeSuite;
+
+function suiteBase () {
+  if (baseDeSuite === undefined) baseDeSuite = construyeSuite();
+  return baseDeSuite;
 }
 
 /**
- * Las suites, montadas una vez y compartidas por los tests que las necesitan.
+ * Una variante de la suite base, en su propio temporal.
  *
- * Montar quince repos con git cuesta mas que correr un guard, y varios tests
- * miran la MISMA suite. Sin esto el fichero tardaba cuatro minutos; con esto, cada
- * suite se paga una vez y cada guard se corre una vez por suite.
+ * COPIA el arbol entero, repos y remotos incluidos. La copia va sin coste util de
+ * red porque los repos son de un par de ficheros, y con una garantia que importa:
+ * cada variante parte de la suite en verde, asi que si un test rompe la base por
+ * error, el siguiente escenario no hereda el roto.
+ *
+ * @param {string} clave nombre del escenario, que es su clave de memoria.
+ * @param {(raiz: string) => void} [rompe] lo que se le rompe encima, una sola vez.
+ * @returns {string} la raiz de la variante.
  */
-const suites = new Map();
+const variantes = new Map();
 
-function suite (clave, opciones = {}) {
-  if (!suites.has(clave)) suites.set(clave, suiteEnVerde(opciones));
-  return suites.get(clave);
+function variante (clave, rompe) {
+  if (!variantes.has(clave)) {
+    const raiz = join(temporal(), 'suite');
+
+    cpSync(suiteBase(), raiz, { recursive: true });
+
+    if (rompe !== undefined) rompe(raiz);
+
+    variantes.set(clave, raiz);
+  }
+
+  return variantes.get(clave);
 }
 
 /**
@@ -243,14 +278,9 @@ function suite (clave, opciones = {}) {
  * @returns {string} la raiz de la suite.
  */
 function suiteDeUnaRama () {
-  if (!suites.has('una-rama')) {
-    const raiz = suiteEnVerde();
-
+  return variante('una-rama', (raiz) => {
     for (const nombre of CON_MINIMO) dejaSoloLaDesplegada(raiz, nombre);
-    suites.set('una-rama', raiz);
-  }
-
-  return suites.get('una-rama');
+  });
 }
 
 /**
@@ -260,13 +290,11 @@ function suiteDeUnaRama () {
  * @returns {string} la raiz de la suite.
  */
 function suiteConTapados () {
-  if (!suites.has('tapado')) {
-    const raiz = suiteEnVerde();
-
+  return variante('tapado', (raiz) => {
     assert.ok(SIN_LINEA_BASE !== undefined,
       'todos los repos de la suite tienen ya linea base de tapados: este arnes necesita '
       + 'uno sin ella para poder comprobar que la deuda nueva se ve en rojo, y no se '
-      + 'puede inventar el nombre porque la puerta accuse alrepo que falte');
+      + 'puede inventar el nombre porque la puerta acuse al repo que falte');
 
     const ruta = join(raiz, SIN_LINEA_BASE);
 
@@ -274,12 +302,8 @@ function suiteConTapados () {
     mkdirSync(join(ruta, 'tapados'));
     writeFileSync(join(ruta, 'tapados', 'secreto.txt'), 'no deberia estar trackeado\n');
     git(ruta, ['add', '-f', '.gitignore', 'tapados/secreto.txt']);
-    git(ruta, ['commit', '-m', 'un fichero tapado y trackeado']);
-
-    suites.set('tapado', raiz);
-  }
-
-  return suites.get('tapado');
+    commita(ruta, ['commit', '-m', 'un fichero tapado y trackeado']);
+  });
 }
 
 /**
@@ -330,7 +354,7 @@ describe('un guard de verdad, ejecutado de verdad', () => {
     // LA PRUEBA QUE HACE FALTA. Todo lo demas de este fichero se apoya en esta: si
     // el `main` de un guard tiene un `exit` que lanza, aqui sale con el 2 y el
     // nombre de la excepcion, y se ve sin montar un laboratorio.
-    const raiz = suite('verde');
+    const raiz = suiteBase();
 
     for (const guard of GUARDS) {
       const { salida, texto } = corre(raiz, guard.nombre);
@@ -420,7 +444,7 @@ describe('la puerta de las ramas, ejecutada desde el main del guard', () => {
   it('sobran ramas NO pone a nadie en rojo: la puerta perdona lo que sobra', () => {
     // El otro borde, y el que hace que la puerta no sea una trampa: mas ramas de las
     // de la tabla no es un problema, es la suite creciendo o un repo nuevo.
-    const raiz = suite('sobran', { extra: 25 });
+    const raiz = suiteBase();
     const { salida, texto } = corre(raiz, 'auditar_ignore_oculto.mjs');
 
     assert.equal(salida, 0, 'con ramas de sobra no deberia quejarse:\n' + texto);
@@ -457,7 +481,7 @@ describe('un hallazgo de verdad, ejecutado desde el main del guard', () => {
     // que la linea base real, asi que el informe sale lleno de "ha BAJADO" y aun asi
     // el guard esta en verde. Es el mismo `exit` que la prueba de arriba, y por eso
     // no hace falta montar otra suite para decirlo.
-    const raiz = suite('verde');
+    const raiz = suiteBase();
     const { salida, texto } = corre(raiz, 'auditar_ignore_oculto.mjs');
 
     assert.equal(salida, 0,
@@ -477,7 +501,7 @@ describe('la puerta del encogimiento, ejecutada desde el main de su guard', () =
     // Y lo que se comprueba no es solo el codigo: un rojo que no dice QUE hacer es
     // un rojo que se ignora. Este dice las dos cosas que se pueden hacer, y estan
     // en el texto porque escribirlas en el codigo no es lo mismo que leerlas.
-    const raiz = suite('verde');
+    const raiz = suiteBase();
     const { salida, texto } = corre(raiz, 'auditar_tamano.mjs');
 
     assert.equal(salida, 1, 'una suite de quince ficheros no puede pasar el suelo de ficheros:\n' + texto);
@@ -496,13 +520,13 @@ describe('la puerta de las reglas sin explicar, ejecutada desde el main de su gu
     // escriba una frase al lado de la regla, y se cierra en cuanto la frase esta.
     // Se comprueba de las dos formas sobre la MISMA suite y sin memoizar, porque
     // lo que importa es el cambio de estado entre una corrida y la otra.
-    const raiz = suite('crlf');
+    const raiz = variante('crlf');
     const ruta = join(raiz, SIN_LINEA_BASE);
 
     // Sin justificar: la regla sola en su linea.
     writeFileSync(join(ruta, '.gitattributes'), '*.bat text eol=crlf\n');
     git(ruta, ['add', '.gitattributes']);
-    git(ruta, ['commit', '-m', 'una regla sin explicar']);
+    commita(ruta, ['commit', '-m', 'una regla sin explicar']);
 
     const rojo = correr(raiz, 'auditar_justificacion_crlf.mjs');
 
@@ -515,7 +539,7 @@ describe('la puerta de las reglas sin explicar, ejecutada desde el main de su gu
     writeFileSync(join(ruta, '.gitattributes'),
       '# cmd.exe se rompe con LF en los bloques for y en los goto.\n'
       + '*.bat text eol=crlf\n');
-    git(ruta, ['commit', '-am', 'y su explicacion']);
+    commita(ruta, ['commit', '-am', 'y su explicacion']);
 
     const verde = correr(raiz, 'auditar_justificacion_crlf.mjs');
 
