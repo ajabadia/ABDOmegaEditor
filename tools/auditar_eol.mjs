@@ -128,6 +128,10 @@ import { basename, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 import { raizDeSuite, reposDeSuite } from './auditar_ignore_oculto.mjs';
+// La lista de repos que tienen que estar la escribe el guard de tamaño y se
+// reusa aqui sin copiarla: dos listas de catorce nombres en dos ficheros son
+// catorce formas de que una se quede vieja y el otro guard no se entere.
+import { REPOS_OBLIGATORIOS } from './auditar_tamano.mjs';
 
 /** El caracter que se busca en los blobs. Va como argumento, no en el patron. */
 export const CR = '\r';
@@ -1385,27 +1389,53 @@ export function auditaArbol (repo, rama) {
  * @returns {{rama: string, sha: string, auditoria: object}[]}
  */
 export function auditaRamas (repo) {
-  const head = gitOpcional(repo, ['rev-parse', 'HEAD']).trim();
-  const vistos = new Set([head]);
-
-  return ramasDeRepo(repo)
-    // Se salta la rama que esta comprobada y las que apuntan al mismo commit que
-    // otra ya auditada. ABDOmega tiene `origin/master` y `origin/feat/...` con el
-    // mismo commit, y auditar las dos es medir lo mismo dos veces.
-    .filter((r) => !vistos.has(r.sha) && vistos.add(r.sha))
-    .map((r) => ({ ...r, auditoria: auditaArbol(repo, r.rama) }));
+  return detalleDeRamas(repo).ramas;
 }
 
 /**
- * Todas las ramas de todos los repos de la suite.
+ * Las ramas de un repo, con las REMOTAS y no solo las que hay que auditar.
  *
- * Es una lista PLANA y no un `{repo: [...]}` porque el repositorio va dentro de
- * cada rama: la pregunta que hace falta responder es "que rama rompe que", no
- * "que repos tienen ramas que rompen", y una lista plana se puede ordenar por la
- * gravedad sin aplanar nada.
+ * El numero de ramas remotas de un repo es lo que separa "este clon se ha hecho
+ * de una sola rama" de "a este repo le han borrado ramas": las dos cosas bajan el
+ * recuento de la suite y solo una tiene arreglo cambiando el `clone`. Por eso
+ * `auditaRamas` no alcanza y hace falta esta otra, que trae la cuenta entera.
+ *
+ * @param {string} repo ruta absoluta del repositorio.
+ * @returns {{remotas: number, ramas: {rama: string, sha: string, auditoria: object}[]}}
+ */
+export function detalleDeRamas (repo) {
+  const head = gitOpcional(repo, ['rev-parse', 'HEAD']).trim();
+  const vistos = new Set([head]);
+  const todas = ramasDeRepo(repo);
+
+  return {
+    remotas: todas.length,
+    ramas: todas
+      // Se salta la rama que esta comprobada y las que apuntan al mismo commit
+      // que otra ya auditada. ABDOmega tiene `origin/master` y `origin/feat/...`
+      // con el mismo commit, y auditar las dos es medir lo mismo dos veces.
+      .filter((r) => !vistos.has(r.sha) && vistos.add(r.sha))
+      .map((r) => ({ ...r, auditoria: auditaArbol(repo, r.rama) }))
+  };
+}
+
+/**
+ * Todas las ramas de todos los repos de la suite, y el estado de cada repo.
+ *
+ * `porRama` es una lista PLANA y no un `{repo: [...]}` porque el repositorio va
+ * dentro de cada rama: la pregunta que hace falta responder es "que rama rompe
+ * que", no "que repos tienen ramas que rompen", y una lista plana se puede
+ * ordenar por la gravedad sin aplanar nada.
+ *
+ * `estado` es lo otro, y no es un adorno: un repo con UNA sola rama no aparece
+ * en `porRama` —la que se trae es la comprobada y ya esta auditada—, y sin
+ * `estado` un clon entero de una sola rama seria indistinguible de una suite sin
+ * repos. Cada entrada lleva `esRaiz` porque la raiz se llama segun la carpeta y
+ * sus ramas remotas dependen de como se clonara este checkout, no de la suite.
  *
  * @param {string} raiz
- * @returns {{repo: string, rama: string, auditoria: object}[]}
+ * @returns {{porRama: {repo: string, rama: string, auditoria: object}[],
+ *            estado: {repo: string, remotas: number, extra: number, esRaiz: boolean}[]}}
  */
 export function auditaRamasDeSuite (raiz = raizDeSuite()) {
   if (raiz === null) {
@@ -1413,16 +1443,20 @@ export function auditaRamasDeSuite (raiz = raizDeSuite()) {
   }
 
   const porRama = [];
+  const estado = [];
 
-  for (const repo of reposDeSuite(raiz)) {
+  reposDeSuite(raiz).forEach((repo, i) => {
     const nombre = basename(repo.replace(/[\\/]+$/, '')) || repo;
+    const detalle = detalleDeRamas(repo);
 
-    for (const r of auditaRamas(repo)) {
+    estado.push({ repo: nombre, remotas: detalle.remotas, extra: detalle.ramas.length, esRaiz: i === 0 });
+
+    for (const r of detalle.ramas) {
       porRama.push({ repo: nombre, rama: r.rama, auditoria: r.auditoria });
     }
-  }
+  });
 
-  return porRama;
+  return { porRama, estado };
 }
 
 /**
@@ -1475,6 +1509,157 @@ export function resumenDeRamas (porRama) {
   }
 
   return { auditadas: conFicheros.length, repos, porDebajo };
+}
+
+/**
+ * Cuantas ramas remotas deberia traer cada repo que las tiene.
+ *
+ * MEDIDO, repo a repo, y el numero es el MENOR de los dos entornos: 2 y 2 en
+ * ABDAudioLab, 9 y 9 en ABDJUNiO601, 2 y 2 en ABDMS2000, 5 y 5 en ABDOmega. Los
+ * demas repos tienen una sola rama en los dos sitios y no aparecen, porque no hay
+ * nada que suelo: la mayoria de la suite tiene una rama y seguira teniendola.
+ *
+ * ABDEep no sale porque aqui tiene 1 y alla 2. Es el unico caso en que los dos
+ * entornos no coinciden, y poner un suelo de 1 no diria nada; cuando se le borre
+ * la segunda, esta tabla es el sitio donde se anota con un comentario.
+ *
+ * LA RAIZ NO ESTA. Se llama segun la carpeta y sus ramas remotas dependen de como
+ * se clonara este checkout: en la maquina son 3 y en un clon de prueba son 0. Un
+ * suelo puesto ahi seria un suelo que solo es cierto en un sitio.
+ *
+ * Para cuando un repo pierde ramas de verdad se baja el numero aqui, en el mismo
+ * commit que las borra, que es la manera de que bajarlo cueste un commit.
+ */
+export const RAMAS_POR_REPO = {
+  ABDAudioLab: 2,
+  ABDJUNiO601: 9,
+  ABDMS2000: 2,
+  ABDOmega: 5
+};
+
+/**
+ * POR QUE han bajado las ramas, que es lo que de verdad hace falta contestar.
+ *
+ * "Se han auditado menos ramas" no sirve de nada: hay cuatro motivos distintos y
+ * solo uno tiene el mismo arreglo.
+ *
+ *   - el clon se hizo de UNA SOLA rama, y el arreglo es volver a clonar con
+ *     `--no-single-branch`. Es el caso caro, porque no se ve mirando el numero:
+ *     un repo con una rama es lo normal en catorce de los quince.
+ *   - un repo que estaba en la lista ya NO ESTA en el clon, y ahi lo que falta no
+ *     son ramas sino el repo entero.
+ *   - le han BORRADO ramas de verdad a un repo, que se distingue del primer caso
+ *     porque sigue teniendo mas de una.
+ *   - y un repo NUEVO que no esta en la lista, que no es un fallo sino la puerta
+ *     de al lado: la lista se queda vieja y el suelo de repos de otro guard
+ *     empezara a pickar.
+ *
+ * Cada causa lleva `grave` porque la cuarta no pone el guard en rojo sola: un repo
+ * nuevo es lo que tiene que pasar, y lo que hay que hacer es anadirlo a la lista.
+ *
+ * @param {{repo: string, remotas: number, extra: number, esRaiz: boolean}[]} estado
+ * @param {string[]} esperados los repos que tienen que estar.
+ * @returns {{codigo: string, grave: boolean, repos: string[], detalle: string}[]}
+ */
+export function diagnosticoDeRamas (estado, esperados = REPOS_OBLIGATORIOS) {
+  const hermanos = estado.filter((e) => !e.esRaiz);
+  const enDisco = new Set(hermanos.map((e) => e.repo));
+
+  const faltan = esperados.filter((n) => !enDisco.has(n));
+  const nuevos = hermanos.map((e) => e.repo).filter((n) => !esperados.includes(n));
+
+  const sinRemoto = [];
+  const unaSola = [];
+  const borradas = [];
+
+  for (const e of hermanos) {
+    const minimo = RAMAS_POR_REPO[e.repo];
+
+    // Un repo que no esta en la tabla no tiene suelo: no hay nada que quedarse
+    // corto y no se puede inventar. Se pasa, y punto.
+    if (minimo === undefined || e.remotas >= minimo) continue;
+
+    if (e.remotas === 0) sinRemoto.push(e);
+    else if (e.remotas === 1) unaSola.push(e);
+    else borradas.push(e);
+  }
+
+  const causas = [];
+
+  if (faltan.length > 0) {
+    causas.push({
+      codigo: 'REPOS_FALTANTES',
+      grave: true,
+      repos: faltan,
+      detalle: 'no estan en el clon. O el workflow no los clona, o se han renombrado.'
+    });
+  }
+
+  if (sinRemoto.length > 0) {
+    causas.push({
+      codigo: 'SIN_REMOTO',
+      grave: true,
+      repos: sinRemoto.map((e) => e.repo),
+      detalle: 'no traen ninguna rama remota: no son clones de nada, o el remoto se ha borrado.'
+    });
+  }
+
+  if (unaSola.length > 0) {
+    causas.push({
+      codigo: 'UNA_SOLO_RAMA',
+      grave: true,
+      repos: unaSola.map((e) => e.repo),
+      detalle: unaSola.map((e) => e.repo + ' trae ' + e.remotas + ' de un minimo de '
+        + RAMAS_POR_REPO[e.repo]).join(', ')
+        + '. Es la firma de un clon con `--depth 1` sin `--no-single-branch`.'
+    });
+  }
+
+  if (borradas.length > 0) {
+    causas.push({
+      codigo: 'RAMAS_BORRADAS',
+      grave: true,
+      repos: borradas.map((e) => e.repo),
+      detalle: borradas.map((e) => e.repo + ' trae ' + e.remotas + ' de un minimo de '
+        + RAMAS_POR_REPO[e.repo]).join(', ')
+        + '. Trae mas de una, luego el clon no es de una sola: se han borrado ramas.'
+    });
+  }
+
+  if (nuevos.length > 0) {
+    causas.push({
+      codigo: 'REPOS_NUEVOS',
+      grave: false,
+      repos: nuevos,
+      detalle: 'estan en la suite y no en REPOS_OBLIGATORIOS. Anadirlos a esa lista.'
+    });
+  }
+
+  return causas;
+}
+
+/**
+ * El aviso del diagnostico, que es lo que sale en rojo y no el numero solo.
+ *
+ * @param {{codigo: string, grave: boolean, repos: string[], detalle: string}[]} causas
+ * @returns {string[]}
+ */
+export function formateaDiagnostico (causas) {
+  const lineas = [];
+
+  for (const c of causas) {
+    lineas.push('auditar_eol: ' + (c.grave ? '' : 'aviso: ') + c.codigo);
+    lineas.push('  ' + c.detalle);
+    lineas.push('  Repos: ' + c.repos.join(', ') + '.');
+  }
+
+  if (causas.some((c) => c.codigo === 'UNA_SOLO_RAMA')) {
+    lineas.push('  Para verlo de otro modo: en el workflow, la linea 97 es el `git clone`');
+    lineas.push('  de la suite. Sin `--no-single-branch` se queda con la rama por');
+    lineas.push('  defecto de cada repo y las ramas de mas nunca llegan al runner.');
+  }
+
+  return lineas;
 }
 
 /**
@@ -1535,7 +1720,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     // comprobado. Se audita UNA vez y se imprime lo mismo que se juzga, porque un
     // informe que dice una cosa y el veredicto decide sobre otra es peor que no
     // tener informe.
-    const porRama = auditaRamasDeSuite();
+    const { porRama, estado } = auditaRamasDeSuite();
 
     console.log('');
     console.log(formateaRamas(porRama).join('\n'));
@@ -1545,9 +1730,15 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     // El suelo de ramas. Va en el `exit` y no solo en el informe porque el
     // incumplimiento que cuenta aqui es el de NO HABER MIRADO: con cero ramas
     // extra no hay ni un solo incumplimiento posible y el guard sale en verde
-    // sin haber mirado nada. Lo normal es que salte por un clon de una sola
-    // rama, que es como se clonea sin querer.
+    // sin haber mirado nada.
+    //
+    // Y el suelo solo dice QUE. El diagnostico dice POR QUE, que es lo unico que
+    // hace falta para arreglarlo: se ha clonado de una sola rama, falta un repo
+    // entero, o le han borrado ramas a uno. Se mira siempre, y no solo cuando el
+    // total cae, porque un repo puede perder ramas y el total no enterarse.
     const resumenRamas = resumenDeRamas(porRama);
+    const causas = diagnosticoDeRamas(estado);
+    const causasGraves = causas.filter((c) => c.grave);
 
     if (resumenRamas.porDebajo.length > 0) {
       console.error('');
@@ -1555,13 +1746,21 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
         + resumenRamas.porDebajo.join(', ') + '.');
       console.error('  Ramas auditadas ademas de la desplegada: ' + resumenRamas.auditadas
         + ', en ' + resumenRamas.repos.length + ' repo(s).');
-      console.error('  Si el clon se hizo con `--depth 1` sin `--no-single-branch`, se');
-      console.error('  queda con la rama por defecto y este numero es 0. El guard no');
-      console.error('  puede saber si es eso o que de verdad se han borrado las ramas:');
-      console.error('  por eso avisa en vez de saltarse el numero.');
       if (resumenRamas.repos.length > 0) {
         console.error('  Repos que aportan: ' + resumenRamas.repos.join(', ') + '.');
       }
+    }
+
+    if (causasGraves.length === 0 && resumenRamas.porDebajo.length > 0) {
+      console.error('');
+      console.error('auditar_eol: el suelo de ramas se ha cruzado y ningun repo esta por');
+      console.error('  debajo del suyo, asi que no se sabe por que. Se ha perdido');
+      console.error('  cobertura en varias partes a la vez, o los suelos estan altos.');
+    }
+
+    if (causas.length > 0) {
+      console.error('');
+      for (const linea of formateaDiagnostico(causas)) console.error(linea);
     }
 
     // Y el caso inverso de la puerta de las reglas sin commitear: un
@@ -1609,7 +1808,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
 
     if (demasiados > 0 || sinAuditar > NO_AUDITABLES_TOLERADOS || ramasMalas.length > 0
         || reglasQuePasan.length > 0 || sombrasQueSeCuelan.length > 0
-        || resumenRamas.porDebajo.length > 0) {
+        || resumenRamas.porDebajo.length > 0 || causasGraves.length > 0) {
       console.error('');
       console.error('auditar_eol: ' + demasiados + ' incumplimiento(s), ' + sinAuditar
         + ' no auditable(s) de un tope de ' + NO_AUDITABLES_TOLERADOS + '.');
