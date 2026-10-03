@@ -1426,6 +1426,58 @@ export function auditaRamasDeSuite (raiz = raizDeSuite()) {
 }
 
 /**
+ * Cuantas ramas tienen que auditarse para que el recuento signifique algo.
+ *
+ * MEDIDO. En un clon con `--no-single-branch`, que es como lo hace el workflow,
+ * son 13 ramas en 5 repos. En la maquina, con los mismos repos y las mismas
+ * ramas mas lo que se haya traido otros dias, 15 en 6. Los suelos se ponen en 8
+ * y en 3, no mas arriba, porque un suelo pegado al numero real no te avisa de
+ * nada: solo se ajusta cuando alguien borra ramas de verdad, y entonces con un
+ * comentario al lado diciendo cuantas y por que.
+ *
+ * UN CLON DE UNA SOLA. `git clone --depth 1` sin `--no-single-branch` se queda
+ * con la rama por defecto, y como la que esta comprobada ya la audita
+ * `auditaRepo`, el recuento de ramas EXTRA cae a cero. Con cero, todo lo de
+ * arriba sale en verde: cero incumplimientos, porque no se ha mirado nada. Es el
+ * modo de fallo mas barato que tiene un guard —dar verde por no mirar—, y por eso
+ * el suelo esta en el `exit`, no solo en el informe.
+ *
+ * POR QUE HAY DOS SUELOS Y NO UNO. Con trece ramas todas de un solo repo el
+ * primero se cumple y la cobertura se ha perdido igual: ABDJUNiO601 se come
+ * nueve de trece. El segundo mira cuantos repos aportan, que es lo que de
+ * verdad dice que la puerta sigue abierta en mas de un sitio.
+ */
+export const RAMAS_AUDITADAS_MINIMAS = 8;
+export const REPOS_CON_RAMAS_MINIMOS = 3;
+
+/**
+ * El recuento de ramas, y si ha caído por debajo del suelo.
+ *
+ * Se cuentan las ramas CON FICHEROS y no todas las que aparecen en
+ * `refs/remotes`: las que son el mismo commit que la comprobada ya las quita
+ * `auditaRamas`, y una rama sin arbol no se ha auditado. Contarla seria medir lo
+ * contrario de lo que dice el nombre.
+ *
+ * @param {{repo: string, rama: string, auditoria: object}[]} porRama
+ * @returns {{auditadas: number, repos: string[], porDebajo: string[]}}
+ */
+export function resumenDeRamas (porRama) {
+  const conFicheros = porRama.filter((r) => r.auditoria.ficheros > 0);
+  const repos = [...new Set(conFicheros.map((r) => r.repo))].sort();
+  const porDebajo = [];
+
+  if (conFicheros.length < RAMAS_AUDITADAS_MINIMAS) {
+    porDebajo.push(conFicheros.length + ' rama(s) de un suelo de ' + RAMAS_AUDITADAS_MINIMAS);
+  }
+
+  if (repos.length < REPOS_CON_RAMAS_MINIMOS) {
+    porDebajo.push(repos.length + ' repo(s) con ramas de un suelo de ' + REPOS_CON_RAMAS_MINIMOS);
+  }
+
+  return { auditadas: conFicheros.length, repos, porDebajo };
+}
+
+/**
  * El informe de las ramas, que se lee pegado al de la suite.
  *
  * Lo que sale por defecto es solo el RESUMEN: de 27 ramas, una linea con 27
@@ -1439,12 +1491,17 @@ export function auditaRamasDeSuite (raiz = raizDeSuite()) {
 export function formateaRamas (porRama) {
   const conFicheros = porRama.filter((r) => r.auditoria.ficheros > 0);
   const conIncidencias = porRama.filter((r) => r.auditoria.incumplimientos.length > 0);
+  const resumen = resumenDeRamas(porRama);
 
   const lineas = [
     'ramas auditadas ademas de la que esta deployada : ' + conFicheros.length,
     '  de ellas, con regla eol declarada           : '
       + conFicheros.filter((r) => r.auditoria.auditados > 0).length,
-    '  incumplimientos de EOL en alguna rama       : ' + conIncidencias.length
+    '  de ellas, en repos distintos                : ' + resumen.repos.length,
+    '  incumplimientos de EOL en alguna rama       : ' + conIncidencias.length,
+    '  suelo de ramas auditadas                    : ' + RAMAS_AUDITADAS_MINIMAS
+      + ' en ' + REPOS_CON_RAMAS_MINIMOS + ' repo(s)'
+      + (resumen.porDebajo.length > 0 ? '  <- POR DEBAJO' : '')
   ];
 
   for (const r of conIncidencias) {
@@ -1484,6 +1541,28 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     console.log(formateaRamas(porRama).join('\n'));
 
     const ramasMalas = porRama.filter((r) => r.auditoria.incumplimientos.length > 0);
+
+    // El suelo de ramas. Va en el `exit` y no solo en el informe porque el
+    // incumplimiento que cuenta aqui es el de NO HABER MIRADO: con cero ramas
+    // extra no hay ni un solo incumplimiento posible y el guard sale en verde
+    // sin haber mirado nada. Lo normal es que salte por un clon de una sola
+    // rama, que es como se clonea sin querer.
+    const resumenRamas = resumenDeRamas(porRama);
+
+    if (resumenRamas.porDebajo.length > 0) {
+      console.error('');
+      console.error('auditar_eol: se han auditado menos ramas de las que deben: '
+        + resumenRamas.porDebajo.join(', ') + '.');
+      console.error('  Ramas auditadas ademas de la desplegada: ' + resumenRamas.auditadas
+        + ', en ' + resumenRamas.repos.length + ' repo(s).');
+      console.error('  Si el clon se hizo con `--depth 1` sin `--no-single-branch`, se');
+      console.error('  queda con la rama por defecto y este numero es 0. El guard no');
+      console.error('  puede saber si es eso o que de verdad se han borrado las ramas:');
+      console.error('  por eso avisa en vez de saltarse el numero.');
+      if (resumenRamas.repos.length > 0) {
+        console.error('  Repos que aportan: ' + resumenRamas.repos.join(', ') + '.');
+      }
+    }
 
     // Y el caso inverso de la puerta de las reglas sin commitear: un
     // `.gitattributes` MAS CERCANO que le roba la politica a la raiz. No es un
@@ -1529,7 +1608,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     }
 
     if (demasiados > 0 || sinAuditar > NO_AUDITABLES_TOLERADOS || ramasMalas.length > 0
-        || reglasQuePasan.length > 0 || sombrasQueSeCuelan.length > 0) {
+        || reglasQuePasan.length > 0 || sombrasQueSeCuelan.length > 0
+        || resumenRamas.porDebajo.length > 0) {
       console.error('');
       console.error('auditar_eol: ' + demasiados + ' incumplimiento(s), ' + sinAuditar
         + ' no auditable(s) de un tope de ' + NO_AUDITABLES_TOLERADOS + '.');
