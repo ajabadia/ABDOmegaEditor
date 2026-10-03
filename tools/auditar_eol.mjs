@@ -1786,6 +1786,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       console.error('  diga por que: es una regla deliberada, no un olvido.');
     }
 
+    const deLaMismaParte = (donde) => porRepo.reduce((a, r) => a
+      + r.incumplimientos.filter((i) => i.donde === donde).length, 0);
     const demasiados = porRepo.reduce((a, r) => a + r.incumplimientos.length, 0);
     const sinAuditar = porRepo.reduce((a, r) => a + r.noAuditables.length, 0);
 
@@ -1812,6 +1814,15 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       console.error('');
       console.error('auditar_eol: ' + demasiados + ' incumplimiento(s), ' + sinAuditar
         + ' no auditable(s) de un tope de ' + NO_AUDITABLES_TOLERADOS + '.');
+      const delDisco = deLaMismaParte('disco');
+
+      if (delDisco > 0) {
+        console.error('  De esos, ' + delDisco + (delDisco === 1 ? ' es del DISCO' : ' son del DISCO')
+          + ': el arbol de trabajo de alguien, no el repo. Git no lo ve —sale');
+        console.error('  `git status` limpio— porque normaliza el CRLF antes de comparar,');
+        console.error('  y el runner no tiene nada de eso: su disco es el blob. En rojo');
+        console.error('  local no es un guard roto; en el runner, si aparece, si lo es.');
+      }
       if (ramasMalas.length > 0) {
         console.error('  y ' + ramasMalas.length + ' rama(s) con incumplimientos: '
           + ramasMalas.map((r) => r.repo + ' @ ' + r.rama).join(', ') + '.');
