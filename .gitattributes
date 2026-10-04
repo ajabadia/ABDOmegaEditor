@@ -1,10 +1,10 @@
 # Una sola regla, y por que este fichero existe en la raiz del workspace.
 #
-# Este repositorio versiona diecinueve ficheros y todos son de texto: un
+# Este repositorio versiona veintiuno ficheros y todos son de texto: un
 # `.gitattributes`, un `.gitignore`, un README, un workflow, tres ficheros de
-# configuracion del workspace y los doce de `tools/`. Con `core.autocrlf=true`
-# en la maquina, un checkout aqui pone CRLF en el arbol de trabajo mientras el
-# blob esta en LF.
+# configuracion del workspace y los catorce de `tools/`. Con
+# `core.autocrlf=true` en la maquina, un checkout aqui pone CRLF en el arbol de
+# trabajo mientras el blob esta en LF.
 #
 # Y eso no se ve: `git diff` normaliza antes de comparar y sale vacio, asi que el
 # fichero se va ensuciando en disco sin que ninguna puerta se entere. Es el caso
@@ -22,5 +22,5 @@
 # hay por encima. De los trece repos hermanos, seis declaran alguna regla `eol`
 # —ABDAudioLab, ABDEep, ABDNeural, ABDOmegaUnified, ABDSharedAssets y
 # ABDSharedCode— y siete no declaran ninguna; esto deja de ser cierto solo para
-# estos diecinueve ficheros, y el resto sigue como estaba.
+# estos veintiuno ficheros, y el resto sigue como estaba.
 * text=auto eol=lf

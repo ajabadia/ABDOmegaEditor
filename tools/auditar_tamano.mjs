@@ -33,10 +33,10 @@
 // El repositorio raiz se nombra como se llame la carpeta donde esta, que en la
 // maquina de desarrollo es `ABDSynths`, en el runner es el nombre del repo, y en
 // cualquiera de los dos puede ser otra cosa. Ademas su tamano depende de que rama
-// esta desplegada: trece ficheros en `workspace-history` y ochocientos en `main`,
-// porque `main` es la aplicacion entera. Un suelo para la raiz habria que medirlo
-// con dos cifras y no significaria nada. La raiz se cuenta y se informa, pero no
-// se juzga por tamano; lo que la protege es estar en la cuenta de repos.
+// esta desplegada: veintiuno ficheros en `workspace-history` y ochocientos en
+// `main`, porque `main` es la aplicacion entera. Un suelo para la raiz habria que
+// medirlo con dos cifras y no significaria nada. La raiz se cuenta y se informa,
+// pero no se juzga por tamano; lo que la protege es estar en la cuenta de repos.
 //
 // ─────────────────────────────────────────────────────────────────────────
 // LOS SUELOS SON EL MENOR DE LOS DOS ENTORNOS, NO EL DE UNO

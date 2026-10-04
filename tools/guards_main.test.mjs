@@ -58,7 +58,15 @@ const GUARDS = [
   { nombre: 'auditar_ignore_oculto.mjs', esperado: 0, deRamas: true },
   { nombre: 'auditar_eol.mjs', esperado: 0, deRamas: true },
   { nombre: 'auditar_justificacion_crlf.mjs', esperado: 0, deRamas: false },
-  { nombre: 'auditar_tamano.mjs', esperado: 1, deRamas: false }
+  { nombre: 'auditar_tamano.mjs', esperado: 1, deRamas: false },
+  // Esta no lleva la puerta de las ramas porque no la lleva: mira los BYTES de
+  // los ficheros de la raiz, no los repos ni sus ramas. Sale en 0 con esta suite
+  // porque en la raiz solo hay un fichero trackeado, `raiz.txt`, y esta en LF.
+  //
+  // Y entra en la lista por el mismo motivo que las otras, que es que el arnes
+  // tiene una prueba que falla si un `auditar_*.mjs` se queda fuera: un guard
+  // sin ejecutar aqui es un guard que se rompe sin que nada se entere.
+  { nombre: 'auditar_texto.mjs', esperado: 0, deRamas: false }
 ];
 
 const temporales = [];

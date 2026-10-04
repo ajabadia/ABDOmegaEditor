@@ -98,13 +98,16 @@ git push                              # la rama local ya hace upstream a origin/
 node --test tools/auditar_ignore_oculto.test.mjs       # 33 tests
 node --test tools/auditar_eol.test.mjs                 # 57 tests
 node --test tools/auditar_justificacion_crlf.test.mjs  # 28 tests
+node --test tools/auditar_texto.test.mjs               # 24 tests
 
 node tools/auditar_ignore_oculto.mjs        # que ningun fichero trackeado este tapado por .gitignore
 node tools/auditar_eol.mjs                  # que ningun fichero incumpla la regla eol que declara
 node tools/auditar_justificacion_crlf.mjs   # que ninguna regla eol=crlf entre sin su porque
+node tools/auditar_tamano.mjs               # que la suite no se haya encogido en silencio
+node tools/auditar_texto.mjs                # que no haya bytes invisibles ni caracteres raros en este repo
 ```
 
-Los tres se ejecutan tambien en cada push, en
+Los cinco se ejecutan tambien en cada push, en
 [.github/workflows/guards.yml](.github/workflows/guards.yml), que corre en
 Linux. No es un duplicado por si acaso: hay diferencias que en Windows no se
 ven. La maquina de desarrollo tiene `core.ignorecase=true`, asi que el

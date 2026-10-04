@@ -165,18 +165,18 @@ describe('el suelo, con numeros inventados', () => {
   });
 
   it('la raiz no se juzga por tamano, porque su tamano depende de la rama desplegada', () => {
-    // En `workspace-history` la raiz son trece ficheros; en `main` es la
+    // En `workspace-history` la raiz son veintiuno ficheros; en `main` es la
     // aplicacion entera y son ochocientos. Un suelo para la raiz habria que
     // medirlo con dos cifras y no significaria nada. Se cuenta y se informa, y
     // nada mas.
     const entrada = medidoSano();
-    entrada.push({ repo: 'laRaiz', ficheros: 13, esRaiz: true });
+    entrada.push({ repo: 'laRaiz', ficheros: 21, esRaiz: true });
 
     const informe = comparaConSuelo(entrada);
 
     const totalDeLaTabla = Object.values(FICHEROS_POR_REPO).reduce((a, n) => a + n, 0);
 
-    assert.equal(informe.total, totalDeLaTabla + 13);
+    assert.equal(informe.total, totalDeLaTabla + 21);
     assert.deepEqual(informe.encogidos, []);
     assert.equal(falla(informe), false);
   });
@@ -393,7 +393,7 @@ describe('y el paso de CI existe, que sin el esto no vigila nada', () => {
   it('el workflow ejecuta este guard', () => {
     // Un guard que nadie ejecuta es documentacion con teeth. Ademas el paso tiene
     // que ir DESPUES del paso que clona la suite: si va antes, solo ve la raiz
-    // con trece ficheros y falla siempre.
+    // con veintiuno ficheros y falla siempre.
     const workflow = join(raizDeSuite(), '.github', 'workflows', 'guards.yml');
 
     assert.ok(existsSync(workflow), 'no se encuentra el workflow de los guards');

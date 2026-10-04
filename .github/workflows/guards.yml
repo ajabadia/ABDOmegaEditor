@@ -216,7 +216,7 @@ jobs:
       # el runner esa suite solo existe despues del clon. Adelante fallarian
       # por el motivo equivocado.
       #
-      # Un solo paso para los seis ficheros: `node --test` sale con codigo
+      # Un solo paso para los siete ficheros: `node --test` sale con codigo
       # distinto de cero si alguno falla, que es lo que pone el paso en rojo.
       #
       # Y la lista es explicita a proposito: un `tools/*.test.mjs` traeria de mas
@@ -224,8 +224,21 @@ jobs:
       # ponerse rojo. El coste de acordarse de anadir aqui el fichero nuevo es
       # uno; el de que un test se quede sin correr es que nadie se entere.
       #
-      # El de tamano va el primero por el mismo motivo que su guard: su bloque
-      # de suite real necesita la suite clonada, y el resto tambien.
+      # `auditar_texto` es la EXCEPCION a que esto sea un paso de tests y nada
+      # mas, y va antes de `node --test` por un motivo concreto: mira bytes, y un
+      # byte raro en un fichero de `tools/` no da un test rojo, da un test que
+      # NO SE VE porque el fallo estaba en una cadena de texto o en un salto de
+      # linea. Lo que hace falta en ese caso es que el paso se ponga en el
+      # primer comando y no despues de cuatro minutos de suite.
+      #
+      # No es un quinto guard de la suite, y por eso no es un paso propio: mira
+      # los ficheros de ESTE repositorio y no necesita que esten los trece
+      # repos clonados. Es la unica de las cinco que funciona igual en un
+      # checkout a pelo.
+      #
+      # El de tamano va el primero de los tests por el mismo motivo que su
+      # guard: su bloque de suite real necesita la suite clonada, y el resto
+      # tambien.
       #
       # `guards_main.test.mjs` va el ultimo porque NO necesita la suite clonada: monta
       # la suya propia, en miniatura y con git de verdad, para ejecutar los guards
@@ -233,7 +246,10 @@ jobs:
       # que mas tarda, y si el paso se pone rojo antes no hace falta llegar a el.
       - name: Tests de los guards
         run: |
+          set -euo pipefail
+          node tools/auditar_texto.mjs
           node --test \
+            tools/auditar_texto.test.mjs \
             tools/auditar_tamano.test.mjs \
             tools/auditar_ignore_oculto.test.mjs \
             tools/auditar_eol.test.mjs \
