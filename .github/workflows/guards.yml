@@ -232,9 +232,16 @@ jobs:
       # primer comando y no despues de cuatro minutos de suite.
       #
       # No es un quinto guard de la suite, y por eso no es un paso propio: mira
-      # los ficheros de ESTE repositorio y no necesita que esten los trece
+      # los BYTES de los ficheros de `tools/` y no necesita que esten los trece
       # repos clonados. Es la unica de las cinco que funciona igual en un
       # checkout a pelo.
+      #
+      # Y de `tools/` y no de todo el indice del repositorio, que es lo que
+      # parece lo natural. En `main` este mismo repo trae detras la aplicacion
+      # entera, y medido ahi: 306 de sus 810 ficheros versionados tienen
+      # caracteres que no son de aqui y NINGUNO esta en `tools/`. Son del
+      # OMEGA Manifest Editor —su doble raya de tabla en los CSS, sus
+      # emojis— y juzgarlos aqui seria medir un proyecto que no es este.
       #
       # El de tamano va el primero de los tests por el mismo motivo que su
       # guard: su bloque de suite real necesita la suite clonada, y el resto

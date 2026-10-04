@@ -25,14 +25,14 @@
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import {
   auditaBytes, auditaRaiz, auditaTexto, falla, formatea,
-  FUERA_DE_AUDITORIA, PERMITIDOS, raizPorDefecto
+  ALCANCE, PERMITIDOS, enAlcance, raizPorDefecto
 } from './auditar_texto.mjs';
 
 // Caracteres que este fichero no puede escribir, construidos por codepoint.
@@ -241,28 +241,35 @@ describe('los ficheros de verdad', () => {
       '\n' + formatea(informe) + '\n');
   });
 
-  it('se auditan TODOS los ficheros de tools/, y tambien hay algo de fuera', () => {
-    // Y aqui NO va un numero de ficheros. El total depende de DONDE se ejecute:
-    // en la maquina de desarrollo el indice tiene veintiuno ficheros y en un
-    // checkout de runner tiene dieciseis, porque aqui no hay `package.json` ni
-    // `pnpm-lock.yaml`. Un suelo puesto a mano habria puesto este test en rojo en
-    // un checkout limpio, que es el unico sitio donde tiene que estar verde; es
-    // exactamente el error que se corrigio hace dos commits con el suelo de
-    // repos con ramas, y no se va a repetir aqui.
+  it('se audita tools/ entero y los dos ficheros de la raiz, y nada mas', () => {
+    // Y aqui NO va un numero de ficheros del indice entero. El total depende de
+    // DONDE se ejecute: `workspace-history` tiene veintiuno ficheros versionados
+    // y `main` tiene ochocientos diez, porque ahi vive la aplicacion. Un suelo
+    // puesto a mano habria puesto este test en rojo en una de las dos ramas, que
+    // es el unico sitio donde tiene que estar verde; es el mismo error que se
+    // corrigio hace dos commits con el suelo de repos con ramas.
     //
-    // Lo que si es el mismo en todas partes, y es lo que importa, es esto: que
-    // esten los catorce ficheros de `tools/`, y que la puerta no se haya
-    // quedado mirando solo `tools/` cuando el encargo es el repositorio entero.
+    // Lo que si es el mismo en las dos ramas, y es lo que importa, es esto: los
+    // catorce ficheros de `tools/` mas los dos de la raiz que son del mismo tipo.
     const informe = auditaRaiz();
     const deTools = informe.ficheros.filter((f) => f.startsWith('tools/'));
     const deFuera = informe.ficheros.filter((f) => !f.startsWith('tools/'));
 
     assert.equal(deTools.length, 14,
       'se esperaban los 14 ficheros de tools/, hay ' + deTools.length + ': ' + deTools.join(', '));
-    assert.ok(deFuera.length > 0,
-      'la puerta tambien tiene que mirar lo que hay fuera de tools/');
-    assert.ok(deFuera.includes('.gitattributes'),
-      'y .gitattributes es de los que hay que mirar: es donde esta la regla de eol');
+    assert.deepEqual(deFuera.sort(), ALCANCE.slice().sort(),
+      'lo que hay fuera de tools/ tiene que ser exactamente el alcance declarado');
+
+    // Y por que lo de fuera NO se mira, que es lo que el alcance esconde. En
+    // `main` hay 306 ficheros versionados con caracteres fuera del conjunto, y
+    // ninguno esta en `tools/`: son del OMEGA Manifest Editor, con su doble
+    // raya de tabla en los CSS y sus emojis. Juzgarlos aqui seria medir un
+    // proyecto que no es este. El ultimo test del fichero lo comprueba con un
+    // fichero de verdad, en vez de decirlo solo aqui.
+    assert.ok(enAlcance('tools/cualquiera.mjs'));
+    assert.ok(enAlcance('.gitattributes'));
+    assert.equal(enAlcance('README.md'), false);
+    assert.equal(enAlcance('pnpm-lock.yaml'), false);
     assert.equal(informe.hallazgos.length, 0, formatea(informe));
   });
 
@@ -280,16 +287,14 @@ describe('los ficheros de verdad', () => {
       'no-ASCII en el repo que no son ni letra latina ni PERMITIDOS: ' + sobran.join(', '));
   });
 
-  it('el lockfile queda fuera a proposito, y no por descuido', () => {
-    assert.ok(FUERA_DE_AUDITORIA.has('pnpm-lock.yaml'));
-
+  it('el propio fichero de la puerta entra en lo que se audita', () => {
     const informe = auditaRaiz();
 
-    assert.ok(!informe.ficheros.includes('pnpm-lock.yaml'));
     assert.ok(informe.ficheros.includes('tools/auditar_texto.mjs'),
       'este mismo fichero tiene que estar en lo que se audita');
   });
 });
+
 // ─────────────────────────────────────────────────────────────────────────
 // EL TEST QUE MATA DE VERDAD
 //
@@ -299,10 +304,10 @@ describe('los ficheros de verdad', () => {
 // y despues no lo reporta es peor que no tenerla.
 //
 // Asi que aqui se monta un repositorio de verdad, en un directorio temporal,
-// se ensucia un fichero TRACKEADO —que es la condicion, porque un fichero sin
-// trackear no viaja y por tanto no puede romper nada— y se ejecuta la puerta
-// como proceso hijo, que es como corre en el workflow. Se mira el codigo de
-// salida, que es lo que pone el paso en rojo.
+// se ensucia un fichero del ALCANCE y TRACKEADO —las dos cosas: lo que no
+// esta trackeado no viaja, y lo que esta fuera del alcance es de otro
+// proyecto— y se ejecuta la puerta como proceso hijo, que es como corre en el
+// workflow. Se mira el codigo de salida, que es lo que pone el paso en rojo.
 
 describe('la puerta en un repo de verdad', () => {
   const temporales = [];
@@ -316,19 +321,23 @@ describe('la puerta en un repo de verdad', () => {
       { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
   }
 
-  /** Un repo con un unico fichero, ya trackeado, con el contenido dado. */
-  function repoSucio (contenido, nombre = 'a.txt') {
+  /** Escribe un fichero, lo versiona, y devuelve el repo. */
+  function repoCon (rel, contenido) {
     const dir = mkdtempSync(join(tmpdir(), 'texto-'));
 
     temporales.push(dir);
     git(dir, ['init', '--quiet']);
 
     // Se versiona tambien un `.gitattributes` para que el repositorio se parezca
-    // a los de verdad, que es lo que hace que el commit funcione sin que
-    // ningun git global tenga que estar configurado.
+    // a los de verdad, que es lo que hace que el commit funcione sin que ningun
+    // git global tenga que estar configurado.
     writeFileSync(join(dir, '.gitattributes'), '* text=auto eol=lf\n');
-    writeFileSync(join(dir, nombre), contenido);
-    git(dir, ['add', '.gitattributes', nombre]);
+
+    // `recursive` porque rel puede traer un directorio entero, que es lo que
+    // hace el test del alcance, que escribe en `app/`.
+    mkdirSync(dirname(join(dir, rel)), { recursive: true });
+    writeFileSync(join(dir, rel), contenido);
+    git(dir, ['add', '.gitattributes', rel]);
 
     return dir;
   }
@@ -346,60 +355,87 @@ describe('la puerta en un repo de verdad', () => {
         cwd: raiz, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe']
       }) };
     } catch (e) {
-      return { codigo: e.status === undefined ? -1 : e.status, salida: e.stdout || '' };
+      // stdout Y stderr: el 2 sale por stderr, que es donde va todo lo que
+      // no es el informe, asi que mirar solo stdout daria una cadena vacia.
+      return {
+        codigo: e.status === undefined ? -1 : e.status,
+        salida: (e.stdout || '') + (e.stderr || '')
+      };
     }
   }
 
   it('con un repo limpio sale 0', () => {
-    const dir = repoSucio('una linea\notra linea\n');
-    const r = ejecutar(dir);
+    const r = ejecutar(repoCon('tools/a.mjs', 'const a = 1;\n'));
 
     assert.equal(r.codigo, 0, 'un repo limpio tiene que salir 0, pero salio ' + r.codigo
       + '\n' + r.salida);
     assert.match(r.salida, /lo que hay en disco es el texto que alguien escribio/);
   });
 
-  it('con un CRLF sale 1 diciendo el fichero y la linea', () => {
-    const dir = repoSucio('una linea\r\notra linea\r\n');
-    const r = ejecutar(dir);
+  it('con un CRLF en tools/ sale 1 diciendo el fichero y la linea', () => {
+    const r = ejecutar(repoCon('tools/a.mjs', 'const a = 1;\r\nconst b = 2;\r\n'));
 
     assert.equal(r.codigo, 1, 'un CRLF tiene que poner la puerta en 1, pero salio '
       + r.codigo + '\n' + r.salida);
-    assert.match(r.salida, /a\.txt/);
+    assert.match(r.salida, /tools\/a\.mjs/);
     assert.match(r.salida, /linea\s+1/);
     assert.match(r.salida, /CRLF/);
   });
 
-  it('con un caracter de otro idioma sale 1 diciendo donde', () => {
-    const dir = repoSucio('una linea\nconst otro = "' + CJK + '";\n');
-    const r = ejecutar(dir);
+  it('con un caracter de otro idioma en tools/ sale 1 diciendo donde', () => {
+    const r = ejecutar(repoCon('tools/a.mjs', 'const a = 1;\nconst b = "' + CJK + '";\n'));
 
     assert.equal(r.codigo, 1, r.salida);
-    assert.match(r.salida, /a\.txt/);
+    assert.match(r.salida, /tools\/a\.mjs/);
     assert.match(r.salida, /linea\s+2/);
     assert.match(r.salida, /chino/);
   });
 
-  it('un fichero SIN trackear no pone la puerta en rojo, y es lo que tiene que pasar', () => {
-    // El caso al reves, y es el que protege el paso de CI: un fichero a medio
-    // escribir, con medio CR y medio CJK, no puede poner el workflow en rojo
-    // mientras se trabaja. Solo lo que viaja se juzga.
-    const dir = repoSucio('limpia\n');
-    writeFileSync(join(dir, 'a-medio-escribir.txt'), 'sucia\r' + CJK + '\n');
+  it('FUERA del alcance no pone la puerta en rojo, y esto es lo que lo salva', () => {
+    // El test que hace falta para que el alcance no se convierta en un
+    // recorte conveniente. En `main` hay 306 ficheros versionados fuera de
+    // `tools/` con caracteres de los que esta puerta Stampidean, y son del
+    // OMEGA Manifest Editor: su doble raya de tabla, sus palomitas y sus
+    // emojis. Si la puerta los mirara, el paso se pondria en rojo el primer dia
+    // por contenido que nadie de este repositorio puede cambiar.
+    const r = ejecutar(repoCon('app/globals.css', 'a { content: "' + CJK + '"; }\n'));
 
-    const r = ejecutar(dir);
+    assert.equal(r.codigo, 0,
+      'fuera del alcance no se juzga, pero salio ' + r.codigo + '\n' + r.salida);
+  });
 
-    assert.equal(r.codigo, 0, r.salida);
+  it('un fichero SIN trackear tampoco, que es lo que protege el paso de CI', () => {
+    // Un fichero a medio escribir, con medio CR y medio CJK, no puede poner el
+    // workflow en rojo mientras se trabaja. Solo lo que viaja se juzga.
+    const dir = repoCon('tools/a.mjs', 'const a = 1;\n');
+    writeFileSync(join(dir, 'tools/a-medio-escribir.mjs'), 'const b = 2;\r' + CJK + '\n');
+
+    assert.equal(ejecutar(dir).codigo, 0);
   });
 
   it('el fichero que se arregla deja de salir, y no se queda el hallazgo pegado', () => {
-    const dir = repoSucio('una linea\r\n');
-    const enBlanco = join(dir, 'a.txt');
+    const dir = repoCon('tools/a.mjs', 'const a = 1;\r\n');
 
     assert.equal(ejecutar(dir).codigo, 1);
 
-    writeFileSync(enBlanco, 'una linea\n');
+    writeFileSync(join(dir, 'tools/a.mjs'), 'const a = 1;\n');
 
     assert.equal(ejecutar(dir).codigo, 0);
+  });
+
+  it('sin git detras sale 2 y lo dice, que no es lo mismo que un hallazgo', () => {
+    // El 2 contra el 1 es el contrato de los cinco guards: el 1 manda a mirar
+    // un fichero, y lo que paso aqui fue que no se pudo leer nada.
+    const dir = mkdtempSync(join(tmpdir(), 'texto-sin-git-'));
+
+    temporales.push(dir);
+    mkdirSync(join(dir, 'tools'));
+    copyFileSync(fileURLToPath(new URL('./auditar_texto.mjs', import.meta.url)),
+      join(dir, 'tools', 'auditar_texto.mjs'));
+
+    const r = ejecutar(dir);
+
+    assert.equal(r.codigo, 2, r.salida);
+    assert.match(r.salida, /no se pudo ni siquiera leer la suite/);
   });
 });

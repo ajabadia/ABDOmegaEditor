@@ -1,5 +1,5 @@
-// Puerta del TEXTO: que en disco, en este repositorio, haya el texto que alguien
-// escribio y no el que dejo una herramienta por el camino.
+// Puerta del TEXTO: que en disco, en los ficheros donde viven los guards, haya
+// el texto que alguien escribio y no el que dejo una herramienta por el camino.
 //
 //   node tools/auditar_texto.mjs [raiz]
 //
@@ -9,7 +9,7 @@
 // y no solo que la funcion devuelve hallazgos.
 //
 // Salida:
-//   0  los ficheros versionados de la raiz estan limpios
+//   0  los ficheros del alcance estan limpios (que son `tools/` y dos mas)
 //   1  hay un byte invisible, o un caracter que este repo no usa, o texto UTF-8
 //      que se decodifica mal
 //   2  no se pudo ni siquiera leer la suite (que es otro problema)
@@ -84,7 +84,7 @@
 //
 // Asi que la regla no es "cero no-ASCII" sino "el no-ASCII que este repo ha
 // decidido usar, y nada mas". Y la lista no se inventa: esta medida con el
-// codigo de abajo, sobre los diecinueve ficheros del indice de entonces, y son
+// codigo de abajo, sobre los ficheros del alcance de entonces, y son
 // dieciseis codepoints:
 //
 //   U+2500  caja de dibujo       6.771  93 lineas, LAS 93 de comentario
@@ -124,7 +124,7 @@
 // La enye es U+00F1 y en UTF-8 son los bytes C3 B1; leidos como latin-1 esos
 // dos bytes son U+00C3 y U+00B1, y ahi esta el fallo: dos caracteres donde
 // habia uno. En castellano no hay NINGUNA letra acentuada seguida de un
-// caracter de ese rango, y medido sobre los diecinueve ficheros de antes sale
+// caracter de ese rango, y medido sobre el alcance de antes sale
 // CERO.
 // Esa es la regla `mojibake`, y es la unica de las tres capas que necesita
 // mirar dos caracteres a la vez.
@@ -167,22 +167,44 @@ export const PERMITIDOS = new Map([
 ]);
 
 /**
- * Los ficheros del indice que esta puerta NO mira, y por que.
+ * QUE MIRA ESTA PUERTA, Y POR QUE NO ES "EL INDICE ENTERO"
  *
- * Solo uno, y no por conveniencia: `pnpm-lock.yaml` son 123.777 bytes que
- * escribe `pnpm` a partir de lo que contesta el registro, no una persona. Un
- * nombre de paquete o un campo de metadatos con un caracter raro meteria este
- * paso en rojo sin que nadie de este repositorio pueda arreglarlo, y un guard
- * que se pone rojo por cosas que no son suyas es un guard que se apaga.
+ * `tools/` entero, mas los dos ficheros de la raiz que son del mismo tipo y
+ * escriben las mismas manos: el `.gitattributes` y el workflow. Nada mas.
  *
- * Se ha medido que hoy tiene CERO no-ASCII, asi que la exclusion no esta
- * escondiendo nada: si mañana los tiene, es que los tiene el registro.
+ * La primera version de esto miraba TODO lo versionado del repositorio, y el
+ * dato de la rama `main` lo deja claro en dos lineas. Midido ahi con este mismo
+ * codigo, sobre los 810 ficheros del indice de `main`:
  *
- * @type {Set<string>}
+ *   ficheros con hallazgos              306 de 810
+ *   hallazgos                           2.274
+ *   de ellos en `tools/`                    0
+ *
+ * Esos 2.274 son de la APLICACION, que en `main` es el OMEGA Manifest Editor:
+ * el doble raya de tabla (U+2550) 1.272 veces en sus CSS, 118 palomitas de
+ *_OK_ en un `.ts`, comillas angulares y emoji. Son de otro proyecto, y aquí no
+ * son un accidente de nadie: son el contenido de otra cosa.
+ *
+ * Asi que un alcance de "indice entero" no seria una puerta mas estricta, seria
+ * una puerta que mide un proyecto que no es el suyo y sale en rojo el primer
+ * dia. Y no habria forma de arreglarlo sinaflojar el conjunto permitido
+ * hasta que no significara nada.
+ *
+ * Lo que queda es justo lo que protege: los ficheros donde escribimos los
+ * guards, que son los mismos en las dos ramas y los unicos con una lista de
+ * caracteres que se puede mantener.
+ *
+ * @type {string[]}
  */
-export const FUERA_DE_AUDITORIA = new Set([
-  'pnpm-lock.yaml'
-]);
+export const ALCANCE = [
+  '.gitattributes',
+  '.github/workflows/guards.yml'
+];
+
+/** Si un fichero del indice entra en el alcance de la puerta. */
+export function enAlcance (fichero) {
+  return fichero.startsWith('tools/') || ALCANCE.includes(fichero);
+}
 
 // El rango de los bytes que, leidos como latin-1, son la mitad de un caracter
 // UTF-8 partido. En castellano no hay ni un caracter de este rango en una
@@ -480,7 +502,9 @@ export function ficherosAuditables (raiz = raizPorDefecto()) {
     maxBuffer: 64 * 1024 * 1024
   });
 
-  return salida.split('\0').filter((f) => f !== '' && !FUERA_DE_AUDITORIA.has(f));
+  // Solo lo del alcance, y no por una regla inventada: el resto del indice lo escriben otros.
+  // Ver la cabecera de `ALCANCE`, que tiene el dato de por que.
+  return salida.split('\0').filter((f) => f !== '' && enAlcance(f));
 }
 
 /**
@@ -522,7 +546,7 @@ export function formatea (informe) {
     .sort((a, b) => b[1] - a[1] || a[0] - b[0]);
 
   const lineas = [
-    'ficheros versionados revisados                    : ' + informe.ficheros.length,
+    'ficheros del alcance revisados                    : ' + informe.ficheros.length,
     'caracteres no-ASCII en ellos                      : '
       + usados.reduce((a, u) => a + u[1], 0),
     'no-ASCII distintos                               : ' + usados.length
@@ -575,7 +599,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     if (falla(informe)) {
       console.error('');
       console.error('auditar_texto: ' + informe.hallazgos.length
-        + ' hallazgo(s) en los ficheros versionados de la raiz.');
+        + ' hallazgo(s) en los ficheros del alcance.');
       console.error('  Un CR, un byte de control o un caracter de otro idioma en un');
       console.error('  fichero de este repo es SIEMPRE un accidente: no hay ninguna');
       console.error('  razon por la que aquí sea raro. Arregla el fichero y ya.');

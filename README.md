@@ -104,7 +104,7 @@ node tools/auditar_ignore_oculto.mjs        # que ningun fichero trackeado este 
 node tools/auditar_eol.mjs                  # que ningun fichero incumpla la regla eol que declara
 node tools/auditar_justificacion_crlf.mjs   # que ninguna regla eol=crlf entre sin su porque
 node tools/auditar_tamano.mjs               # que la suite no se haya encogido en silencio
-node tools/auditar_texto.mjs                # que no haya bytes invisibles ni caracteres raros en este repo
+node tools/auditar_texto.mjs                # que en tools/ no haya bytes invisibles ni caracteres raros
 ```
 
 Los cinco se ejecutan tambien en cada push, en
