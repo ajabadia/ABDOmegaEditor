@@ -131,12 +131,22 @@ export function ramasDeRepo (repo) {
 /**
  * Cuantas ramas tienen que auditarse para que el recuento signifique algo.
  *
- * MEDIDO. En un clon con `--no-single-branch`, que es como lo hace el workflow,
- * son 13 ramas en 5 repos. En la maquina, con los mismos repos y las mismas
- * ramas mas lo que se haya traido otros dias, 15 en 6. Los suelos se ponen en 8
- * y en 3, no mas arriba, porque un suelo pegado al numero real no te avisa de
- * nada: solo se ajusta cuando alguien borra ramas de verdad, y entonces con un
- * comentario al lado diciendo cuantas y por que.
+ * MEDIDO, y con la fecha del commit que lo midio. En el runner, que clona con
+ * `--no-single-branch`, son 9 ramas auditadas en 3 repos. En la maquina, con los
+ * mismos repos y las mismas ramas mas lo que se haya traido otros dias, 11 en 4.
+ *
+ * EL SEGUNDO SUELO NO TIENE MARGEN, Y ES A PROPOSITO. El primero esta en 8
+ * contra 9, o sea con uno de sobra. El segundo esta en 3 contra 3. Bajarlo a 2
+ * daria margen y perderia la puerta de verdad: un repo que dejara de traer ramas
+ * pasaria de 3 a 2, y con suelo 2 eso no diria nada. Asi que el suelo va pegado
+ * a la medida mas pobre, y lo que pasa si alguien borra su segunda rama es que el
+ * CI se pone rojo pidiendo bajar este numero en este commit, con un comentario al
+ * lado diciendo cuantas ramas se han borrado. Un suelo sin margen que se puede
+ * bajar con un commit es mejor que un margen de uno que esconde un repo entero.
+ *
+ * ABDOmega sostenia el margen y se ha ido con la suite. Antes eran 5 repos con
+ * ramas y el suelo en 3 dejaba dos de holgura; hoy son 3 y el suelo esta donde
+ * estan. Por eso estos numeros se vuelven a medir en vez de quedarse.
  *
  * UN CLON DE UNA SOLA. `git clone --depth 1` sin `--no-single-branch` se queda
  * con la rama por defecto, y como la que esta comprobada ya la audita
@@ -147,7 +157,7 @@ export function ramasDeRepo (repo) {
  *
  * POR QUE HAY DOS SUELOS Y NO UNO. Con trece ramas todas de un solo repo el
  * primero se cumple y la cobertura se ha perdido igual: ABDJUNiO601 se come
- * nueve de trece. El segundo mira cuantos repos aportan, que es lo que de
+ * nueve de las que hay. El segundo mira cuantos repos aportan, que es lo que de
  * verdad dice que la puerta sigue abierta en mas de un sitio.
  */
 export const RAMAS_AUDITADAS_MINIMAS = 8;
